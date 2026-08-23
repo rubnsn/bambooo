@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "ppb",
+    "ppb",
+    "bbb"
+  ],
+  "key": {
+    "p": {
+      "item": "minecraft:paper"
+    },
+    "b": {
+      "item": "bamboomod:bamboo"
+    }
+  },
+  "result": {
+    "item": "bamboomod:foldingfan",
+    "count": 1
+  }
+}

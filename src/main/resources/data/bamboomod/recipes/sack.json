@@ -3,7 +3,7 @@
   "category": "misc",
   "pattern": [
     "sss",
-    "wtw",
+    "wsw",
     "www"
   ],
   "key": {
@@ -12,9 +12,6 @@
     },
     "w": {
       "tag": "minecraft:wool"
-    },
-    "t": {
-      "item": "bamboomod:tudura"
     }
   },
   "result": {

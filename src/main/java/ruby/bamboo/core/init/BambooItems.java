@@ -47,6 +47,10 @@ public final class BambooItems {
     public static final RegistryObject<ItemNameBlockItem> RICE_SEED = register("riceseed",
             () -> new ItemNameBlockItem(BambooBlocks.RICE_PLANT.get(), new Item.Properties()));
 
+    /** 扇子 (旧 FoldingFan。耐久100、風で葉破壊) */
+    public static final RegistryObject<ruby.bamboo.item.FoldingFan> FOLDING_FAN = register("foldingfan",
+            () -> new ruby.bamboo.item.FoldingFan(new Item.Properties().durability(100)));
+
     /** 袋 (旧 Sack。BlockItem 収容アイテム) */
     public static final RegistryObject<ruby.bamboo.item.Sack> SACK = register("sack",
             () -> new ruby.bamboo.item.Sack(new Item.Properties()));

@@ -100,6 +100,10 @@ public final class BambooClientSetup {
             net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.KAGINAWA_HOOK.get(),
                     ruby.bamboo.client.renderer.KaginawaHookRenderer::new);
 
+            // 風 (扇子) — 不可視 (パーティクルで演出)
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.WIND.get(),
+                    ruby.bamboo.client.renderer.WindRenderer::new);
+
             // 竹弓の各種矢 (竹/松明/光/爆発) — 共通 bamboospear テクスチャ
             net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.BAMBOO_ARROW.get(),
                     ruby.bamboo.client.renderer.BambooArrowRenderer::new);

@@ -42,6 +42,18 @@ public final class BambooEntities {
                     .updateInterval(1)
                     .build("kaginawa_hook"));
 
+    /**
+     * 風 (旧 Wind。扇子用)。5x5の巨大判定、寿命5tick、葉破壊。
+     * 当たり判定は巨大だがエンティティ衝突は無効、ブロック走査のみ。
+     */
+    public static final RegistryObject<EntityType<ruby.bamboo.entity.WindEntity>> WIND = BambooMod.ENTITY_TYPES.register(
+            "wind",
+            () -> EntityType.Builder.<ruby.bamboo.entity.WindEntity>of(ruby.bamboo.entity.WindEntity::new, MobCategory.MISC)
+                    .sized(5.0F, 5.0F)
+                    .clientTrackingRange(64)
+                    .updateInterval(1)
+                    .build("wind"));
+
     // ===== 弓矢エンティティ (旧 entity/arrow の 1.20.1 移植) =====
 
     /** 竹矢 (旧 EntityBambooArrow)。連射あり */
