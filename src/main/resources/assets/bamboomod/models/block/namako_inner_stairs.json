@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "bamboomod:block/namako",
+    "top": "bamboomod:block/namako",
+    "side": "bamboomod:block/namako"
+  }
+}

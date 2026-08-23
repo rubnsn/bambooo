@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "bamboomod:block/bamboo",
+    "particle": "bamboomod:block/bamboo"
+  }
+}

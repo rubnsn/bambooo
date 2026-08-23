@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=y": { "model": "bamboomod:block/sakura_planks" },
+    "axis=z": { "model": "bamboomod:block/sakura_planks", "x": 90 },
+    "axis=x": { "model": "bamboomod:block/sakura_planks", "x": 90, "y": 90 }
+  }
+}

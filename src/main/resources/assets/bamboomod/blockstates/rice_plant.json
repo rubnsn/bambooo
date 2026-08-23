@@ -1,0 +1,12 @@
+{
+  "variants": {
+        "age=0": { "model": "bamboomod:block/rice_plant_stage_0" },
+        "age=1": { "model": "bamboomod:block/rice_plant_stage_1" },
+        "age=2": { "model": "bamboomod:block/rice_plant_stage_2" },
+        "age=3": { "model": "bamboomod:block/rice_plant_stage_3" },
+        "age=4": { "model": "bamboomod:block/rice_plant_stage_4" },
+        "age=5": { "model": "bamboomod:block/rice_plant_stage_4" },
+        "age=6": { "model": "bamboomod:block/rice_plant_stage_4" },
+        "age=7": { "model": "bamboomod:block/rice_plant_stage_4" }
+  }
+}

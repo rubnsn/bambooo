@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    { "apply": { "model": "bamboomod:block/andon", "y": 180 }, "when": { "facing": "north" } },
+    { "apply": { "model": "bamboomod:block/andon", "y": 270 }, "when": { "facing": "east" } },
+    { "apply": { "model": "bamboomod:block/andon", "y": 90 }, "when": { "facing": "west" } },
+    { "apply": { "model": "bamboomod:block/andon" }, "when": { "facing": "south" } },
+    { "apply": { "model": "bamboomod:block/andon_onleg" }, "when": { "on_ground": true } }
+  ]
+}

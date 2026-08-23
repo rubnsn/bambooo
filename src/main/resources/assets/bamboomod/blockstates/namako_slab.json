@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "type=bottom": { "model": "bamboomod:block/namako_slab" },
+    "type=top": { "model": "bamboomod:block/namako_slab_top" },
+    "type=double": { "model": "bamboomod:block/namako" }
+  }
+}

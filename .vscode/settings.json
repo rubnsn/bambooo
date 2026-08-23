@@ -1,0 +1,30 @@
+{
+    // Forge 1.20.1 開発には JDK 17 が必須。
+    // システム既定(JDK 8 等)が選ばれると外部ライブラリ(forge userdev jar 等)の解決に失敗するため明示する。
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-17",
+            "path": "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.8-hotspot",
+            "default": true
+        }
+    ],
+    // Gradle デーモン/同期も JDK 17 で実行する
+    "java.import.gradle.java.home": "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.8-hotspot",
+    "gradle.javaHome": "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.8-hotspot",
+    // build.gradle 変更時に自動で再同期する
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.import.gradle.enabled": true,
+    "gradle.autoDetect": "on",
+    "gradle.nestedProjects": false,
+    // Minecraft の巨大ソースでは null 解析が重いので無効化
+    "java.compile.nullAnalysis.nonnull": [],
+    "java.compile.nullAnalysis.nullable": [],
+    "java.compile.nullAnalysis.mode": "disabled",
+    // 生成物をエクスプローラーから隠す
+    "files.exclude": {
+        "**/.gradle": true,
+        "**/build/tmp": true,
+        "**/build/classes": true,
+        "**/build/_*": true
+    }
+}

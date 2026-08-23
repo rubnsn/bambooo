@@ -1,0 +1,38 @@
+{
+  "textures": {
+    "all": "bamboomod:block/indlight_silver",
+    "particle": "bamboomod:block/indlight_silver"
+  },
+  "multipart": [
+    { "when": { "facing": "up" }, "apply": { "model": "bamboomod:block/indlight_silver", "x": 90 } },
+    { "when": { "facing": "up", "north": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_up", "x": 90 } },
+    { "when": { "facing": "up", "south": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_down", "x": 90 } },
+    { "when": { "facing": "up", "east": true },  "apply": { "model": "bamboomod:block/indlight_silver_link_east", "x": 90 } },
+    { "when": { "facing": "up", "west": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_west", "x": 90 } },
+    { "when": { "facing": "down" }, "apply": { "model": "bamboomod:block/indlight_silver", "x": 270 } },
+    { "when": { "facing": "down", "north": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_up", "x": 270 } },
+    { "when": { "facing": "down", "south": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_down", "x": 270 } },
+    { "when": { "facing": "down", "east": true },  "apply": { "model": "bamboomod:block/indlight_silver_link_east", "x": 270 } },
+    { "when": { "facing": "down", "west": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_west", "x": 270 } },
+    { "when": { "facing": "north" }, "apply": { "model": "bamboomod:block/indlight_silver", "y": 180 } },
+    { "when": { "facing": "north", "north": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_up", "y": 180 } },
+    { "when": { "facing": "north", "south": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_down", "y": 180 } },
+    { "when": { "facing": "north", "east": true },  "apply": { "model": "bamboomod:block/indlight_silver_link_east", "y": 180 } },
+    { "when": { "facing": "north", "west": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_west", "y": 180 } },
+    { "when": { "facing": "south" }, "apply": { "model": "bamboomod:block/indlight_silver" } },
+    { "when": { "facing": "south", "north": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_up" } },
+    { "when": { "facing": "south", "south": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_down" } },
+    { "when": { "facing": "south", "east": true },  "apply": { "model": "bamboomod:block/indlight_silver_link_east" } },
+    { "when": { "facing": "south", "west": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_west" } },
+    { "when": { "facing": "east" }, "apply": { "model": "bamboomod:block/indlight_silver", "y": 270 } },
+    { "when": { "facing": "east", "north": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_up", "y": 270 } },
+    { "when": { "facing": "east", "south": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_down", "y": 270 } },
+    { "when": { "facing": "east", "east": true },  "apply": { "model": "bamboomod:block/indlight_silver_link_east", "y": 270 } },
+    { "when": { "facing": "east", "west": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_west", "y": 270 } },
+    { "when": { "facing": "west" }, "apply": { "model": "bamboomod:block/indlight_silver", "y": 90 } },
+    { "when": { "facing": "west", "north": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_up", "y": 90 } },
+    { "when": { "facing": "west", "south": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_down", "y": 90 } },
+    { "when": { "facing": "west", "east": true },  "apply": { "model": "bamboomod:block/indlight_silver_link_east", "y": 90 } },
+    { "when": { "facing": "west", "west": true }, "apply": { "model": "bamboomod:block/indlight_silver_link_west", "y": 90 } }
+  ]
+}

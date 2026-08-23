@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "bamboomod:block/jpchest" },
+    "facing=east":  { "model": "bamboomod:block/jpchest", "y": 90 },
+    "facing=south": { "model": "bamboomod:block/jpchest", "y": 180 },
+    "facing=west":  { "model": "bamboomod:block/jpchest", "y": 270 }
+  }
+}

@@ -1,0 +1,48 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build
+.gradle
+
+# other
+eclipse
+run
+*.log
+# Files from Forge MDK
+forge*changelog.txt
+setup_build.log
+src/main/resources/assets/bamboomod/textures/**/*.png
+# Muse
+.muse/
+
+# Roo Code
+.roo/
+
+# Kilo Code
+.kilo/
+
+# Trae
+.trae/
+
+# opencode (source: opencode.ai)
+.opencode/
+
+# Gemini CLI
+.gemini/
+
+# OpenCode legacy
+.oh-my-opencode/
+docs/*

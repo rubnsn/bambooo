@@ -1,0 +1,18 @@
+{
+    "ambientocclusion": false,
+    "textures": {
+        "particle": "#bottom"
+    },
+    "elements": [
+        {   "from": [ 7, 0, 0 ],
+            "to": [ 8, 16, 16 ],
+            "faces": {
+                "down":  { "uv": [ 15, 0, 16, 16 ], "texture": "#bottom", "cullface": "down" },
+                "north": { "uv": [  1, 0,  0, 16 ], "texture": "#bottom" },
+                "south": { "uv": [  0, 0,  1, 16 ], "texture": "#bottom" },
+                "west":  { "uv": [  0, 0, 16, 16 ], "texture": "#bottom" },
+                "east":  { "uv": [ 16, 0,  0, 16 ], "texture": "#bottom_back" }
+            }
+        }
+    ]
+}

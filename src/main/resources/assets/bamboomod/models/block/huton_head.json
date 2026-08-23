@@ -1,0 +1,46 @@
+{
+  "textures": {
+    "particle": "bamboomod:block/huton_feet_top",
+    "top": "bamboomod:block/huton_feet_top",
+    "bottom": "bamboomod:block/huton_feet_bottom",
+    "side": "bamboomod:block/huton_feet_side",
+    "makura": "bamboomod:block/makura"
+  },
+  "elements": [
+    { "from": [ 0, 0, 0 ],
+      "to": [ 16, 4, 8 ],
+      "faces": {
+        "up":    { "uv": [ 8, 16, 0, 0 ], "texture": "#top", "rotation": 90 },
+        "north": { "uv": [ 0, 0, 16, 4 ], "texture": "#side" },
+        "south": { "uv": [ 0, 0, 8, 4 ], "texture": "#side" },
+        "west":  { "uv": [ 0, 0, 8, 4 ], "texture": "#side" },
+        "east":  { "uv": [ 8, 0, 0, 4 ], "texture": "#side" }
+      }
+    },
+    { "from": [ 0, 0, 0 ],
+      "to": [ 16, 2, 16 ],
+      "faces": {
+        "down":  { "uv": [ 0, 0, 16, 16 ], "texture": "#bottom" }
+      }
+    },
+    { "from": [ 0, 0, 8 ],
+      "to": [ 16, 2, 16 ],
+      "faces": {
+        "up":    { "uv": [ 0, 16, 16, 8 ], "texture": "#side" },
+        "south": { "uv": [ 0, 2, 8, 4 ], "texture": "#side" },
+        "west":  { "uv": [ 0, 2, 8, 4 ], "texture": "#side" },
+        "east":  { "uv": [ 8, 2, 0, 4 ], "texture": "#side" }
+      }
+    },
+    { "from": [ 3, 2, 8 ],
+      "to": [ 13, 5, 14 ],
+      "faces": {
+        "up":    { "uv": [ 0, 0, 6, 10 ], "texture": "#makura", "rotation": 90 },
+        "south": { "uv": [ 6, 0, 16, 3 ], "texture": "#makura" },
+        "north": { "uv": [ 6, 0, 16, 3 ], "texture": "#makura" },
+        "west":  { "uv": [ 0, 10, 6, 13 ], "texture": "#makura" },
+        "east":  { "uv": [ 6, 10, 0, 13 ], "texture": "#makura" }
+      }
+    }
+  ]
+}

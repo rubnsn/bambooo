@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "type=bottom": { "model": "bamboomod:block/coak_slab" },
+    "type=top": { "model": "bamboomod:block/coak_slab_top" },
+    "type=double": { "model": "bamboomod:block/coak" }
+  }
+}

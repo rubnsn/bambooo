@@ -1,0 +1,153 @@
+package ruby.bamboo.core.init;
+
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
+import ruby.bamboo.BambooMod;
+import ruby.bamboo.block.BroadLeaveBlock;
+import ruby.bamboo.block.IndLightBlock;
+import ruby.bamboo.block.SlideDoorBlock;
+
+/**
+ * クライアントサイドの描画設定。
+ * <p>
+ * 旧 1.10.2 版の setRenderLayer / BlockRenderLayer 相当。
+ * 植物(crossモデル)系は cutout、葉は cutout_mipped を指定する。
+ */
+@Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+public final class BambooClientSetup {
+
+    private BambooClientSetup() {
+    }
+
+    @SubscribeEvent
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            // cross モデルの植物系 -> cutout
+            cutout(BambooBlocks.BAMBOO.get());
+            cutout(BambooBlocks.BAMBOO_SHOOT.get());
+            cutout(BambooBlocks.RICE_PLANT.get());
+            cutout(BambooBlocks.SAKURA_SAPLING.get());
+            for (var indlight : BambooBlocks.INDLIGHTS) {
+                cutout(indlight.get());
+            }
+            // 行灯 -> cutout (旧 BlockRenderLayer.CUTOUT 相当)
+            cutout(BambooBlocks.ANDON.get());
+            // 竹柵/欄間 -> cutout (透過テクスチャ)
+            cutout(BambooBlocks.BAMBOO_PANE.get());
+            cutout(BambooBlocks.BAMBOO_PANE2.get());
+            cutout(BambooBlocks.BAMBOO_PANE3.get());
+            cutout(BambooBlocks.RANMA.get());
+            // 狐火 -> cutout (cross モデル、透過テクスチャ。旧 BlockRenderLayer.CUTOUT 相当)
+            cutout(BambooBlocks.KITSUNEBI.get());
+            // 葉 -> cutout_mipped
+            ItemBlockRenderTypes.setRenderLayer(BambooBlocks.SAKURA_LEAVES.get(), RenderType.cutoutMipped());
+            for (var broad : BambooBlocks.BROAD_LEAVES) {
+                ItemBlockRenderTypes.setRenderLayer(broad.get(), RenderType.cutoutMipped());
+            }
+
+            // 引き戸 (sakura-master準拠): 透過3種は translucent、それ以外は cutout
+            for (var slide : BambooBlocks.SLIDE_DOORS) {
+                SlideDoorBlock b = slide.get();
+                if (b.isTranslucent()) {
+                    ItemBlockRenderTypes.setRenderLayer(b, RenderType.translucent());
+                } else {
+                    ItemBlockRenderTypes.setRenderLayer(b, RenderType.cutout());
+                }
+            }
+
+            // 石臼の BER 登録 (旧 TESR 相当)
+            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+                    BambooBlockEntities.MILL_STONE_BE.get(),
+                    ruby.bamboo.block.entity.MillStoneBlockRenderer::new);
+
+            // 石臼 GUI の Screen 登録 (未登録だと「Failed to create screen」でGUIが開かない)
+            net.minecraft.client.gui.screens.MenuScreens.register(BambooMenus.MILL_STONE.get(),
+                    ruby.bamboo.gui.MillStoneScreen::new);
+
+            // 囲炉裏の BER 登録 (旧 TESR 相当)
+            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+                    BambooBlockEntities.CAMPFIRE_BE.get(),
+                    ruby.bamboo.block.entity.CampfireBlockRenderer::new);
+
+            // 囲炉裏 GUI の Screen 登録
+            net.minecraft.client.gui.screens.MenuScreens.register(BambooMenus.CAMPFIRE.get(),
+                    ruby.bamboo.gui.CampfireScreen::new);
+
+            // 袋 GUI の Screen 登録
+            net.minecraft.client.gui.screens.MenuScreens.register(BambooMenus.SACK.get(),
+                    ruby.bamboo.gui.SackScreen::new);
+
+            // 引き戸の BER 登録 (sakura-master SlideDoorRender 相当)
+            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+                    BambooBlockEntities.SLIDE_DOOR_BE.get(),
+                    ruby.bamboo.block.entity.SlideDoorBlockRenderer::new);
+
+            // 布団用椅子エンティティ (huton_chair) — 不可視レンダラ。未登録だと shouldRender で NPE
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.HUTON_CHAIR.get(),
+                    ruby.bamboo.client.renderer.ChairRenderer::new);
+        });
+    }
+
+    private static void cutout(Block block) {
+        ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutout());
+    }
+
+    /**
+     * 広葉の色乗算 (旧 BroadLeave#colorMultiplier 相当)。
+     * 共通テクスチャ broadleaf.png に対しバリアント色を tintIndex=0 に乗算する。
+     */
+    @SubscribeEvent
+    public static void onRegisterBlockColors(RegisterColorHandlersEvent.Block event) {
+        for (var broad : BambooBlocks.BROAD_LEAVES) {
+            BroadLeaveBlock block = broad.get();
+            int color = block.variant.color;
+            event.register((state, level, pos, tintIndex) -> color, block);
+        }
+    }
+
+    /**
+     * 花びらパーティクルのプロバイダ登録 (旧 SakuraPetal エンティティの後継)。
+     * texNum 1-3 の3種をそれぞれ登録する。
+     */
+    @SubscribeEvent
+    public static void onRegisterParticleProviders(
+            net.minecraftforge.client.event.RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(BambooParticles.PETAL_1.get(),
+                ruby.bamboo.client.particle.PetalParticle.Provider::new);
+        event.registerSpriteSet(BambooParticles.PETAL_2.get(),
+                ruby.bamboo.client.particle.PetalParticle.Provider::new);
+        event.registerSpriteSet(BambooParticles.PETAL_3.get(),
+                ruby.bamboo.client.particle.PetalParticle.Provider::new);
+    }
+
+    /**
+     * 間接照明(indlight)アイコンの色乗算。
+     * <p>
+     * 旧 1.10.2 版 ItemIndLight#getColorFromItemstack 相当。
+     * フラットな item/generated アイコン (layer0: item/indlight.png, 白の斜線) に対し、
+     * 16 色 (EnumDyeColor 相当) のマップカラーを tintIndex=0 に乗算する。
+     */
+    @SubscribeEvent
+    public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
+        for (var indlight : BambooBlocks.INDLIGHTS) {
+            IndLightBlock block = (IndLightBlock) indlight.get();
+            int color = block.color.mapColor;
+            event.register((stack, tintIndex) -> color, new Item[] { block.asItem() });
+        }
+        // 広葉のインベントリアイコンにも色乗算 (ブロックと同じバリアント色)
+        for (var broad : BambooBlocks.BROAD_LEAVES) {
+            BroadLeaveBlock block = broad.get();
+            int color = block.variant.color;
+            event.register((stack, tintIndex) -> color, new Item[] { block.asItem() });
+        }
+    }
+}

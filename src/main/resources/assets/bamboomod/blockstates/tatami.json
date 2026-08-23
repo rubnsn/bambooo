@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "bamboomod:block/tatami", "y": 180 },
+    "facing=east":  { "model": "bamboomod:block/tatami", "y": 90 },
+    "facing=south": { "model": "bamboomod:block/tatami" },
+    "facing=west":  { "model": "bamboomod:block/tatami", "y": 270 }
+  }
+}

@@ -1,0 +1,7 @@
+{
+    "parent": "bamboomod:block/slidedoor/slide_door_top",
+    "textures": {
+        "top": "bamboomod:block/glassdoor_top",
+        "top_back": "bamboomod:block/glassdoor_top"
+    }
+}

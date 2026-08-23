@@ -1,0 +1,7 @@
+﻿{
+  "parent": "bamboomod:block/indlight_core",
+  "textures": {
+    "all": "bamboomod:block/indlight_silver",
+    "particle": "bamboomod:block/indlight_silver"
+  }
+}

@@ -1,0 +1,19 @@
+﻿{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "all": "bamboomod:block/indlight_cyan",
+    "particle": "#all"
+  },
+  "elements": [
+    {
+      "from": [0, 7, 15],
+      "to": [7, 9, 16],
+      "faces": {
+        "up": { "uv": [0, 2, 2, 8], "texture": "#all", "rotation": 270 },
+        "down": { "uv": [0, 2, 2, 8], "texture": "#all", "rotation": 90 },
+        "north": { "uv": [0, 2, 2, 8], "texture": "#all", "rotation": 90 },
+        "south": { "uv": [0, 2, 2, 8], "texture": "#all", "rotation": 90 }
+      }
+    }
+  ]
+}

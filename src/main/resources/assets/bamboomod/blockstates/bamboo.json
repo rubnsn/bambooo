@@ -1,0 +1,20 @@
+{
+  "variants": {
+        "age=0": { "model": "bamboomod:block/bamboo_stage" },
+        "age=1": { "model": "bamboomod:block/bamboo_stage" },
+        "age=2": { "model": "bamboomod:block/bamboo_stage" },
+        "age=3": { "model": "bamboomod:block/bamboo_stage" },
+        "age=4": { "model": "bamboomod:block/bamboo_stage" },
+        "age=5": { "model": "bamboomod:block/bamboo_stage" },
+        "age=6": { "model": "bamboomod:block/bamboo_stage" },
+        "age=7": { "model": "bamboomod:block/bamboo_stage" },
+        "age=8": { "model": "bamboomod:block/bamboo_stage" },
+        "age=9": { "model": "bamboomod:block/bamboo_stage" },
+        "age=10": { "model": "bamboomod:block/bamboo_stage" },
+        "age=11": { "model": "bamboomod:block/bamboo_stage" },
+        "age=12": { "model": "bamboomod:block/bamboo_stage" },
+        "age=13": { "model": "bamboomod:block/bamboo_stage" },
+        "age=14": { "model": "bamboomod:block/bamboo_stage" },
+        "age=15": { "model": "bamboomod:block/bamboo_stage" }
+  }
+}

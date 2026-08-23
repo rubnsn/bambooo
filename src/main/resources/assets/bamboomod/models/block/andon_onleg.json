@@ -1,0 +1,41 @@
+{
+    "parent": "bamboomod:block/andon",
+    "elements": [
+        {  "from": [ 4, 0, 4 ],
+            "to": [ 5, 4, 5 ],
+            "faces": {
+                "south": { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" },
+                "north": { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" },
+                "west":  { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" },
+                "east":  { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" }
+            }
+        },
+        {  "from": [ 4, 0, 11 ],
+            "to": [ 5, 4, 12 ],
+            "faces": {
+                "south": { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" },
+                "north": { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" },
+                "west":  { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" },
+                "east":  { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" }
+            }
+        },
+        {  "from": [ 11, 0, 4 ],
+            "to": [ 12, 4, 5 ],
+            "faces": {
+                "south": { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" },
+                "north": { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" },
+                "west":  { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" },
+                "east":  { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" }
+            }
+        },
+        {  "from": [ 11, 0, 11 ],
+            "to": [ 12, 4, 12 ],
+            "faces": {
+                "south": { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" },
+                "north": { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" },
+                "west":  { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" },
+                "east":  { "uv": [ 0, 0, 1, 4 ], "texture": "#outer" }
+            }
+        }
+    ]
+}

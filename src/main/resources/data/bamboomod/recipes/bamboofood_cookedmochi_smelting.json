@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": {
+    "item": "bamboomod:bamboofood_mochi"
+  },
+  "result": "bamboomod:bamboofood_cookedmochi",
+  "experience": 0.35,
+  "cookingtime": 200
+}

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "type=bottom": { "model": "bamboomod:block/plaster_slab" },
+    "type=top": { "model": "bamboomod:block/plaster_slab_top" },
+    "type=double": { "model": "bamboomod:block/plaster" }
+  }
+}

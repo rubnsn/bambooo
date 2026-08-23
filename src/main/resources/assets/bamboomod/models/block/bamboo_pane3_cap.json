@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/iron_bars_cap",
+  "textures": {
+    "particle": "bamboomod:block/bamboopane3",
+    "bars": "bamboomod:block/bamboopane3",
+    "edge": "bamboomod:block/bamboopane3"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "bamboomod:block/tatami_nsx",
+    "side": "bamboomod:block/tatami_nsx"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "bamboomod:block/jpchest_o",
+    "side": "bamboomod:block/jpchest_o",
+    "front": "bamboomod:block/jpchest_f"
+  }
+}

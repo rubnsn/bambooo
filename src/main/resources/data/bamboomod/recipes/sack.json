@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "sss",
+    "wtw",
+    "www"
+  ],
+  "key": {
+    "s": {
+      "item": "minecraft:string"
+    },
+    "w": {
+      "tag": "minecraft:wool"
+    },
+    "t": {
+      "item": "bamboomod:tudura"
+    }
+  },
+  "result": {
+    "item": "bamboomod:sack",
+    "count": 1
+  }
+}

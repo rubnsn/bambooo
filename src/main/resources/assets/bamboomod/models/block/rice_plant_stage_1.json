@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/crop",
+  "textures": {
+    "crop": "bamboomod:block/riceplant_stage_1"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "grind_motion=0,grinding=false": { "model": "bamboomod:block/millstone_dummy" },
+    "grind_motion=1,grinding=false": { "model": "bamboomod:block/millstone_dummy" },
+    "grind_motion=2,grinding=false": { "model": "bamboomod:block/millstone_dummy" },
+    "grind_motion=3,grinding=false": { "model": "bamboomod:block/millstone_dummy" },
+    "grind_motion=0,grinding=true":  { "model": "bamboomod:block/millstone_dummy" },
+    "grind_motion=1,grinding=true":  { "model": "bamboomod:block/millstone_dummy" },
+    "grind_motion=2,grinding=true":  { "model": "bamboomod:block/millstone_dummy" },
+    "grind_motion=3,grinding=true":  { "model": "bamboomod:block/millstone_dummy" }
+  }
+}

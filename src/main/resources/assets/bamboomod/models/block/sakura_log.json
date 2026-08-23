@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "bamboomod:block/sakuralog_t",
+    "side": "bamboomod:block/sakuralog_s"
+  }
+}

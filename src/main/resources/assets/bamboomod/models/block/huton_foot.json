@@ -1,0 +1,21 @@
+{
+  "textures": {
+    "particle": "bamboomod:block/huton_feet_top",
+    "top": "bamboomod:block/huton_feet_top",
+    "bottom": "bamboomod:block/huton_feet_bottom",
+    "side": "bamboomod:block/huton_feet_side"
+  },
+  "elements": [
+    { "from": [ 0, 0, 0 ],
+      "to": [ 16, 4, 16 ],
+      "faces": {
+        "up":    { "uv": [ 0, 16, 16, 0 ], "texture": "#top", "rotation": 90 },
+        "down":  { "uv": [ 0, 0, 16, 16 ], "texture": "#bottom" },
+        "north": { "uv": [ 0, 0, 16, 4 ], "texture": "#side" },
+        "south": { "uv": [ 0, 0, 16, 4 ], "texture": "#side" },
+        "west":  { "uv": [ 0, 0, 16, 4 ], "texture": "#side" },
+        "east":  { "uv": [ 16, 0, 0, 4 ], "texture": "#side" }
+      }
+    }
+  ]
+}

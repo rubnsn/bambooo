@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/iron_bars_post",
+  "textures": {
+    "particle": "bamboomod:block/ranma",
+    "bars": "bamboomod:block/ranma"
+  }
+}

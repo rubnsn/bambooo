@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "type=bottom": { "model": "bamboomod:block/wara_slab" },
+    "type=top": { "model": "bamboomod:block/wara_slab_top" },
+    "type=double": { "model": "bamboomod:block/wara" }
+  }
+}

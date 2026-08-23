@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "bamboomod:block/campfire_dummy" },
+    "facing=east":  { "model": "bamboomod:block/campfire_dummy" },
+    "facing=south": { "model": "bamboomod:block/campfire_dummy" },
+    "facing=west":  { "model": "bamboomod:block/campfire_dummy" }
+  }
+}

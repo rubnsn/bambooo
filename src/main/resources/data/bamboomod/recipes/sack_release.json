@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "bamboomod:sack"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:sack",
+    "count": 1
+  }
+}

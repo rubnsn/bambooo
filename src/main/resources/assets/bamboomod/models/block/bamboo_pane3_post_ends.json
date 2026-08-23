@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/iron_bars_post_ends",
+  "textures": {
+    "particle": "bamboomod:block/bamboopane3",
+    "edge": "bamboomod:block/bamboopane3"
+  }
+}
