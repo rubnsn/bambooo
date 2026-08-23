@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "combat",
+  "pattern": [
+    "B",
+    "B",
+    "B"
+  ],
+  "key": {
+    "B": {
+      "item": "bamboomod:bamboo"
+    }
+  },
+  "result": {
+    "item": "bamboomod:bambooarrow",
+    "count": 8
+  }
+}

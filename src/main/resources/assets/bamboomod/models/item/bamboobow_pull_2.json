@@ -1,0 +1,6 @@
+{
+    "parent": "bamboomod:item/bamboobow",
+    "textures": {
+        "layer0": "bamboomod:item/bamboobow_pull_2"
+    }
+}

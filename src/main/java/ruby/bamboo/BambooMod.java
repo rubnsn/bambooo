@@ -116,6 +116,9 @@ public class BambooMod {
         // レシピ登録 (FMLCommonSetupEvent で実行)
         ruby.bamboo.crafting.BambooRecipes.register(modEventBus);
 
+        // ネットワーク登録
+        ruby.bamboo.network.BambooNetwork.register();
+
         LOGGER.info("BambooMod {} initialized", MODID);
     }
 }

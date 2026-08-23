@@ -51,10 +51,32 @@ public final class BambooItems {
     public static final RegistryObject<ruby.bamboo.item.Sack> SACK = register("sack",
             () -> new ruby.bamboo.item.Sack(new Item.Properties()));
 
-    /** 刀 (旧 CommonKatana。居合カウンター+特殊ドロップ) */
+    /** 刀 (旧 CommonKatana。鈎縄統合版。耐久無し) */
     public static final RegistryObject<ruby.bamboo.item.CommonKatana> COMMON_KATANA = register("commonkatana",
             () -> new ruby.bamboo.item.CommonKatana(net.minecraft.world.item.Tiers.IRON,
-                    new Item.Properties().durability(150)));
+                    new Item.Properties()));
+
+    // ===== 弓矢 (旧 BambooBow + arrow 6種の 1.20.1 移植。アンチ矢はオミット) =====
+
+    /** 竹弓 (旧 BambooBow)。耐久400 */
+    public static final RegistryObject<ruby.bamboo.item.BambooBowItem> BAMBOO_BOW = register("bamboobow",
+            () -> new ruby.bamboo.item.BambooBowItem(new Item.Properties().durability(400)));
+
+    /** 竹矢 (旧 BambooArrow。連射あり) */
+    public static final RegistryObject<ruby.bamboo.item.arrow.BambooArrowItem> BAMBOO_ARROW = register("bambooarrow",
+            () -> new ruby.bamboo.item.arrow.BambooArrowItem(new Item.Properties()));
+
+    /** 松明矢 (旧 TorchArrow) */
+    public static final RegistryObject<ruby.bamboo.item.arrow.TorchArrowItem> TORCH_ARROW = register("torcharrow",
+            () -> new ruby.bamboo.item.arrow.TorchArrowItem(new Item.Properties()));
+
+    /** 軽量矢 (旧 LightArrow) */
+    public static final RegistryObject<ruby.bamboo.item.arrow.LightArrowItem> LIGHT_ARROW = register("lightarrow",
+            () -> new ruby.bamboo.item.arrow.LightArrowItem(new Item.Properties()));
+
+    /** 爆発矢 (旧 ExplodeArrow) */
+    public static final RegistryObject<ruby.bamboo.item.arrow.ExplodeArrowItem> EXPLODE_ARROW = register("explodearrow",
+            () -> new ruby.bamboo.item.arrow.ExplodeArrowItem(new Item.Properties()));
 
     // ===== 食料 43種 (旧 BambooFood meta0-42 → 独立アイテム化) =====
     // バランス補正は BambooFoods enum 側で適用済み (docs/port-spec-bamboofood.md §3.3)

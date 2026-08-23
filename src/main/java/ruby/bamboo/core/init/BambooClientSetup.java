@@ -15,6 +15,7 @@ import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.BroadLeaveBlock;
 import ruby.bamboo.block.IndLightBlock;
 import ruby.bamboo.block.SlideDoorBlock;
+import ruby.bamboo.item.BambooBowItem;
 
 /**
  * クライアントサイドの描画設定。
@@ -94,7 +95,49 @@ public final class BambooClientSetup {
             // 布団用椅子エンティティ (huton_chair) — 不可視レンダラ。未登録だと shouldRender で NPE
             net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.HUTON_CHAIR.get(),
                     ruby.bamboo.client.renderer.ChairRenderer::new);
+
+            // 鈎縄フック (刀右クリック) — 太線quad帯レンダラ
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.KAGINAWA_HOOK.get(),
+                    ruby.bamboo.client.renderer.KaginawaHookRenderer::new);
+
+            // 竹弓の各種矢 (竹/松明/光/爆発) — 共通 bamboospear テクスチャ
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.BAMBOO_ARROW.get(),
+                    ruby.bamboo.client.renderer.BambooArrowRenderer::new);
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.TORCH_ARROW.get(),
+                    ruby.bamboo.client.renderer.BambooArrowRenderer::new);
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.LIGHT_ARROW.get(),
+                    ruby.bamboo.client.renderer.BambooArrowRenderer::new);
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.EXPLODE_ARROW.get(),
+                    ruby.bamboo.client.renderer.BambooArrowRenderer::new);
+
+            // 竹弓の引き絞りモデル (pull/pulling override)。バニラは Items.BOW にしか
+            // 登録されないため、独自 BowItem 継承クラスには自前で登録が必要。
+            registerBambooBowModelProperties();
         });
+    }
+
+    /**
+     * 竹弓の pull / pulling アイテムモデルプロパティを登録 (旧 getBowModel 相当)。
+     * バニラ弓と同じ閾値 (pull 0.65 / 0.9) でモデル override が発火する。
+     */
+    private static void registerBambooBowModelProperties() {
+        net.minecraft.resources.ResourceLocation pulling = new net.minecraft.resources.ResourceLocation("minecraft", "pulling");
+        net.minecraft.resources.ResourceLocation pull = new net.minecraft.resources.ResourceLocation("minecraft", "pull");
+        net.minecraft.client.renderer.item.ItemProperties.register(BambooItems.BAMBOO_BOW.get(),
+                pulling, (stack, level, entity, seed) -> {
+                    return entity != null && entity.isUsingItem() ? 1.0F : 0.0F;
+                });
+        net.minecraft.client.renderer.item.ItemProperties.register(BambooItems.BAMBOO_BOW.get(),
+                pull, (stack, level, entity, seed) -> {
+                    if (entity == null) {
+                        return 0.0F;
+                    }
+                    if (!entity.isUsingItem()) {
+                        return 0.0F;
+                    }
+                    int charge = stack.getUseDuration() - entity.getUseItemRemainingTicks();
+                    return net.minecraft.util.Mth.clamp(charge / 20.0F, 0.0F, 1.0F);
+                });
     }
 
     private static void cutout(Block block) {

@@ -15,15 +15,9 @@ import ruby.bamboo.core.init.BambooItems;
 /**
  * 居合カウンター (旧 CounterManager の移植)。
  * <p>
- * 発動条件: プレイヤーが {@code commonkatana} のクールダウン進行率 0.9 超
- * (= 右クリック直後の受付時間)。
- * <ul>
- * <li>矢ダメージ → キャンセル + 矢の所有者を自分へ変更 + 速度×10</li>
- * <li>プレイヤー/モブ近接 → キャンセル + 同額の magic ダメージ反撃 + ノックバック0.5</li>
- * <li>それ以外(落下/火/爆発等)は対象外</li>
- * </ul>
+ * 2026-08-23 鈎縄統合によりOMIT: 刀右クリックは鈎縄にリプレイスされたためカウンターは無効化。
+ * ファイルはアーカイブとして保持、イベント登録は停止。
  */
-@Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class CounterManager {
 
     private CounterManager() {
