@@ -56,12 +56,19 @@ public class KaginawaHookRenderer extends EntityRenderer<KaginawaHookEntity> {
     public void render(KaginawaHookEntity entity, float entityYaw, float partialTick, PoseStack poseStack,
                        MultiBufferSource buffer, int packedLight) {
 
-        // 1. フック本体: 小さなcube (暫定: poseStackで 0.25スケール)
+        // 1. フック本体: 仮としてスライムボールを表示 (要望: 箱の代わりに借り)
         poseStack.pushPose();
         poseStack.translate(0, 0.15, 0);
-        // カメラビルボード回転はしない—固定cubeとして描画
-        // 簡易: 0.2サイズのcubeを手動頂点で描画 (RenderType.entityCutout)
-        renderHookCube(poseStack, buffer, packedLight);
+        poseStack.scale(0.8F, 0.8F, 0.8F);
+        // カメラに対してビルボード的に回転させると見やすい
+        // ただし GROUND 表示で十分視認できるため追加回転なし
+        try {
+            net.minecraft.world.item.ItemStack slime = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SLIME_BALL);
+            Minecraft.getInstance().getItemRenderer().renderStatic(slime, net.minecraft.world.item.ItemDisplayContext.GROUND, packedLight, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, poseStack, buffer, entity.level(), 0);
+        } catch (Exception e) {
+            // フォールバック: 旧cube
+            renderHookCube(poseStack, buffer, packedLight);
+        }
         poseStack.popPose();
 
         // 2. ロープ: プレイヤー眼→アンカー
