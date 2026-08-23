@@ -1,0 +1,40 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "minecraft:coal"
+    },
+    {
+      "item": "minecraft:coal"
+    },
+    {
+      "item": "minecraft:coal"
+    },
+    {
+      "item": "minecraft:coal"
+    },
+    {
+      "item": "minecraft:coal"
+    },
+    {
+      "item": "minecraft:coal"
+    },
+    {
+      "item": "minecraft:coal"
+    },
+    {
+      "item": "minecraft:coal"
+    },
+    {
+      "item": "minecraft:coal"
+    }
+  ],
+  "result": {
+    "item": "minecraft:diamond"
+  },
+  "experience": 1.0,
+  "cookingtime": 1200,
+  "fuelCost": 101200
+}

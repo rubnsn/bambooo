@@ -1,0 +1,22 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "food",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "minecraft:egg"
+    },
+    {
+      "item": "minecraft:chicken"
+    },
+    {
+      "item": "bamboomod:rawrice"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:bamboofood_oyako"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

@@ -21,10 +21,10 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.SidedInvWrapper;
+import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.CampfireBlock;
 import ruby.bamboo.core.init.BambooBlockEntities;
-import ruby.bamboo.crafting.cooking.CookingManager;
-import ruby.bamboo.crafting.cooking.CookingRecipe;
+import ruby.bamboo.crafting.cooking.BambooCampfireRecipe;
 import ruby.bamboo.gui.CampfireMenu;
 
 /**
@@ -70,7 +70,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     private int maxCookTime = 200;
     private int cookTime = 200;
     private boolean isBurn = false;
-    private CookingRecipe entry;
+    private BambooCampfireRecipe entry;
     private ItemStack nowCookingResult = ItemStack.EMPTY;
 
     /** クライアント側 (GUI用) */
@@ -155,7 +155,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
 
     private void startCooking() {
         isBurn = true;
-        maxCookTime = cookTime = entry.cookTime();
+        maxCookTime = cookTime = entry.cookingTime();
         setMatrix();
     }
 
@@ -164,8 +164,8 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
         if (isBurn) {
             if (--cookTime <= 0) {
                 // 完成: レシピ再検索して結果と一致すれば材料消費+結果追加
-                CookingRecipe nowEntry = CookingManager.findMatchingRecipe(toMatrixArray(), level);
-                if (nowEntry != null && ItemStack.isSameItemSameTags(nowEntry.output(), nowCookingResult)) {
+                BambooCampfireRecipe nowEntry = findRecipe();
+                if (nowEntry != null && ItemStack.isSameItemSameTags(nowEntry.getResultItem(level.registryAccess()), nowCookingResult)) {
                     ItemStack result = items.get(SLOT_RESULT);
                     if (result.isEmpty()) {
                         materialConsumption(nowEntry);
@@ -228,12 +228,52 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     }
 
     private boolean canCooking() {
-        this.entry = CookingManager.findMatchingRecipe(toMatrixArray(), level);
-        if (entry != null) {
-            this.nowCookingResult = entry.output().copy();
+        BambooCampfireRecipe found = findRecipe();
+        if (found != null) {
+            this.entry = found;
+            this.nowCookingResult = found.getResultItem(level.registryAccess()).copy();
             return true;
         }
+        // バニラ精錬フォールバック (素材1個時のみ)
+        net.minecraft.world.item.crafting.RecipeType<net.minecraft.world.item.crafting.SmeltingRecipe> smeltingType = net.minecraft.world.item.crafting.RecipeType.SMELTING;
+        if (countNonEmpty() == 1) {
+            ItemStack single = getSingleStack();
+            if (single != null) {
+                var smelting = level.getRecipeManager().getRecipeFor(smeltingType, new net.minecraft.world.SimpleContainer(single), level);
+                if (smelting.isPresent()) {
+                    ItemStack res = smelting.get().getResultItem(level.registryAccess());
+                    if (!res.isEmpty()) {
+                        // smeltingをBambooCampfireRecipe風にラップ
+                        NonNullList<net.minecraft.world.item.crafting.Ingredient> ing = NonNullList.create();
+                        ing.add(net.minecraft.world.item.crafting.Ingredient.of(single));
+                        this.entry = new BambooCampfireRecipe(
+                                new net.minecraft.resources.ResourceLocation("bamboomod", "smelting_" + smelting.get().getId().getPath()),
+                                "", BambooCampfireRecipe.Category.MISC, ing, res.copy(), smelting.get().getExperience(), 200, 200);
+                        this.nowCookingResult = res.copy();
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
+    }
+
+    private BambooCampfireRecipe findRecipe() {
+        // 0-8 をSimpleContainerで検索 (9サイズ。 fuel/result は含めない)
+        net.minecraft.world.SimpleContainer inv = new net.minecraft.world.SimpleContainer(9);
+        for (int i = 0; i < 9; i++) inv.setItem(i, items.get(i).copy());
+        return level.getRecipeManager().getRecipeFor(BambooMod.CAMPFIRE_RECIPE_TYPE.get(), inv, level).orElse(null);
+    }
+
+    private int countNonEmpty() {
+        int c = 0;
+        for (int i = 0; i < 9; i++) if (!items.get(i).isEmpty()) c++;
+        return c;
+    }
+
+    private ItemStack getSingleStack() {
+        for (int i = 0; i < 9; i++) if (!items.get(i).isEmpty()) return items.get(i);
+        return null;
     }
 
     private void setMatrix() {
@@ -253,7 +293,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     }
 
     /** 材料消費 (旧 materialConsumption 相当) */
-    private void materialConsumption(CookingRecipe recipe) {
+    private void materialConsumption(BambooCampfireRecipe recipe) {
         for (int i = 0; i < 9; i++) {
             ItemStack slot = items.get(i);
             if (!slot.isEmpty()) {
@@ -265,6 +305,14 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
             }
         }
         fuel -= recipe.fuelCost();
+    }
+
+    /** レシピブック用: StackedContents への充填 */
+    public void fillStackedContents(net.minecraft.world.entity.player.StackedContents helper) {
+        for (int i = 0; i < 9; i++) {
+            ItemStack s = items.get(i);
+            if (!s.isEmpty()) helper.accountStack(s);
+        }
     }
 
     private ItemStack[] toMatrixArray() {

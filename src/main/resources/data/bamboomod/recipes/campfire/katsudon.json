@@ -1,0 +1,22 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "food",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "minecraft:porkchop"
+    },
+    {
+      "item": "bamboomod:rawrice"
+    },
+    {
+      "item": "minecraft:egg"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:bamboofood_katsudon"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

@@ -51,6 +51,19 @@ public class BambooMod {
     /** EntityType 用 DeferredRegister (Chair 等) */
     public static final DeferredRegister<net.minecraft.world.entity.EntityType<?>> ENTITY_TYPES = DeferredRegister
             .create(ForgeRegistries.ENTITY_TYPES, MODID);
+    /** RecipeSerializer 用 DeferredRegister (囲炉裏レシピ) */
+    public static final DeferredRegister<net.minecraft.world.item.crafting.RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister
+            .create(ForgeRegistries.RECIPE_SERIALIZERS, MODID);
+    /** RecipeType 用 DeferredRegister (囲炉裏レシピ) */
+    public static final DeferredRegister<net.minecraft.world.item.crafting.RecipeType<?>> RECIPE_TYPES = DeferredRegister
+            .create(ForgeRegistries.RECIPE_TYPES, MODID);
+
+    /** 囲炉裏レシピの Serializer */
+    public static final RegistryObject<net.minecraft.world.item.crafting.RecipeSerializer<ruby.bamboo.crafting.cooking.BambooCampfireRecipe>> CAMPFIRE_SERIALIZER = RECIPE_SERIALIZERS
+            .register("campfire", () -> new ruby.bamboo.crafting.cooking.BambooCampfireRecipe.Serializer());
+    /** 囲炉裏レシピの Type */
+    public static final RegistryObject<net.minecraft.world.item.crafting.RecipeType<ruby.bamboo.crafting.cooking.BambooCampfireRecipe>> CAMPFIRE_RECIPE_TYPE = RECIPE_TYPES
+            .register("campfire", () -> net.minecraft.world.item.crafting.RecipeType.simple(new net.minecraft.resources.ResourceLocation(MODID, "campfire")));
 
     /** 旧 EnumCreateTab.TAB_BAMBOO の後継。アイコンはたけのこ(仮)。 */
     public static final RegistryObject<CreativeModeTab> BAMBOO_TAB = CREATIVE_TABS.register("bamboo",
@@ -83,6 +96,8 @@ public class BambooMod {
         MENUS.register(modEventBus);
         PARTICLE_TYPES.register(modEventBus);
         ENTITY_TYPES.register(modEventBus);
+        RECIPE_SERIALIZERS.register(modEventBus);
+        RECIPE_TYPES.register(modEventBus);
 
         // コンテンツ登録 (DeferredRegisterへの登録は静的初期化時に実行される)
         BambooBlocks.init();

@@ -47,13 +47,14 @@ public final class BambooItems {
     public static final RegistryObject<ItemNameBlockItem> RICE_SEED = register("riceseed",
             () -> new ItemNameBlockItem(BambooBlocks.RICE_PLANT.get(), new Item.Properties()));
 
-    /** 通帳 (旧 Tudura。無機能素材アイテム、袋のクラフト材料) */
-    public static final RegistryObject<ruby.bamboo.item.Tudura> TUDURA = register("tudura",
-            () -> new ruby.bamboo.item.Tudura(new Item.Properties()));
-
     /** 袋 (旧 Sack。BlockItem 収容アイテム) */
     public static final RegistryObject<ruby.bamboo.item.Sack> SACK = register("sack",
             () -> new ruby.bamboo.item.Sack(new Item.Properties()));
+
+    /** 刀 (旧 CommonKatana。居合カウンター+特殊ドロップ) */
+    public static final RegistryObject<ruby.bamboo.item.CommonKatana> COMMON_KATANA = register("commonkatana",
+            () -> new ruby.bamboo.item.CommonKatana(net.minecraft.world.item.Tiers.IRON,
+                    new Item.Properties().durability(150)));
 
     // ===== 食料 43種 (旧 BambooFood meta0-42 → 独立アイテム化) =====
     // バランス補正は BambooFoods enum 側で適用済み (docs/port-spec-bamboofood.md §3.3)
