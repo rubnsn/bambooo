@@ -41,7 +41,6 @@ public class KaginawaHookEntity extends Entity {
     private static final float MIN_LENGTH = 2.0F;
     private static final float INITIAL_REEL_OUT = 0.22F;
     private static final float INITIAL_REEL_IN = 0.28F;
-    private static final float PULL_REEL = 0.8F;
     // 巻取り(Space)でアンカーへ引き寄せる速度
     private static final float REEL_PULL_SPEED = 0.45F;
 
@@ -180,9 +179,6 @@ public class KaginawaHookEntity extends Entity {
     }
 
     public void handleInput(byte reelDir, boolean pull, float forward, float strafe, boolean sprint) {
-        if (reelDir != 0 && isAnchored() && !level().isClientSide) {
-            ruby.bamboo.BambooMod.LOGGER.info("[Kaginawa-reel] SERVER handleInput reelDir={} ropeLength={}", reelDir, ropeLength);
-        }
         this.pendingReelDir = reelDir;
         this.pendingPull = pull;
         this.pendingForward = Mth.clamp(forward, -1, 1);
@@ -413,30 +409,28 @@ public class KaginawaHookEntity extends Entity {
 
         prevDist = anchorPos.distanceTo(player.getEyePosition());
 
-        // 重力はバニラ任せ (重力落下する)。イベントハンドラが setNoGravity(false) を維持する。
-        // ロープ拘束: 張っている間は径方向外向き速度だけ除去し、位置は毎tick円弧上へ正確に戻す。
-        // 位置矯正は「径方向のみ」なので接線(運動量)は壊さない。矯正が追いつかないとロープ長と
-        // 実距離が乖離してプレイヤーが離れていくため、上限なしで完全に一致させる。
-        // (player.move() は衝突判定付きなのでブロック貫通しない。急には1tickの移動なので滑らか)
+        // === ロープ拘束 ===
+        // ロープに張力が働く間、径方向外向き速度のみ除去し、位置をロープ長の円弧上へ戻す。
+        // 径方向だけの矯正なので接線(振り子の運動量)は壊さない。位置矯正で実距離とロープ長が
+        // 乖離するとプレイヤーが離れていくため、毎tick完全に一致させる。
+        // 重力はバニラ任せ (イベントハンドラが setNoGravity(false) を維持)。
         Vec3 eye = player.getEyePosition();
         Vec3 toAnchor = anchorPos.subtract(eye);
         double dist = toAnchor.length();
         if (dist > ropeLength - 0.05 && dist > 1e-6) {
             Vec3 radial = toAnchor.normalize();
             Vec3 curVel = player.getDeltaMovement();
-            // 1) 速度の径方向外向き成分を除去 (張力で止まる)。内向き・接線は保存。
+            // 1) 径方向外向き速度を除去 (張力で止める)。内向き・接線は保存。
             double radialVel = curVel.dot(radial);
             if (radialVel > 0) {
                 Vec3 tangentVel = curVel.subtract(radial.scale(radialVel));
                 player.setDeltaMovement(tangentVel);
                 player.hasImpulse = true;
             }
-            // 2) 位置を円弧上へ矯正 (ロープ長を厳密に保つ)。radial は「眼→アンカー」方向なので、
-            //    正の向きに動かすとアンカーへ近づく (= ロープ長の円弧上へ戻す)。
+            // 2) 位置を円弧上へ矯正 (radialは「眼→アンカー」方向なので正の向きに動かす)。
             if (dist > ropeLength) {
-                double over = dist - ropeLength;
-                Vec3 correction = radial.scale(over); // アンカーへ向かう向き (符号に注意! 逆だと飛ばされる)
-                player.move(MoverType.SELF, correction); // 衝突判定付き (ブロック貫通防ぐ)
+                Vec3 correction = radial.scale(dist - ropeLength);
+                player.move(MoverType.SELF, correction); // 衝突判定付き (ブロック貫通防止)
                 player.fallDistance = 0;
             }
         }
@@ -451,14 +445,11 @@ public class KaginawaHookEntity extends Entity {
         // 常に落下距離リセット
         player.fallDistance = 0;
 
-        // 入力リセットは次のパケットで上書きされるまで保持ではなく、消費したら0に
-        // ただしクライアントが毎tick送るので、ここで0に戻しても次tickで再セットされる
+        // 入力リセット (クライアントは毎tick再送するため、次のパケットで上書きされる)
         pendingReelDir = 0;
         pendingPull = false;
-        // strafeは毎tick送られるので、ここでクリアしても良いが、パケットが途切れたら止まるようにクリア
         pendingForward = 0;
         pendingStrafe = 0;
-        // pendingSprintは次のtickまで保持したいが、パケットで毎回送るのでクリア
         pendingSprint = false;
 
         // 固着位置に自身を固定

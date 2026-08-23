@@ -57,26 +57,19 @@ public final class KaginawaClientHandler {
         if (right) side += 1;
         if (left) side -= 1;
 
-        // reelDir: Shift=1 (伸長), Space単独=-1 (巻取り)
-        // pull: Space+W 同時
-        boolean pull = jump && forward > 0.5f;
+        // reelDir: Shift=1 (伸長), Space=-1 (巻取り)
+        // pull はスペース+W牽引だが紛らわしいため常時無効
+        boolean pull = false;
 
         byte reelDir = 0;
         if (shift) {
             reelDir = 1;
-        } else if (jump && !pull) {
+        } else if (jump) {
             reelDir = -1;
         }
 
-        // 入力が無ければ送信しない (省パケ) — ただし何もないとサーバ側のpendingがクリアされないため、毎tick送る方が安定
-        // ここでは常時送信してサーバ側でdamping等を毎tick適用
-        // ただし全入力ゼロでpull無しなら送信スキップしてパケ削減も可能だが、autoPumpはサーバ単独で動くため不要
-        // したがって、reelかpullかstrafeがある時のみ送信に絞る
+        // 入力が一切無ければ送信しない (省パケット)
         if (reelDir == 0 && !pull && forward == 0 && side == 0) {
-            // 何も押していない時は sprint 状態のみ送る必要があるか? sprintはdampingに影響するため送る
-            // ただしsprintだけで送り続けると無駄なので、フック中は毎tick送るべきではない
-            // ここでは 5tickごとにダミー送信でdamping更新? 簡易: 何もない時は送信しない (サーバは前回のsprintをクリアして通常damping)
-            // なので何もない時は送信スキップ
             return;
         }
 

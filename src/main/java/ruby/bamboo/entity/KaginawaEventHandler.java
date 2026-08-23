@@ -125,8 +125,5 @@ public final class KaginawaEventHandler {
         player.setNoGravity(false);
         ((net.minecraft.world.entity.LivingEntity) player).setDiscardFriction(true);
         player.fallDistance = 0;
-        if (player.tickCount % 20 == 0) {
-            ruby.bamboo.BambooMod.LOGGER.info("[Kaginawa] PlayerTick cur={} onGround={} noGravity={} discardFriction={} pos={}", player.getDeltaMovement(), player.onGround(), player.isNoGravity(), ((net.minecraft.world.entity.LivingEntity) player).shouldDiscardFriction(), player.position());
-        }
     }
 }
