@@ -120,7 +120,9 @@ public final class KaginawaEventHandler {
             }
             return;
         }
-        player.setNoGravity(true);
+        // 重力落下する (setNoGravity(false)、バニラ重力によって振り子スイングしながら降下)。
+        // 空気抵抗(*0.91)は discardFriction(true) で遮断して、フックショットの勢いを保つ。
+        player.setNoGravity(false);
         ((net.minecraft.world.entity.LivingEntity) player).setDiscardFriction(true);
         player.fallDistance = 0;
         if (player.tickCount % 20 == 0) {

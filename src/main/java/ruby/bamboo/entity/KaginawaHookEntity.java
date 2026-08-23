@@ -42,6 +42,8 @@ public class KaginawaHookEntity extends Entity {
     private static final float INITIAL_REEL_OUT = 0.22F;
     private static final float INITIAL_REEL_IN = 0.28F;
     private static final float PULL_REEL = 0.8F;
+    // 巻取り(Space)でアンカーへ引き寄せる速度
+    private static final float REEL_PULL_SPEED = 0.45F;
 
     // owner
     private Player owner;
@@ -178,6 +180,9 @@ public class KaginawaHookEntity extends Entity {
     }
 
     public void handleInput(byte reelDir, boolean pull, float forward, float strafe, boolean sprint) {
+        if (reelDir != 0 && isAnchored() && !level().isClientSide) {
+            ruby.bamboo.BambooMod.LOGGER.info("[Kaginawa-reel] SERVER handleInput reelDir={} ropeLength={}", reelDir, ropeLength);
+        }
         this.pendingReelDir = reelDir;
         this.pendingPull = pull;
         this.pendingForward = Mth.clamp(forward, -1, 1);
@@ -358,32 +363,33 @@ public class KaginawaHookEntity extends Entity {
             player.fallDistance = 0;
         }
 
-        // 入力処理: reel
-        if (pendingReelDir != 0) {
-            float speed = pendingReelDir > 0 ? INITIAL_REEL_OUT : INITIAL_REEL_IN;
-            float newLen = Mth.clamp(ropeLength + pendingReelDir * speed, MIN_LENGTH, MAX_LENGTH);
+        // 入力処理: reel (Space=-1巻取り/近づく, Shift=1伸長/遠ざかる)
+        // 地面に触れているときはShift(伸長)を抑止: 地面に踏ん張って伸ばすのは変なので拒否
+        boolean onGroundNow = player.onGround();
+        if (pendingReelDir < 0) {
+            float newLen = Mth.clamp(ropeLength + pendingReelDir * INITIAL_REEL_IN, MIN_LENGTH, MAX_LENGTH);
             ropeLength = newLen;
             if (!isClient) {
                 setRopeLengthSynced(newLen);
             }
-        }
-        // pull (Space+W)
-        if (pendingPull) {
-            float newLen = Mth.clamp(ropeLength - PULL_REEL, MIN_LENGTH, MAX_LENGTH);
-            ropeLength = newLen;
-            if (!isClient) {
-                setRopeLengthSynced(newLen);
-            }
-            Vec3 eye = player.getEyePosition();
-            Vec3 toAnchor = anchorPos.subtract(eye);
-            if (toAnchor.lengthSqr() > 1e-6) {
-                Vec3 pullDir = toAnchor.normalize();
-                player.setDeltaMovement(player.getDeltaMovement().add(pullDir.scale(0.45)));
+            // 巻取り中はアンカーへ引き寄せる速度を与える (フックショットの「近づく」)
+            Vec3 eye0 = player.getEyePosition();
+            Vec3 toAnchor0 = anchorPos.subtract(eye0);
+            if (toAnchor0.lengthSqr() > 1e-6) {
+                Vec3 pullDir = toAnchor0.normalize();
+                player.setDeltaMovement(player.getDeltaMovement().add(pullDir.scale(REEL_PULL_SPEED)));
                 player.hasImpulse = true;
+            }
+        } else if (pendingReelDir > 0 && !onGroundNow) {
+            // Shift: 遠ざかる (ただし地面に着いているときは伸ばさない)
+            float newLen = Mth.clamp(ropeLength + pendingReelDir * INITIAL_REEL_OUT, MIN_LENGTH, MAX_LENGTH);
+            ropeLength = newLen;
+            if (!isClient) {
+                setRopeLengthSynced(newLen);
             }
         }
 
-        // WASD strafe (接線推力)
+        // WASD 推力 (フックショット): 入力方向へ自動加速。接線方向へ投影してロープに沿って進む。
         if (pendingForward != 0 || pendingStrafe != 0) {
             Vec3 look = player.getLookAngle();
             Vec3 fwd = new Vec3(look.x, 0, look.z);
@@ -398,66 +404,47 @@ public class KaginawaHookEntity extends Entity {
             } else {
                 right = right.normalize();
             }
-            float f = pendingSprint ? 0.06F : 0.04F;
+            // フックショット感を出すため強めの推力 (接線方向へ投影は不要—ロープ拘束が張力を与える)
+            float f = pendingSprint ? 0.09F : 0.06F;
             Vec3 impulse = fwd.scale(pendingForward * f).add(right.scale(pendingStrafe * f));
-
-            Vec3 eye = player.getEyePosition();
-            Vec3 toAnchor = anchorPos.subtract(eye);
-            if (toAnchor.lengthSqr() > 1e-6) {
-                Vec3 radial = toAnchor.normalize();
-                double dot = impulse.dot(radial);
-                Vec3 tangent = impulse.subtract(radial.scale(dot));
-                player.setDeltaMovement(player.getDeltaMovement().add(tangent));
-                player.hasImpulse = true;
-            } else {
-                player.setDeltaMovement(player.getDeltaMovement().add(impulse));
-                player.hasImpulse = true;
-            }
+            player.setDeltaMovement(player.getDeltaMovement().add(impulse));
+            player.hasImpulse = true;
         }
 
-        // 自動ポンピングは無効化 (Space/Shift の手動操作でポンピング)
         prevDist = anchorPos.distanceTo(player.getEyePosition());
 
-        // 仕様: ロープ長固定 + WASD運動量のみ。減衰なし振り子 -> 重力のみを付与し、径方向拘束は速度で行う。位置補正はリール時のみ。
-        double damping = 1.0;
-        Vec3 damped = player.getDeltaMovement().scale(damping).add(0, -0.05, 0);
-        player.setDeltaMovement(damped);
-        player.hasImpulse = true;
-        player.setNoGravity(true);
-
-        // ロープ拘束: 張っている間は径方向外向き速度を除去。位置補正はリール時のみ(固定長ではバネ無し)、ただし大きく伸びた場合のみ完全補正でドリフト防止
+        // 重力はバニラ任せ (重力落下する)。イベントハンドラが setNoGravity(false) を維持する。
+        // ロープ拘束: 張っている間は径方向外向き速度だけ除去し、位置は毎tick円弧上へ正確に戻す。
+        // 位置矯正は「径方向のみ」なので接線(運動量)は壊さない。矯正が追いつかないとロープ長と
+        // 実距離が乖離してプレイヤーが離れていくため、上限なしで完全に一致させる。
+        // (player.move() は衝突判定付きなのでブロック貫通しない。急には1tickの移動なので滑らか)
         Vec3 eye = player.getEyePosition();
         Vec3 toAnchor = anchorPos.subtract(eye);
         double dist = toAnchor.length();
-        if (dist > ropeLength - 0.05) {
+        if (dist > ropeLength - 0.05 && dist > 1e-6) {
             Vec3 radial = toAnchor.normalize();
             Vec3 curVel = player.getDeltaMovement();
+            // 1) 速度の径方向外向き成分を除去 (張力で止まる)。内向き・接線は保存。
             double radialVel = curVel.dot(radial);
             if (radialVel > 0) {
                 Vec3 tangentVel = curVel.subtract(radial.scale(radialVel));
                 player.setDeltaMovement(tangentVel);
                 player.hasImpulse = true;
             }
+            // 2) 位置を円弧上へ矯正 (ロープ長を厳密に保つ)。radial は「眼→アンカー」方向なので、
+            //    正の向きに動かすとアンカーへ近づく (= ロープ長の円弧上へ戻す)。
             if (dist > ropeLength) {
-                if (pendingReelDir != 0 || pendingPull) {
-                    Vec3 targetEye = anchorPos.subtract(radial.scale(ropeLength));
-                    Vec3 correction = targetEye.subtract(eye);
-                    player.setPos(player.getX() + correction.x * 0.35, player.getY() + correction.y * 0.35, player.getZ() + correction.z * 0.35);
-                    player.fallDistance = 0;
-                } else if (dist > ropeLength + 0.6) {
-                    // 固定長でも大きく伸びた場合のみ完全補正 (ドリフト防止、バネではない)
-                    Vec3 targetEye = anchorPos.subtract(radial.scale(ropeLength));
-                    Vec3 correction = targetEye.subtract(eye);
-                    player.setPos(player.getX() + correction.x, player.getY() + correction.y, player.getZ() + correction.z);
-                    player.fallDistance = 0;
-                }
+                double over = dist - ropeLength;
+                Vec3 correction = radial.scale(over); // アンカーへ向かう向き (符号に注意! 逆だと飛ばされる)
+                player.move(MoverType.SELF, correction); // 衝突判定付き (ブロック貫通防ぐ)
+                player.fallDistance = 0;
             }
         }
-        // 最高速度クランプ
+        // 最高速度クランプ: 安全上限
         Vec3 newVel = player.getDeltaMovement();
-        double maxSpeed = pendingSprint ? 2.4 : 1.8;
+        double maxSpeed = pendingSprint ? 3.2 : 2.4;
         double speed = newVel.length();
-        if (speed > maxSpeed) {
+        if (speed > maxSpeed && speed > 1e-6) {
             player.setDeltaMovement(newVel.normalize().scale(maxSpeed));
         }
 
