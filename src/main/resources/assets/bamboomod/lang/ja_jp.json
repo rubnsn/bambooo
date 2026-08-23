@@ -118,5 +118,6 @@
   "item.bamboomod.bamboofood_soba": "そば",
   "item.bamboomod.bamboofood_ramen": "ラーメン",
   "item.bamboomod.bamboofood_pizza": "ピザ",
-  "item.bamboomod.bamboofood_kaisenoyako": "海鮮親子丼"
+  "item.bamboomod.bamboofood_kaisenoyako": "海鮮親子丼",
+  "tooltip.bamboomod.millstone.bonus": "%s（%s%%）"
 }

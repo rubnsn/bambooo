@@ -1,0 +1,15 @@
+{
+  "type": "bamboomod:millstone",
+  "category": "blocks",
+  "ingredient": {
+    "item": "minecraft:cobblestone"
+  },
+  "count": 1,
+  "result": {
+    "item": "minecraft:gravel"
+  },
+  "bonus": {
+    "item": "minecraft:sand"
+  },
+  "bonusChance": 0.1
+}

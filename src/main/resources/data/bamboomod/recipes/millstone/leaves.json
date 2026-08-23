@@ -1,0 +1,11 @@
+{
+  "type": "bamboomod:millstone",
+  "category": "misc",
+  "ingredient": {
+    "tag": "minecraft:leaves"
+  },
+  "count": 4,
+  "result": {
+    "item": "minecraft:green_dye"
+  }
+}

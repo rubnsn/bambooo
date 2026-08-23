@@ -64,6 +64,12 @@ public class BambooMod {
     /** 囲炉裏レシピの Type */
     public static final RegistryObject<net.minecraft.world.item.crafting.RecipeType<ruby.bamboo.crafting.cooking.BambooCampfireRecipe>> CAMPFIRE_RECIPE_TYPE = RECIPE_TYPES
             .register("campfire", () -> net.minecraft.world.item.crafting.RecipeType.simple(new net.minecraft.resources.ResourceLocation(MODID, "campfire")));
+    /** 石臼レシピの Serializer */
+    public static final RegistryObject<net.minecraft.world.item.crafting.RecipeSerializer<ruby.bamboo.crafting.grind.BambooGrindRecipe>> MILLSTONE_SERIALIZER = RECIPE_SERIALIZERS
+            .register("millstone", () -> new ruby.bamboo.crafting.grind.BambooGrindRecipe.Serializer());
+    /** 石臼レシピの Type */
+    public static final RegistryObject<net.minecraft.world.item.crafting.RecipeType<ruby.bamboo.crafting.grind.BambooGrindRecipe>> MILLSTONE_RECIPE_TYPE = RECIPE_TYPES
+            .register("millstone", () -> net.minecraft.world.item.crafting.RecipeType.simple(new net.minecraft.resources.ResourceLocation(MODID, "millstone")));
 
     /** 旧 EnumCreateTab.TAB_BAMBOO の後継。アイコンはたけのこ(仮)。 */
     public static final RegistryObject<CreativeModeTab> BAMBOO_TAB = CREATIVE_TABS.register("bamboo",

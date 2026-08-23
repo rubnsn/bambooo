@@ -7,7 +7,7 @@ import net.minecraftforge.fml.common.Mod;
 import ruby.bamboo.BambooMod;
 
 /**
- * 囲炉裏レシピを実績/進捗なしでレシピブックに表示するための自動アンロック。
+ * 囲炉裏/石臼レシピを実績/進捗なしでレシピブックに表示するための自動アンロック。
  * vanillaは拾得トリガーでunlockする必要があるが、Bambooは初回ログイン時に全解除する。
  */
 @Mod.EventBusSubscriber(modid = BambooMod.MODID)
@@ -19,6 +19,7 @@ public final class BambooRecipeUnlocker {
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer sp) {
             awardCampfireRecipes(sp);
+            awardMillstoneRecipes(sp);
         }
     }
 
@@ -26,6 +27,7 @@ public final class BambooRecipeUnlocker {
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer sp) {
             awardCampfireRecipes(sp);
+            awardMillstoneRecipes(sp);
         }
     }
 
@@ -33,6 +35,7 @@ public final class BambooRecipeUnlocker {
     public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer sp) {
             awardCampfireRecipes(sp);
+            awardMillstoneRecipes(sp);
         }
     }
 
@@ -53,6 +56,22 @@ public final class BambooRecipeUnlocker {
             }
         } catch (Exception e) {
             BambooMod.LOGGER.debug("Failed to award campfire recipes: {}", e.getMessage());
+        }
+    }
+
+    public static void awardMillstoneRecipes(ServerPlayer player) {
+        if (BambooMod.MILLSTONE_RECIPE_TYPE.get() == null) return;
+        var mgr = player.server.getRecipeManager();
+        try {
+            var recipes = mgr.getAllRecipesFor(BambooMod.MILLSTONE_RECIPE_TYPE.get());
+            if (!recipes.isEmpty()) {
+                @SuppressWarnings("unchecked")
+                java.util.Collection<net.minecraft.world.item.crafting.Recipe<?>> asRecipes =
+                        (java.util.Collection<net.minecraft.world.item.crafting.Recipe<?>>) (java.util.Collection<?>) recipes;
+                player.awardRecipes(asRecipes);
+            }
+        } catch (Exception e) {
+            BambooMod.LOGGER.debug("Failed to award millstone recipes: {}", e.getMessage());
         }
     }
 }

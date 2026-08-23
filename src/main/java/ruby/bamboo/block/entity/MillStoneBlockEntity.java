@@ -30,8 +30,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.MillStoneBlock;
 import ruby.bamboo.core.init.BambooBlockEntities;
-import ruby.bamboo.crafting.grind.GrindManager;
-import ruby.bamboo.crafting.grind.GrindRecipe;
+import ruby.bamboo.crafting.grind.BambooGrindRecipe;
 import ruby.bamboo.gui.MillStoneMenu;
 
 /**
@@ -100,18 +99,22 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
         }
     }
 
+    private BambooGrindRecipe currentRecipe;
+
     private void serverTick() {
         boolean dirty = false;
 
         if (grindTime == 0) {
-            GrindRecipe recipe = GrindManager.getOutput(items.get(0));
+            BambooGrindRecipe recipe = findRecipe(items.get(0));
             if (recipe != null && canStoreResult(recipe)) {
-                // 粉砕開始: 入力を記録して必要数だけ消費
-                consumeInput();
+                // 粉砕開始: レシピを保持して必要数だけ消費
+                this.currentRecipe = recipe;
+                consumeInput(recipe);
                 grindTime += 1;
                 syncBlockState(grindTime % 40 / 10);
                 dirty = true;
             } else {
+                this.currentRecipe = null;
                 syncBlockState(0);
             }
         } else {
@@ -127,6 +130,18 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
         if (dirty) {
             setChanged();
         }
+    }
+
+    private BambooGrindRecipe findRecipe(ItemStack stack) {
+        if (stack.isEmpty() || level == null) return null;
+        var inv = new net.minecraft.world.SimpleContainer(stack.copy());
+        return level.getRecipeManager().getRecipeFor(BambooMod.MILLSTONE_RECIPE_TYPE.get(), inv, level).orElse(null);
+    }
+
+    /** RecipeManager用: StackedContentsへの充填 (レシピブックのフィルタ判定) */
+    public void fillStackedContents(net.minecraft.world.entity.player.StackedContents helper) {
+        ItemStack s = items.get(0);
+        if (!s.isEmpty()) helper.accountStack(s);
     }
 
     private void clientTick(BlockState state) {
@@ -186,8 +201,9 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
      * 完成結果を出力スロットへ格納できるか (旧 canGrind の出力側チェック)。
      * 出力スロットの空き・同種マージ・スタック上限まで確認する。
      */
-    private boolean canStoreResult(GrindRecipe recipe) {
-        ItemStack output = recipe.output();
+    private boolean canStoreResult(BambooGrindRecipe recipe) {
+        ItemStack output = recipe.getResultItem(level != null ? level.registryAccess() : net.minecraft.core.RegistryAccess.EMPTY);
+        // BambooGrindRecipeはresultを直接保持
         ItemStack slot1 = items.get(1);
         ItemStack slot2 = items.get(2);
 
@@ -209,7 +225,7 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
         // スタック上限チェック (output)
         int outResult = slot1.isEmpty() ? output.getCount() : slot1.getCount() + output.getCount();
         boolean ok = outResult <= Math.min(getMaxStackSize(), output.getMaxStackSize());
-        // スタック上限チェック (bonus)
+        // スタック上限チェック (bonus) - ボーナスは確率だが上限は満たす必要あり
         if (ok && recipe.hasBonus()) {
             ItemStack bonus = recipe.bonus();
             int bonusResult = slot2.isEmpty() ? bonus.getCount() : slot2.getCount() + bonus.getCount();
@@ -219,35 +235,35 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
     }
 
     /** 粉砕開始: 入力アイテムを記録し、レシピ必要数だけ消費 (旧 decrementSlot0 相当) */
-    private void consumeInput() {
-        GrindRecipe recipe = GrindManager.getOutput(items.get(0));
-        if (recipe == null) {
-            return;
-        }
+    private void consumeInput(BambooGrindRecipe recipe) {
         this.grindingItem = items.get(0).getItem();
-        items.get(0).shrink(recipe.input().count());
+        items.get(0).shrink(recipe.inputCount());
         if (items.get(0).isEmpty()) {
             items.set(0, ItemStack.EMPTY);
         }
         // 粉砕中アイテムをクライアントへ通知 (blockEvent → triggerEvent)。
-        // getUpdateTag はチャンク送信時しか呼ばれないため、実行時同期には blockEvent を使う。
         if (level != null) {
             level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_SYNC_ITEM,
                     Item.getId(this.grindingItem));
         }
     }
 
-    /** 粉砕完成: 記録済みアイテムからレシピを引き直して出力を格納 (旧 grindItem 相当) */
+    /** 粉砕完成: 保持したレシピで出力を格納 (旧 grindItem 相当。ランダムボーナスは保持) */
     private void grindItem() {
-        if (grindingItem != Items.AIR) {
-            GrindRecipe recipe = GrindManager.getByItem(grindingItem);
-            if (recipe != null) {
-                ItemStack output = recipe.output();
-                mergeIntoSlot(1, output);
-
-                if (recipe.hasBonus() && random.nextFloat() <= recipe.bonusWeight()) {
-                    mergeIntoSlot(2, recipe.bonus());
-                }
+        if (currentRecipe != null) {
+            ItemStack output = currentRecipe.getResultItem(level.registryAccess());
+            mergeIntoSlot(1, output);
+            if (currentRecipe.hasBonus() && random.nextFloat() <= currentRecipe.bonusChance()) {
+                mergeIntoSlot(2, currentRecipe.bonus());
+            }
+            currentRecipe = null;
+            this.grindingItem = Items.AIR;
+        } else if (grindingItem != Items.AIR) {
+            // フォールバック: 記録アイテムから再検索 (旧仕様互換, 通常は到達しない)
+            BambooGrindRecipe r = level != null ? findRecipe(new ItemStack(grindingItem)) : null;
+            if (r != null) {
+                mergeIntoSlot(1, r.getResultItem(level.registryAccess()));
+                if (r.hasBonus() && random.nextFloat() <= r.bonusChance()) mergeIntoSlot(2, r.bonus());
             }
             this.grindingItem = Items.AIR;
         }

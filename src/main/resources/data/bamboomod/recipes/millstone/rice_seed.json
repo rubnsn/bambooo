@@ -1,0 +1,11 @@
+{
+  "type": "bamboomod:millstone",
+  "category": "food",
+  "ingredient": {
+    "item": "bamboomod:riceseed"
+  },
+  "count": 4,
+  "result": {
+    "item": "bamboomod:rawrice"
+  }
+}
