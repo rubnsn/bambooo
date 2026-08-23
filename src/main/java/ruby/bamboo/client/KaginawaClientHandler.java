@@ -61,8 +61,11 @@ public final class KaginawaClientHandler {
         // pull はスペース+W牽引だが紛らわしいため常時無効
         boolean pull = false;
 
+        // 地面判定は onGround()/getOnPos() ではなく POS Y-1(足元-0.1)の実ブロックで (noGravityで信用できない)
+        net.minecraft.core.BlockPos belowPos = net.minecraft.core.BlockPos.containing(player.getX(), player.getY() - 0.2, player.getZ());
+        boolean onSolidGround = !player.level().getBlockState(belowPos).isAir();
         byte reelDir = 0;
-        if (shift) {
+        if (shift && !onSolidGround) {
             reelDir = 1;
         } else if (jump) {
             reelDir = -1;

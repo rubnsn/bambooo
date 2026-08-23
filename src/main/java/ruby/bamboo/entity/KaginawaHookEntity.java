@@ -234,6 +234,17 @@ public class KaginawaHookEntity extends Entity {
                 discardWithCleanup();
                 return;
             }
+            // 手持ちが刀でなくなったら外れる (飛行・固着共)
+            if (player != null && !isHoldingKatana(player)) {
+                discardWithCleanup();
+                return;
+            }
+        } else {
+            // クライアント側も手持ちチェックで即時回収感を出す (固着中はtickAnchoredでもチェック)
+            if (player != null && !isHoldingKatana(player) && tickCount > 5) {
+                // サーバ同期待ちだが、見た目上はそのまま (discardはサーバからのパケで)
+                // 何もしない — 必要なら this.discard() しても良いがサーバ権限を優先
+            }
         }
 
         if (!isAnchored()) {
@@ -338,8 +349,22 @@ public class KaginawaHookEntity extends Entity {
         return false;
     }
 
+    private static boolean isHoldingKatana(Player player) {
+        // メイン/オフハンドのどちらかに刀があれば保持とみなす
+        var main = player.getMainHandItem();
+        var off = player.getOffhandItem();
+        return main.getItem() instanceof ruby.bamboo.item.CommonKatana || off.getItem() instanceof ruby.bamboo.item.CommonKatana;
+    }
+
     private void tickAnchored(Player player) {
         if (player == null) {
+            return;
+        }
+        // 手持ちが刀でなくなったら外れる (要望)
+        if (!isHoldingKatana(player)) {
+            if (!level().isClientSide) {
+                discardWithCleanup();
+            }
             return;
         }
         // アンカー位置を同期値で更新 (クライアント)
@@ -360,8 +385,9 @@ public class KaginawaHookEntity extends Entity {
         }
 
         // 入力処理: reel (Space=-1巻取り/近づく, Shift=1伸長/遠ざかる)
-        // 地面に触れているときはShift(伸長)を抑止: 地面に踏ん張って伸ばすのは変なので拒否
-        boolean onGroundNow = player.onGround();
+        // 地面に接している時はShift(伸長)を抑止。onGround/getOnPosはnoGravityで信用できないため POS Y-1(足元-0.1)の実ブロックで判定
+        net.minecraft.core.BlockPos belowPos = net.minecraft.core.BlockPos.containing(player.getX(), player.getY() - 0.2, player.getZ());
+        boolean onSolidGround = !player.level().getBlockState(belowPos).isAir();
         if (pendingReelDir < 0) {
             float newLen = Mth.clamp(ropeLength + pendingReelDir * INITIAL_REEL_IN, MIN_LENGTH, MAX_LENGTH);
             ropeLength = newLen;
@@ -376,7 +402,7 @@ public class KaginawaHookEntity extends Entity {
                 player.setDeltaMovement(player.getDeltaMovement().add(pullDir.scale(REEL_PULL_SPEED)));
                 player.hasImpulse = true;
             }
-        } else if (pendingReelDir > 0 && !onGroundNow) {
+        } else if (pendingReelDir > 0 && !onSolidGround) {
             // Shift: 遠ざかる (ただし地面に着いているときは伸ばさない)
             float newLen = Mth.clamp(ropeLength + pendingReelDir * INITIAL_REEL_OUT, MIN_LENGTH, MAX_LENGTH);
             ropeLength = newLen;
@@ -384,27 +410,29 @@ public class KaginawaHookEntity extends Entity {
                 setRopeLengthSynced(newLen);
             }
         }
-
+        
+        if(!onSolidGround){
         // WASD 推力 (フックショット): 入力方向へ自動加速。接線方向へ投影してロープに沿って進む。
-        if (pendingForward != 0 || pendingStrafe != 0) {
-            Vec3 look = player.getLookAngle();
-            Vec3 fwd = new Vec3(look.x, 0, look.z);
-            if (fwd.lengthSqr() < 1e-6) {
-                fwd = new Vec3(0, 0, 1);
-            } else {
-                fwd = fwd.normalize();
+            if (pendingForward != 0 || pendingStrafe != 0) {
+                Vec3 look = player.getLookAngle();
+                Vec3 fwd = new Vec3(look.x, 0, look.z);
+                if (fwd.lengthSqr() < 1e-6) {
+                    fwd = new Vec3(0, 0, 1);
+                } else {
+                    fwd = fwd.normalize();
+                }
+                Vec3 right = fwd.cross(new Vec3(0, 1, 0));
+                if (right.lengthSqr() < 1e-6) {
+                    right = new Vec3(1, 0, 0);
+                } else {
+                    right = right.normalize();
+                }
+                // フックショット感を出すため強めの推力 (接線方向へ投影は不要—ロープ拘束が張力を与える)
+                float f = pendingSprint ? 0.09F : 0.06F;
+                Vec3 impulse = fwd.scale(pendingForward * f).add(right.scale(pendingStrafe * f));
+                player.setDeltaMovement(player.getDeltaMovement().add(impulse));
+                player.hasImpulse = true;
             }
-            Vec3 right = fwd.cross(new Vec3(0, 1, 0));
-            if (right.lengthSqr() < 1e-6) {
-                right = new Vec3(1, 0, 0);
-            } else {
-                right = right.normalize();
-            }
-            // フックショット感を出すため強めの推力 (接線方向へ投影は不要—ロープ拘束が張力を与える)
-            float f = pendingSprint ? 0.09F : 0.06F;
-            Vec3 impulse = fwd.scale(pendingForward * f).add(right.scale(pendingStrafe * f));
-            player.setDeltaMovement(player.getDeltaMovement().add(impulse));
-            player.hasImpulse = true;
         }
 
         prevDist = anchorPos.distanceTo(player.getEyePosition());
