@@ -3,7 +3,6 @@
 古のいぶつ
 ライセンス守って非商用に限り再配布ヨシ
 
-
 ## License 
 
 Dual license:
@@ -18,11 +17,3 @@ SPDX: `MMPL-1.0.1 AND CC-BY-NC-4.0` / `gradle.properties:mod_license=MMPL-1.0.1`
 - `Derived code` (§5) は別ライセンス可。Minecraft本体の所有が前提 (§1)。無保証 (§2)。
 
 Full texts: see [LICENSE](LICENSE).
-
-## Docs
-
-- 進捗一覧: `docs/port-spec-overview.md` (Single Source of Truth)
-- 詳細仕様: `docs/port-spec-*.md`
-- 開発ガイド: [AGENTS.md](AGENTS.md)
-
-> Note: `docs/*` と `src/main/resources/assets/bamboomod/textures/**/*.png` は現在 `.gitignore` により git 管理外。公開時に含める場合は `.gitignore` を調整してください。
