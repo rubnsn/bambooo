@@ -1,0 +1,154 @@
+BambooMod Licensing Summary (Simplified / 簡易れどめ)
+================================================
+Copyright (c) 2014-2026 Ruby (rubnsn) <whiteruby.0214@gmail.com>
+ModID: bamboomod / Minecraft 1.20.1 / Forge 47.x
+
+This project uses DUAL licensing (code vs assets):
+
+  1) Code          : Minecraft Mod Public License v1.0.1 (MMPL-1.0.1)
+                    SPDX-License-Identifier: MMPL-1.0.1
+                    Scope: src/main/java/**/*.java,
+                           src/main/resources/data/**,
+                           src/main/resources/META-INF/**,
+                           src/generated/**,
+                           build.gradle / gradle.properties / settings.gradle,
+                           and other build/config sources.
+                    Source: https://spdx.org/licenses/MMPL-1.0.1.html
+                            https://mod-buildcraft.com/MMPL-1.0.txt
+                            https://github.com/spdx/license-list-data/blob/main/text/MMPL-1.0.1.txt
+
+  2) Assets        : Creative Commons Attribution-NonCommercial 4.0 International
+                    (CC BY-NC 4.0)
+                    SPDX-License-Identifier: CC-BY-NC-4.0
+                    Scope: src/main/resources/assets/bamboomod/**
+                           (models, blockstates, textures, lang, particles, sounds, etc.)
+                    Legal code: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+                    Deed (ja):  https://creativecommons.org/licenses/by-nc/4.0/deed.ja
+
+Notes / 注意:
+- The binary JAR distribution as a whole remains under MMPL-1.0.1 per MMPL §6
+  (All distributions of this mod must remain licensed under the MMPL).
+  The CC BY-NC 4.0 for assets is applied as an additional condition on asset files;
+  where there is any conflict, MMPL-1.0.1 governs the Mod distribution,
+  but commercial use of assets alone is NOT permitted without permission.
+- "NonCommercial" = 商用利用不可。MODパックへの同梱（無償配布）は許可しますが、
+  資産（テクスチャ/モデル等）の単体販売・有料配布・商用AI学習データセット収録等は禁止。
+- Derived code (code that extends/instantiates/calls this mod's classes, per MMPL §5)
+  may be licensed under a different license.
+- When redistributing binaries you MUST provide means to obtain the complete
+  corresponding sources at no cost (MMPL §6).
+- You must own a legally acquired copy of Minecraft (MMPL §1).
+- No warranty (MMPL §2).
+
+SPDX summary for tooling:
+  - Overall: MMPL-1.0.1 AND CC-BY-NC-4.0
+  - For REUSE: use .reuse/dep5 or per-file SPDX headers (future work)
+
+--------------------------------------------------------------------------------
+Minecraft Mod Public License
+============================
+
+Version 1.0.1
+
+0. Definitions
+--------------
+
+Minecraft: Denotes a copy of the Minecraft game licensed by Mojang AB
+
+User: Anybody that interacts with the software in one of the following ways:
+   - play
+   - decompile
+   - recompile or compile
+   - modify
+   - distribute
+
+Mod: The mod code designated by the present license, in source form, binary
+form, as obtained standalone, as part of a wider distribution or resulting from
+the compilation of the original or modified sources.
+
+Dependency: Code required for the mod to work properly. This includes
+dependencies required to compile the code as well as any file or modification
+that is explicitely or implicitely required for the mod to be working.
+
+1. Scope
+--------
+
+The present license is granted to any user of the mod. As a prerequisite,
+a user must own a legally acquired copy of Minecraft
+
+2. Liability
+------------
+
+This mod is provided 'as is' with no warranties, implied or otherwise. The owner
+of this mod takes no responsibility for any damages incurred from the use of
+this mod. This mod alters fundamental parts of the Minecraft game, parts of
+Minecraft may not work with this mod installed. All damages caused from the use
+or misuse of this mad fall on the user.
+
+3. Play rights
+--------------
+
+The user is allowed to install this mod on a client or a server and to play
+without restriction.
+
+4. Modification rights
+----------------------
+
+The user has the right to decompile the source code, look at either the
+decompiled version or the original source code, and to modify it.
+
+5. Derivation rights
+--------------------
+
+The user has the rights to derive code from this mod, that is to say to
+write code that extends or instanciate the mod classes or interfaces, refer to
+its objects, or calls its functions. This code is known as "derived" code, and
+can be licensed under a license different from this mod.
+
+6. Distribution of original or modified copy rights
+---------------------------------------------------
+
+Is subject to distribution rights this entire mod in its various forms. This
+include:
+   - original binary or source forms of this mod files
+   - modified versions of these binaries or source files, as well as binaries
+     resulting from source modifications
+   - patch to its source or binary files
+   - any copy of a portion of its binary source files
+
+The user is allowed to redistribute this mod partially, in totality, or
+included in a distribution.
+
+When distributing binary files, the user must provide means to obtain its
+entire set of sources or modified sources at no costs.
+
+All distributions of this mod must remain licensed under the MMPL.
+
+All dependencies that this mod have on other mods or classes must be licensed
+under conditions comparable to this version of MMPL, with the exception of the
+Minecraft code and the mod loading framework (e.g. ModLoader, ModLoaderMP or
+Bukkit).
+
+Modified version of binaries and sources, as well as files containing sections
+copied from this mod, should be distributed under the terms of the present
+license.
+
+--------------------------------------------------------------------------------
+Creative Commons Attribution-NonCommercial 4.0 International - Summary
+=======================================================================
+(Assets: src/main/resources/assets/bamboomod/**)
+
+You are free to:
+  Share — copy and redistribute the material in any medium or format
+  Adapt — remix, transform, and build upon the material
+
+Under the following terms:
+  Attribution — You must give appropriate credit, provide a link to the license,
+                and indicate if changes were made.
+  NonCommercial — You may not use the material for commercial purposes.
+
+No additional restrictions — You may not apply legal terms or technological
+measures that legally restrict others from doing anything the license permits.
+
+Full legal code: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+For commercial use permission, contact the copyright holder.
