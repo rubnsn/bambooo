@@ -1,22 +1,10 @@
 # BambooMod 1.20.1
 
-Japanese-style decoration mod with bamboo, sakura and tatami blocks.
-Minecraft 1.20.1 / Forge 47.4.10 / Java 17 / Mappings official.
+古のいぶつ
+ライセンス守って非商用に限り再配布ヨシ
 
-- **modid**: `bamboomod` / **version**: `1.20.1-0.1` (see `gradle.properties:mod_version`)
-- Porting from 1.10.2 (`E:\mcmod`) → 1.20.1 (`E:\mc`). Ref: `E:\forge119` (1.19.2 prototype `meshi2`), https://github.com/rubnsn/sakura (1.16.5)
-- Main class: `src/main/java/ruby/bamboo/BambooMod.java`
 
-## Build / Run
-
-```powershell
-./gradlew build
-./gradlew runClient   # workingDirectory run/
-./gradlew runServer --nogui
-./gradlew runData
-```
-
-## License (簡易れどめ)
+## License 
 
 Dual license:
 
