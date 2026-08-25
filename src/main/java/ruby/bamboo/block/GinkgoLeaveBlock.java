@@ -8,25 +8,17 @@ import net.minecraft.world.level.block.state.BlockState;
 import ruby.bamboo.core.init.BambooParticles;
 
 /**
- * 桜の葉。旧 SakuraLeave (1.10.2) の移植。
- * <p>
- * 旧版は常時光レベル12相当の発光 + 非透明扱いだったため、1.20.1では
- * lightLevel(9) を与える。旧 randomTick での苗木自動生成は無限増殖を招くためオミット
- * （苗木は破壊時の loot_table でのみ入手）。
+ * イチョウの葉 (SakuraBlocks GINKGO_LEAVE 相当)。
+ * 黄色 0xF5E600, petal_3, MASS 1.2F。
  */
-public class SakuraLeaveBlock extends LeavesBlock {
+public class GinkgoLeaveBlock extends LeavesBlock {
 
-    /** 旧 EnumLeave.PINK の花びら色 (0xFFC5CC)。現行は単一ピンク葉のため固定 */
-    public static final int PETAL_COLOR = 0xFFC5CC;
+    public static final int PETAL_COLOR = 0xF5E600;
 
-    public SakuraLeaveBlock(BlockBehaviour.Properties props) {
+    public GinkgoLeaveBlock(BlockBehaviour.Properties props) {
         super(props);
     }
 
-    /**
-     * 花びらパーティクル (旧 SakuraLeave#randomDisplayTick 相当)。
-     * 1/100 の確率で直下が空気なら発生。
-     */
     @Override
     public void animateTick(BlockState state, net.minecraft.world.level.Level level, BlockPos pos,
             RandomSource rand) {
@@ -39,12 +31,12 @@ public class SakuraLeaveBlock extends LeavesBlock {
             double x = pos.getX() + rand.nextDouble();
             double y = pos.getY();
             double z = pos.getZ() + rand.nextDouble();
-            // 桜属は花びらテクスチャ1を使用 (旧 getPetal 相当)
-            level.addParticle(BambooParticles.PETAL_1.get(),
+            level.addParticle(BambooParticles.PETAL_3.get(),
                     x, y, z,
                     ((PETAL_COLOR >> 16) & 0xff) / 255.0,
                     ((PETAL_COLOR >> 8) & 0xff) / 255.0,
                     (PETAL_COLOR & 0xff) / 255.0);
         }
     }
+
 }

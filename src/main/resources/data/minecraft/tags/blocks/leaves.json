@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "bamboomod:sakura_leave",
+    "bamboomod:maple_leave",
+    "bamboomod:ginkgo_leave",
+    "bamboomod:hinoki_leave",
+    "bamboomod:broad_leave_green",
+    "bamboomod:broad_leave_red",
+    "bamboomod:broad_leave_yellow",
+    "bamboomod:broad_leave_orange"
+  ]
+}

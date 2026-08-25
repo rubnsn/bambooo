@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "bamboomod:sakura_log",
+    "bamboomod:maple_log",
+    "bamboomod:ginkgo_log",
+    "bamboomod:hinoki_log"
+  ]
+}

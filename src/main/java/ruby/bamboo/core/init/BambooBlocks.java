@@ -19,7 +19,16 @@ import ruby.bamboo.block.IndLightBlock;
 import ruby.bamboo.block.KitunebiBlock;
 import ruby.bamboo.block.BroadLeaveBlock;
 import ruby.bamboo.block.CampfireBlock;
+import ruby.bamboo.block.GinkgoLeaveBlock;
+import ruby.bamboo.block.GinkgoLogBlock;
+import ruby.bamboo.block.GinkgoSaplingBlock;
+import ruby.bamboo.block.HinokiLeaveBlock;
+import ruby.bamboo.block.HinokiLogBlock;
+import ruby.bamboo.block.HinokiSaplingBlock;
 import ruby.bamboo.block.JPChestBlock;
+import ruby.bamboo.block.MapleLeaveBlock;
+import ruby.bamboo.block.MapleLogBlock;
+import ruby.bamboo.block.MapleSaplingBlock;
 import ruby.bamboo.block.MillStoneBlock;
 import ruby.bamboo.block.RicePlantBlock;
 import ruby.bamboo.block.SakuraLeaveBlock;
@@ -126,6 +135,68 @@ public final class BambooBlocks {
                     .lightLevel(state -> 9)
                     // 1.20.1では isSuffocating/isViewBlocking 等を noOcclusion に合わせて無効化
                     .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+
+    // ===== 新樹木: カエデ / イチョウ / ヒノキ (SakuraBlocks MAPLE/GINKGO/HINOKI相当) =====
+
+    /** カエデ原木 (maple_log) */
+    public static final RegistryObject<MapleLogBlock> MAPLE_LOG = register("maple_log",
+            () -> new MapleLogBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD).sound(SoundType.WOOD)
+                    .strength(2.0f)));
+
+    /** イチョウ原木 (ginkgo_log) */
+    public static final RegistryObject<GinkgoLogBlock> GINKGO_LOG = register("ginkgo_log",
+            () -> new GinkgoLogBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD).sound(SoundType.WOOD)
+                    .strength(2.0f)));
+
+    /** ヒノキ原木 (hinoki_log) */
+    public static final RegistryObject<HinokiLogBlock> HINOKI_LOG = register("hinoki_log",
+            () -> new HinokiLogBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD).sound(SoundType.WOOD)
+                    .strength(2.0f)));
+
+    /** カエデ葉 (maple_leave) - 赤 0xC80010 */
+    public static final RegistryObject<MapleLeaveBlock> MAPLE_LEAVES = register("maple_leave",
+            () -> new MapleLeaveBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT).sound(SoundType.GRASS)
+                    .strength(0.2f).randomTicks().noOcclusion()
+                    .lightLevel(state -> 9)
+                    .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+
+    /** イチョウ葉 (ginkgo_leave) - 黄 0xF5E600 */
+    public static final RegistryObject<GinkgoLeaveBlock> GINKGO_LEAVES = register("ginkgo_leave",
+            () -> new GinkgoLeaveBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT).sound(SoundType.GRASS)
+                    .strength(0.2f).randomTicks().noOcclusion()
+                    .lightLevel(state -> 9)
+                    .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+
+    /** ヒノキ葉 (hinoki_leave) - 緑 0x3F9E55 低頻度 */
+    public static final RegistryObject<HinokiLeaveBlock> HINOKI_LEAVES = register("hinoki_leave",
+            () -> new HinokiLeaveBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT).sound(SoundType.GRASS)
+                    .strength(0.2f).randomTicks().noOcclusion()
+                    .lightLevel(state -> 9)
+                    .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+
+    /** カエデ苗木 */
+    public static final RegistryObject<MapleSaplingBlock> MAPLE_SAPLING = register("maple_sapling",
+            () -> new MapleSaplingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT).sound(SoundType.GRASS)
+                    .strength(0.0f).randomTicks().noCollission().instabreak()));
+
+    /** イチョウ苗木 */
+    public static final RegistryObject<GinkgoSaplingBlock> GINKGO_SAPLING = register("ginkgo_sapling",
+            () -> new GinkgoSaplingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT).sound(SoundType.GRASS)
+                    .strength(0.0f).randomTicks().noCollission().instabreak()));
+
+    /** ヒノキ苗木 */
+    public static final RegistryObject<HinokiSaplingBlock> HINOKI_SAPLING = register("hinoki_sapling",
+            () -> new HinokiSaplingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT).sound(SoundType.GRASS)
+                    .strength(0.0f).randomTicks().noCollission().instabreak()));
 
     /** 行灯 (旧 andon) - 旧 setLightLevel 相当で光レベル14 */
     public static final RegistryObject<AndonBlock> ANDON = register("andon",

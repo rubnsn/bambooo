@@ -37,6 +37,9 @@ public final class BambooClientSetup {
             cutout(BambooBlocks.BAMBOO_SHOOT.get());
             cutout(BambooBlocks.RICE_PLANT.get());
             cutout(BambooBlocks.SAKURA_SAPLING.get());
+            cutout(BambooBlocks.MAPLE_SAPLING.get());
+            cutout(BambooBlocks.GINKGO_SAPLING.get());
+            cutout(BambooBlocks.HINOKI_SAPLING.get());
             for (var indlight : BambooBlocks.INDLIGHTS) {
                 cutout(indlight.get());
             }
@@ -54,6 +57,9 @@ public final class BambooClientSetup {
             for (var broad : BambooBlocks.BROAD_LEAVES) {
                 ItemBlockRenderTypes.setRenderLayer(broad.get(), RenderType.cutoutMipped());
             }
+            ItemBlockRenderTypes.setRenderLayer(BambooBlocks.MAPLE_LEAVES.get(), RenderType.cutoutMipped());
+            ItemBlockRenderTypes.setRenderLayer(BambooBlocks.GINKGO_LEAVES.get(), RenderType.cutoutMipped());
+            ItemBlockRenderTypes.setRenderLayer(BambooBlocks.HINOKI_LEAVES.get(), RenderType.cutoutMipped());
 
             // 引き戸 (sakura-master準拠): 透過3種は translucent、それ以外は cutout
             for (var slide : BambooBlocks.SLIDE_DOORS) {
@@ -159,6 +165,10 @@ public final class BambooClientSetup {
             int color = block.variant.color;
             event.register((state, level, pos, tintIndex) -> color, block);
         }
+        // 新葉の tint (broadleaf.png を色乗算)
+        event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR, BambooBlocks.MAPLE_LEAVES.get());
+        event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR, BambooBlocks.GINKGO_LEAVES.get());
+        event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR, BambooBlocks.HINOKI_LEAVES.get());
     }
 
     /**
@@ -196,5 +206,8 @@ public final class BambooClientSetup {
             int color = block.variant.color;
             event.register((stack, tintIndex) -> color, new Item[] { block.asItem() });
         }
+        event.register((stack, tintIndex) -> ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.MAPLE_LEAVES.get().asItem() });
+        event.register((stack, tintIndex) -> ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.GINKGO_LEAVES.get().asItem() });
+        event.register((stack, tintIndex) -> ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.HINOKI_LEAVES.get().asItem() });
     }
 }

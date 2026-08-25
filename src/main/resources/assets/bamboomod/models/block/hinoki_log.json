@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "bamboomod:block/hinokilog_t",
+    "side": "bamboomod:block/hinokilog_s"
+  }
+}

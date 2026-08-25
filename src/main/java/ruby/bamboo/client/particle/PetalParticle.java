@@ -25,19 +25,55 @@ public class PetalParticle extends TextureSheetParticle {
     private float swayPhase;
     private float swaySpeed;
 
+    /** Wind由来パーティクルの一時的な風ベクトル受け渡し (ThreadLocalでaddParticle前にset) */
+    private static final ThreadLocal<net.minecraft.world.phys.Vec3> NEXT_WIND = new ThreadLocal<>();
+
+    /** WindEntity側から呼ぶ: 次に生成する petal に風を適用する */
+    public static void pushWind(net.minecraft.world.phys.Vec3 wind) {
+        if (wind != null) {
+            NEXT_WIND.set(wind);
+        }
+    }
+
+    public static void clearWind() {
+        NEXT_WIND.remove();
+    }
+
     protected PetalParticle(ClientLevel level, double x, double y, double z,
             double colorR, double colorG, double colorB, SpriteSet sprites) {
         super(level, x, y, z);
         this.sprites = sprites;
         this.setSprite(sprites.get(level.random));
 
-        // 色 (葉バリアント色)
+        // 色 (葉バリアント色: 白ベース×乗算。バニラ葉は白 0xFFFFFF のまま)
         this.setColor((float) colorR, (float) colorG, (float) colorB);
 
-        // 初速 (旧コンストラクタ相当)
-        this.xd = (level.random.nextFloat() - 0.5) * 0.1;
-        this.yd = -0.01;
-        this.zd = (level.random.nextFloat() - 0.5) * 0.1;
+        // 初速: Wind由来なら旧 SakuraPetal.setMotion を再現、非Windはランダム漂い
+        net.minecraft.world.phys.Vec3 wind = NEXT_WIND.get();
+        if (wind != null) {
+            // 旧 SakuraPetal.setMotion 相当
+            // randomF = (rand+rand+1)*0.15 → 0.15-0.45, sqで正規化
+            float randomF = (float) (level.random.nextFloat() + level.random.nextFloat() + 1.0D) * 0.15F;
+            double sq = Math.sqrt(wind.x * wind.x + wind.y * wind.y + wind.z * wind.z);
+            if (sq < 1.0e-4) {
+                sq = 1.0;
+            }
+            this.xd = wind.x / sq * randomF;
+            this.yd = wind.y / sq;
+            // 元の花びらは y=-0.01相当の落下を維持しつつ風のyを加える。水平風のみなら -0.01を加算
+            if (Math.abs(wind.y) < 1.0e-4) {
+                this.yd = -0.01;
+            }
+            this.zd = wind.z / sq * randomF;
+            // 軽いランダム揺らぎを加える
+            this.xd += (level.random.nextFloat() - 0.5) * 0.02;
+            this.zd += (level.random.nextFloat() - 0.5) * 0.02;
+            NEXT_WIND.remove();
+        } else {
+            this.xd = (level.random.nextFloat() - 0.5) * 0.1;
+            this.yd = -0.01;
+            this.zd = (level.random.nextFloat() - 0.5) * 0.1;
+        }
 
         // 寿命 60+rand(120)
         this.lifetime = level.random.nextInt(120) + 60;

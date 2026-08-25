@@ -1,11 +1,9 @@
 package ruby.bamboo.entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -15,6 +13,11 @@ import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import ruby.bamboo.block.GinkgoLeaveBlock;
+import ruby.bamboo.block.HinokiLeaveBlock;
+import ruby.bamboo.block.MapleLeaveBlock;
+import ruby.bamboo.block.SakuraLeaveBlock;
+import ruby.bamboo.block.BroadLeaveBlock;
 
 /**
  * 風エンティティ (旧 Wind の 1.20.1 移植)。
@@ -22,8 +25,11 @@ import net.minecraft.world.phys.Vec3;
  * 旧仕様: EntityThrowable 継承、setSize(5,5)、寿命5tick、偶数tickごとに周囲ブロック走査で
  * LEAVES/VINE/DoublePlant を破壊。サーバでドロップ+空気化、クライアントで SakuraPetal 演出。
  * <p>
- * 1.20.1ではロジックをサーバ完結にし、演出は cherry_leaves パーティクル送信に置換。
- * エンティティ衝突は無効(onImpact空実装相当)。
+ * 1.20.1では旧同様にサーバ/クライアント両方で走査し、サーバは破壊、クライアントは白ベース×乗算の
+ * PetalParticle (旧 SakuraPetal.setMotion 再現) を1粒生成。色は IBlockColorWrapper 相当の
+ * 葉色(桜/カエデ/イチョウ/ヒノキ/広葉)else 旧Green(0x3F9E55)。速度は旧正規化風ベクトル×0.15-0.45。
+ * エンティティ衝突は無効(onImpact空実装相当)。サイズは旧 setSize(5,5)=幅5そのまま
+ * (EntityType 5.0Fは直径)。中心は eye+look*0.5 で貫通射出。
  */
 public class WindEntity extends Entity {
 
@@ -92,11 +98,9 @@ public class WindEntity extends Entity {
     }
 
     private void checkBlockCollision() {
-        // サーバ側のみ破壊処理。クライアントでは演出不要(サーバからパーティクル送信)
-        if (this.level().isClientSide) {
-            return;
-        }
-        AABB bb = this.getBoundingBox().inflate(-0.001D);
+        // 旧 Wind.java:56-63 同様にAABB全体を走査（+0.001/-0.001の死にコードは再現せず、inflate無しで旧 getAllInBox 相当）
+        // 端まで含めるため inflate しない。サーバは破壊、クライアントはパーティクル生成の二重処理を再現
+        AABB bb = this.getBoundingBox();
         int minX = Mth.floor(bb.minX);
         int minY = Mth.floor(bb.minY);
         int minZ = Mth.floor(bb.minZ);
@@ -114,7 +118,14 @@ public class WindEntity extends Entity {
                         continue;
                     }
                     if (isRemove(state)) {
-                        removeLeaves(mutable.immutable(), state);
+                        // サーバ/クライアントで分岐（旧removeLeavesのisRemote分岐を踏襲）
+                        if (this.level().isClientSide) {
+                            spawnWindParticle(mutable.immutable(), state);
+                        } else {
+                            // サーバはドロップ+空気化
+                            this.level().destroyBlock(mutable.immutable(), true);
+                            // クライアント側でパーティクルは別途生成されるためサーバ送信不要
+                        }
                     }
                 }
             }
@@ -137,28 +148,55 @@ public class WindEntity extends Entity {
         return false;
     }
 
-    private void removeLeaves(BlockPos pos, BlockState state) {
+    private void spawnWindParticle(BlockPos pos, BlockState state) {
+        // クライアント側のみ: 白ベース×乗算のPetalParticleを風継承で1粒生成
+        // 色は旧 IBlockColorWrapper 相当: 葉色が取れるブロックはその色、else 白 0xFFFFFF
         Level level = this.level();
-        // サーバ側: ドロップ + 空気化 + パーティクル送信
-        // クライアント分岐は廃止し、サーバ完結にする
-        // 1) パーティクル (破壊前に送信すると位置が分かりやすい)
-        if (level instanceof ServerLevel serverLevel) {
-            // 桜色演出: CHERRY_LEAVES を 5 粒送信 (旧 SakuraPetal 相当)
-            // 風の速度を少し引き継いで拡散させる
-            Vec3 motion = this.getDeltaMovement();
-            // パーティクル速度は 0 固定ではなく微速で漂わせる
-            serverLevel.sendParticles(ParticleTypes.CHERRY_LEAVES,
-                    pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                    5,
-                    0.3, 0.3, 0.3,
-                    0.02);
-            // 追加で風の進行方向に少し流す (オプション: CHERRY_LEAVES は速度無視だが見た目は変わらない)
-            // 旧 petal の motion 継承は ParticleTypes では再現できないため、位置拡散で代替
+        if (!level.isClientSide) {
+            return;
+        }
+        // ペタル種別と色を解決
+        int color = 0xFFFFFF;
+        net.minecraft.core.particles.SimpleParticleType petalType = ruby.bamboo.core.init.BambooParticles.PETAL_1.get();
+        if (state.getBlock() instanceof SakuraLeaveBlock) {
+            color = SakuraLeaveBlock.PETAL_COLOR;
+            petalType = ruby.bamboo.core.init.BambooParticles.PETAL_1.get();
+        } else if (state.getBlock() instanceof MapleLeaveBlock) {
+            color = MapleLeaveBlock.PETAL_COLOR;
+            petalType = ruby.bamboo.core.init.BambooParticles.PETAL_2.get();
+        } else if (state.getBlock() instanceof GinkgoLeaveBlock) {
+            color = GinkgoLeaveBlock.PETAL_COLOR;
+            petalType = ruby.bamboo.core.init.BambooParticles.PETAL_3.get();
+        } else if (state.getBlock() instanceof HinokiLeaveBlock) {
+            color = HinokiLeaveBlock.PETAL_COLOR;
+            petalType = ruby.bamboo.core.init.BambooParticles.PETAL_1.get(); // 旧Green petal_1
+        } else if (state.getBlock() instanceof BroadLeaveBlock broad) {
+            color = broad.variant.color;
+            petalType = switch (broad.variant.petal) {
+                case 2 -> ruby.bamboo.core.init.BambooParticles.PETAL_2.get();
+                case 3 -> ruby.bamboo.core.init.BambooParticles.PETAL_3.get();
+                default -> ruby.bamboo.core.init.BambooParticles.PETAL_1.get();
+            };
+        } else {
+            // バニラ葉/vine/DoublePlant は旧Green (0x3F9E55, petal_1) と同じ緑で統一
+            // 旧 Wind は 0xFFFFFF だったが、指示により旧Greenに合わせる
+            color = HinokiLeaveBlock.PETAL_COLOR; // 0x3F9E55
+            petalType = ruby.bamboo.core.init.BambooParticles.PETAL_1.get();
         }
 
-        // 2) ドロップ + 破壊
-        // level.destroyBlock は loot table に従ってドロップを生成する
-        level.destroyBlock(pos, true);
+        double x = pos.getX() + 0.5;
+        double y = pos.getY() + 0.5;
+        double z = pos.getZ() + 0.5;
+        double r = ((color >> 16) & 0xff) / 255.0;
+        double g = ((color >> 8) & 0xff) / 255.0;
+        double b = (color & 0xff) / 255.0;
+
+        // 旧 SakuraPetal.setMotion の風継承をPetalParticle側ThreadLocalで再現、1粒で負荷軽減
+        Vec3 wind = this.getDeltaMovement();
+        ruby.bamboo.client.particle.PetalParticle.pushWind(wind);
+        level.addParticle(petalType, x, y, z, r, g, b);
+        // 万一 Providerでremoveされなかった場合の保険
+        ruby.bamboo.client.particle.PetalParticle.clearWind();
     }
 
     @Override
