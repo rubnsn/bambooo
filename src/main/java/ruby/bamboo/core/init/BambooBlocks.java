@@ -35,6 +35,7 @@ import ruby.bamboo.block.SakuraLeaveBlock;
 import ruby.bamboo.block.SakuraLogBlock;
 import ruby.bamboo.block.SakuraSaplingBlock;
 import ruby.bamboo.block.HutonBlock;
+import ruby.bamboo.block.MiniatureBlock;
 import ruby.bamboo.block.SlideDoorBlock;
 import ruby.bamboo.block.TatamiBlock;
 import ruby.bamboo.block.decoration.DecorationBlock;
@@ -243,6 +244,9 @@ public final class BambooBlocks {
 
     // ===== 布団 (旧 huton) =====
     public static final RegistryObject<HutonBlock> HUTON = register("huton", HutonBlock::new);
+
+    // ===== ミニチュア (箱庭) — Phase A データ層 =====
+    public static final RegistryObject<MiniatureBlock> MINIATURE = register("miniature", MiniatureBlock::new);
 
     // ===== 第6弾: 広葉樹の葉4種 (旧 broad_leave meta=0-3 を独立ブロック化) =====
 
