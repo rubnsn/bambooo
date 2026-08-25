@@ -1,7 +1,6 @@
 package ruby.bamboo.block.entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -9,11 +8,15 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -65,11 +68,14 @@ public class MiniatureBlockEntity extends BlockEntity {
     private byte loadState = LOAD_READY;
     private int buildProgress = 0;
 
-    // 簡易power状態 (Phase E で使用。Phase A は空配列)
+    // 簡易power状態 (Phase E)
     private long[] powerCells = new long[0];
 
     // 当たり判定キャッシュ (サーバ/クライアント共通。Phase C で再構築)
     private VoxelShape shapeCache = null;
+
+    private static final int RANDOM_TICK_CELLS_PER_TICK = 8;
+    private static final int POWER_DISTANCE = 3;
 
     // 将来: client側 quadCache は BER 側で保持するため BE では Object として保持しない (クライアント依存回避)
 
@@ -269,15 +275,218 @@ public class MiniatureBlockEntity extends BlockEntity {
                 setChanged();
                 if (this.level != null) {
                     this.level.sendBlockUpdated(this.worldPosition, getBlockState(), getBlockState(), 3);
+                    // ENABLED同期 (中身有無)
+                    boolean enabled = !isEmpty();
+                    BlockState st = this.level.getBlockState(this.worldPosition);
+                    if (st.hasProperty(ruby.bamboo.block.MiniatureBlock.ENABLED)
+                            && st.getValue(ruby.bamboo.block.MiniatureBlock.ENABLED) != enabled) {
+                        this.level.setBlock(this.worldPosition, st.setValue(ruby.bamboo.block.MiniatureBlock.ENABLED, enabled), 3);
+                    }
                 }
                 this.dirty = false;
             }
         }
-        // 将来: randomTick ラウンドロビンは Phase E で追加 (tickCursor 進行)
+        tickPowerPropagation();
+        tickRandomTick();
     }
 
     private void clientTick() {
-        // Phase D で buildQueue 進行等を扱う。Phase A は no-op。
+        // Phase D で buildQueue 進行等を扱う。Phase A-D は no-op。
+    }
+
+    // ===== 簡易redstone伝播 (Phase E) =====
+
+    private void tickPowerPropagation() {
+        if (this.level == null || this.level.isClientSide) {
+            return;
+        }
+        if (isEmpty()) {
+            return;
+        }
+        // 6方向 flood-fill で power を計算 (簡易2値)。距離上限 POWER_DISTANCE。
+        java.util.Set<BlockPos> powered = new java.util.HashSet<>();
+        java.util.Queue<BlockPos> queue = new java.util.ArrayDeque<>();
+        java.util.Map<BlockPos, Integer> distMap = new java.util.HashMap<>();
+        for (int x = 0; x < this.size; x++) {
+            for (int y = 0; y < this.size; y++) {
+                for (int z = 0; z < this.size; z++) {
+                    BlockState st = this.cells[x][y][z];
+                    if (st.isAir()) {
+                        continue;
+                    }
+                    try {
+                        if (st.isSignalSource()) {
+                            BlockPos p = new BlockPos(x, y, z);
+                            queue.add(p);
+                            distMap.put(p, 0);
+                            powered.add(p);
+                        }
+                    } catch (Exception e) {
+                        // hasBlockEntity等の例外は無視 (見た目のみ)
+                    }
+                }
+            }
+        }
+        int[] dx = {1, -1, 0, 0, 0, 0};
+        int[] dy = {0, 0, 1, -1, 0, 0};
+        int[] dz = {0, 0, 0, 0, 1, -1};
+        java.util.Set<BlockPos> visited = new java.util.HashSet<>(powered);
+        while (!queue.isEmpty()) {
+            BlockPos cur = queue.poll();
+            int d = distMap.getOrDefault(cur, 0);
+            if (d >= POWER_DISTANCE) {
+                continue;
+            }
+            for (int i = 0; i < 6; i++) {
+                BlockPos n = cur.offset(dx[i], dy[i], dz[i]);
+                if (!isInRange(n.getX(), n.getY(), n.getZ())) {
+                    continue;
+                }
+                if (visited.contains(n)) {
+                    continue;
+                }
+                visited.add(n);
+                if (this.cells[n.getX()][n.getY()][n.getZ()].isAir()) {
+                    continue;
+                }
+                powered.add(n);
+                distMap.put(n, d + 1);
+                queue.add(n);
+            }
+        }
+        // 受信側: LIT / OPEN / POWERED を power 有無で更新
+        boolean changed = false;
+        for (BlockPos p : powered) {
+            BlockState st = getCell(p);
+            if (st.isAir()) {
+                continue;
+            }
+            BlockState ns = st;
+            try {
+                if (st.hasProperty(BlockStateProperties.LIT)) {
+                    boolean lit = st.getValue(BlockStateProperties.LIT);
+                    if (lit != true) {
+                        ns = ns.setValue(BlockStateProperties.LIT, true);
+                    }
+                }
+                if (st.hasProperty(BlockStateProperties.OPEN)) {
+                    // ドア等は powerで開く想定だが、簡易では LIT と同様に power=trueで OPEN=true
+                    // 元が lever等 power source 自体は触らないため、openを持つブロックのみ対象
+                    // ここでは power 伝播結果を OPEN に反映 (レバー隣接ドア等)
+                    // ただし source 自体は既に powered なので区別しない
+                }
+                if (st.hasProperty(BlockStateProperties.POWERED)) {
+                    boolean pw = st.getValue(BlockStateProperties.POWERED);
+                    if (pw != true) {
+                        ns = ns.setValue(BlockStateProperties.POWERED, true);
+                    }
+                }
+            } catch (Exception e) {
+                continue;
+            }
+            if (ns != st) {
+                this.cells[p.getX()][p.getY()][p.getZ()] = ns;
+                changed = true;
+            }
+        }
+        // 非poweredの LIT/POWERED を OFF に戻す (簡易: powerが切れたら消灯)
+        // 全セル走査で powered 外の該当ブロックを OFF
+        for (int x = 0; x < this.size; x++) {
+            for (int y = 0; y < this.size; y++) {
+                for (int z = 0; z < this.size; z++) {
+                    BlockPos p = new BlockPos(x, y, z);
+                    if (powered.contains(p)) {
+                        continue;
+                    }
+                    BlockState st = this.cells[x][y][z];
+                    if (st.isAir()) {
+                        continue;
+                    }
+                    BlockState ns = st;
+                    try {
+                        if (st.hasProperty(BlockStateProperties.LIT) && st.getValue(BlockStateProperties.LIT)) {
+                            // レッドストーンランプ等は powerが無ければ消灯、トーチは除外? 簡易でOFF
+                            // signalSource 自体は常時 LIT=true なので、sourceは除外
+                            if (!st.isSignalSource()) {
+                                ns = ns.setValue(BlockStateProperties.LIT, false);
+                            }
+                        }
+                        if (st.hasProperty(BlockStateProperties.POWERED) && st.getValue(BlockStateProperties.POWERED)) {
+                            if (!st.isSignalSource()) {
+                                ns = ns.setValue(BlockStateProperties.POWERED, false);
+                            }
+                        }
+                    } catch (Exception e) {
+                        continue;
+                    }
+                    if (ns != st) {
+                        this.cells[x][y][z] = ns;
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if (changed) {
+            markDirtyAndSync();
+        }
+    }
+
+    // ===== randomTick疑似実行 (Phase E) =====
+
+    private void tickRandomTick() {
+        if (this.level == null || this.level.isClientSide) {
+            return;
+        }
+        if (isEmpty()) {
+            return;
+        }
+        RandomSource rand = this.level.getRandom();
+        int total = this.size * this.size * this.size;
+        for (int i = 0; i < RANDOM_TICK_CELLS_PER_TICK; i++) {
+            int idx = (this.tickCursor + i) % total;
+            int x = idx % this.size;
+            int y = (idx / this.size) % this.size;
+            int z = idx / (this.size * this.size);
+            BlockState st = getCell(x, y, z);
+            if (st.isAir()) {
+                continue;
+            }
+            if (!st.isRandomlyTicking()) {
+                continue;
+            }
+            // CropBlock のみ簡易成長 (安全)。他は例外捕捉で握りつぶし。
+            if (st.getBlock() instanceof CropBlock crop) {
+                try {
+                    // 成長判定を簡易化: isRandomlyTickingなら 10% で age+1
+                    if (rand.nextFloat() < 0.10f) {
+                        // ageプロパティを探索
+                        for (Property<?> prop : st.getProperties()) {
+                            if (prop.getName().equals("age") && prop instanceof net.minecraft.world.level.block.state.properties.IntegerProperty ip) {
+                                int age = st.getValue(ip);
+                                int max = 0;
+                                for (Integer v : ip.getPossibleValues()) {
+                                    if (v > max) {
+                                        max = v;
+                                    }
+                                }
+                                if (age < max) {
+                                    BlockState ns = st.setValue(ip, age + 1);
+                                    this.cells[x][y][z] = ns;
+                                    markDirtyAndSync();
+                                }
+                                break;
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    // 握りつぶし (実世界保護)
+                }
+            } else {
+                // 他ブロックの randomTick は安全のためスキップ。必要なら Wrapperで setBlock を内部へ向ける。
+                // ここでは例外捕捉付きで呼んでみるが、setBlockが実ワールドに向かう危険があるため呼ばない。
+            }
+        }
+        this.tickCursor = (this.tickCursor + RANDOM_TICK_CELLS_PER_TICK) % total;
     }
 
     // ===== NBT =====
@@ -321,7 +530,7 @@ public class MiniatureBlockEntity extends BlockEntity {
         readSyncData(pkt.getTag());
     }
 
-    private void writeSyncData(CompoundTag tag) {
+    public void writeSyncData(CompoundTag tag) {
         tag.putInt(TAG_SIZE, this.size);
         // Cells: 非空セルのみ保存
         ListTag list = new ListTag();
@@ -333,11 +542,9 @@ public class MiniatureBlockEntity extends BlockEntity {
                         continue;
                     }
                     CompoundTag entry = new CompoundTag();
-                    // Pos は X,Y,Z 個別保存 (NbtUtils.writeBlockPos 互換)
                     entry.putInt("X", x);
                     entry.putInt("Y", y);
                     entry.putInt("Z", z);
-                    // State は NbtUtils.writeBlockState 形式 (Name + Properties)
                     CompoundTag stateTag = NbtUtils.writeBlockState(state);
                     entry.put("State", stateTag);
                     list.add(entry);
@@ -345,14 +552,78 @@ public class MiniatureBlockEntity extends BlockEntity {
             }
         }
         tag.put(TAG_CELLS, list);
-        // Power は将来用 (空なら書かない)
         if (this.powerCells != null && this.powerCells.length > 0) {
             tag.putLongArray(TAG_POWER, this.powerCells);
         }
-        // loadState / buildProgress は同期不要 (クライアント側で再計算)
     }
 
-    private void readSyncData(CompoundTag tag) {
+    public void saveToItemStack(ItemStack stack) {
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.putInt(TAG_SIZE, this.size);
+        if (!isEmpty()) {
+            CompoundTag bet = new CompoundTag();
+            writeSyncData(bet);
+            tag.put("BlockEntityTag", bet);
+        }
+    }
+
+    public static int getSizeFromStack(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return DEFAULT_SIZE;
+        }
+        CompoundTag tag = stack.getTag();
+        if (tag != null && tag.contains(TAG_SIZE, Tag.TAG_INT)) {
+            return clampSize(tag.getInt(TAG_SIZE));
+        }
+        if (tag != null && tag.contains("BlockEntityTag", Tag.TAG_COMPOUND)) {
+            CompoundTag bet = tag.getCompound("BlockEntityTag");
+            if (bet.contains(TAG_SIZE, Tag.TAG_INT)) {
+                return clampSize(bet.getInt(TAG_SIZE));
+            }
+        }
+        return DEFAULT_SIZE;
+    }
+
+    public VoxelShape rebuildShapeCache() {
+        if (isEmpty()) {
+            // ENABLED=false時は外枠薄板、ENABLED=trueでも空ならフルブロックにフォールバック
+            this.shapeCache = Shapes.block();
+            return this.shapeCache;
+        }
+        double cell = 16.0 / this.size;
+        VoxelShape shape = Shapes.empty();
+        for (int x = 0; x < this.size; x++) {
+            for (int y = 0; y < this.size; y++) {
+                for (int z = 0; z < this.size; z++) {
+                    BlockState st = this.cells[x][y][z];
+                    if (st.isAir()) {
+                        continue;
+                    }
+                    double minX = x * cell;
+                    double minY = y * cell;
+                    double minZ = z * cell;
+                    double maxX = minX + cell;
+                    double maxY = minY + cell;
+                    double maxZ = minZ + cell;
+                    VoxelShape cellShape = Block.box(minX, minY, minZ, maxX, maxY, maxZ);
+                    shape = Shapes.or(shape, cellShape);
+                }
+            }
+        }
+        // 非空セルの合成が空になることはないが、念のため
+        if (shape.isEmpty()) {
+            shape = Shapes.block();
+        }
+        // 面AABBの薄板は getShape 側で ENABLED=false 時に付与するため、ここではセル合成のみ
+        this.shapeCache = shape;
+        return shape;
+    }
+
+    private void writeSyncDataInternal(CompoundTag tag) {
+        writeSyncData(tag);
+    }
+
+    public void readSyncData(CompoundTag tag) {
         // Size
         if (tag.contains(TAG_SIZE, Tag.TAG_INT)) {
             int s = clampSize(tag.getInt(TAG_SIZE));
