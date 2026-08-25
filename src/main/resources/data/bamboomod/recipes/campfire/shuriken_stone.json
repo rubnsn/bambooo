@@ -1,0 +1,18 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "",
+  "ingredients": [
+    { "item": "minecraft:cobblestone" },
+    { "item": "minecraft:cobblestone" },
+    { "item": "minecraft:cobblestone" },
+    { "item": "minecraft:cobblestone" }
+  ],
+  "result": {
+    "item": "bamboomod:shuriken_stone",
+    "count": 4
+  },
+  "experience": 0.2,
+  "cookingtime": 100,
+  "fuelCost": 100
+}

@@ -1,0 +1,18 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "",
+  "ingredients": [
+    { "item": "minecraft:diamond" },
+    { "item": "minecraft:diamond" },
+    { "item": "minecraft:diamond" },
+    { "item": "minecraft:diamond" }
+  ],
+  "result": {
+    "item": "bamboomod:shuriken_diamond",
+    "count": 32
+  },
+  "experience": 1.0,
+  "cookingtime": 300,
+  "fuelCost": 300
+}

@@ -72,6 +72,15 @@ public final class BambooEntities {
     public static final RegistryObject<EntityType<ExplodeArrowEntity>> EXPLODE_ARROW = registerArrow(
             "explode_arrow", ExplodeArrowEntity::new);
 
+    /** 手裏剣 (stone/iron/diamond共通、見た目はItemStackで切替) */
+    public static final RegistryObject<EntityType<ruby.bamboo.entity.ShurikenEntity>> SHURIKEN = BambooMod.ENTITY_TYPES.register(
+            "shuriken",
+            () -> EntityType.Builder.<ruby.bamboo.entity.ShurikenEntity>of(ruby.bamboo.entity.ShurikenEntity::new, MobCategory.MISC)
+                    .sized(0.5F, 0.5F)
+                    .clientTrackingRange(4)
+                    .updateInterval(20)
+                    .build("shuriken"));
+
     private static <T extends AbstractArrow> RegistryObject<EntityType<T>> registerArrow(
             String name, EntityType.EntityFactory<T> factory) {
         return BambooMod.ENTITY_TYPES.register(name,

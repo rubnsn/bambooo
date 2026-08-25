@@ -65,6 +65,22 @@ public final class BambooItems {
             () -> new ruby.bamboo.item.CommonKatana(net.minecraft.world.item.Tiers.IRON,
                     new Item.Properties()));
 
+    // ===== 手裏剣 (旧 Shuriken, stone/iron/diamond) =====
+
+    /** 石手裏剣 */
+    public static final RegistryObject<ruby.bamboo.item.ShurikenItem> SHURIKEN_STONE = register("shuriken_stone",
+            () -> new ruby.bamboo.item.ShurikenItem(net.minecraft.world.item.Tiers.STONE, new Item.Properties().stacksTo(64), 2.0F));
+    /** 鉄手裏剣 */
+    public static final RegistryObject<ruby.bamboo.item.ShurikenItem> SHURIKEN_IRON = register("shuriken_iron",
+            () -> new ruby.bamboo.item.ShurikenItem(net.minecraft.world.item.Tiers.IRON, new Item.Properties().stacksTo(64), 3.5F));
+    /** ダイヤ手裏剣 */
+    public static final RegistryObject<ruby.bamboo.item.ShurikenItem> SHURIKEN_DIAMOND = register("shuriken_diamond",
+            () -> new ruby.bamboo.item.ShurikenItem(net.minecraft.world.item.Tiers.DIAMOND, new Item.Properties().stacksTo(64), 5.0F));
+
+    /** 手裏剣腕輪 (旧 NinjaBracelet。耐久384、即射+クール20tick) */
+    public static final RegistryObject<ruby.bamboo.item.NinjaBraceletItem> NINJA_BRACELET = register("ninja_bracelet",
+            () -> new ruby.bamboo.item.NinjaBraceletItem(new Item.Properties().durability(384).stacksTo(1)));
+
     // ===== 弓矢 (旧 BambooBow + arrow 6種の 1.20.1 移植。アンチ矢はオミット) =====
 
     /** 竹弓 (旧 BambooBow)。耐久400 */

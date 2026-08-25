@@ -128,6 +128,10 @@ public final class BambooClientSetup {
             net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.EXPLODE_ARROW.get(),
                     ruby.bamboo.client.renderer.BambooArrowRenderer::new);
 
+            // 手裏剣 — アイテム回転描画
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.SHURIKEN.get(),
+                    ruby.bamboo.client.renderer.ShurikenRenderer::new);
+
             // 竹弓の引き絞りモデル (pull/pulling override)。バニラは Items.BOW にしか
             // 登録されないため、独自 BowItem 継承クラスには自前で登録が必要。
             registerBambooBowModelProperties();
