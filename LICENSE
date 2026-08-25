@@ -1,4 +1,4 @@
-BambooMod Licensing Summary (Simplified / 簡易れどめ)
+BambooMod Licensing Summary (Simplified / 簡易まとめ)
 ================================================
 Copyright (c) 2014-2026 Ruby (rubnsn) <whiteruby.0214@gmail.com>
 ModID: bamboomod / Minecraft 1.20.1 / Forge 47.x
@@ -17,22 +17,24 @@ This project uses DUAL licensing (code vs assets):
                             https://mod-buildcraft.com/MMPL-1.0.txt
                             https://github.com/spdx/license-list-data/blob/main/text/MMPL-1.0.1.txt
 
-  2) Assets        : Creative Commons Attribution-NonCommercial 4.0 International
-                    (CC BY-NC 4.0)
-                    SPDX-License-Identifier: CC-BY-NC-4.0
+  2) Assets        : Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+                    (CC BY-NC-SA 4.0)
+                    SPDX-License-Identifier: CC-BY-NC-SA-4.0
                     Scope: src/main/resources/assets/bamboomod/**
                            (models, blockstates, textures, lang, particles, sounds, etc.)
-                    Legal code: https://creativecommons.org/licenses/by-nc/4.0/legalcode
-                    Deed (ja):  https://creativecommons.org/licenses/by-nc/4.0/deed.ja
+                    Legal code: https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+                    Deed (ja):  https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ja
 
 Notes / 注意:
 - The binary JAR distribution as a whole remains under MMPL-1.0.1 per MMPL §6
   (All distributions of this mod must remain licensed under the MMPL).
-  The CC BY-NC 4.0 for assets is applied as an additional condition on asset files;
+  The CC BY-NC-SA 4.0 for assets is applied as an additional condition on asset files;
   where there is any conflict, MMPL-1.0.1 governs the Mod distribution,
   but commercial use of assets alone is NOT permitted without permission.
 - "NonCommercial" = 商用利用不可。MODパックへの同梱（無償配布）は許可しますが、
   資産（テクスチャ/モデル等）の単体販売・有料配布・商用AI学習データセット収録等は禁止。
+- "ShareAlike" = 継承。資産を改変・二次利用して配布する場合は、同じ CC BY-NC-SA 4.0 で
+  配布しなければなりません。
 - Derived code (code that extends/instantiates/calls this mod's classes, per MMPL §5)
   may be licensed under a different license.
 - When redistributing binaries you MUST provide means to obtain the complete
@@ -41,7 +43,7 @@ Notes / 注意:
 - No warranty (MMPL §2).
 
 SPDX summary for tooling:
-  - Overall: MMPL-1.0.1 AND CC-BY-NC-4.0
+  - Overall: MMPL-1.0.1 AND CC-BY-NC-SA-4.0
   - For REUSE: use .reuse/dep5 or per-file SPDX headers (future work)
 
 --------------------------------------------------------------------------------
@@ -134,8 +136,8 @@ copied from this mod, should be distributed under the terms of the present
 license.
 
 --------------------------------------------------------------------------------
-Creative Commons Attribution-NonCommercial 4.0 International - Summary
-=======================================================================
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International - Summary
+================================================================================
 (Assets: src/main/resources/assets/bamboomod/**)
 
 You are free to:
@@ -146,9 +148,11 @@ Under the following terms:
   Attribution — You must give appropriate credit, provide a link to the license,
                 and indicate if changes were made.
   NonCommercial — You may not use the material for commercial purposes.
+  ShareAlike — If you remix, transform, or build upon the material, you must
+               distribute your contributions under the same license as the original.
 
 No additional restrictions — You may not apply legal terms or technological
 measures that legally restrict others from doing anything the license permits.
 
-Full legal code: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+Full legal code: https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 For commercial use permission, contact the copyright holder.

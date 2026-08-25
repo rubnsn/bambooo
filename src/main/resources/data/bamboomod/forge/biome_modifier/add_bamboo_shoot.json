@@ -1,0 +1,22 @@
+{
+  "type": "forge:add_features",
+  "biomes": {
+    "type": "forge:and",
+    "values": [
+      {
+        "type": "forge:or",
+        "values": [
+          "#minecraft:is_forest",
+          "#forge:is_mountain",
+          "#minecraft:is_jungle"
+        ]
+      },
+      {
+        "type": "forge:not",
+        "value": "#forge:is_snowy"
+      }
+    ]
+  },
+  "features": "bamboomod:bamboo_shoot_placed",
+  "step": "vegetal_decoration"
+}

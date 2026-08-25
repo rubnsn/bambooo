@@ -7,6 +7,7 @@ import net.minecraftforge.registries.RegistryObject;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.item.BambooFoodItem;
 import ruby.bamboo.item.BambooFoods;
+import ruby.bamboo.item.BambooItem;
 import ruby.bamboo.item.Rawrice;
 import ruby.bamboo.item.Straw;
 
@@ -41,6 +42,9 @@ public final class BambooItems {
     }
 
     // ===== 素材アイテム =====
+
+    /** 竹 (ワールド上の竹ブロックを壊すと落ちる。無機能・植えられない素材アイテム) */
+    public static final RegistryObject<BambooItem> BAMBOO = register("bamboo", () -> new BambooItem(new Item.Properties()));
 
     /** ワラ */
     public static final RegistryObject<Straw> STRAW = register("straw", () -> new Straw(new Item.Properties()));

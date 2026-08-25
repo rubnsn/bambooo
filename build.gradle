@@ -192,7 +192,7 @@ tasks.named('jar', Jar).configure {
                 'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
-    // Include license files at jar root for release distribution (MMPL-1.0.1 + CC BY-NC 4.0)
+    // Include license files at jar root for release distribution (MMPL-1.0.1 + CC BY-NC-SA 4.0)
     from(projectDir) {
         include 'LICENSE'
         include 'README.md'

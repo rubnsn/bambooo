@@ -1,0 +1,15 @@
+{
+  "type": "forge:add_features",
+  "biomes": {
+    "type": "forge:or",
+    "values": [
+      "#minecraft:is_forest",
+      "#forge:is_mountain"
+    ]
+  },
+  "features": [
+    "bamboomod:hinoki_placed",
+    "bamboomod:hinoki_big_placed"
+  ],
+  "step": "vegetal_decoration"
+}

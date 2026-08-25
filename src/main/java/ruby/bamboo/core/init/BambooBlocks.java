@@ -98,8 +98,8 @@ public final class BambooBlocks {
 
     // ===== 第4弾: シンプル植物 (竹・たけのこ・稲・さくら系) =====
 
-    /** 竹 (旧 bamboo) */
-    public static final RegistryObject<BambooBlock> BAMBOO = register("bamboo",
+    /** 竹ブロック (旧 bamboo)。BlockItem無し (ドロップは別アイテム bamboo、植え付けは bamboo_shoot) */
+    public static final RegistryObject<BambooBlock> BAMBOO = registerNoItem("bamboo",
             () -> new BambooBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.PLANT).sound(SoundType.BAMBOO)
                     .strength(0.5f).randomTicks().noOcclusion()));

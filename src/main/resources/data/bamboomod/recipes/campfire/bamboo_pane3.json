@@ -1,16 +1,16 @@
-﻿{
+{
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
   "ingredients": [
       {
-        "item": "bamboomod:bamboo"
+        "item": "bamboomod:bamboo_item"
       },
       {
         "item": "bamboomod:bamboo_pane2"
       },
       {
-        "item": "bamboomod:bamboo"
+        "item": "bamboomod:bamboo_item"
       },
       {
         "item": "bamboomod:bamboo_pane2"

@@ -1,4 +1,4 @@
-﻿{
+{
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
@@ -16,7 +16,7 @@
         "item": "minecraft:birch_planks"
       },
       {
-        "item": "bamboomod:bamboo"
+        "item": "bamboomod:bamboo_item"
       },
       {
         "item": "minecraft:birch_planks"

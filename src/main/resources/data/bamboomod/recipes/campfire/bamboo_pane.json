@@ -1,25 +1,25 @@
-﻿{
+{
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
   "ingredients": [
       {
-        "item": "bamboomod:bamboo"
+        "item": "bamboomod:bamboo_item"
       },
       {
-        "item": "bamboomod:bamboo"
+        "item": "bamboomod:bamboo_item"
       },
       {
-        "item": "bamboomod:bamboo"
+        "item": "bamboomod:bamboo_item"
       },
       {
-        "item": "bamboomod:bamboo"
+        "item": "bamboomod:bamboo_item"
       },
       {
-        "item": "bamboomod:bamboo"
+        "item": "bamboomod:bamboo_item"
       },
       {
-        "item": "bamboomod:bamboo"
+        "item": "bamboomod:bamboo_item"
       }
   ],
   "result": {
