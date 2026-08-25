@@ -6,6 +6,7 @@ import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.entity.CampfireBlockEntity;
 import ruby.bamboo.block.entity.JPChestBlockEntity;
 import ruby.bamboo.block.entity.MillStoneBlockEntity;
+import ruby.bamboo.block.entity.MiniatureBlockEntity;
 import ruby.bamboo.block.entity.SlideDoorBlockEntity;
 
 /**
@@ -43,6 +44,13 @@ public final class BambooBlockEntities {
                             BambooBlocks.SHOJI.get(), BambooBlocks.SHOJI_YOKOGUMI.get(), BambooBlocks.SHOJI_TATEGUMI.get(),
                             BambooBlocks.SHOJI_YUKIMI.get(), BambooBlocks.HUSUMA.get(), BambooBlocks.GLASS_DOOR.get(),
                             BambooBlocks.GLASS_DOOR_GRID.get())
+                            .build(null));
+
+    /** ミニチュア (箱庭) — Phase A データ層 */
+    public static final RegistryObject<BlockEntityType<MiniatureBlockEntity>> MINIATURE_BE = BambooMod.BLOCK_ENTITIES
+            .register(
+                    "miniature",
+                    () -> BlockEntityType.Builder.of(MiniatureBlockEntity::new, BambooBlocks.MINIATURE.get())
                             .build(null));
 
     /**

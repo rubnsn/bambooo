@@ -35,6 +35,11 @@ public final class BambooItems {
         CREATIVE_ITEMS.add(() -> item.get().asItem().getDefaultInstance());
     }
 
+    /** NBT付きItemStackを直接クリエタブへ追加 (ミニチュアのサイズ違い等) */
+    public static void addCreativeStack(Supplier<ItemStack> stack) {
+        CREATIVE_ITEMS.add(stack);
+    }
+
     // ===== 素材アイテム =====
 
     /** ワラ */

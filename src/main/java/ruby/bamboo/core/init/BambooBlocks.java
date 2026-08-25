@@ -35,6 +35,7 @@ import ruby.bamboo.block.SakuraLeaveBlock;
 import ruby.bamboo.block.SakuraLogBlock;
 import ruby.bamboo.block.SakuraSaplingBlock;
 import ruby.bamboo.block.HutonBlock;
+import ruby.bamboo.block.MiniatureBlock;
 import ruby.bamboo.block.SlideDoorBlock;
 import ruby.bamboo.block.TatamiBlock;
 import ruby.bamboo.block.decoration.DecorationBlock;
@@ -244,6 +245,9 @@ public final class BambooBlocks {
     // ===== 布団 (旧 huton) =====
     public static final RegistryObject<HutonBlock> HUTON = register("huton", HutonBlock::new);
 
+    // ===== ミニチュア (箱庭) — 単一アイテム + NBT Size(4,8,12,16) =====
+    public static final RegistryObject<MiniatureBlock> MINIATURE = registerMiniature();
+
     // ===== 第6弾: 広葉樹の葉4種 (旧 broad_leave meta=0-3 を独立ブロック化) =====
 
     /** 広葉 (緑/赤/黄/橙)。テクスチャ共通 broadleaf.png を BlockColor で色乗算 */
@@ -361,6 +365,23 @@ public final class BambooBlocks {
         BambooMod.ITEMS.register(name,
                 () -> new net.minecraft.world.item.DoubleHighBlockItem(block.get(), new Item.Properties()));
         BambooItems.addCreative(block);
+        return block;
+    }
+
+    /** ミニチュア登録: 単一BlockItem + NBT違い4種をクリエタブへ */
+    private static RegistryObject<MiniatureBlock> registerMiniature() {
+        RegistryObject<MiniatureBlock> block = BambooMod.BLOCKS.register("miniature", MiniatureBlock::new);
+        BambooMod.ITEMS.register("miniature", () -> new BlockItem(block.get(), new Item.Properties()));
+        // クリエタブには Size 4,8,12,16 の4種を登録 (登録順=表示順)
+        for (int s : new int[]{4, 8, 12, 16}) {
+            final int size = s;
+            BambooItems.addCreativeStack(() -> {
+                net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(block.get());
+                stack.getOrCreateTag().putInt(ruby.bamboo.block.entity.MiniatureBlockEntity.TAG_SIZE, size);
+                // 空の場合は BlockEntityTag は不要
+                return stack;
+            });
+        }
         return block;
     }
 
