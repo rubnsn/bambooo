@@ -34,6 +34,7 @@ import ruby.bamboo.block.RicePlantBlock;
 import ruby.bamboo.block.SakuraLeaveBlock;
 import ruby.bamboo.block.SakuraLogBlock;
 import ruby.bamboo.block.SakuraSaplingBlock;
+import ruby.bamboo.block.CutBlock;
 import ruby.bamboo.block.HutonBlock;
 import ruby.bamboo.block.MiniatureBlock;
 import ruby.bamboo.block.SlideDoorBlock;
@@ -248,6 +249,9 @@ public final class BambooBlocks {
     // ===== ミニチュア (箱庭) — 単一アイテム + NBT Size(4,8,12,16) =====
     public static final RegistryObject<MiniatureBlock> MINIATURE = registerMiniature();
 
+    // ===== カットブロック — 単一ブロック + NBT CutState/YLevel/HLevel =====
+    public static final RegistryObject<CutBlock> CUT_BLOCK = registerCutBlock();
+
     // ===== 第6弾: 広葉樹の葉4種 (旧 broad_leave meta=0-3 を独立ブロック化) =====
 
     /** 広葉 (緑/赤/黄/橙)。テクスチャ共通 broadleaf.png を BlockColor で色乗算 */
@@ -460,6 +464,14 @@ public final class BambooBlocks {
         tag.put(MiniatureBlock.BLOCK_ENTITY_TAG, bet);
         stack.setHoverName(net.minecraft.network.chat.Component.literal("ミニチュア (デバッグ: チェスト16x)"));
         return stack;
+    }
+
+    /** カットブロック登録: 単一BlockItem(クリエタブ登録なし、ダミー透明) */
+    private static RegistryObject<CutBlock> registerCutBlock() {
+        RegistryObject<CutBlock> block = BambooMod.BLOCKS.register("cut_block", CutBlock::new);
+        BambooMod.ITEMS.register("cut_block", () -> new ruby.bamboo.item.CutBlockItem(block.get(), new net.minecraft.world.item.Item.Properties()));
+        // クリエタブ登録はしない（通常入手不能、レシピ生成のみ）
+        return block;
     }
 
     /**

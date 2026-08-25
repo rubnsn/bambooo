@@ -4,6 +4,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.registries.RegistryObject;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.entity.CampfireBlockEntity;
+import ruby.bamboo.block.entity.CutBlockEntity;
 import ruby.bamboo.block.entity.JPChestBlockEntity;
 import ruby.bamboo.block.entity.MillStoneBlockEntity;
 import ruby.bamboo.block.entity.MiniatureBlockEntity;
@@ -51,6 +52,13 @@ public final class BambooBlockEntities {
             .register(
                     "miniature",
                     () -> BlockEntityType.Builder.of(MiniatureBlockEntity::new, BambooBlocks.MINIATURE.get())
+                            .build(null));
+
+    /** カットブロック */
+    public static final RegistryObject<BlockEntityType<CutBlockEntity>> CUT_BLOCK_BE = BambooMod.BLOCK_ENTITIES
+            .register(
+                    "cut_block",
+                    () -> BlockEntityType.Builder.of(CutBlockEntity::new, BambooBlocks.CUT_BLOCK.get())
                             .build(null));
 
     /**

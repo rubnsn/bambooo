@@ -106,6 +106,12 @@ public final class BambooClientSetup {
             // ブロック側の RenderType は設定不要。ただし念のため cutout を指定しておく
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.MINIATURE.get(), RenderType.cutout());
 
+            // カットブロックの BER 登録
+            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+                    BambooBlockEntities.CUT_BLOCK_BE.get(),
+                    ruby.bamboo.client.renderer.CutBlockRenderer::new);
+            ItemBlockRenderTypes.setRenderLayer(BambooBlocks.CUT_BLOCK.get(), RenderType.cutout());
+
             // 布団用椅子エンティティ (huton_chair) — 不可視レンダラ。未登録だと shouldRender で NPE
             net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.HUTON_CHAIR.get(),
                     ruby.bamboo.client.renderer.ChairRenderer::new);

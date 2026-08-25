@@ -145,5 +145,6 @@
   "bamboomod.config.miniature.particle.globalMaxPerTick": "Global max particles/tick",
   "bamboomod.config.miniature.particle.spawnChance": "Spawn chance",
   "bamboomod.config.miniature.particle.distance": "Max distance",
-  "bamboomod.config.miniature.particle.tickInterval": "Tick interval"
+  "bamboomod.config.miniature.particle.tickInterval": "Tick interval",
+  "block.bamboomod.cut_block": "Cut Block"
 }
