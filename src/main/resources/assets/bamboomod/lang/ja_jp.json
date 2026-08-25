@@ -134,5 +134,7 @@
   "item.bamboomod.bamboofood_ramen": "ラーメン",
   "item.bamboomod.bamboofood_pizza": "ピザ",
   "item.bamboomod.bamboofood_kaisenoyako": "海鮮親子丼",
-  "tooltip.bamboomod.millstone.bonus": "%s（%s%%）"
+  "tooltip.bamboomod.millstone.bonus": "%s（%s%%）",
+  "block.bamboomod.spring_block": "源泉",
+  "block.bamboomod.spring_water": "温泉水"
 }

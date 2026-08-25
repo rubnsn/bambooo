@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_top",
+  "textures": {
+    "side": "minecraft:block/piston_top",
+    "top": "minecraft:block/piston_top"
+  }
+}

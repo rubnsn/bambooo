@@ -36,6 +36,8 @@ import ruby.bamboo.block.SakuraLogBlock;
 import ruby.bamboo.block.SakuraSaplingBlock;
 import ruby.bamboo.block.HutonBlock;
 import ruby.bamboo.block.SlideDoorBlock;
+import ruby.bamboo.block.SpringBlock;
+import ruby.bamboo.block.SpringWaterBlock;
 import ruby.bamboo.block.TatamiBlock;
 import ruby.bamboo.block.decoration.DecorationBlock;
 import ruby.bamboo.block.decoration.DecorationSlabBlock;
@@ -244,6 +246,11 @@ public final class BambooBlocks {
     // ===== 布団 (旧 huton) =====
     public static final RegistryObject<HutonBlock> HUTON = register("huton", HutonBlock::new);
 
+    // ===== 源泉・温泉水 =====
+    public static final RegistryObject<SpringBlock> SPRING_BLOCK = register("spring_block", SpringBlock::new);
+    public static final RegistryObject<SpringWaterBlock> SPRING_WATER = registerNoItem("spring_water",
+            () -> new SpringWaterBlock(() -> BambooMod.SPRING_WATER_SOURCE.get(),
+                    BlockBehaviour.Properties.copy(net.minecraft.world.level.block.Blocks.WATER).noLootTable().noOcclusion()));
     // ===== 第6弾: 広葉樹の葉4種 (旧 broad_leave meta=0-3 を独立ブロック化) =====
 
     /** 広葉 (緑/赤/黄/橙)。テクスチャ共通 broadleaf.png を BlockColor で色乗算 */
