@@ -1,7 +1,7 @@
 {
     "parent": "bamboomod:block/slidedoor/slide_door_top_rh",
     "textures": {
-        "top": "bamboomod:block/shoji3_top",
-        "top_back": "bamboomod:block/shoji3_top_back"
+        "top": "bamboomod:block/shoji_yokogumi_top",
+        "top_back": "bamboomod:block/shoji_yokogumi_top_back"
     }
 }
