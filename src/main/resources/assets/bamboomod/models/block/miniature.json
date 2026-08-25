@@ -1,6 +1,6 @@
 {
-  "parent": "block/cube_all",
+  "parent": "block/pressure_plate_down",
   "textures": {
-    "all": "bamboomod:block/plaster"
+    "texture": "bamboomod:block/miniature"
   }
 }

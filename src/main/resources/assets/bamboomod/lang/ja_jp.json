@@ -91,6 +91,8 @@
   "block.bamboomod.glassdoor": "ガラス戸",
   "block.bamboomod.glassdoor_grid": "格子ガラス戸",
   "block.bamboomod.huton": "布団",
+  "block.bamboomod.miniature": "ミニチュア",
+  "item.bamboomod.miniature": "ミニチュア",
   "item.bamboomod.bamboofood_mugimesi": "ご飯",
   "item.bamboomod.bamboofood_gyumesi": "牛飯",
   "item.bamboomod.bamboofood_butamesi": "豚飯",
@@ -134,5 +136,14 @@
   "item.bamboomod.bamboofood_ramen": "ラーメン",
   "item.bamboomod.bamboofood_pizza": "ピザ",
   "item.bamboomod.bamboofood_kaisenoyako": "海鮮親子丼",
-  "tooltip.bamboomod.millstone.bonus": "%s（%s%%）"
+  "tooltip.bamboomod.millstone.bonus": "%s（%s%%）",
+  "bamboomod.config.miniature.title": "ミニチュア設定",
+  "bamboomod.config.miniature.desc": "ミニチュア内部のパーティクル等のクライアント設定",
+  "bamboomod.config.miniature.particle.enabled": "パーティクル有効",
+  "bamboomod.config.miniature.particle.enabled.tooltip": "ミニチュア内部の松明等のパーティクルを縮小表示する",
+  "bamboomod.config.miniature.particle.perMiniaturePerTick": "1ミニチュアあたりの最大パーティクル数/tick",
+  "bamboomod.config.miniature.particle.globalMaxPerTick": "全体の最大パーティクル数/tick",
+  "bamboomod.config.miniature.particle.spawnChance": "出現確率",
+  "bamboomod.config.miniature.particle.distance": "最大表示距離",
+  "bamboomod.config.miniature.particle.tickInterval": "発生間隔(tick)"
 }

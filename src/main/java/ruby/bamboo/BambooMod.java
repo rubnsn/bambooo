@@ -13,6 +13,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
+import ruby.bamboo.core.config.MiniatureConfig;
 import ruby.bamboo.core.init.BambooBlockEntities;
 import ruby.bamboo.core.init.BambooBlocks;
 import ruby.bamboo.core.init.BambooEntities;
@@ -92,6 +93,17 @@ public class BambooMod {
                     .build());
 
     public BambooMod(FMLJavaModLoadingContext context) {
+        // Config登録 (miniature particle 独自ルール)
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                net.minecraftforge.fml.config.ModConfig.Type.CLIENT,
+                MiniatureConfig.CLIENT_SPEC, "bamboomod-miniature.toml");
+        // Config GUI — ModList の「Config」ボタンを有効化
+        if (net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.CLIENT) {
+            net.minecraftforge.fml.ModLoadingContext.get().registerExtensionPoint(
+                    net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory.class,
+                    () -> new net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory(
+                            (mc, screen) -> new ruby.bamboo.client.gui.MiniatureConfigScreen(screen)));
+        }
         IEventBus modEventBus = context.getModEventBus();
 
         // 登録順: BLOCKS/ITEMS を先に接続してから各初期化クラスで register 呼び出し

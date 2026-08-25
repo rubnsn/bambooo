@@ -286,149 +286,20 @@ public class MiniatureBlockEntity extends BlockEntity {
                 this.dirty = false;
             }
         }
-        tickPowerPropagation();
+        // レッドストーン全オミット (2026-08-26 ユーザ指示): tickPowerPropagation は廃止。
         tickRandomTick();
     }
 
     private void clientTick() {
-        // Phase D で buildQueue 進行等を扱う。Phase A-D は no-op。
+        // パーティクル一旦全オミット (2026-08-26)
+        return;
     }
 
-    // ===== 簡易redstone伝播 (Phase E) =====
+    // ===== 簡易redstone伝播 (Phase E) — 2026-08-26 全オミット =====
 
+    @SuppressWarnings("unused")
     private void tickPowerPropagation() {
-        if (this.level == null || this.level.isClientSide) {
-            return;
-        }
-        if (isEmpty()) {
-            return;
-        }
-        // 6方向 flood-fill で power を計算 (簡易2値)。距離上限 POWER_DISTANCE。
-        java.util.Set<BlockPos> powered = new java.util.HashSet<>();
-        java.util.Queue<BlockPos> queue = new java.util.ArrayDeque<>();
-        java.util.Map<BlockPos, Integer> distMap = new java.util.HashMap<>();
-        for (int x = 0; x < this.size; x++) {
-            for (int y = 0; y < this.size; y++) {
-                for (int z = 0; z < this.size; z++) {
-                    BlockState st = this.cells[x][y][z];
-                    if (st.isAir()) {
-                        continue;
-                    }
-                    try {
-                        if (st.isSignalSource()) {
-                            BlockPos p = new BlockPos(x, y, z);
-                            queue.add(p);
-                            distMap.put(p, 0);
-                            powered.add(p);
-                        }
-                    } catch (Exception e) {
-                        // hasBlockEntity等の例外は無視 (見た目のみ)
-                    }
-                }
-            }
-        }
-        int[] dx = {1, -1, 0, 0, 0, 0};
-        int[] dy = {0, 0, 1, -1, 0, 0};
-        int[] dz = {0, 0, 0, 0, 1, -1};
-        java.util.Set<BlockPos> visited = new java.util.HashSet<>(powered);
-        while (!queue.isEmpty()) {
-            BlockPos cur = queue.poll();
-            int d = distMap.getOrDefault(cur, 0);
-            if (d >= POWER_DISTANCE) {
-                continue;
-            }
-            for (int i = 0; i < 6; i++) {
-                BlockPos n = cur.offset(dx[i], dy[i], dz[i]);
-                if (!isInRange(n.getX(), n.getY(), n.getZ())) {
-                    continue;
-                }
-                if (visited.contains(n)) {
-                    continue;
-                }
-                visited.add(n);
-                if (this.cells[n.getX()][n.getY()][n.getZ()].isAir()) {
-                    continue;
-                }
-                powered.add(n);
-                distMap.put(n, d + 1);
-                queue.add(n);
-            }
-        }
-        // 受信側: LIT / OPEN / POWERED を power 有無で更新
-        boolean changed = false;
-        for (BlockPos p : powered) {
-            BlockState st = getCell(p);
-            if (st.isAir()) {
-                continue;
-            }
-            BlockState ns = st;
-            try {
-                if (st.hasProperty(BlockStateProperties.LIT)) {
-                    boolean lit = st.getValue(BlockStateProperties.LIT);
-                    if (lit != true) {
-                        ns = ns.setValue(BlockStateProperties.LIT, true);
-                    }
-                }
-                if (st.hasProperty(BlockStateProperties.OPEN)) {
-                    // ドア等は powerで開く想定だが、簡易では LIT と同様に power=trueで OPEN=true
-                    // 元が lever等 power source 自体は触らないため、openを持つブロックのみ対象
-                    // ここでは power 伝播結果を OPEN に反映 (レバー隣接ドア等)
-                    // ただし source 自体は既に powered なので区別しない
-                }
-                if (st.hasProperty(BlockStateProperties.POWERED)) {
-                    boolean pw = st.getValue(BlockStateProperties.POWERED);
-                    if (pw != true) {
-                        ns = ns.setValue(BlockStateProperties.POWERED, true);
-                    }
-                }
-            } catch (Exception e) {
-                continue;
-            }
-            if (ns != st) {
-                this.cells[p.getX()][p.getY()][p.getZ()] = ns;
-                changed = true;
-            }
-        }
-        // 非poweredの LIT/POWERED を OFF に戻す (簡易: powerが切れたら消灯)
-        // 全セル走査で powered 外の該当ブロックを OFF
-        for (int x = 0; x < this.size; x++) {
-            for (int y = 0; y < this.size; y++) {
-                for (int z = 0; z < this.size; z++) {
-                    BlockPos p = new BlockPos(x, y, z);
-                    if (powered.contains(p)) {
-                        continue;
-                    }
-                    BlockState st = this.cells[x][y][z];
-                    if (st.isAir()) {
-                        continue;
-                    }
-                    BlockState ns = st;
-                    try {
-                        if (st.hasProperty(BlockStateProperties.LIT) && st.getValue(BlockStateProperties.LIT)) {
-                            // レッドストーンランプ等は powerが無ければ消灯、トーチは除外? 簡易でOFF
-                            // signalSource 自体は常時 LIT=true なので、sourceは除外
-                            if (!st.isSignalSource()) {
-                                ns = ns.setValue(BlockStateProperties.LIT, false);
-                            }
-                        }
-                        if (st.hasProperty(BlockStateProperties.POWERED) && st.getValue(BlockStateProperties.POWERED)) {
-                            if (!st.isSignalSource()) {
-                                ns = ns.setValue(BlockStateProperties.POWERED, false);
-                            }
-                        }
-                    } catch (Exception e) {
-                        continue;
-                    }
-                    if (ns != st) {
-                        this.cells[x][y][z] = ns;
-                        changed = true;
-                    }
-                }
-            }
-        }
-        if (changed) {
-            markDirtyAndSync();
-        }
+        return;
     }
 
     // ===== randomTick疑似実行 (Phase E) =====

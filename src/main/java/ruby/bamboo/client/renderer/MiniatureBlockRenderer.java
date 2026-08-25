@@ -54,38 +54,94 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
                     if (state == null || state.isAir() || state.getBlock() == Blocks.AIR) {
                         continue;
                     }
-                    // TE所持ブロックも見た目のみ描画 (GUI/tick 無し)
-                    // BlockModel を取得
-                    net.minecraft.client.resources.model.BakedModel model = this.blockRenderer.getBlockModel(state);
-                    // ModelData は外部レベルで取得を試みるが、必要なら EMPTY でフォールバック
-                    ModelData md;
-                    try {
-                        md = model.getModelData(be.getLevel(), bePos, state, ModelData.EMPTY);
-                    } catch (Exception e) {
-                        md = ModelData.EMPTY;
-                    }
-                    // セル位置へ translate
-                    poseStack.pushPose();
-                    poseStack.translate(x, y, z);
-                    // RenderType ごとに tesselate
-                    // model.getRenderTypes は state + rand + md で取得
-                    for (RenderType rt : model.getRenderTypes(state, rand, md)) {
-                        VertexConsumer vc = bufferSource.getBuffer(rt);
+                    // 汎用描画: RenderShape に応じて BakedModel と BER を組み合わせる
+                    // - EnchantmentTable は MODEL + BER(book) の両方が必要 (旧実装は BERのみで本だけ表示)
+                    // - Bed/Chest は ENTITYBLOCK_ANIMATED なので BER のみ
+                    // - 通常ブロックは MODEL のみ
+                    net.minecraft.world.level.block.RenderShape shape = state.getRenderShape();
+                    boolean hasBE = state.hasBlockEntity();
+                    // 1) BakedModel 描画 (MODEL の場合のみ。INVISIBLE/ENTITYBLOCK_ANIMATED はスキップ)
+                    boolean shouldTesselate = (shape == net.minecraft.world.level.block.RenderShape.MODEL);
+                    // EnchantmentTable のように hasBE かつ MODEL の場合は両方必要
+                    // Bed/Chest は ENTITYBLOCK_ANIMATED なので tesselate 不要
+                    if (shouldTesselate) {
+                        net.minecraft.client.resources.model.BakedModel model = this.blockRenderer.getBlockModel(state);
+                        ModelData md;
                         try {
-                            // cellPos は (x,y,z) ではなく bePos で AO を取るか、0,0,0 でも可。
-                            // ここでは cell 自身の座標を渡すことで AO が内部セル間で正しく働くようにするが、
-                            // 外部レベルの neighbour に依存する場合は外側になるため bePos を基準にする。
-                            // 簡易では bePos を使用し、poseStack の translate で位置合わせ。
-                            BlockPos cellPos = new BlockPos(x, y, z);
-                            this.blockRenderer.getModelRenderer().tesselateBlock(
-                                    be.getLevel(), model, state, cellPos,
-                                    poseStack, vc, false, rand, state.getSeed(cellPos), packedOverlay, md, rt);
+                            md = model.getModelData(be.getLevel(), bePos, state, ModelData.EMPTY);
                         } catch (Exception e) {
-                            // 例外は握りつぶし (MODブロックのモデルが壊れていてもクラッシュさせない)
+                            md = ModelData.EMPTY;
+                        }
+                        poseStack.pushPose();
+                        poseStack.translate(x, y, z);
+                        for (RenderType rt : model.getRenderTypes(state, rand, md)) {
+                            VertexConsumer vc = bufferSource.getBuffer(rt);
+                            try {
+                                BlockPos cellPos = new BlockPos(x, y, z);
+                                this.blockRenderer.getModelRenderer().tesselateBlock(
+                                        be.getLevel(), model, state, cellPos,
+                                        poseStack, vc, false, rand, state.getSeed(cellPos), packedOverlay, md, rt);
+                            } catch (Exception e) {
+                            }
+                        }
+                        poseStack.popPose();
+                    }
+                    // 2) BER 描画 (hasBlockEntity なら汎用的に EntityBlock で試行。BaseEntityBlock に限定しない)
+                    if (hasBE) {
+                        try {
+                            net.minecraft.world.level.block.entity.BlockEntity te = null;
+                            net.minecraft.world.level.block.Block blk = state.getBlock();
+                            if (blk instanceof net.minecraft.world.level.block.EntityBlock eb) {
+                                te = eb.newBlockEntity(bePos, state);
+                            } else if (blk instanceof net.minecraft.world.level.block.BaseEntityBlock base) {
+                                te = base.newBlockEntity(bePos, state);
+                            }
+                            if (te != null) {
+                                te.setLevel(be.getLevel());
+                                var dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
+                                var renderer = dispatcher.getRenderer(te);
+                                if (renderer != null) {
+                                    poseStack.pushPose();
+                                    poseStack.translate(x, y, z);
+                                    //noinspection unchecked
+                                    ((net.minecraft.client.renderer.blockentity.BlockEntityRenderer) renderer)
+                                            .render(te, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+                                    poseStack.popPose();
+                                }
+                            }
+                        } catch (Exception e) {
+                            // BER 失敗は無視 (モデル側は既に描画済みなら残る)
                         }
                     }
-                    // 流体は未対応 (Phase F以降で IFluidState 反映)
-                    poseStack.popPose();
+                    // 3) 旧フォールバック: MODEL でも ENTITYBLOCK_ANIMATED でもないが hasBE でもない場合
+                    // 上で shouldTesselate=false かつ hasBE=false の block (例: INVISIBLE) は何も描画しない
+                    // ただし RenderShape が INVISIBLE で model が必要なケースは稀なのでスキップ
+                    if (!shouldTesselate && !hasBE) {
+                        // 念のため MODEL 以外でも BakedModel が存在すれば描画を試みる (フェンス等の特殊モデル対応)
+                        // ただし ENTITYBLOCK_ANIMATED は既に BER で処理済みなので除外
+                        if (shape != net.minecraft.world.level.block.RenderShape.ENTITYBLOCK_ANIMATED
+                                && shape != net.minecraft.world.level.block.RenderShape.INVISIBLE) {
+                            try {
+                                net.minecraft.client.resources.model.BakedModel model = this.blockRenderer.getBlockModel(state);
+                                ModelData md = ModelData.EMPTY;
+                                try {
+                                    md = model.getModelData(be.getLevel(), bePos, state, ModelData.EMPTY);
+                                } catch (Exception e) {}
+                                poseStack.pushPose();
+                                poseStack.translate(x, y, z);
+                                for (RenderType rt : model.getRenderTypes(state, rand, md)) {
+                                    VertexConsumer vc = bufferSource.getBuffer(rt);
+                                    try {
+                                        BlockPos cellPos = new BlockPos(x, y, z);
+                                        this.blockRenderer.getModelRenderer().tesselateBlock(
+                                                be.getLevel(), model, state, cellPos,
+                                                poseStack, vc, false, rand, state.getSeed(cellPos), packedOverlay, md, rt);
+                                    } catch (Exception e) {}
+                                }
+                                poseStack.popPose();
+                            } catch (Exception e) {}
+                        }
+                    }
                 }
             }
         }
