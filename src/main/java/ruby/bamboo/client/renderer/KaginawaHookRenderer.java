@@ -27,10 +27,10 @@ public class KaginawaHookRenderer extends EntityRenderer<KaginawaHookEntity> {
 
     private static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID, "textures/entity/kaginawa_hook.png");
     private static final ResourceLocation BEAM_TEXTURE = new ResourceLocation("minecraft", "textures/misc/white.png");
-    // 麻縄色 0xC8B898
-    private static final int ROPE_R = 0xC8;
-    private static final int ROPE_G = 0xB8;
-    private static final int ROPE_B = 0x98;
+    // 灰色 0xC8B898
+    private static final int ROPE_R = 0xCC;
+    private static final int ROPE_G = 0xCC;
+    private static final int ROPE_B = 0xCC;
     private static final int ROPE_A = 255;
 
     // 暫定: RenderTypeはentityTranslucent相当の半透明帯。幅はジオメトリで出すためline系でなくtriangle系

@@ -37,8 +37,8 @@ public class KaginawaHookEntity extends Entity {
     private static final EntityDataAccessor<Float> DATA_ANCHOR_Z = SynchedEntityData.defineId(KaginawaHookEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> DATA_OWNER_ID = SynchedEntityData.defineId(KaginawaHookEntity.class, EntityDataSerializers.INT);
 
-    private static final float MAX_LENGTH = 30.0F;
-    private static final float MIN_LENGTH = 2.0F;
+    private static final float MAX_LENGTH = 20.0F;
+    private static final float MIN_LENGTH = 0.5F;
     private static final float INITIAL_REEL_OUT = 0.22F;
     private static final float INITIAL_REEL_IN = 0.28F;
     // 巻取り(Space)でアンカーへ引き寄せる速度
