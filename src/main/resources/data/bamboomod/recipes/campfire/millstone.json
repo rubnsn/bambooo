@@ -1,0 +1,41 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "minecraft:cobblestone"
+    },
+    {
+      "item": "minecraft:cobblestone"
+    },
+    {
+      "item": "minecraft:cobblestone"
+    },
+    {
+      "item": "minecraft:cobblestone"
+    },
+    {
+      "item": "minecraft:cobblestone"
+    },
+    {
+      "item": "minecraft:cobblestone"
+    },
+    {
+      "item": "minecraft:cobblestone"
+    },
+    {
+      "tag": "forge:bamboo"
+    },
+    {
+      "tag": "forge:bamboo"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:millstone",
+    "count": 1
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

@@ -1,0 +1,23 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "combat",
+  "group": "",
+  "ingredients": [
+    {
+      "tag": "forge:bamboo"
+    },
+    {
+      "tag": "forge:bamboo"
+    },
+    {
+      "tag": "forge:bamboo"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:bambooarrow",
+    "count": 8
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

@@ -1,0 +1,41 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "equipment",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "tag": "forge:bamboo"
+    },
+    {
+      "tag": "forge:bamboo"
+    },
+    {
+      "tag": "forge:bamboo"
+    },
+    {
+      "tag": "forge:bamboo"
+    },
+    {
+      "tag": "forge:bamboo"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:foldingfan",
+    "count": 1
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

@@ -1,0 +1,32 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "equipment",
+  "group": "",
+  "ingredients": [
+    {
+      "tag": "forge:bamboo"
+    },
+    {
+      "tag": "forge:bamboo"
+    },
+    {
+      "tag": "forge:bamboo"
+    },
+    {
+      "item": "minecraft:string"
+    },
+    {
+      "item": "minecraft:string"
+    },
+    {
+      "item": "minecraft:string"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:bamboobow",
+    "count": 1
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}
