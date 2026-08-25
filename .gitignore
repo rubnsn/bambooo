@@ -21,10 +21,10 @@ build
 eclipse
 run
 *.log
+*.ps1
 # Files from Forge MDK
 forge*changelog.txt
 setup_build.log
-src/main/resources/assets/bamboomod/textures/**/*.png
 # Muse
 .muse/
 
@@ -46,3 +46,7 @@ src/main/resources/assets/bamboomod/textures/**/*.png
 # OpenCode legacy
 .oh-my-opencode/
 docs/*
+opencode.json
+mc.code-workspace
+# エージェント編集禁止: .gitignore の変更はユーザー確認必須 (Agent: DO NOT EDIT without user approval)
+AGENTS.md
