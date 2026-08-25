@@ -11,9 +11,13 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -85,10 +89,33 @@ public class MiniatureBlock extends BaseEntityBlock {
                 .mapColor(MapColor.WOOD)
                 .strength(1.0f, 3.0f)
                 .noOcclusion()
+                .isSuffocating((s, l, p) -> false)
+                .isViewBlocking((s, l, p) -> false)
+                .isRedstoneConductor((s, l, p) -> false)
                 .pushReaction(PushReaction.BLOCK));
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(ENABLED, false));
+    }
+
+    @Override
+    public boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+        return true;
+    }
+
+    @Override
+    public int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+        return 0;
+    }
+
+    @Override
+    public boolean useShapeForLightOcclusion(BlockState state) {
+        return false;
+    }
+
+    @Override
+    public float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
+        return 1.0F;
     }
 
     @Override
@@ -431,6 +458,20 @@ public class MiniatureBlock extends BaseEntityBlock {
         }
     }
 
+    private void handleBucketExchange(Player player, InteractionHand hand, ItemStack held, ItemStack result) {
+        if (player.getAbilities().instabuild) {
+            return;
+        }
+        if (held.getCount() == 1) {
+            player.setItemInHand(hand, result);
+        } else {
+            held.shrink(1);
+            if (!player.addItem(result)) {
+                player.drop(result, false);
+            }
+        }
+    }
+
     // ===== Drops / Pick =====
 
     @Override
@@ -636,6 +677,120 @@ public class MiniatureBlock extends BaseEntityBlock {
             }
         }
 
+        // 2.6) バケツ対応 — 再実装 (2026-08-26)
+        // 水はフルキューブではない (LiquidBlock.LEVEL相当の height 可変、corner平均)、テクスチャは still/flow の
+        // 2枚で毎tickアニメ、RenderType は translucent (ItemBlockRenderTypes.getRenderLayer) が正しいパス。
+        // 旧実装の LEVEL 段階操作(0→1→...→空気で流動アニメを偽装)は無駄で見た目も崩れるため廃止。単純に
+        //  - 置く: 空セルへ Blocks.WATER/LAVA もしくは fluid.defaultFluidState().createLegacyBlock() を1回で設置、
+        //         waterlogged な水は STATE.setValue(WATERLOGGED,true) のみ。
+        //  - 掬う: FluidState.isEmpty() で判定し該当セルを AIR へ、waterlogged は false へ。
+        // で完結する。アニメ/height は Renderer 側で LiquidBlockRenderer 相当に計算するためここでは触らない。
+        if (!held.isEmpty() && held.getItem() instanceof BucketItem bucketItem) {
+            Fluid fluid = bucketItem.getFluid();
+            boolean isEmpty = fluid == Fluids.EMPTY;
+            BlockState tgtState = be.getCell(targetPos);
+            BlockState hitState = be.isInRange(hitPos.getX(), hitPos.getY(), hitPos.getZ()) ? be.getCell(hitPos) : null;
+            if (isEmpty) {
+                // 採取: FluidState があるセルを優先 (target → hit)、次に waterlogged
+                BlockState pickupState = null;
+                BlockPos pickupPos = null;
+                if (tgtState != null && !tgtState.getFluidState().isEmpty()) {
+                    pickupState = tgtState;
+                    pickupPos = targetPos;
+                } else if (hitState != null && !hitState.getFluidState().isEmpty()) {
+                    pickupState = hitState;
+                    pickupPos = hitPos;
+                } else if (tgtState != null && tgtState.hasProperty(BlockStateProperties.WATERLOGGED) && tgtState.getValue(BlockStateProperties.WATERLOGGED)) {
+                    pickupState = tgtState;
+                    pickupPos = targetPos;
+                } else if (hitState != null && hitState.hasProperty(BlockStateProperties.WATERLOGGED) && hitState.getValue(BlockStateProperties.WATERLOGGED)) {
+                    pickupState = hitState;
+                    pickupPos = hitPos;
+                }
+                if (pickupState != null && pickupPos != null) {
+                    // waterlogged は WATER として掬う
+                    if (pickupState.hasProperty(BlockStateProperties.WATERLOGGED) && pickupState.getValue(BlockStateProperties.WATERLOGGED)) {
+                        BlockState ns = pickupState.setValue(BlockStateProperties.WATERLOGGED, false);
+                        be.setCell(pickupPos, ns);
+                        updateInnerConnections(pickupPos, be, level, pos);
+                        be.rebuildShapeCache();
+                        level.sendBlockUpdated(pos, state, state, 3);
+                        level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_FILL, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+                        handleBucketExchange(player, hand, held, new ItemStack(Items.WATER_BUCKET));
+                        return InteractionResult.SUCCESS;
+                    }
+                    FluidState fs = pickupState.getFluidState();
+                    if (!fs.isEmpty() || pickupState.is(Blocks.WATER) || pickupState.is(Blocks.LAVA)) {
+                        boolean isLava = fs.is(Fluids.LAVA) || pickupState.is(Blocks.LAVA);
+                        be.setCell(pickupPos, Blocks.AIR.defaultBlockState());
+                        validCheck(be, pickupPos, player);
+                        // 外側 ENABLED 更新
+                        boolean empty = be.isEmpty();
+                        BlockState outer = level.getBlockState(pos);
+                        if (outer.is(this) && outer.getValue(ENABLED) != !empty) {
+                            level.setBlock(pos, outer.setValue(ENABLED, !empty), 3);
+                        } else {
+                            level.sendBlockUpdated(pos, state, state, 3);
+                        }
+                        be.rebuildShapeCache();
+                        level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_FILL, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+                        handleBucketExchange(player, hand, held, new ItemStack(isLava ? Items.LAVA_BUCKET : Items.WATER_BUCKET));
+                        return InteractionResult.SUCCESS;
+                    }
+                }
+            } else {
+                // 給水/給溶岩
+                // waterlogged への直接給水を優先 (target → hit)
+                if (fluid == Fluids.WATER) {
+                    if (tgtState.hasProperty(BlockStateProperties.WATERLOGGED) && !tgtState.getValue(BlockStateProperties.WATERLOGGED)) {
+                        be.setCell(targetPos, tgtState.setValue(BlockStateProperties.WATERLOGGED, true));
+                        updateInnerConnections(targetPos, be, level, pos);
+                        be.rebuildShapeCache();
+                        level.sendBlockUpdated(pos, state, state, 3);
+                        level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+                        handleBucketExchange(player, hand, held, new ItemStack(Items.BUCKET));
+                        return InteractionResult.SUCCESS;
+                    }
+                    if (hitState != null && hitState.hasProperty(BlockStateProperties.WATERLOGGED) && !hitState.getValue(BlockStateProperties.WATERLOGGED)) {
+                        be.setCell(hitPos, hitState.setValue(BlockStateProperties.WATERLOGGED, true));
+                        updateInnerConnections(hitPos, be, level, pos);
+                        be.rebuildShapeCache();
+                        level.sendBlockUpdated(pos, state, state, 3);
+                        level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+                        handleBucketExchange(player, hand, held, new ItemStack(Items.BUCKET));
+                        return InteractionResult.SUCCESS;
+                    }
+                }
+                BlockPos placePos = null;
+                if (be.isInRange(hitPos.getX(), hitPos.getY(), hitPos.getZ()) && be.getCell(hitPos).isAir()) {
+                    placePos = hitPos;
+                } else if (be.isInRange(targetPos.getX(), targetPos.getY(), targetPos.getZ()) && be.getCell(targetPos).isAir()) {
+                    placePos = targetPos;
+                }
+                if (placePos != null) {
+                    BlockState fluidBlock;
+                    if (fluid == Fluids.WATER) fluidBlock = Blocks.WATER.defaultBlockState();
+                    else if (fluid == Fluids.LAVA) fluidBlock = Blocks.LAVA.defaultBlockState();
+                    else fluidBlock = fluid.defaultFluidState().createLegacyBlock();
+                    // LEVEL は触らない。createLegacyBlock は source (LEVEL 0) を返す。
+                    be.setCell(placePos, fluidBlock);
+                    updateInnerConnections(placePos, be, level, pos);
+                    be.rebuildShapeCache();
+                    BlockState outer = level.getBlockState(pos);
+                    if (outer.is(this) && !outer.getValue(ENABLED)) {
+                        level.setBlock(pos, outer.setValue(ENABLED, true), 3);
+                    } else {
+                        level.sendBlockUpdated(pos, state, state, 3);
+                    }
+                    level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+                    handleBucketExchange(player, hand, held, new ItemStack(Items.BUCKET));
+                    return InteractionResult.SUCCESS;
+                }
+                // 空セル無し & waterlogged 不可 → 失敗
+                return InteractionResult.FAIL;
+            }
+        }
+
         // 3) 手持ちが BlockItem → 配置 (面を考慮: BlockStateForPlacement で向きを解決)
         if (!held.isEmpty() && held.getItem() instanceof BlockItem blockItem) {
             // 既にoccupiedなセルには置けない
@@ -756,9 +911,33 @@ public class MiniatureBlock extends BaseEntityBlock {
                 if (toPlace.hasProperty(BlockStateProperties.BED_PART)) {
                     BedPart part = toPlace.getValue(BlockStateProperties.BED_PART);
                     if (part == BedPart.FOOT) {
-                        Direction bedFacing = toPlace.hasProperty(BlockStateProperties.HORIZONTAL_FACING)
-                                ? toPlace.getValue(BlockStateProperties.HORIZONTAL_FACING)
-                                : player.getDirection().getOpposite();
+                        // ミニチュア内では外側 BlockPlaceContext (miniature外殻位置) の getStateForPlacement が
+                        // 外側ワールドの replaceable/sturdy 判定で null → default(NORTH) にフォールバックし
+                        // プレイヤー向きが失われる。布団は向きが重要なので、常にプレイヤー向きで上書きする。
+                        Direction bedFacing = ctx != null ? ctx.getHorizontalDirection() : player.getDirection();
+                        // HORIZONTAL_FACING を持つ場合はプレイヤー向きに正規化し、canSurvive を満たす向きを優先
+                        if (toPlace.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                            // 一旦プレイヤー向きで試し、生存不可なら findValidPlacementState 的に回す
+                            BlockState withFacing = toPlace.setValue(BlockStateProperties.HORIZONTAL_FACING, bedFacing);
+                            MiniatureFakeLevelReader fakeForFacing = new MiniatureFakeLevelReader(be, level, pos);
+                            if (withFacing.canSurvive(fakeForFacing, placePos)) {
+                                toPlace = withFacing;
+                            } else {
+                                // プレイヤー向きで生存不可なら他向きを試す (壁際等)
+                                BlockState fixed = findValidPlacementState(toPlace.getBlock(), withFacing, fakeForFacing, placePos, bedFacing);
+                                if (fixed != null) {
+                                    toPlace = fixed;
+                                    bedFacing = fixed.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                                } else {
+                                    // フォールバックはプレイヤー向きのまま (head 側で FAIL になる)
+                                    toPlace = withFacing;
+                                }
+                            }
+                        } else {
+                            bedFacing = toPlace.hasProperty(BlockStateProperties.HORIZONTAL_FACING)
+                                    ? toPlace.getValue(BlockStateProperties.HORIZONTAL_FACING)
+                                    : bedFacing;
+                        }
                         BlockPos headPos = placePos.relative(bedFacing);
                         if (!be.isInRange(headPos.getX(), headPos.getY(), headPos.getZ())
                                 || !be.getCell(headPos).isAir()) {

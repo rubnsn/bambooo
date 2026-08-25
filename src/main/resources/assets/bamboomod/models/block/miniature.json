@@ -1,5 +1,6 @@
 {
   "parent": "block/pressure_plate_down",
+  "ambientocclusion": false,
   "textures": {
     "texture": "bamboomod:block/miniature"
   }

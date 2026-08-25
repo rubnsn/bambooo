@@ -145,5 +145,9 @@
   "bamboomod.config.miniature.particle.globalMaxPerTick": "Global max particles/tick",
   "bamboomod.config.miniature.particle.spawnChance": "Spawn chance",
   "bamboomod.config.miniature.particle.distance": "Max distance",
-  "bamboomod.config.miniature.particle.tickInterval": "Tick interval"
+  "bamboomod.config.miniature.particle.tickInterval": "Tick interval",
+  "bamboomod.config.miniature.render.maxCells": "Max detailed cells",
+  "bamboomod.config.miniature.render.maxDistance": "Max distance",
+  "bamboomod.config.miniature.render.placeholder": "Placeholder mode",
+  "bamboomod.config.miniature.render.lodShell": "Shell LOD on boundary"
 }

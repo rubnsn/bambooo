@@ -145,5 +145,9 @@
   "bamboomod.config.miniature.particle.globalMaxPerTick": "全体の最大パーティクル数/tick",
   "bamboomod.config.miniature.particle.spawnChance": "出現確率",
   "bamboomod.config.miniature.particle.distance": "最大表示距離",
-  "bamboomod.config.miniature.particle.tickInterval": "発生間隔(tick)"
+  "bamboomod.config.miniature.particle.tickInterval": "発生間隔(tick)",
+  "bamboomod.config.miniature.render.maxCells": "詳細描画上限(内部ブロック数)",
+  "bamboomod.config.miniature.render.maxDistance": "詳細描画距離",
+  "bamboomod.config.miniature.render.placeholder": "超過時の表示",
+  "bamboomod.config.miniature.render.lodShell": "境界で殻のみ描画(滑らか)"
 }

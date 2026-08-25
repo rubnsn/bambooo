@@ -26,6 +26,12 @@ public class MiniatureConfig {
         public final ForgeConfigSpec.DoubleValue particleSpawnChance;
         public final ForgeConfigSpec.DoubleValue particleDistance;
         public final ForgeConfigSpec.IntValue particleTickInterval;
+        // Render budget (face culling + internal cell limit)
+        public final ForgeConfigSpec.IntValue maxCellsPerFrame;
+        public final ForgeConfigSpec.DoubleValue maxRenderDistance;
+        public final ForgeConfigSpec.EnumValue<PlaceholderMode> placeholderMode;
+        public final ForgeConfigSpec.BooleanValue lodBoundaryShell;
+        public final ForgeConfigSpec.IntValue sortInterval;
 
         public Client(ForgeConfigSpec.Builder b) {
             b.push("miniature");
@@ -49,7 +55,30 @@ public class MiniatureConfig {
                     .comment("Spawn attempt every N ticks (1=every tick)")
                     .defineInRange("tickInterval", 2, 1, 20);
             b.pop();
+            b.push("render");
+            maxCellsPerFrame = b
+                    .comment("Max non-air internal cells rendered per frame (0=unlimited). Low value keeps FPS stable (512 default).")
+                    .defineInRange("maxCellsPerFrame", 512, 0, 65536);
+            maxRenderDistance = b
+                    .comment("Max distance from camera to render miniature detail (blocks). Beyond this only placeholder is drawn.")
+                    .defineInRange("maxRenderDistance", 48.0, 4.0, 128.0);
+            placeholderMode = b
+                    .comment("How to render miniatures over budget/distance: WIREFRAME=wire box, TRANSLUCENT=semi-transparent cube, HIDDEN=skip")
+                    .defineEnum("placeholderMode", PlaceholderMode.WIREFRAME);
+            lodBoundaryShell = b
+                    .comment("If true, the first miniature over budget renders as shell-only (boundary cells) for smooth transition (B plan)")
+                    .define("lodBoundaryShell", true);
+            sortInterval = b
+                    .comment("Sort interval for render budget (ticks). Lower is more responsive but costs more.")
+                    .defineInRange("sortInterval", 5, 1, 20);
+            b.pop();
             b.pop();
         }
+    }
+
+    public enum PlaceholderMode {
+        WIREFRAME,
+        TRANSLUCENT,
+        HIDDEN
     }
 }

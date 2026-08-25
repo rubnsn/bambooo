@@ -30,53 +30,88 @@ public class MiniatureConfigScreen extends Screen {
     @Override
     protected void init() {
         int centerX = this.width / 2;
-        int y = 40;
-        int w = 200;
         int h = 20;
         int gap = 24;
+        // 2列レイアウト: 1列8行が限界のため左右5行ずつに分割
+        int colW = 155;
+        // 画面が狭い場合は中央寄せで幅を縮める
+        if (this.width < colW * 2 + 20) {
+            colW = (this.width - 20 - 10) / 2;
+            if (colW < 120) colW = 120;
+        }
+        int leftX = centerX - colW - 5;
+        int rightX = centerX + 5;
+        int yL = 40;
+        int yR = 40;
 
-        // particleEnabled — CycleButton (ON/OFF)
+        // 左列: パーティクル系 5行
         this.addRenderableWidget(CycleButton.onOffBuilder(MiniatureConfig.CLIENT.particleEnabled.get())
                 .withInitialValue(MiniatureConfig.CLIENT.particleEnabled.get())
                 .displayOnlyValue()
                 .withTooltip(v -> net.minecraft.client.gui.components.Tooltip.create(Component.translatable("bamboomod.config.miniature.particle.enabled.tooltip")))
-                .create(centerX - w / 2, y, w, h, Component.translatable("bamboomod.config.miniature.particle.enabled"),
+                .create(leftX, yL, colW, h, Component.translatable("bamboomod.config.miniature.particle.enabled"),
                         (btn, val) -> MiniatureConfig.CLIENT.particleEnabled.set(val)));
-        y += gap;
+        yL += gap;
 
-        // particlesPerMiniaturePerTick — Int 0-10
         this.addRenderableWidget(createIntButton(Component.translatable("bamboomod.config.miniature.particle.perMiniaturePerTick"),
                 MiniatureConfig.CLIENT.particlesPerMiniaturePerTick.get(), 0, 10, v -> MiniatureConfig.CLIENT.particlesPerMiniaturePerTick.set(v),
-                centerX - w / 2, y, w, h));
-        y += gap;
+                leftX, yL, colW, h));
+        yL += gap;
 
-        // maxParticlesPerClientTick — Int 0-512 step 8
         this.addRenderableWidget(createIntButton(Component.translatable("bamboomod.config.miniature.particle.globalMaxPerTick"),
                 MiniatureConfig.CLIENT.maxParticlesPerClientTick.get(), 0, 512, v -> MiniatureConfig.CLIENT.maxParticlesPerClientTick.set(v),
-                centerX - w / 2, y, w, h));
-        y += gap;
+                leftX, yL, colW, h));
+        yL += gap;
 
-        // particleSpawnChance — Double 0.0-1.0
         this.addRenderableWidget(createDoubleButton(Component.translatable("bamboomod.config.miniature.particle.spawnChance"),
                 MiniatureConfig.CLIENT.particleSpawnChance.get(), 0.0, 1.0, 0.1, v -> MiniatureConfig.CLIENT.particleSpawnChance.set(v),
-                centerX - w / 2, y, w, h));
-        y += gap;
+                leftX, yL, colW, h));
+        yL += gap;
 
-        // particleDistance — Double 4.0-128.0
         this.addRenderableWidget(createDoubleButton(Component.translatable("bamboomod.config.miniature.particle.distance"),
                 MiniatureConfig.CLIENT.particleDistance.get(), 4.0, 128.0, 4.0, v -> MiniatureConfig.CLIENT.particleDistance.set(v),
-                centerX - w / 2, y, w, h));
-        y += gap;
+                leftX, yL, colW, h));
+        yL += gap;
 
-        // particleTickInterval — Int 1-20
+        // 右列: 残りパーティクル1 + レンダー系 4行 = 5行
         this.addRenderableWidget(createIntButton(Component.translatable("bamboomod.config.miniature.particle.tickInterval"),
                 MiniatureConfig.CLIENT.particleTickInterval.get(), 1, 20, v -> MiniatureConfig.CLIENT.particleTickInterval.set(v),
-                centerX - w / 2, y, w, h));
-        y += gap + 10;
+                rightX, yR, colW, h));
+        yR += gap;
 
-        // Done
+        this.addRenderableWidget(createChoicesButton(Component.translatable("bamboomod.config.miniature.render.maxCells"),
+                String.valueOf(MiniatureConfig.CLIENT.maxCellsPerFrame.get()),
+                new String[]{"0","128","256","512","1024","2048","4096","8192","16384","65536"},
+                v -> {
+                    try { MiniatureConfig.CLIENT.maxCellsPerFrame.set(Integer.parseInt(v)); } catch (Exception e) {}
+                }, rightX, yR, colW, h));
+        yR += gap;
+
+        this.addRenderableWidget(createDoubleButton(Component.translatable("bamboomod.config.miniature.render.maxDistance"),
+                MiniatureConfig.CLIENT.maxRenderDistance.get(), 4.0, 128.0, 8.0, v -> MiniatureConfig.CLIENT.maxRenderDistance.set(v),
+                rightX, yR, colW, h));
+        yR += gap;
+
+        this.addRenderableWidget(CycleButton.builder((MiniatureConfig.PlaceholderMode v) -> Component.literal(v.name()))
+                .withValues(MiniatureConfig.PlaceholderMode.values())
+                .withInitialValue(MiniatureConfig.CLIENT.placeholderMode.get())
+                .create(rightX, yR, colW, h, Component.translatable("bamboomod.config.miniature.render.placeholder"),
+                        (btn, val) -> MiniatureConfig.CLIENT.placeholderMode.set(val)));
+        yR += gap;
+
+        this.addRenderableWidget(CycleButton.onOffBuilder(MiniatureConfig.CLIENT.lodBoundaryShell.get())
+                .withInitialValue(MiniatureConfig.CLIENT.lodBoundaryShell.get())
+                .create(rightX, yR, colW, h, Component.translatable("bamboomod.config.miniature.render.lodShell"),
+                        (btn, val) -> MiniatureConfig.CLIENT.lodBoundaryShell.set(val)));
+        yR += gap;
+
+        int bottomY = Math.max(yL, yR) + 10;
+        // 画面下部に収まらない場合は少し上に寄せる
+        if (bottomY + h + 10 > this.height) {
+            bottomY = this.height - h - 10;
+        }
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, b -> this.onClose())
-                .bounds(centerX - 100, y, 200, 20).build());
+                .bounds(centerX - 100, bottomY, 200, 20).build());
     }
 
     private Button createIntButton(Component label, int current, int min, int max, java.util.function.IntConsumer setter, int x, int y, int w, int h) {
@@ -95,6 +130,22 @@ public class MiniatureConfigScreen extends Screen {
             setter.accept(next);
             b.setMessage(Component.literal(label.getString() + ": " + next));
         }).bounds(x, y, w, h).tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("クリックで " + min + "〜" + max + " を循環"))).build();
+    }
+
+    private Button createChoicesButton(Component label, String current, String[] choices, java.util.function.Consumer<String> setter, int x, int y, int w, int h) {
+        return Button.builder(Component.literal(label.getString() + ": " + current), b -> {
+            String cur = current;
+            try {
+                String txt = b.getMessage().getString();
+                int idx = txt.lastIndexOf(": ");
+                if (idx >= 0) cur = txt.substring(idx + 2).trim();
+            } catch (Exception e) {}
+            int idx = -1;
+            for (int i = 0; i < choices.length; i++) if (choices[i].equals(cur)) { idx = i; break; }
+            String next = choices[(idx + 1) % choices.length];
+            setter.accept(next);
+            b.setMessage(Component.literal(label.getString() + ": " + next));
+        }).bounds(x, y, w, h).tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("クリックで " + String.join("/", choices) + " を循環"))).build();
     }
 
     private Button createDoubleButton(Component label, double current, double min, double max, double step, java.util.function.DoubleConsumer setter, int x, int y, int w, int h) {

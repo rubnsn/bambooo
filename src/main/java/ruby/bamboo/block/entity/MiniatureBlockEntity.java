@@ -79,9 +79,23 @@ public class MiniatureBlockEntity extends BlockEntity {
 
     // 将来: client側 quadCache は BER 側で保持するため BE では Object として保持しない (クライアント依存回避)
 
+    // ===== 描画予算用 (client only) =====
+    private int nonAirCount = 0;
+    // transient: Managerが毎tick付与。初期はtrue(制限なしと同等)だがManagerがすぐ上書き
+    private boolean renderActive = true;
+    private boolean renderShellOnly = false;
+    // クライアント側インスタンス追跡用 (Managerが参照)
+    private static final java.util.Set<MiniatureBlockEntity> CLIENT_INSTANCES =
+            java.util.Collections.synchronizedSet(java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>()));
+
+    public static java.util.Set<MiniatureBlockEntity> getClientInstances() {
+        return CLIENT_INSTANCES;
+    }
+
     public MiniatureBlockEntity(BlockPos pos, BlockState state) {
         super(BambooBlockEntities.MINIATURE_BE.get(), pos, state);
         this.cells = allocateCells(this.size);
+        recalcNonAirCount();
     }
 
     // ===== サイズ管理 =====
@@ -105,6 +119,7 @@ public class MiniatureBlockEntity extends BlockEntity {
         this.buildProgress = 0;
         this.loadState = LOAD_READY;
         this.powerCells = new long[0];
+        recalcNonAirCount();
         markDirtyAndSync();
     }
 
@@ -163,7 +178,16 @@ public class MiniatureBlockEntity extends BlockEntity {
         if (prev.equals(state)) {
             return false;
         }
+        boolean prevAir = prev.isAir();
+        boolean nextAir = state.isAir();
         this.cells[x][y][z] = state;
+        if (prevAir != nextAir) {
+            if (nextAir) {
+                this.nonAirCount = Math.max(0, this.nonAirCount - 1);
+            } else {
+                this.nonAirCount++;
+            }
+        }
         markDirtyAndSync();
         return true;
     }
@@ -195,6 +219,7 @@ public class MiniatureBlockEntity extends BlockEntity {
                 }
             }
         }
+        this.nonAirCount = 0;
         markDirtyAndSync();
     }
 
@@ -229,6 +254,88 @@ public class MiniatureBlockEntity extends BlockEntity {
             this.syncTimer = SYNC_DELAY;
         }
         setChanged();
+    }
+
+    // ===== 描画予算ヘルパー =====
+
+    public int getNonAirCount() {
+        return this.nonAirCount;
+    }
+
+    public boolean isRenderActive() {
+        return this.renderActive;
+    }
+
+    public void setRenderActive(boolean v) {
+        this.renderActive = v;
+    }
+
+    public boolean isRenderShellOnly() {
+        return this.renderShellOnly;
+    }
+
+    public void setRenderShellOnly(boolean v) {
+        this.renderShellOnly = v;
+    }
+
+    public boolean isShellCell(int x, int y, int z) {
+        return x == 0 || y == 0 || z == 0 || x == this.size - 1 || y == this.size - 1 || z == this.size - 1;
+    }
+
+    private void recalcNonAirCount() {
+        int cnt = 0;
+        if (this.cells != null) {
+            for (int x = 0; x < this.size; x++) {
+                for (int y = 0; y < this.size; y++) {
+                    for (int z = 0; z < this.size; z++) {
+                        BlockState s = this.cells[x][y][z];
+                        if (s != null && !s.isAir()) {
+                            cnt++;
+                        }
+                    }
+                }
+            }
+        }
+        this.nonAirCount = cnt;
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (this.level != null && this.level.isClientSide) {
+            CLIENT_INSTANCES.add(this);
+            // 初期はactive扱い、Managerが次tickで予算配分
+            this.renderActive = true;
+            this.renderShellOnly = false;
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        if (this.level != null && this.level.isClientSide) {
+            CLIENT_INSTANCES.remove(this);
+        }
+        super.setRemoved();
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        if (this.level != null && this.level.isClientSide) {
+            CLIENT_INSTANCES.remove(this);
+        }
+        super.onChunkUnloaded();
+    }
+
+    // levelがまだnullの段階で呼ばれることがあるため、setLevelでも登録を試みる
+    @Override
+    public void setLevel(Level lvl) {
+        Level old = this.level;
+        super.setLevel(lvl);
+        if (lvl != null && lvl.isClientSide && old == null) {
+            CLIENT_INSTANCES.add(this);
+        } else if (lvl == null && old != null && old.isClientSide) {
+            CLIENT_INSTANCES.remove(this);
+        }
     }
 
     public int getSyncTimer() {
@@ -288,6 +395,7 @@ public class MiniatureBlockEntity extends BlockEntity {
         }
         // レッドストーン全オミット (2026-08-26 ユーザ指示): tickPowerPropagation は廃止。
         tickRandomTick();
+        // 流体拡散は静的展示のため無効化 — バケツで手動水位コントロールする運用
     }
 
     private void clientTick() {
@@ -551,6 +659,13 @@ public class MiniatureBlockEntity extends BlockEntity {
         this.syncTimer = 0;
         this.loadState = LOAD_READY;
         this.buildProgress = 0;
+        recalcNonAirCount();
+        // クライアント側では読み込み直後も描画対象に含めるため登録
+        if (this.level != null && this.level.isClientSide) {
+            CLIENT_INSTANCES.add(this);
+            this.renderActive = true;
+            this.renderShellOnly = false;
+        }
     }
 
     /**
