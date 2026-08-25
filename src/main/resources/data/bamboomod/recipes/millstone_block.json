@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "###",
+    "X#X",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:cobblestone"
+    },
+    "X": {
+      "item": "bamboomod:bamboo"
+    }
+  },
+  "result": {
+    "item": "bamboomod:millstone",
+    "count": 1
+  }
+}

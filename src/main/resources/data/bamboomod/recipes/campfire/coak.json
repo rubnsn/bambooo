@@ -1,0 +1,41 @@
+﻿{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "",
+  "ingredients": [
+      {
+        "item": "minecraft:oak_planks"
+      },
+      {
+        "item": "minecraft:oak_planks"
+      },
+      {
+        "item": "minecraft:oak_planks"
+      },
+      {
+        "item": "minecraft:oak_planks"
+      },
+      {
+        "item": "bamboomod:bamboo"
+      },
+      {
+        "item": "minecraft:oak_planks"
+      },
+      {
+        "item": "minecraft:oak_planks"
+      },
+      {
+        "item": "minecraft:oak_planks"
+      },
+      {
+        "item": "minecraft:oak_planks"
+      }
+  ],
+  "result": {
+    "item": "bamboomod:coak",
+    "count": 8
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

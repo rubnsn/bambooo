@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "SS",
+    "SS"
+  ],
+  "key": {
+    "S": {
+      "item": "bamboomod:straw"
+    }
+  },
+  "result": {
+    "item": "bamboomod:tatami",
+    "count": 1
+  }
+}

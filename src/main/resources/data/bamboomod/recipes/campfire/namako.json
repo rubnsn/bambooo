@@ -1,0 +1,41 @@
+﻿{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "",
+  "ingredients": [
+      {
+        "item": "bamboomod:plaster"
+      },
+      {
+        "item": "bamboomod:kawara"
+      },
+      {
+        "item": "bamboomod:plaster"
+      },
+      {
+        "item": "bamboomod:kawara"
+      },
+      {
+        "item": "bamboomod:bamboo"
+      },
+      {
+        "item": "bamboomod:plaster"
+      },
+      {
+        "item": "bamboomod:kawara"
+      },
+      {
+        "item": "bamboomod:plaster"
+      },
+      {
+        "item": "bamboomod:kawara"
+      }
+  ],
+  "result": {
+    "item": "bamboomod:namako",
+    "count": 8
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

@@ -5,22 +5,29 @@
       "rolls": 1,
       "entries": [
         {
-          "type": "minecraft:alternatives",
-          "children": [
+          "type": "minecraft:item",
+          "name": "bamboomod:straw",
+          "conditions": [
             {
-              "type": "minecraft:item",
-              "name": "bamboomod:straw",
-              "conditions": [
-                {
-                  "condition": "minecraft:block_state_property",
-                  "block": "bamboomod:rice_plant",
-                  "properties": { "age": "4" }
-                }
-              ]
-            },
+              "condition": "minecraft:block_state_property",
+              "block": "bamboomod:rice_plant",
+              "properties": { "age": "4" }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "bamboomod:riceseed",
+          "conditions": [
             {
-              "type": "minecraft:item",
-              "name": "bamboomod:riceseed"
+              "condition": "minecraft:block_state_property",
+              "block": "bamboomod:rice_plant",
+              "properties": { "age": "4" }
             }
           ]
         }
@@ -44,7 +51,26 @@
               "function": "minecraft:apply_bonus",
               "enchantment": "minecraft:fortune",
               "formula": "minecraft:binomial_with_bonus_count",
-              "parameters": { "extra": 3, "probability": 0.5714286 }
+              "parameters": { "extra": 3, "probability": 0.5 }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "bamboomod:riceseed",
+          "conditions": [
+            {
+              "condition": "minecraft:inverted",
+              "term": {
+                "condition": "minecraft:block_state_property",
+                "block": "bamboomod:rice_plant",
+                "properties": { "age": "4" }
+              }
             }
           ]
         }

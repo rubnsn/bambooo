@@ -1,9 +1,6 @@
 package ruby.bamboo.block;
 
-import java.util.List;
-
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -60,7 +57,11 @@ public class RicePlantBlock extends CropBlock {
         return this.mayPlaceOn(level.getBlockState(pos.below()), level, pos.below());
     }
 
-    // ===== ドロップ仕様 (旧 GrowableBase#getDrops/getItemDropped 相当) =====
+    // ===== ドロップ仕様: loot_tables/blocks/rice_plant.json に委譲 (旧 GrowableBase#getDrops/getItemDropped 相当) =====
+    // 旧コードの getDrops オーバーライドは loot_table をバイパスし二重管理になるため削除。
+    // 現行は CropBlock 標準の BlockLoot に従い、rice_plant.json で以下を再現:
+    // - 完熟: straw 1 + riceseed 1保証 + 追加 riceseed 0-3 (各0.5)
+    // - 未完熟: riceseed 1
 
     @Override
     public Item asItem() {
@@ -72,30 +73,5 @@ public class RicePlantBlock extends CropBlock {
     public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
         // 旧 getPickBlock: 常に種を返す (中クリック対策)
         return new ItemStack(BambooItems.RICE_SEED.get());
-    }
-
-    @Override
-    public List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder builder) {
-        List<ItemStack> drops = new java.util.ArrayList<>();
-        int age = state.getValue(this.getAgeProperty());
-        RandomSource rand = builder.getLevel().getRandom();
-
-        if (age >= this.getMaxAge()) {
-            // 完熟: わら (旧 getProduct)
-            drops.add(new ItemStack(BambooItems.STRAW.get()));
-            // 種1個保証 (旧 RicePlant#extraDrop)
-            drops.add(new ItemStack(BambooItems.RICE_SEED.get()));
-            // 追加種: (age/max)/2F = 0.5 確率 x (3+fortune) 回 (旧 getDrops ループ)
-            // fortune は旧版が 0 強制だったため 0 扱いで 3 回
-            for (int i = 0; i < 3; ++i) {
-                if (rand.nextFloat() <= 0.5F) {
-                    drops.add(new ItemStack(BambooItems.RICE_SEED.get()));
-                }
-            }
-        } else {
-            // 未完熟: 種1個のみ (旧 getItemDropped + quantityDropped=1)
-            drops.add(new ItemStack(BambooItems.RICE_SEED.get()));
-        }
-        return drops;
     }
 }

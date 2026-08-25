@@ -1,0 +1,41 @@
+﻿{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "",
+  "ingredients": [
+      {
+        "item": "minecraft:brick"
+      },
+      {
+        "item": "minecraft:brick"
+      },
+      {
+        "item": "minecraft:brick"
+      },
+      {
+        "item": "minecraft:brick"
+      },
+      {
+        "item": "minecraft:brick"
+      },
+      {
+        "item": "minecraft:brick"
+      },
+      {
+        "item": "minecraft:brick"
+      },
+      {
+        "item": "minecraft:brick"
+      },
+      {
+        "item": "minecraft:black_dye"
+      }
+  ],
+  "result": {
+    "item": "bamboomod:kawara",
+    "count": 8
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

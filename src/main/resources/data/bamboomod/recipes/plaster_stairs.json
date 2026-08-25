@@ -1,0 +1,18 @@
+﻿{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "X  ",
+    "XX ",
+    "XXX"
+  ],
+  "key": {
+    "X": {
+      "item": "bamboomod:plaster"
+    }
+  },
+  "result": {
+    "item": "bamboomod:plaster_stairs",
+    "count": 4
+  }
+}

@@ -1,0 +1,16 @@
+﻿{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "XXX"
+  ],
+  "key": {
+    "X": {
+      "item": "bamboomod:wara"
+    }
+  },
+  "result": {
+    "item": "bamboomod:wara_slab",
+    "count": 6
+  }
+}

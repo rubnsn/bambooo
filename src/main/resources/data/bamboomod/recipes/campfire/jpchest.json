@@ -1,0 +1,38 @@
+﻿{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "",
+  "ingredients": [
+      {
+        "item": "minecraft:oak_log"
+      },
+      {
+        "item": "minecraft:oak_log"
+      },
+      {
+        "item": "minecraft:oak_log"
+      },
+      {
+        "item": "minecraft:oak_log"
+      },
+      {
+        "item": "minecraft:oak_log"
+      },
+      {
+        "item": "minecraft:oak_log"
+      },
+      {
+        "item": "minecraft:oak_log"
+      },
+      {
+        "item": "minecraft:oak_log"
+      }
+  ],
+  "result": {
+    "item": "bamboomod:jpchest",
+    "count": 1
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

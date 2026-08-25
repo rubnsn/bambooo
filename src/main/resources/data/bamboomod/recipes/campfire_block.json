@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " B ",
+    "XYX",
+    "ZZZ"
+  ],
+  "key": {
+    "B": {
+      "item": "bamboomod:bamboo"
+    },
+    "X": {
+      "item": "minecraft:iron_bars"
+    },
+    "Y": {
+      "item": "minecraft:flint_and_steel"
+    },
+    "Z": {
+      "item": "minecraft:charcoal"
+    }
+  },
+  "result": {
+    "item": "bamboomod:campfire",
+    "count": 1
+  }
+}

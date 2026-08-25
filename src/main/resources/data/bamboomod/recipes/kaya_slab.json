@@ -1,0 +1,16 @@
+﻿{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "XXX"
+  ],
+  "key": {
+    "X": {
+      "item": "bamboomod:kaya"
+    }
+  },
+  "result": {
+    "item": "bamboomod:kaya_slab",
+    "count": 6
+  }
+}
