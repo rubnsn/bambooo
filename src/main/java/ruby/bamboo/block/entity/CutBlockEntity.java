@@ -110,23 +110,41 @@ public class CutBlockEntity extends BlockEntity {
 
     /**
      * FACINGを考慮した Bounds [minX,minY,minZ,maxX,maxY,maxZ] を返す。
-     * Yは常に下側を残す。HはFACINGで軸を決定。
+     * Yは常に下側を残す。HはFACINGで軸を決定し、向きにより保持側を分岐してEast/Westの反転による透けを解消。
      */
     public int[] getBounds(net.minecraft.core.Direction facing) {
         int ySize = getYSize();
         int hSize = getHSize();
         int minX = 0, minY = 0, minZ = 0;
         int maxX = 16, maxY = ySize, maxZ = 16;
-        // H軸の決定: NORTH/SOUTH(Z軸)→Xを削る, EAST/WEST(X軸)→Zを削る
         if (hSize != 16) {
-            if (facing.getAxis() == net.minecraft.core.Direction.Axis.X) {
-                // EAST/WEST: Zを削る
-                maxX = 16;
-                maxZ = hSize;
-            } else {
-                // NORTH/SOUTH: Xを削る
-                maxX = hSize;
-                maxZ = 16;
+            switch (facing) {
+                case NORTH -> {
+                    // 北向き: Xの西側(0..hSize)を残す
+                    maxX = hSize;
+                    maxZ = 16;
+                }
+                case SOUTH -> {
+                    // 南向き: Xの東側(16-hSize..16)を残す（Northと対称で透け防止）
+                    minX = 16 - hSize;
+                    maxX = 16;
+                    maxZ = 16;
+                }
+                case EAST -> {
+                    // 東向き: Zの北側(0..hSize)を残す
+                    maxX = 16;
+                    maxZ = hSize;
+                }
+                case WEST -> {
+                    // 西向き: Zの南側(16-hSize..16)を残す（Eastと対称で透け防止）
+                    minZ = 16 - hSize;
+                    maxX = 16;
+                    maxZ = 16;
+                }
+                default -> {
+                    maxX = hSize;
+                    maxZ = 16;
+                }
             }
         }
         return new int[]{minX, minY, minZ, maxX, maxY, maxZ};

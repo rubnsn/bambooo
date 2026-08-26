@@ -105,12 +105,29 @@ public class CutBlockGhostRenderer {
         int minX = 0, minY = 0, minZ = 0;
         int maxX = 16, maxY = ySize, maxZ = 16;
         if (hSize != 16) {
-            if (facing.getAxis() == Direction.Axis.X) {
-                maxX = 16;
-                maxZ = hSize;
-            } else {
-                maxX = hSize;
-                maxZ = 16;
+            switch (facing) {
+                case NORTH -> {
+                    maxX = hSize;
+                    maxZ = 16;
+                }
+                case SOUTH -> {
+                    minX = 16 - hSize;
+                    maxX = 16;
+                    maxZ = 16;
+                }
+                case EAST -> {
+                    maxX = 16;
+                    maxZ = hSize;
+                }
+                case WEST -> {
+                    minZ = 16 - hSize;
+                    maxX = 16;
+                    maxZ = 16;
+                }
+                default -> {
+                    maxX = hSize;
+                    maxZ = 16;
+                }
             }
         }
         return new int[]{minX, minY, minZ, maxX, maxY, maxZ};
@@ -134,10 +151,10 @@ public class CutBlockGhostRenderer {
         quad(vc, mat, normal, maxX, minY, minZ, minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ, 0,0,-1, ri,gi,bi,ai, light, overlay);
         // 南
         quad(vc, mat, normal, minX, minY, maxZ, maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ, 0,0,1, ri,gi,bi,ai, light, overlay);
-        // 西
-        quad(vc, mat, normal, minX, minY, maxZ, minX, minY, minZ, minX, maxY, minZ, minX, maxY, maxZ, -1,0,0, ri,gi,bi,ai, light, overlay);
-        // 東
-        quad(vc, mat, normal, maxX, minY, minZ, maxX, minY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, 1,0,0, ri,gi,bi,ai, light, overlay);
+        // 西（裏面カリング修正）
+        quad(vc, mat, normal, minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ, -1,0,0, ri,gi,bi,ai, light, overlay);
+        // 東（裏面カリング修正）
+        quad(vc, mat, normal, maxX, minY, maxZ, maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ, 1,0,0, ri,gi,bi,ai, light, overlay);
     }
 
     private static void renderWireframeBox(PoseStack poseStack, MultiBufferSource buffer,

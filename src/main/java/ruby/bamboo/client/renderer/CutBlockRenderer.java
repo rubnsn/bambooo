@@ -153,13 +153,13 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
         drawQuad(vc, mat, normal, spriteSouth,
                 minX, minY, maxZ, maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ,
                 0, 0, 1, packedLight, packedOverlay);
-        // 西 X-
+        // 西 X-（裏面カリングで透けないよう反時計回りに修正）
         drawQuad(vc, mat, normal, spriteWest,
-                minX, minY, maxZ, minX, minY, minZ, minX, maxY, minZ, minX, maxY, maxZ,
+                minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ,
                 -1, 0, 0, packedLight, packedOverlay);
-        // 東 X+
+        // 東 X+（裏面カリングで透けないよう反時計回りに修正）
         drawQuad(vc, mat, normal, spriteEast,
-                maxX, minY, minZ, maxX, minY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ,
+                maxX, minY, maxZ, maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ,
                 1, 0, 0, packedLight, packedOverlay);
     }
 
