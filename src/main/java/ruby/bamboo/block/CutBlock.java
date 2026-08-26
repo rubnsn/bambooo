@@ -39,11 +39,16 @@ import ruby.bamboo.core.init.BambooBlockEntities;
  * 描画は INVISIBLE + BER で AABBに合わせたQuad再生成。
  * 空の場合は透明ダミー (Shapes.empty)。
  * FACINGは回転互換のため残置するが、Boundsは3軸絶対。
+ * 回転はバニラ依存（水平のみ）: Block.rotate/mirror + CutBlockEntity#setBlockState でBoundsも回転。
  */
 public class CutBlock extends BaseEntityBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final String BLOCK_ENTITY_TAG = "BlockEntityTag";
+
+    // バニラ回転のBE連携用 pending（rotateはBlockStateのみでLevel/Posを持たないためThreadLocalでBEへ伝播）
+    private static final ThreadLocal<Rotation> PENDING_ROTATION = ThreadLocal.withInitial(() -> null);
+    private static final ThreadLocal<Mirror> PENDING_MIRROR = ThreadLocal.withInitial(() -> null);
 
     public CutBlock() {
         super(Properties.of()
@@ -267,16 +272,32 @@ public class CutBlock extends BaseEntityBlock {
         return new ItemStack(this);
     }
 
-    // ===== Rotation / Mirror =====
+    // ===== Rotation / Mirror (バニラ依存・水平のみ) =====
 
     @Override
     public BlockState rotate(BlockState state, Rotation rot) {
+        if (rot == Rotation.NONE) return state;
+        PENDING_ROTATION.set(rot);
         return state.setValue(FACING, rot.rotate(state.getValue(FACING)));
     }
 
     @Override
     public BlockState mirror(BlockState state, Mirror mirror) {
+        if (mirror == Mirror.NONE) return state;
+        PENDING_MIRROR.set(mirror);
         return state.setValue(FACING, mirror.mirror(state.getValue(FACING)));
+    }
+
+    public static Rotation consumePendingRotation() {
+        Rotation r = PENDING_ROTATION.get();
+        PENDING_ROTATION.remove();
+        return r;
+    }
+
+    public static Mirror consumePendingMirror() {
+        Mirror m = PENDING_MIRROR.get();
+        PENDING_MIRROR.remove();
+        return m;
     }
 
     // ===== 細かい除去: ミニチュア準拠の左クリック/破壊進行度/WillDestroy =====

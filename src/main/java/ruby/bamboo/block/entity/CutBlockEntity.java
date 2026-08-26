@@ -1,6 +1,7 @@
 package ruby.bamboo.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
@@ -10,6 +11,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -516,10 +519,152 @@ public class CutBlockEntity extends BlockEntity {
             if (shape != null && Block.isShapeFullBlock(shape)) return true;
             VoxelShape coll = state.getCollisionShape(null, BlockPos.ZERO);
             if (coll != null && Block.isShapeFullBlock(coll)) return true;
+            // 形状がフルでない場合はisSolidRenderで判定。階段/ハーフはここでfalse
+            try {
+                return state.isSolidRender(null, BlockPos.ZERO);
+            } catch (Exception e) {
+                return false;
+            }
         } catch (Exception e) {
-            return true;
+            return false;
         }
-        return true;
+    }
+
+    // ===== Rotation (水平のみ・バニラ依存) =====
+
+    public void rotate(Rotation rot) {
+        if (rot == null || rot == Rotation.NONE) return;
+        if (!this.entries.isEmpty()) {
+            java.util.List<CutEntry> rotated = new java.util.ArrayList<>();
+            for (CutEntry e : this.entries) {
+                rotated.add(new CutEntry(e.state, rotateBounds(e.bounds, rot)));
+            }
+            this.entries.clear();
+            this.entries.addAll(rotated);
+            this.shapeCache = null;
+            markDirtyAndSync();
+            return;
+        }
+        if (this.cutState == null || this.cutState.isAir()) return;
+        int[] oldBounds = getBoundsAbsolute();
+        int[] newBounds = rotateBounds(oldBounds, rot);
+        if (newBounds[0] == 0 && newBounds[1] == 0 && newBounds[2] == 0) {
+            // 原点寄せのまま収まる（90°でサイズ入替等）→ x/zLevel入れ替えで表現可能
+            byte nx = sizeToLevel(newBounds[3] - newBounds[0]);
+            byte ny = sizeToLevel(newBounds[4] - newBounds[1]);
+            byte nz = sizeToLevel(newBounds[5] - newBounds[2]);
+            this.xLevel = nx;
+            this.yLevel = ny;
+            this.zLevel = nz;
+            this.shapeCache = null;
+            markDirtyAndSync();
+        } else {
+            // 原点からずれる（180°の半分等）→ entries化して正確に保持
+            BlockState st = this.cutState;
+            this.cutState = Blocks.AIR.defaultBlockState();
+            this.xLevel = 0;
+            this.yLevel = 0;
+            this.zLevel = 0;
+            this.entries.clear();
+            this.entries.add(new CutEntry(st, newBounds));
+            this.shapeCache = null;
+            markDirtyAndSync();
+        }
+    }
+
+    public void mirror(Mirror mirror) {
+        if (mirror == null || mirror == Mirror.NONE) return;
+        if (!this.entries.isEmpty()) {
+            java.util.List<CutEntry> mirrored = new java.util.ArrayList<>();
+            for (CutEntry e : this.entries) {
+                mirrored.add(new CutEntry(e.state, mirrorBounds(e.bounds, mirror)));
+            }
+            this.entries.clear();
+            this.entries.addAll(mirrored);
+            this.shapeCache = null;
+            markDirtyAndSync();
+            return;
+        }
+        if (this.cutState == null || this.cutState.isAir()) return;
+        int[] oldBounds = getBoundsAbsolute();
+        int[] newBounds = mirrorBounds(oldBounds, mirror);
+        if (newBounds[0] == 0 && newBounds[1] == 0 && newBounds[2] == 0) {
+            // 原点寄せで収まる場合はそのまま（サイズ不変のため通常は何も変わらないが一応）
+            this.shapeCache = null;
+            markDirtyAndSync();
+        } else {
+            BlockState st = this.cutState;
+            this.cutState = Blocks.AIR.defaultBlockState();
+            this.xLevel = 0;
+            this.yLevel = 0;
+            this.zLevel = 0;
+            this.entries.clear();
+            this.entries.add(new CutEntry(st, newBounds));
+            this.shapeCache = null;
+            markDirtyAndSync();
+        }
+    }
+
+    private static int[] rotateBounds(int[] b, Rotation rot) {
+        int minX = b[0], minY = b[1], minZ = b[2], maxX = b[3], maxY = b[4], maxZ = b[5];
+        return switch (rot) {
+            case CLOCKWISE_90 -> new int[]{16 - maxZ, minY, minX, 16 - minZ, maxY, maxX};
+            case CLOCKWISE_180 -> new int[]{16 - maxX, minY, 16 - maxZ, 16 - minX, maxY, 16 - minZ};
+            case COUNTERCLOCKWISE_90 -> new int[]{minZ, minY, 16 - maxX, maxZ, maxY, 16 - minX};
+            default -> b.clone();
+        };
+    }
+
+    private static int[] mirrorBounds(int[] b, Mirror mirror) {
+        int minX = b[0], minY = b[1], minZ = b[2], maxX = b[3], maxY = b[4], maxZ = b[5];
+        return switch (mirror) {
+            case LEFT_RIGHT -> new int[]{16 - maxX, minY, minZ, 16 - minX, maxY, maxZ};
+            case FRONT_BACK -> new int[]{minX, minY, 16 - maxZ, maxX, maxY, 16 - minZ};
+            default -> b.clone();
+        };
+    }
+
+    static Rotation getRotationFromFacing(Direction from, Direction to) {
+        if (from == to) return Rotation.NONE;
+        int f = from.get2DDataValue();
+        int t = to.get2DDataValue();
+        if (f < 0 || t < 0) return Rotation.NONE;
+        int diff = (t - f + 4) % 4;
+        return switch (diff) {
+            case 1 -> Rotation.CLOCKWISE_90;
+            case 2 -> Rotation.CLOCKWISE_180;
+            case 3 -> Rotation.COUNTERCLOCKWISE_90;
+            default -> Rotation.NONE;
+        };
+    }
+
+    @Override
+    public void setBlockState(BlockState state) {
+        BlockState old = this.getBlockState();
+        // pendingがあればそれを優先（CutBlock.rotate/mirrorからのThreadLocal）
+        Rotation pendingRot = ruby.bamboo.block.CutBlock.consumePendingRotation();
+        Mirror pendingMirror = ruby.bamboo.block.CutBlock.consumePendingMirror();
+        boolean handled = false;
+        if (pendingRot != null && pendingRot != Rotation.NONE) {
+            rotate(pendingRot);
+            handled = true;
+        }
+        if (pendingMirror != null && pendingMirror != Mirror.NONE) {
+            mirror(pendingMirror);
+            handled = true;
+        }
+        if (!handled && old != null && old.hasProperty(ruby.bamboo.block.CutBlock.FACING)
+                && state.hasProperty(ruby.bamboo.block.CutBlock.FACING)) {
+            Direction of = old.getValue(ruby.bamboo.block.CutBlock.FACING);
+            Direction nf = state.getValue(ruby.bamboo.block.CutBlock.FACING);
+            if (of != nf) {
+                Rotation delta = getRotationFromFacing(of, nf);
+                if (delta != Rotation.NONE) {
+                    rotate(delta);
+                }
+            }
+        }
+        super.setBlockState(state);
     }
 
     // ===== Dirty / Sync =====

@@ -215,6 +215,8 @@ public class CutBlockRecipe implements CraftingRecipe {
     private static boolean isValidMaterial(ItemStack stack) {
         if (stack.isEmpty()) return false;
         if (isCutBlock(stack)) {
+            // 1.切り始めはフルキューブのみ、2.複合化したカットキューブは拒否
+            if (!CutBlockEntity.readEntriesFromStack(stack).isEmpty()) return false;
             CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(stack);
             return !data.state().isAir();
         }
