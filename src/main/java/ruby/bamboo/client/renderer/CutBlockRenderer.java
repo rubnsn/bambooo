@@ -23,7 +23,7 @@ import ruby.bamboo.block.entity.CutBlockEntity;
 
 /**
  * カットブロックの BER — AABBに合わせた6面Quad再生成。
- * cutStateの各面のSpriteを流用し、Boundsサイズに合わせたCubeを描画する。
+ * 3軸絶対 Bounds で描画。FACING依存なし。
  */
 public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
 
@@ -38,7 +38,6 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
         if (be == null || be.getLevel() == null || be.isEmpty()) {
             return;
         }
-        // 新: 複数エントリがある場合はそれぞれを描画
         if (!be.getEntries().isEmpty()) {
             for (CutBlockEntity.CutEntry entry : be.getEntries()) {
                 BlockState state = entry.state;
@@ -61,17 +60,7 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
         BlockState cutState = be.getCutState();
         if (cutState.isAir()) return;
 
-        // FACING取得（旧互換）
-        Direction facing = Direction.NORTH;
-        try {
-            BlockState outer = be.getBlockState();
-            if (outer.hasProperty(ruby.bamboo.block.CutBlock.FACING)) {
-                facing = outer.getValue(ruby.bamboo.block.CutBlock.FACING);
-            }
-        } catch (Exception e) {
-        }
-
-        int[] bounds = be.getBounds(facing);
+        int[] bounds = be.getBoundsAbsolute();
         float minX = bounds[0] / 16f;
         float minY = bounds[1] / 16f;
         float minZ = bounds[2] / 16f;
@@ -79,13 +68,11 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
         float maxY = bounds[4] / 16f;
         float maxZ = bounds[5] / 16f;
 
-        // フルなら通常のtesselateで描画（高速パス、切断面なし）
         if (minX == 0 && minY == 0 && minZ == 0 && maxX == 1 && maxY == 1 && maxZ == 1) {
             renderFull(be, cutState, poseStack, bufferSource, packedLight, packedOverlay);
             return;
         }
 
-        // 部分サイズ: Spriteを取得して6面を自前描画
         renderClipped(be, cutState, minX, minY, minZ, maxX, maxY, maxZ, poseStack, bufferSource, packedLight, packedOverlay);
     }
 
@@ -113,7 +100,6 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
             float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
             PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         BakedModel model = this.blockRenderer.getBlockModel(cutState);
-        // 各方向のSpriteを取得
         TextureAtlasSprite spriteUp = getSpriteForDir(model, cutState, Direction.UP, be);
         TextureAtlasSprite spriteDown = getSpriteForDir(model, cutState, Direction.DOWN, be);
         TextureAtlasSprite spriteNorth = getSpriteForDir(model, cutState, Direction.NORTH, be);
@@ -121,7 +107,6 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
         TextureAtlasSprite spriteWest = getSpriteForDir(model, cutState, Direction.WEST, be);
         TextureAtlasSprite spriteEast = getSpriteForDir(model, cutState, Direction.EAST, be);
 
-        // フォールバック: いずれかがnullならパーティクルアイコンを使う
         TextureAtlasSprite fallback = model.getParticleIcon(ModelData.EMPTY);
         if (spriteUp == null) spriteUp = fallback;
         if (spriteDown == null) spriteDown = fallback;
@@ -130,7 +115,6 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
         if (spriteWest == null) spriteWest = fallback;
         if (spriteEast == null) spriteEast = fallback;
 
-        // RenderTypeはcutStateのモデルから取得、なければcutout
         RenderType rt = RenderType.cutout();
         try {
             RandomSource rand = RandomSource.create();
@@ -141,7 +125,6 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
             var types = model.getRenderTypes(cutState, rand, md);
             if (!types.isEmpty()) {
                 rt = types.iterator().next();
-                // translucentが含まれていればそちらを優先
                 for (RenderType t : types) {
                     if (t == RenderType.translucent() || t == RenderType.cutoutMipped()) {
                         rt = t;
@@ -156,28 +139,21 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
         Matrix4f mat = pose.pose();
         Matrix3f normal = pose.normal();
 
-        // 6面を描画。各面のUVはBounds比率で補間
-        // 下面 Y-
         drawQuad(vc, mat, normal, spriteDown,
                 minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ,
                 0, -1, 0, packedLight, packedOverlay);
-        // 上面 Y+
         drawQuad(vc, mat, normal, spriteUp,
                 minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, minX, maxY, minZ,
                 0, 1, 0, packedLight, packedOverlay);
-        // 北 Z-
         drawQuad(vc, mat, normal, spriteNorth,
                 maxX, minY, minZ, minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ,
                 0, 0, -1, packedLight, packedOverlay);
-        // 南 Z+
         drawQuad(vc, mat, normal, spriteSouth,
                 minX, minY, maxZ, maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ,
                 0, 0, 1, packedLight, packedOverlay);
-        // 西 X-（裏面カリングで透けないよう反時計回りに修正）
         drawQuad(vc, mat, normal, spriteWest,
                 minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ,
                 -1, 0, 0, packedLight, packedOverlay);
-        // 東 X+（裏面カリングで透けないよう反時計回りに修正）
         drawQuad(vc, mat, normal, spriteEast,
                 maxX, minY, maxZ, maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ,
                 1, 0, 0, packedLight, packedOverlay);
@@ -194,7 +170,6 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
             if (quads != null && !quads.isEmpty()) {
                 return quads.get(0).getSprite();
             }
-            // null dir（カリングなし）のquadからも探す
             var general = model.getQuads(state, null, rand, md, null);
             if (general != null) {
                 for (var q : general) {
@@ -218,25 +193,13 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
             float x4, float y4, float z4,
             float nx, float ny, float nz,
             int packedLight, int packedOverlay) {
-        // UVは 0..16 を spriteのU0..U1にマッピング
-        // 各面のUV軸を考慮: Y面はX/Z、Z面はX/Y、X面はZ/Y
-        // 簡易: 四隅の座標からUVを計算（0..1を16倍してspriteに変換）
         float u1 = sprite.getU0();
         float u2 = sprite.getU1();
         float v1 = sprite.getV0();
         float v2 = sprite.getV1();
-        // 面ごとのUV計算: 正面から見た2D座標で補間
-        // 下/上面: X→U, Z→V
-        // 北/南面: X→U, Y→V
-        // 西/東面: Z→U, Y→V
-        // ここでは簡易に、 quadの4頂点のワールド座標からUVを線形補間
-        // ただし、Boundsが部分的な場合、UVも部分的にする必要がある
-        // 例: minX=0.5なら Uは0.5..1.0 の範囲のみを使う
-        // そのため、頂点座標(0..1)をそのままUV比率として使う
         float[] us = new float[4];
         float[] vs = new float[4];
         if (ny != 0) {
-            // Y面
             us[0] = lerp(u1, u2, x1);
             vs[0] = lerp(v1, v2, z1);
             us[1] = lerp(u1, u2, x2);
@@ -246,7 +209,6 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
             us[3] = lerp(u1, u2, x4);
             vs[3] = lerp(v1, v2, z4);
         } else if (nz != 0) {
-            // Z面
             us[0] = lerp(u1, u2, x1);
             vs[0] = lerp(v1, v2, 1 - y1);
             us[1] = lerp(u1, u2, x2);
@@ -256,7 +218,6 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
             us[3] = lerp(u1, u2, x4);
             vs[3] = lerp(v1, v2, 1 - y4);
         } else {
-            // X面
             us[0] = lerp(u1, u2, z1);
             vs[0] = lerp(v1, v2, 1 - y1);
             us[1] = lerp(u1, u2, z2);

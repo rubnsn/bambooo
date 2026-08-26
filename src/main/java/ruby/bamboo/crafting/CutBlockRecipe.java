@@ -24,11 +24,11 @@ import ruby.bamboo.core.init.BambooBlocks;
 import ruby.bamboo.core.init.BambooItems;
 
 /**
- * カットブロックの動的レシピ — プランA本命。
+ * カットブロックの動的レシピ — 3軸絶対切断。
  * B(任意フルキューブ or 既存cut_block) + K(刀) の2アイテムで、
- * 横隣接→横スライス(hLevel)、縦隣接→縦スライス(yLevel) に分岐する。
+ * 横隣接→X切断(8×16×16)、縦隣接→Y切断(16×8×16)、斜め隣接→Z切断(16×16×8) に分岐。
  * 刀は消費しない。Bは消費して新しいcut_blockを生成する。
- * 詳細は docs/port-spec-cutblock.md §2.5
+ * 2×2/3×3 いずれのグリッドでも成立。
  */
 public class CutBlockRecipe implements CraftingRecipe {
 
@@ -40,16 +40,13 @@ public class CutBlockRecipe implements CraftingRecipe {
 
     @Override
     public boolean matches(CraftingContainer container, Level level) {
-        // 非空スロットを収集
         int width = container.getWidth();
         int height = container.getHeight();
-        // width/heightが0の場合（JEI等のダミー）は3として扱う
         if (width <= 0) width = 3;
         if (height <= 0) height = 3;
         int nonEmptyCount = 0;
         int[] indices = new int[2];
         ItemStack[] stacks = new ItemStack[2];
-        int idx = 0;
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack s = container.getItem(i);
             if (!s.isEmpty()) {
@@ -61,37 +58,29 @@ public class CutBlockRecipe implements CraftingRecipe {
         }
         if (nonEmptyCount != 2) return false;
 
-        // どちらが刀か判定
         boolean s0IsKatana = isKatana(stacks[0]);
         boolean s1IsKatana = isKatana(stacks[1]);
-        if (s0IsKatana == s1IsKatana) return false; // 両方刀 or 両方非刀は不可
+        if (s0IsKatana == s1IsKatana) return false;
         ItemStack bStack = s0IsKatana ? stacks[1] : stacks[0];
-        // Bが有効な素材か
         if (!isValidMaterial(bStack)) return false;
 
-        // 位置判定: 横隣接 or 縦隣接
         int i0 = indices[s0IsKatana ? 1 : 0];
         int i1 = indices[s0IsKatana ? 0 : 1];
-        // i0がBのindex、i1がKのindexだが、判定はどちらがBでも同じ
         int x0 = i0 % width;
         int y0 = i0 / width;
         int x1 = i1 % width;
         int y1 = i1 / width;
-        // 横隣接: 同じ行で列が1違う
         boolean horizontal = (y0 == y1 && Math.abs(x0 - x1) == 1);
-        // 縦隣接: 同じ列で行が1違う
         boolean vertical = (x0 == x1 && Math.abs(y0 - y1) == 1);
-        return horizontal || vertical;
+        boolean diagonal = (Math.abs(x0 - x1) == 1 && Math.abs(y0 - y1) == 1);
+        return horizontal || vertical || diagonal;
     }
 
     @Override
     public ItemStack assemble(CraftingContainer container, RegistryAccess registryAccess) {
         int width = container.getWidth();
         if (width <= 0) width = 3;
-        int height = container.getHeight();
-        if (height <= 0) height = 3;
 
-        // BとKを特定
         ItemStack bStack = ItemStack.EMPTY;
         ItemStack kStack = ItemStack.EMPTY;
         int bIndex = -1, kIndex = -1;
@@ -109,44 +98,44 @@ public class CutBlockRecipe implements CraftingRecipe {
         if (bStack.isEmpty() || kStack.isEmpty()) return ItemStack.EMPTY;
         if (!isValidMaterial(bStack)) return ItemStack.EMPTY;
 
-        // 方向判定
         int bx = bIndex % width;
         int by = bIndex / width;
         int kx = kIndex % width;
         int ky = kIndex / width;
         boolean isHorizontal = (by == ky && Math.abs(bx - kx) == 1);
         boolean isVertical = (bx == kx && Math.abs(by - ky) == 1);
-        if (!isHorizontal && !isVertical) return ItemStack.EMPTY;
+        boolean isDiagonal = (Math.abs(bx - kx) == 1 && Math.abs(by - ky) == 1);
+        if (!isHorizontal && !isVertical && !isDiagonal) return ItemStack.EMPTY;
 
-        // BからbaseStateとyLevel/hLevelを取得
         BlockState baseState;
-        byte yLevel, hLevel;
+        byte xLevel, yLevel, zLevel;
         if (isCutBlock(bStack)) {
             CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(bStack);
             baseState = data.state();
+            xLevel = data.xLevel();
             yLevel = data.yLevel();
-            hLevel = data.hLevel();
-            // 空のcut_blockは不可
+            zLevel = data.zLevel();
             if (baseState.isAir()) return ItemStack.EMPTY;
         } else if (bStack.getItem() instanceof BlockItem blockItem) {
             Block block = blockItem.getBlock();
             baseState = block.defaultBlockState();
-            // フルキューブ判定
             if (!CutBlockEntity.isFullCubeState(baseState)) return ItemStack.EMPTY;
+            xLevel = 0;
             yLevel = 0;
-            hLevel = 0;
+            zLevel = 0;
         } else {
             return ItemStack.EMPTY;
         }
 
-        // 該当軸を1段階進める
         if (isHorizontal) {
-            hLevel = CutBlockEntity.nextLevel(hLevel);
-        } else {
+            xLevel = CutBlockEntity.nextLevel(xLevel);
+        } else if (isVertical) {
             yLevel = CutBlockEntity.nextLevel(yLevel);
+        } else {
+            zLevel = CutBlockEntity.nextLevel(zLevel);
         }
 
-        return createCutBlockStack(baseState, yLevel, hLevel);
+        return createCutBlockStack(baseState, xLevel, yLevel, zLevel);
     }
 
     @Override
@@ -155,7 +144,6 @@ public class CutBlockRecipe implements CraftingRecipe {
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack s = container.getItem(i);
             if (!s.isEmpty() && isKatana(s)) {
-                // 刀は返却（コピー、耐久消費なし）
                 remaining.set(i, s.copy());
             }
         }
@@ -206,12 +194,10 @@ public class CutBlockRecipe implements CraftingRecipe {
 
     private static boolean isKatana(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        // BambooItems.COMMON_KATANAが初期化前でもis()で落ちないようにtry
         try {
             if (stack.is(BambooItems.COMMON_KATANA.get())) return true;
         } catch (Exception e) {
         }
-        // フォールバック: 名前で判定
         String key = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
         return key.equals("bamboomod:commonkatana");
     }
@@ -240,18 +226,25 @@ public class CutBlockRecipe implements CraftingRecipe {
         return false;
     }
 
-    public static ItemStack createCutBlockStack(BlockState cutState, byte yLevel, byte hLevel) {
+    public static ItemStack createCutBlockStack(BlockState cutState, byte xLevel, byte yLevel, byte zLevel) {
         ItemStack stack = new ItemStack(BambooBlocks.CUT_BLOCK.get());
         CompoundTag bet = new CompoundTag();
         bet.put(CutBlockEntity.TAG_CUT_STATE, NbtUtils.writeBlockState(cutState));
+        bet.putByte(CutBlockEntity.TAG_X_LEVEL, xLevel);
         bet.putByte(CutBlockEntity.TAG_Y_LEVEL, yLevel);
-        bet.putByte(CutBlockEntity.TAG_H_LEVEL, hLevel);
+        bet.putByte(CutBlockEntity.TAG_Z_LEVEL, zLevel);
         CompoundTag tag = stack.getOrCreateTag();
         tag.put("BlockEntityTag", bet);
-        // トップレベルにもY/Hをコピー（CutBlockEntity.readFromStackのフォールバック用）
+        tag.putByte(CutBlockEntity.TAG_X_LEVEL, xLevel);
         tag.putByte(CutBlockEntity.TAG_Y_LEVEL, yLevel);
-        tag.putByte(CutBlockEntity.TAG_H_LEVEL, hLevel);
+        tag.putByte(CutBlockEntity.TAG_Z_LEVEL, zLevel);
         return stack;
+    }
+
+    /** 旧 2引数互換: HをXとみなす */
+    @Deprecated
+    public static ItemStack createCutBlockStack(BlockState cutState, byte yLevel, byte hLevel) {
+        return createCutBlockStack(cutState, hLevel, yLevel, (byte) 0);
     }
 
     public static class Serializer implements RecipeSerializer<CutBlockRecipe> {

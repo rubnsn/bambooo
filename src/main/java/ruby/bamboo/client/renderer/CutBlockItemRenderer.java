@@ -54,12 +54,10 @@ public class CutBlockItemRenderer extends BlockEntityWithoutLevelRenderer {
             // 空のcut_blockはダミーなので何も描かない（通常入手不能）
             return;
         }
+        byte xLevel = data.xLevel();
         byte yLevel = data.yLevel();
-        byte hLevel = data.hLevel();
-        // インベントリでは向きが無いためデフォルト NORTH で Bounds を求める
-        // （NORTH: X= hSize, 仕様の基準向き）
-        Direction facing = Direction.NORTH;
-        int[] bounds = computeBoundsForItem(yLevel, hLevel, facing);
+        byte zLevel = data.zLevel();
+        int[] bounds = computeBoundsForItem(xLevel, yLevel, zLevel);
         float minX = bounds[0] / 16f;
         float minY = bounds[1] / 16f;
         float minZ = bounds[2] / 16f;
@@ -81,38 +79,15 @@ public class CutBlockItemRenderer extends BlockEntityWithoutLevelRenderer {
         poseStack.popPose();
     }
 
-    private static int[] computeBoundsForItem(byte yLevel, byte hLevel, Direction facing) {
+    private static int[] computeBoundsForItem(byte xLevel, byte yLevel, byte zLevel) {
+        int xSize = CutBlockEntity.levelToSize(xLevel);
         int ySize = CutBlockEntity.levelToSize(yLevel);
-        int hSize = CutBlockEntity.levelToSize(hLevel);
-        int minX = 0, minY = 0, minZ = 0;
-        int maxX = 16, maxY = ySize, maxZ = 16;
-        if (hSize != 16) {
-            switch (facing) {
-                case NORTH -> {
-                    maxX = hSize;
-                    maxZ = 16;
-                }
-                case SOUTH -> {
-                    minX = 16 - hSize;
-                    maxX = 16;
-                    maxZ = 16;
-                }
-                case EAST -> {
-                    maxX = 16;
-                    maxZ = hSize;
-                }
-                case WEST -> {
-                    minZ = 16 - hSize;
-                    maxX = 16;
-                    maxZ = 16;
-                }
-                default -> {
-                    maxX = hSize;
-                    maxZ = 16;
-                }
-            }
-        }
-        return new int[]{minX, minY, minZ, maxX, maxY, maxZ};
+        int zSize = CutBlockEntity.levelToSize(zLevel);
+        // 残っている実体部分を元にセンタリング: 各軸で (16 - size)/2 をオフセット
+        int xOff = (16 - xSize) / 2;
+        int yOff = (16 - ySize) / 2;
+        int zOff = (16 - zSize) / 2;
+        return new int[]{xOff, yOff, zOff, xOff + xSize, yOff + ySize, zOff + zSize};
     }
 
     private void applyTransform(PoseStack poseStack, ItemDisplayContext context) {

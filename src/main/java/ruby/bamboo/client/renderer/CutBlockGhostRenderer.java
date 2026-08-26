@@ -25,8 +25,7 @@ import ruby.bamboo.block.CutBlock;
 import ruby.bamboo.block.entity.CutBlockEntity;
 
 /**
- * カットブロック設置時のゴースト表示。
- * cut_blockを持っているとき、照準先の設置位置にBoundsサイズの半透明Boxを表示する。
+ * カットブロック設置時のゴースト表示 (3軸絶対)。
  */
 @Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class CutBlockGhostRenderer {
@@ -37,7 +36,6 @@ public class CutBlockGhostRenderer {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
         Player player = mc.player;
-        // 手持ちチェック: メインハンドまたはオフハンドにcut_block
         ItemStack held = player.getMainHandItem();
         if (!isCutBlock(held)) {
             held = player.getOffhandItem();
@@ -49,34 +47,27 @@ public class CutBlockGhostRenderer {
         BlockPos hitPos = bhr.getBlockPos();
         Direction face = bhr.getDirection();
         net.minecraft.world.phys.Vec3 hitVec = bhr.getLocation();
-        // heldからデータ取得
         CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(held);
         if (data.state().isAir()) return;
-        Direction facing = player.getDirection().getOpposite();
-        if (facing.getAxis() == Direction.Axis.Y) facing = Direction.NORTH;
 
-        // 1) 既存cut_blockの隙間へのゴースト（同一座標）— 空きサブ空間をヒットに最も近いものでプレビュー
         BlockPos ghostPos = null;
         int[] bounds = null;
         if (mc.level.getBlockEntity(hitPos) instanceof CutBlockEntity existingBe) {
             if (!existingBe.isEmpty()) {
-                int[] tryBounds = existingBe.findBestBoundsForPlacement(hitVec, hitPos, data.yLevel(), data.hLevel(), facing, face);
+                int[] tryBounds = existingBe.findBestBoundsForPlacement(hitVec, hitPos, data.xLevel(), data.yLevel(), data.zLevel(), face);
                 if (tryBounds != null && existingBe.canAddEntry(tryBounds)) {
                     ghostPos = hitPos;
                     bounds = tryBounds;
-                } else {
-                    // 隙間が無い場合は隣接への配置を試みるため ghostPos は null のまま
                 }
             }
         }
-        // 2) 隣接位置への新規ゴースト
         if (ghostPos == null) {
             BlockPos placePosTmp = hitPos.relative(face);
             BlockState placeState = mc.level.getBlockState(placePosTmp);
             boolean canReplace = placeState.canBeReplaced();
             if (mc.level.getBlockEntity(placePosTmp) instanceof CutBlockEntity placeBe) {
                 if (!placeBe.isEmpty()) {
-                    int[] tryBounds = placeBe.findBestBoundsForPlacement(hitVec, placePosTmp, data.yLevel(), data.hLevel(), facing, face);
+                    int[] tryBounds = placeBe.findBestBoundsForPlacement(hitVec, placePosTmp, data.xLevel(), data.yLevel(), data.zLevel(), face);
                     if (tryBounds != null && placeBe.canAddEntry(tryBounds)) {
                         ghostPos = placePosTmp;
                         bounds = tryBounds;
@@ -85,12 +76,12 @@ public class CutBlockGhostRenderer {
                     }
                 } else {
                     ghostPos = placePosTmp;
-                    bounds = CutBlockEntity.computeBoundsFromHit(hitVec, placePosTmp, hitPos, data.yLevel(), data.hLevel(), facing, face);
+                    bounds = CutBlockEntity.computeBoundsFromHit(hitVec, placePosTmp, hitPos, data.xLevel(), data.yLevel(), data.zLevel(), null, face);
                 }
             } else {
                 if (!canReplace) return;
                 ghostPos = placePosTmp;
-                bounds = CutBlockEntity.computeBoundsFromHit(hitVec, ghostPos, hitPos, data.yLevel(), data.hLevel(), facing, face);
+                bounds = CutBlockEntity.computeBoundsFromHit(hitVec, ghostPos, hitPos, data.xLevel(), data.yLevel(), data.zLevel(), null, face);
             }
         }
         if (ghostPos == null || bounds == null) return;
@@ -102,20 +93,14 @@ public class CutBlockGhostRenderer {
         float maxY = bounds[4] / 16f;
         float maxZ = bounds[5] / 16f;
 
-        // レンダリング
         PoseStack poseStack = event.getPoseStack();
-        // カメラ位置でオフセット
         net.minecraft.world.phys.Vec3 cam = event.getCamera().getPosition();
         poseStack.pushPose();
         poseStack.translate(placePos.getX() - cam.x, placePos.getY() - cam.y, placePos.getZ() - cam.z);
 
-        // 半透明Box + ワイヤーフレーム
         MultiBufferSource.BufferSource buffer = Minecraft.getInstance().renderBuffers().bufferSource();
-        // 半透明キューブ
         renderTranslucentBox(poseStack, buffer, minX, minY, minZ, maxX, maxY, maxZ);
-        // ワイヤーフレーム
         renderWireframeBox(poseStack, buffer, minX, minY, minZ, maxX, maxY, maxZ);
-        // flush
         buffer.endBatch(RenderType.translucent());
         buffer.endBatch(RenderType.lines());
 
@@ -125,46 +110,11 @@ public class CutBlockGhostRenderer {
     private static boolean isCutBlock(ItemStack stack) {
         if (stack.isEmpty()) return false;
         try {
-            // 登録名で判定（初期化前でも安全）
             String key = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
             return key.equals("bamboomod:cut_block");
         } catch (Exception e) {
             return false;
         }
-    }
-
-    private static int[] computeBounds(byte yLevel, byte hLevel, Direction facing) {
-        int ySize = CutBlockEntity.levelToSize(yLevel);
-        int hSize = CutBlockEntity.levelToSize(hLevel);
-        int minX = 0, minY = 0, minZ = 0;
-        int maxX = 16, maxY = ySize, maxZ = 16;
-        if (hSize != 16) {
-            switch (facing) {
-                case NORTH -> {
-                    maxX = hSize;
-                    maxZ = 16;
-                }
-                case SOUTH -> {
-                    minX = 16 - hSize;
-                    maxX = 16;
-                    maxZ = 16;
-                }
-                case EAST -> {
-                    maxX = 16;
-                    maxZ = hSize;
-                }
-                case WEST -> {
-                    minZ = 16 - hSize;
-                    maxX = 16;
-                    maxZ = 16;
-                }
-                default -> {
-                    maxX = hSize;
-                    maxZ = 16;
-                }
-            }
-        }
-        return new int[]{minX, minY, minZ, maxX, maxY, maxZ};
     }
 
     private static void renderTranslucentBox(PoseStack poseStack, MultiBufferSource buffer,
@@ -177,17 +127,11 @@ public class CutBlockGhostRenderer {
         int ri = (int)(r*255), gi = (int)(g*255), bi = (int)(b*255), ai = (int)(a*255);
         int light = 0xF000F0;
         int overlay = 0;
-        // 下面
         quad(vc, mat, normal, minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ, 0,-1,0, ri,gi,bi,ai, light, overlay);
-        // 上面
         quad(vc, mat, normal, minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, minX, maxY, minZ, 0,1,0, ri,gi,bi,ai, light, overlay);
-        // 北
         quad(vc, mat, normal, maxX, minY, minZ, minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ, 0,0,-1, ri,gi,bi,ai, light, overlay);
-        // 南
         quad(vc, mat, normal, minX, minY, maxZ, maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ, 0,0,1, ri,gi,bi,ai, light, overlay);
-        // 西（裏面カリング修正）
         quad(vc, mat, normal, minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ, -1,0,0, ri,gi,bi,ai, light, overlay);
-        // 東（裏面カリング修正）
         quad(vc, mat, normal, maxX, minY, maxZ, maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ, 1,0,0, ri,gi,bi,ai, light, overlay);
     }
 
@@ -198,7 +142,6 @@ public class CutBlockGhostRenderer {
         Matrix4f mat = pose.pose();
         Matrix3f normal = pose.normal();
         float r=0.4f,g=1.0f,b=0.4f,a=1.0f;
-        // 12辺
         line(vc, mat, normal, minX,minY,minZ, maxX,minY,minZ, r,g,b,a);
         line(vc, mat, normal, maxX,minY,minZ, maxX,minY,maxZ, r,g,b,a);
         line(vc, mat, normal, maxX,minY,maxZ, minX,minY,maxZ, r,g,b,a);

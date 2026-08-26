@@ -21,28 +21,30 @@ import ruby.bamboo.core.init.BambooBlockEntities;
 /**
  * カットブロックの BlockEntity。
  * 複数のフルキューブ BlockState を同一ワールド座標内のサブ空間(Bounds)に保持する。
- * 旧仕様の単一 cutState + yLevel/hLevel は互換のため残存するが、新規は entries リストで管理。
- * 仕様: docs/port-spec-cutblock.md §2.1 + 2026-08-27 拡張(ヒット位置・隙間充填)
+ * 3軸絶対切断 (X 8/4, Y 8/4, Z 8/4) に対応。FACING依存を撤廃。
+ * 仕様: docs/port-spec-cutblock.md §2.1
  */
 public class CutBlockEntity extends BlockEntity {
 
     public static final String TAG_CUT_STATE = "CutState";
+    public static final String TAG_X_LEVEL = "XLevel";
     public static final String TAG_Y_LEVEL = "YLevel";
+    public static final String TAG_Z_LEVEL = "ZLevel";
+    // 旧互換 (読込のみ)
     public static final String TAG_H_LEVEL = "HLevel";
-    // 互換用: 旧Bounds配列
     public static final String TAG_BOUNDS = "Bounds";
-    // 新: 複数エントリ
     public static final String TAG_ENTRIES = "Entries";
     public static final String TAG_STATE = "State";
 
     private static final int SYNC_DELAY = 5;
 
-    // 旧単一互換
+    // 単一保持 (entriesが空の時のみ有効) — 3軸
     private BlockState cutState = Blocks.AIR.defaultBlockState();
-    private byte yLevel = 0; // 0=16, 1=8, 2=4
-    private byte hLevel = 0; // 0=16, 1=8, 2=4
+    private byte xLevel = 0; // 0=16, 1=8, 2=4
+    private byte yLevel = 0;
+    private byte zLevel = 0;
 
-    // 新: 複数エントリ
+    // 複数エントリ
     private final java.util.List<CutEntry> entries = new java.util.ArrayList<>();
 
     private VoxelShape shapeCache = null;
@@ -84,25 +86,58 @@ public class CutBlockEntity extends BlockEntity {
         return (byte) ((level + 1) % 3);
     }
 
+    public int getXSize() {
+        return levelToSize(this.xLevel);
+    }
+
     public int getYSize() {
         return levelToSize(this.yLevel);
     }
 
+    public int getZSize() {
+        return levelToSize(this.zLevel);
+    }
+
+    /** 旧 hSize 互換: Xサイズを返す */
+    @Deprecated
     public int getHSize() {
-        return levelToSize(this.hLevel);
+        return getXSize();
+    }
+
+    public byte getXLevel() {
+        return this.xLevel;
     }
 
     public byte getYLevel() {
         return this.yLevel;
     }
 
-    public byte getHLevel() {
-        return this.hLevel;
+    public byte getZLevel() {
+        return this.zLevel;
     }
 
-    public void setLevels(byte yLevel, byte hLevel) {
+    /** 旧 hLevel 互換 */
+    @Deprecated
+    public byte getHLevel() {
+        return this.xLevel;
+    }
+
+    public void setLevels(byte xLevel, byte yLevel, byte zLevel) {
+        this.xLevel = clampLevel(xLevel);
         this.yLevel = clampLevel(yLevel);
-        this.hLevel = clampLevel(hLevel);
+        this.zLevel = clampLevel(zLevel);
+        this.shapeCache = null;
+        markDirtyAndSync();
+    }
+
+    /** 旧 2引数互換: HをXとみなす */
+    @Deprecated
+    public void setLevels(byte yLevel, byte hLevel) {
+        setLevels(hLevel, yLevel, (byte) 0);
+    }
+
+    public void cycleX() {
+        this.xLevel = nextLevel(this.xLevel);
         this.shapeCache = null;
         markDirtyAndSync();
     }
@@ -113,10 +148,15 @@ public class CutBlockEntity extends BlockEntity {
         markDirtyAndSync();
     }
 
-    public void cycleH() {
-        this.hLevel = nextLevel(this.hLevel);
+    public void cycleZ() {
+        this.zLevel = nextLevel(this.zLevel);
         this.shapeCache = null;
         markDirtyAndSync();
+    }
+
+    @Deprecated
+    public void cycleH() {
+        cycleX();
     }
 
     private static byte clampLevel(byte v) {
@@ -125,58 +165,32 @@ public class CutBlockEntity extends BlockEntity {
         return v;
     }
 
-    // ===== Bounds導出 =====
+    // ===== Bounds導出 (3軸絶対, FACING非依存) =====
 
     /**
-     * FACINGを考慮した Bounds [minX,minY,minZ,maxX,maxY,maxZ] を返す。
-     * Yは常に下側を残す。HはFACINGで軸を決定し、向きにより保持側を分岐してEast/Westの反転による透けを解消。
+     * 3軸絶対 Bounds [minX,minY,minZ,maxX,maxY,maxZ] を返す。
+     * 常に原点寄せ [0,0,0,xSize,ySize,zSize]。
      */
-    public int[] getBounds(net.minecraft.core.Direction facing) {
+    public int[] getBoundsAbsolute() {
+        int xSize = getXSize();
         int ySize = getYSize();
-        int hSize = getHSize();
-        int minX = 0, minY = 0, minZ = 0;
-        int maxX = 16, maxY = ySize, maxZ = 16;
-        if (hSize != 16) {
-            switch (facing) {
-                case NORTH -> {
-                    // 北向き: Xの西側(0..hSize)を残す
-                    maxX = hSize;
-                    maxZ = 16;
-                }
-                case SOUTH -> {
-                    // 南向き: Xの東側(16-hSize..16)を残す（Northと対称で透け防止）
-                    minX = 16 - hSize;
-                    maxX = 16;
-                    maxZ = 16;
-                }
-                case EAST -> {
-                    // 東向き: Zの北側(0..hSize)を残す
-                    maxX = 16;
-                    maxZ = hSize;
-                }
-                case WEST -> {
-                    // 西向き: Zの南側(16-hSize..16)を残す（Eastと対称で透け防止）
-                    minZ = 16 - hSize;
-                    maxX = 16;
-                    maxZ = 16;
-                }
-                default -> {
-                    maxX = hSize;
-                    maxZ = 16;
-                }
-            }
-        }
-        return new int[]{minX, minY, minZ, maxX, maxY, maxZ};
+        int zSize = getZSize();
+        return new int[]{0, 0, 0, xSize, ySize, zSize};
     }
 
     /**
-     * FACING非依存のBounds（Xを削る版）。レンダリングのフォールバック用。
+     * @deprecated FACING依存の旧API。絶対Boundsを返す。
      */
-    public int[] getBoundsDefault() {
-        return getBounds(net.minecraft.core.Direction.NORTH);
+    @Deprecated
+    public int[] getBounds(net.minecraft.core.Direction facing) {
+        return getBoundsAbsolute();
     }
 
-    public VoxelShape getShapeCache(net.minecraft.core.Direction facing) {
+    public int[] getBoundsDefault() {
+        return getBoundsAbsolute();
+    }
+
+    public VoxelShape getShapeCacheAbsolute() {
         if (this.shapeCache != null) {
             return this.shapeCache;
         }
@@ -184,7 +198,6 @@ public class CutBlockEntity extends BlockEntity {
             this.shapeCache = Shapes.empty();
             return this.shapeCache;
         }
-        // 新: 複数エントリがある場合は合算、旧単一互換は従来のgetBoundsを使用
         if (!this.entries.isEmpty()) {
             VoxelShape shape = Shapes.empty();
             for (CutEntry e : this.entries) {
@@ -195,31 +208,19 @@ public class CutBlockEntity extends BlockEntity {
             this.shapeCache = shape;
             return this.shapeCache;
         }
-        int[] b = getBounds(facing);
+        int[] b = getBoundsAbsolute();
         this.shapeCache = Block.box(b[0], b[1], b[2], b[3], b[4], b[5]);
         return this.shapeCache;
     }
 
-    /** 全エントリの合算 Shape（facing無視、BEWLR/衝突用） */
+    @Deprecated
+    public VoxelShape getShapeCache(net.minecraft.core.Direction facing) {
+        return getShapeCacheAbsolute();
+    }
+
+    /** 全エントリの合算 Shape（facing無視） */
     public VoxelShape getShapeCacheUnion() {
-        if (this.shapeCache != null) {
-            return this.shapeCache;
-        }
-        if (isEmpty()) {
-            this.shapeCache = Shapes.empty();
-            return this.shapeCache;
-        }
-        if (!this.entries.isEmpty()) {
-            VoxelShape shape = Shapes.empty();
-            for (CutEntry e : this.entries) {
-                int[] b = e.bounds;
-                VoxelShape part = Block.box(b[0], b[1], b[2], b[3], b[4], b[5]);
-                shape = Shapes.or(shape, part);
-            }
-            this.shapeCache = shape;
-            return this.shapeCache;
-        }
-        return getShapeCache(net.minecraft.core.Direction.NORTH);
+        return getShapeCacheAbsolute();
     }
 
     public void invalidateShapeCache() {
@@ -250,11 +251,9 @@ public class CutBlockEntity extends BlockEntity {
             boolean overlapZ = nMinZ < b[5] && nMaxZ > b[2];
             if (overlapX && overlapY && overlapZ) return false;
         }
-        // 旧単一が残っている場合、そのBoundsとも重なりチェック（移行期）
+        // 旧単一が残っている場合、そのBoundsとも重なりチェック
         if (this.entries.isEmpty() && this.cutState != null && !this.cutState.isAir()) {
-            int[] oldBounds = getBounds(net.minecraft.core.Direction.NORTH);
-            // facingはBEのBlockStateから取得すべきだが、ここでは近似でNORTHを使用
-            // 旧データは単一なので、重なる場合は追加不可
+            int[] oldBounds = getBoundsAbsolute();
             boolean overlapX = nMinX < oldBounds[3] && nMaxX > oldBounds[0];
             boolean overlapY = nMinY < oldBounds[4] && nMaxY > oldBounds[1];
             boolean overlapZ = nMinZ < oldBounds[5] && nMaxZ > oldBounds[2];
@@ -266,15 +265,14 @@ public class CutBlockEntity extends BlockEntity {
     public boolean addEntry(BlockState state, int[] bounds) {
         if (state == null || state.isAir()) return false;
         if (!canAddEntry(bounds)) return false;
-        // 旧単一データを移行: 初回追加時に旧データをentriesへ移す
+        // 旧単一データを移行: 初回追加時に旧データをentriesへ移す (原点寄せBounds)
         if (this.entries.isEmpty() && this.cutState != null && !this.cutState.isAir()) {
-            int[] oldBounds = getBounds(net.minecraft.core.Direction.NORTH);
-            // 旧 facing を考慮すべきだが、近似でNORTHのBoundsを使用（後で上書きされる）
-            // 正確には BlockStateのFACINGで再計算すべきだが、ここではBEがまだ level==null の場合もあるためデフォルト
+            int[] oldBounds = getBoundsAbsolute();
             this.entries.add(new CutEntry(this.cutState, oldBounds));
             this.cutState = Blocks.AIR.defaultBlockState();
+            this.xLevel = 0;
             this.yLevel = 0;
-            this.hLevel = 0;
+            this.zLevel = 0;
         }
         this.entries.add(new CutEntry(state, bounds));
         this.shapeCache = null;
@@ -285,8 +283,9 @@ public class CutBlockEntity extends BlockEntity {
     public void clearEntries() {
         this.entries.clear();
         this.cutState = Blocks.AIR.defaultBlockState();
+        this.xLevel = 0;
         this.yLevel = 0;
-        this.hLevel = 0;
+        this.zLevel = 0;
         this.shapeCache = null;
         markDirtyAndSync();
     }
@@ -313,7 +312,6 @@ public class CutBlockEntity extends BlockEntity {
         if (state == null) {
             state = Blocks.AIR.defaultBlockState();
         }
-        // 新方式では entries をクリアして単一に
         this.entries.clear();
         this.cutState = state;
         this.shapeCache = null;
@@ -328,84 +326,91 @@ public class CutBlockEntity extends BlockEntity {
 
     public boolean isFullCube() {
         if (!this.entries.isEmpty()) {
-            // いずれかがフルならフルとみなす（簡易）
             for (CutEntry e : this.entries) {
                 int[] b = e.bounds;
                 if (b[0] == 0 && b[1] == 0 && b[2] == 0 && b[3] == 16 && b[4] == 16 && b[5] == 16) return true;
             }
             return false;
         }
-        return this.cutState == null || this.cutState.isAir() || (getYSize() == 16 && getHSize() == 16);
+        return this.cutState == null || this.cutState.isAir() || (getXSize() == 16 && getYSize() == 16 && getZSize() == 16);
     }
 
-    /** ヒット位置から Bounds を決定（狙った位置に設置）— 新規配置用（placePos基準） */
+    // ===== 3軸 Bounds 計算 (ヒット位置・隙間充填) =====
+
+    /** 旧2軸互換 */
+    @Deprecated
     public static int[] computeBoundsFromHit(net.minecraft.world.phys.Vec3 hitVec, BlockPos pos, byte yLevel, byte hLevel, net.minecraft.core.Direction facing) {
-        return computeBoundsFromHit(hitVec, pos, pos, yLevel, hLevel, facing, null);
+        return computeBoundsFromHit(hitVec, pos, pos, hLevel, yLevel, (byte) 0, facing, null);
     }
 
-    /** 既存BEの隙間充填用: clickedPos基準でヒット位置からBoundsを決定 */
+    @Deprecated
     public static int[] computeBoundsFromHitForExisting(net.minecraft.world.phys.Vec3 hitVec, BlockPos clickedPos, byte yLevel, byte hLevel, net.minecraft.core.Direction facing) {
-        return computeBoundsFromHit(hitVec, clickedPos, clickedPos, yLevel, hLevel, facing, null);
+        return computeBoundsFromHit(hitVec, clickedPos, clickedPos, hLevel, yLevel, (byte) 0, facing, null);
     }
 
-    /** 空き空間を考慮して最適なBoundsを探索（ヒットに最も近く、重ならないもの） */
+    @Deprecated
     public int[] findBestBoundsForPlacement(net.minecraft.world.phys.Vec3 hitVec, BlockPos pos, byte yLevel, byte hLevel, net.minecraft.core.Direction facing, net.minecraft.core.Direction clickedFace) {
+        return findBestBoundsForPlacement(hitVec, pos, hLevel, yLevel, (byte) 0, clickedFace);
+    }
+
+    /** 3軸: 空き空間を考慮して最適なBoundsを探索（ヒットに最も近く、重ならないもの） */
+    public int[] findBestBoundsForPlacement(net.minecraft.world.phys.Vec3 hitVec, BlockPos pos, byte xLevel, byte yLevel, byte zLevel, net.minecraft.core.Direction clickedFace) {
+        int xSize = levelToSize(xLevel);
         int ySize = levelToSize(yLevel);
-        int hSize = levelToSize(hLevel);
+        int zSize = levelToSize(zLevel);
+        java.util.List<Integer> xOffsets = new java.util.ArrayList<>();
         java.util.List<Integer> yOffsets = new java.util.ArrayList<>();
+        java.util.List<Integer> zOffsets = new java.util.ArrayList<>();
+        if (xSize == 16) xOffsets.add(0);
+        else if (xSize == 8) { xOffsets.add(0); xOffsets.add(8); }
+        else { xOffsets.add(0); xOffsets.add(4); xOffsets.add(8); xOffsets.add(12); }
         if (ySize == 16) yOffsets.add(0);
         else if (ySize == 8) { yOffsets.add(0); yOffsets.add(8); }
-        else if (ySize == 4) { yOffsets.add(0); yOffsets.add(4); yOffsets.add(8); yOffsets.add(12); }
-        java.util.List<Integer> hOffsets = new java.util.ArrayList<>();
-        if (hSize == 16) hOffsets.add(0);
-        else if (hSize == 8) { hOffsets.add(0); hOffsets.add(8); }
-        else if (hSize == 4) { hOffsets.add(0); hOffsets.add(4); hOffsets.add(8); hOffsets.add(12); }
+        else { yOffsets.add(0); yOffsets.add(4); yOffsets.add(8); yOffsets.add(12); }
+        if (zSize == 16) zOffsets.add(0);
+        else if (zSize == 8) { zOffsets.add(0); zOffsets.add(8); }
+        else { zOffsets.add(0); zOffsets.add(4); zOffsets.add(8); zOffsets.add(12); }
+
+        double hitX = hitVec.x - pos.getX();
         double hitY = hitVec.y - pos.getY();
-        double hitH;
-        boolean isX = facing == net.minecraft.core.Direction.NORTH || facing == net.minecraft.core.Direction.SOUTH;
-        if (isX) hitH = hitVec.x - pos.getX();
-        else hitH = hitVec.z - pos.getZ();
+        double hitZ = hitVec.z - pos.getZ();
+        if (hitX < 0) hitX = 0; if (hitX > 1) hitX = 1;
         if (hitY < 0) hitY = 0; if (hitY > 1) hitY = 1;
-        if (hitH < 0) hitH = 0; if (hitH > 1) hitH = 1;
+        if (hitZ < 0) hitZ = 0; if (hitZ > 1) hitZ = 1;
+        double hitX16 = hitX * 16;
         double hitY16 = hitY * 16;
-        double hitH16 = hitH * 16;
+        double hitZ16 = hitZ * 16;
         int[] best = null;
         double bestDist = Double.MAX_VALUE;
-        for (int yOff : yOffsets) {
-            for (int hOff : hOffsets) {
-                int minX = 0, minY = yOff, minZ = 0, maxX = 16, maxY = yOff + ySize, maxZ = 16;
-                if (isX) { minX = hOff; maxX = hOff + hSize; minZ = 0; maxZ = 16; }
-                else { minZ = hOff; maxZ = hOff + hSize; minX = 0; maxX = 16; }
-                int[] cand = new int[]{minX, minY, minZ, maxX, maxY, maxZ};
-                if (!canAddEntry(cand)) continue;
-                double cx = (minX + maxX) / 2.0;
-                double cy = (minY + maxY) / 2.0;
-                double cz = (minZ + maxZ) / 2.0;
-                double hx = isX ? hitH * 16 : 8;
-                double hz = !isX ? hitH * 16 : 8;
-                double hy = hitY16;
-                double dx = isX ? cx - hx : 0;
-                double dz = !isX ? cz - hz : 0;
-                double dy = cy - hy;
-                double dist = dy * dy + dx * dx + dz * dz;
-                if (dist < bestDist) { bestDist = dist; best = cand; }
+        for (int xOff : xOffsets) {
+            for (int yOff : yOffsets) {
+                for (int zOff : zOffsets) {
+                    int[] cand = new int[]{xOff, yOff, zOff, xOff + xSize, yOff + ySize, zOff + zSize};
+                    if (!canAddEntry(cand)) continue;
+                    double cx = (xOff + xOff + xSize) / 2.0;
+                    double cy = (yOff + yOff + ySize) / 2.0;
+                    double cz = (zOff + zOff + zSize) / 2.0;
+                    double dx = cx - hitX16;
+                    double dy = cy - hitY16;
+                    double dz = cz - hitZ16;
+                    double dist = dx * dx + dy * dy + dz * dz;
+                    if (dist < bestDist) { bestDist = dist; best = cand; }
+                }
             }
         }
         if (best != null) return best;
-        return computeBoundsFromHit(hitVec, pos, pos, yLevel, hLevel, facing, clickedFace);
+        return computeBoundsFromHit(hitVec, pos, pos, xLevel, yLevel, zLevel, null, clickedFace);
     }
 
-    /** 汎用: hitVec と targetPos(配置先) と clickedPos/face を考慮してBounds決定 */
-    public static int[] computeBoundsFromHit(net.minecraft.world.phys.Vec3 hitVec, BlockPos targetPos, BlockPos clickedPos, byte yLevel, byte hLevel, net.minecraft.core.Direction facing, net.minecraft.core.Direction clickedFace) {
+    /** 汎用: hitVec と targetPos(配置先) と clickedPos/face を考慮してBounds決定 (3軸絶対) */
+    public static int[] computeBoundsFromHit(net.minecraft.world.phys.Vec3 hitVec, BlockPos targetPos, BlockPos clickedPos, byte xLevel, byte yLevel, byte zLevel, net.minecraft.core.Direction facing, net.minecraft.core.Direction clickedFace) {
+        int xSize = levelToSize(xLevel);
         int ySize = levelToSize(yLevel);
-        int hSize = levelToSize(hLevel);
+        int zSize = levelToSize(zLevel);
         int minX = 0, minY = 0, minZ = 0;
-        int maxX = 16, maxY = ySize, maxZ = 16;
-        // ヒットのワールド座標から、targetPos内のローカル座標(0-16)を求める
-        // ただし、clickedFaceがY軸ならYは境界上なので、clickedPos基準のfracYを使用
+        int maxX = xSize, maxY = ySize, maxZ = zSize;
         double fracX, fracY, fracZ;
         if (clickedPos != null && clickedFace != null) {
-            // Yは常にclickedPos基準のfracYを使用（側面クリック時の高さで上下を決定）
             fracX = hitVec.x - clickedPos.getX();
             fracY = hitVec.y - clickedPos.getY();
             fracZ = hitVec.z - clickedPos.getZ();
@@ -417,10 +422,34 @@ public class CutBlockEntity extends BlockEntity {
         if (fracX < 0) fracX = 0; if (fracX > 1) fracX = 1;
         if (fracY < 0) fracY = 0; if (fracY > 1) fracY = 1;
         if (fracZ < 0) fracZ = 0; if (fracZ > 1) fracZ = 1;
-        // Y軸: 側面クリック時はhitYで上下を決定、上面/下面クリック時は常に下側（0）とする（天井/床への自由配置は別途）
+
+        // 各軸: clickedFaceが同軸ならヒットは境界上なのでオフセット0固定
+        boolean canUseX = true, canUseY = true, canUseZ = true;
+        if (clickedFace != null) {
+            if (clickedFace.getAxis() == net.minecraft.core.Direction.Axis.X) canUseX = false;
+            if (clickedFace.getAxis() == net.minecraft.core.Direction.Axis.Y) canUseY = false;
+            if (clickedFace.getAxis() == net.minecraft.core.Direction.Axis.Z) canUseZ = false;
+        }
+        if (xSize != 16) {
+            if (canUseX) {
+                if (xSize == 8) {
+                    minX = fracX > 0.5 ? 8 : 0;
+                    maxX = minX + 8;
+                } else if (xSize == 4) {
+                    if (fracX < 0.25) minX = 0;
+                    else if (fracX < 0.5) minX = 4;
+                    else if (fracX < 0.75) minX = 8;
+                    else minX = 12;
+                    maxX = minX + 4;
+                }
+            } else {
+                minX = 0; maxX = xSize;
+            }
+        } else {
+            minX = 0; maxX = 16;
+        }
         if (ySize != 16) {
-            boolean isSideFace = clickedFace != null && clickedFace.getAxis() != net.minecraft.core.Direction.Axis.Y;
-            if (isSideFace || clickedFace == null) {
+            if (canUseY) {
                 if (ySize == 8) {
                     minY = fracY > 0.5 ? 8 : 0;
                     maxY = minY + 8;
@@ -432,67 +461,35 @@ public class CutBlockEntity extends BlockEntity {
                     maxY = minY + 4;
                 }
             } else {
-                // 上面/下面は常に下側（床/天井は別途Y=12等も可能だが、まずは0）
                 minY = 0; maxY = ySize;
             }
+        } else {
+            minY = 0; maxY = 16;
         }
-        // H軸: facingで軸を決定し、ヒット位置でオフセットを決定
-        if (hSize != 16) {
-            // H軸がXかZかで、使用するfracを決定
-            // ただし、clickedFaceがH軸と同軸なら、その面へのクリックではhitの該当軸は境界上なので、もう一方の軸を使用できない
-            // 例: facing NORTH(SOUTH) は X軸、clickedFace EAST/WEST(X軸)なら hitXは境界上なので使えない → ZではなくX? 実際は使えないのでデフォルト0
-            boolean canUseX = true, canUseZ = true;
-            if (clickedFace != null) {
-                if (clickedFace.getAxis() == net.minecraft.core.Direction.Axis.X) canUseX = false;
-                if (clickedFace.getAxis() == net.minecraft.core.Direction.Axis.Z) canUseZ = false;
+        if (zSize != 16) {
+            if (canUseZ) {
+                if (zSize == 8) {
+                    minZ = fracZ > 0.5 ? 8 : 0;
+                    maxZ = minZ + 8;
+                } else if (zSize == 4) {
+                    if (fracZ < 0.25) minZ = 0;
+                    else if (fracZ < 0.5) minZ = 4;
+                    else if (fracZ < 0.75) minZ = 8;
+                    else minZ = 12;
+                    maxZ = minZ + 4;
+                }
+            } else {
+                minZ = 0; maxZ = zSize;
             }
-            switch (facing) {
-                case NORTH, SOUTH -> {
-                    // X軸
-                    if (canUseX) {
-                        if (hSize == 8) {
-                            minX = fracX > 0.5 ? 8 : 0;
-                            maxX = minX + 8;
-                        } else if (hSize == 4) {
-                            if (fracX < 0.25) minX = 0;
-                            else if (fracX < 0.5) minX = 4;
-                            else if (fracX < 0.75) minX = 8;
-                            else minX = 12;
-                            maxX = minX + 4;
-                        }
-                    } else {
-                        // 使えない場合は常に0
-                        minX = 0; maxX = hSize;
-                    }
-                    minZ = 0; maxZ = 16;
-                }
-                case EAST, WEST -> {
-                    // Z軸
-                    if (canUseZ) {
-                        if (hSize == 8) {
-                            minZ = fracZ > 0.5 ? 8 : 0;
-                            maxZ = minZ + 8;
-                        } else if (hSize == 4) {
-                            if (fracZ < 0.25) minZ = 0;
-                            else if (fracZ < 0.5) minZ = 4;
-                            else if (fracZ < 0.75) minZ = 8;
-                            else minZ = 12;
-                            maxZ = minZ + 4;
-                        }
-                    } else {
-                        minZ = 0; maxZ = hSize;
-                    }
-                    minX = 0; maxX = 16;
-                }
-                default -> {
-                    if (hSize == 8) {
-                        minX = fracX > 0.5 ? 8 : 0;
-                        maxX = minX + 8;
-                    }
-                }
-            }
+        } else {
+            minZ = 0; maxZ = 16;
         }
         return new int[]{minX, minY, minZ, maxX, maxY, maxZ};
+    }
+
+    // 旧シグネチャ互換 (facing無視)
+    public static int[] computeBoundsFromHit(net.minecraft.world.phys.Vec3 hitVec, BlockPos targetPos, BlockPos clickedPos, byte yLevel, byte hLevel, net.minecraft.core.Direction facing, net.minecraft.core.Direction clickedFace) {
+        return computeBoundsFromHit(hitVec, targetPos, clickedPos, hLevel, yLevel, (byte) 0, facing, clickedFace);
     }
 
     // ===== フルキューブ判定（静的） =====
@@ -502,10 +499,8 @@ public class CutBlockEntity extends BlockEntity {
         if (state.hasBlockEntity()) return false;
         if (state.getRenderShape() != net.minecraft.world.level.block.RenderShape.MODEL) return false;
         try {
-            // collisionShape または shape がフルブロックか
             if (Block.isShapeFullBlock(state.getCollisionShape(level, pos))) return true;
             if (Block.isShapeFullBlock(state.getShape(level, pos))) return true;
-            // フォールバック: isSolidRender 相当
             return state.isSolidRender(level, pos);
         } catch (Exception e) {
             return false;
@@ -517,16 +512,13 @@ public class CutBlockEntity extends BlockEntity {
         if (state.hasBlockEntity()) return false;
         if (state.getRenderShape() != net.minecraft.world.level.block.RenderShape.MODEL) return false;
         try {
-            // BlockGetterなしでの簡易判定: shapeがフルか
             VoxelShape shape = state.getShape(null, BlockPos.ZERO);
             if (shape != null && Block.isShapeFullBlock(shape)) return true;
             VoxelShape coll = state.getCollisionShape(null, BlockPos.ZERO);
             if (coll != null && Block.isShapeFullBlock(coll)) return true;
         } catch (Exception e) {
-            // null levelで例外なら、RenderShapeでのみ判定済みなのでtrue扱い
             return true;
         }
-        // shape取得で例外だがRenderShapeがMODELなら許可
         return true;
     }
 
@@ -600,7 +592,6 @@ public class CutBlockEntity extends BlockEntity {
     }
 
     public void writeSyncData(CompoundTag tag) {
-        // 新: Entriesがあればそちらを優先
         if (!this.entries.isEmpty()) {
             net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
             for (CutEntry e : this.entries) {
@@ -612,10 +603,9 @@ public class CutBlockEntity extends BlockEntity {
             tag.put(TAG_ENTRIES, list);
         } else if (this.cutState != null && !this.cutState.isAir()) {
             tag.put(TAG_CUT_STATE, NbtUtils.writeBlockState(this.cutState));
+            tag.putByte(TAG_X_LEVEL, this.xLevel);
             tag.putByte(TAG_Y_LEVEL, this.yLevel);
-            tag.putByte(TAG_H_LEVEL, this.hLevel);
-        } else {
-            // 空の場合でもEntriesは空リストとして書かない（BEが空であることを示す）
+            tag.putByte(TAG_Z_LEVEL, this.zLevel);
         }
     }
 
@@ -631,17 +621,16 @@ public class CutBlockEntity extends BlockEntity {
                 if (s == null || s.isAir()) continue;
                 int[] bounds = entryTag.getIntArray(TAG_BOUNDS);
                 if (bounds.length < 6) continue;
-                // クランプ
                 for (int j = 0; j < 6; j++) {
                     if (bounds[j] < 0) bounds[j] = 0;
                     if (bounds[j] > 16) bounds[j] = 16;
                 }
                 this.entries.add(new CutEntry(s, bounds));
             }
-            // 旧単一フィールドはクリア
             this.cutState = Blocks.AIR.defaultBlockState();
+            this.xLevel = 0;
             this.yLevel = 0;
-            this.hLevel = 0;
+            this.zLevel = 0;
         } else {
             if (tag.contains(TAG_CUT_STATE, Tag.TAG_COMPOUND)) {
                 CompoundTag stateTag = tag.getCompound(TAG_CUT_STATE);
@@ -650,6 +639,17 @@ public class CutBlockEntity extends BlockEntity {
             } else {
                 this.cutState = Blocks.AIR.defaultBlockState();
             }
+            if (tag.contains(TAG_X_LEVEL, Tag.TAG_BYTE)) {
+                this.xLevel = clampLevel(tag.getByte(TAG_X_LEVEL));
+            } else if (tag.contains(TAG_X_LEVEL, Tag.TAG_INT)) {
+                this.xLevel = clampLevel((byte) tag.getInt(TAG_X_LEVEL));
+            } else if (tag.contains(TAG_H_LEVEL, Tag.TAG_BYTE)) {
+                this.xLevel = clampLevel(tag.getByte(TAG_H_LEVEL));
+            } else if (tag.contains(TAG_H_LEVEL, Tag.TAG_INT)) {
+                this.xLevel = clampLevel((byte) tag.getInt(TAG_H_LEVEL));
+            } else {
+                this.xLevel = 0;
+            }
             if (tag.contains(TAG_Y_LEVEL, Tag.TAG_BYTE)) {
                 this.yLevel = clampLevel(tag.getByte(TAG_Y_LEVEL));
             } else if (tag.contains(TAG_Y_LEVEL, Tag.TAG_INT)) {
@@ -657,24 +657,22 @@ public class CutBlockEntity extends BlockEntity {
             } else {
                 this.yLevel = 0;
             }
-            if (tag.contains(TAG_H_LEVEL, Tag.TAG_BYTE)) {
-                this.hLevel = clampLevel(tag.getByte(TAG_H_LEVEL));
-            } else if (tag.contains(TAG_H_LEVEL, Tag.TAG_INT)) {
-                this.hLevel = clampLevel((byte) tag.getInt(TAG_H_LEVEL));
+            if (tag.contains(TAG_Z_LEVEL, Tag.TAG_BYTE)) {
+                this.zLevel = clampLevel(tag.getByte(TAG_Z_LEVEL));
+            } else if (tag.contains(TAG_Z_LEVEL, Tag.TAG_INT)) {
+                this.zLevel = clampLevel((byte) tag.getInt(TAG_Z_LEVEL));
             } else {
-                this.hLevel = 0;
+                this.zLevel = 0;
             }
-            // 互換: Bounds配列があればY/Hを逆算（旧データ移行用）
             if (tag.contains(TAG_BOUNDS, Tag.TAG_INT_ARRAY)) {
                 int[] bounds = tag.getIntArray(TAG_BOUNDS);
                 if (bounds.length >= 6) {
+                    int xSize = bounds[3] - bounds[0];
                     int ySize = bounds[4] - bounds[1];
-                    int hSize = bounds[3] - bounds[0];
-                    if (bounds[3] == 16 && bounds[5] != 16) {
-                        hSize = bounds[5] - bounds[2];
-                    }
+                    int zSize = bounds[5] - bounds[2];
+                    this.xLevel = sizeToLevel(xSize);
                     this.yLevel = sizeToLevel(ySize);
-                    this.hLevel = sizeToLevel(hSize);
+                    this.zLevel = sizeToLevel(zSize);
                 }
             }
         }
@@ -722,28 +720,40 @@ public class CutBlockEntity extends BlockEntity {
     }
 
     /**
-     * ItemStackから CutState/YLevel/HLevel を読み取るヘルパー（設置時用）。
-     * BlockEntityTag があればそこから、なければトップレベルから読む。
+     * ItemStackから CutState/X/Y/ZLevel を読み取るヘルパー
      */
     public static CutBlockData readFromStack(net.minecraft.world.item.ItemStack stack) {
         if (stack == null || stack.isEmpty()) {
-            return new CutBlockData(Blocks.AIR.defaultBlockState(), (byte) 0, (byte) 0);
+            return new CutBlockData(Blocks.AIR.defaultBlockState(), (byte) 0, (byte) 0, (byte) 0);
         }
         CompoundTag tag = stack.getTag();
         if (tag == null) {
-            return new CutBlockData(Blocks.AIR.defaultBlockState(), (byte) 0, (byte) 0);
+            return new CutBlockData(Blocks.AIR.defaultBlockState(), (byte) 0, (byte) 0, (byte) 0);
         }
         CompoundTag bet = tag.contains("BlockEntityTag", Tag.TAG_COMPOUND) ? tag.getCompound("BlockEntityTag") : tag;
         BlockState state = Blocks.AIR.defaultBlockState();
-        byte yLevel = 0, hLevel = 0;
+        byte xLevel = 0, yLevel = 0, zLevel = 0;
         if (bet.contains(TAG_CUT_STATE, Tag.TAG_COMPOUND)) {
             state = readBlockStateFallback(bet.getCompound(TAG_CUT_STATE));
         }
+        if (bet.contains(TAG_X_LEVEL, Tag.TAG_BYTE)) xLevel = clampLevelStatic(bet.getByte(TAG_X_LEVEL));
+        else if (bet.contains(TAG_X_LEVEL, Tag.TAG_INT)) xLevel = clampLevelStatic((byte) bet.getInt(TAG_X_LEVEL));
+        else if (bet.contains(TAG_H_LEVEL, Tag.TAG_BYTE)) xLevel = clampLevelStatic(bet.getByte(TAG_H_LEVEL));
+        else if (bet.contains(TAG_H_LEVEL, Tag.TAG_INT)) xLevel = clampLevelStatic((byte) bet.getInt(TAG_H_LEVEL));
         if (bet.contains(TAG_Y_LEVEL, Tag.TAG_BYTE)) yLevel = clampLevelStatic(bet.getByte(TAG_Y_LEVEL));
         else if (bet.contains(TAG_Y_LEVEL, Tag.TAG_INT)) yLevel = clampLevelStatic((byte) bet.getInt(TAG_Y_LEVEL));
-        if (bet.contains(TAG_H_LEVEL, Tag.TAG_BYTE)) hLevel = clampLevelStatic(bet.getByte(TAG_H_LEVEL));
-        else if (bet.contains(TAG_H_LEVEL, Tag.TAG_INT)) hLevel = clampLevelStatic((byte) bet.getInt(TAG_H_LEVEL));
-        return new CutBlockData(state, yLevel, hLevel);
+        if (bet.contains(TAG_Z_LEVEL, Tag.TAG_BYTE)) zLevel = clampLevelStatic(bet.getByte(TAG_Z_LEVEL));
+        else if (bet.contains(TAG_Z_LEVEL, Tag.TAG_INT)) zLevel = clampLevelStatic((byte) bet.getInt(TAG_Z_LEVEL));
+        // Bounds配列があればサイズから逆算 (単一エントリのドロップ由来)
+        if (bet.contains(TAG_BOUNDS, Tag.TAG_INT_ARRAY) && !bet.contains(TAG_X_LEVEL, Tag.TAG_BYTE) && !bet.contains(TAG_X_LEVEL, Tag.TAG_INT)) {
+            int[] b = bet.getIntArray(TAG_BOUNDS);
+            if (b.length >= 6) {
+                xLevel = sizeToLevel(b[3] - b[0]);
+                yLevel = sizeToLevel(b[4] - b[1]);
+                zLevel = sizeToLevel(b[5] - b[2]);
+            }
+        }
+        return new CutBlockData(state, xLevel, yLevel, zLevel);
     }
 
     private static byte clampLevelStatic(byte v) {
@@ -752,6 +762,8 @@ public class CutBlockEntity extends BlockEntity {
         return v;
     }
 
-    public record CutBlockData(BlockState state, byte yLevel, byte hLevel) {
+    public record CutBlockData(BlockState state, byte xLevel, byte yLevel, byte zLevel) {
+        @Deprecated
+        public byte hLevel() { return xLevel; }
     }
 }

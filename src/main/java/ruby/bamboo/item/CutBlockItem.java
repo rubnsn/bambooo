@@ -13,8 +13,8 @@ import ruby.bamboo.client.renderer.CutBlockItemRenderer;
 
 /**
  * カットブロックの BlockItem。
- * 表示名を "木材 (16×8)" のように動的に生成。同一サイズはスタック可。
- * インベントリでは BEWLR で原料ブロックのテクスチャを Bounds にクリップして描画する。
+ * 表示名を "木材 (8×16×16)" のように3軸で動的に生成。同一サイズはスタック可。
+ * 内部形状が levelToSize に収まらない場合は " (カスタム)" 表示。
  */
 public class CutBlockItem extends BlockItem {
 
@@ -33,24 +33,16 @@ public class CutBlockItem extends BlockItem {
         if (stack.isEmpty()) return super.useOn(context);
         CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(stack);
         if (data.state().isAir()) {
-            // 空のcut_blockは通常のBlockItemとして配置を試みる（通常は失敗）
             return super.useOn(context);
         }
+        byte xLevel = data.xLevel();
         byte yLevel = data.yLevel();
-        byte hLevel = data.hLevel();
-        // FACINGはプレイヤー向きの反対（CutBlock#getStateForPlacementと同様）
-        net.minecraft.core.Direction facing = net.minecraft.core.Direction.NORTH;
-        try {
-            facing = context.getHorizontalDirection().getOpposite();
-            if (facing.getAxis() == net.minecraft.core.Direction.Axis.Y) facing = net.minecraft.core.Direction.NORTH;
-        } catch (Exception e) {
-            facing = net.minecraft.core.Direction.NORTH;
-        }
+        byte zLevel = data.zLevel();
 
-        // 1) クリックしたブロックが既存cut_blockなら、その隙間に充填を試みる（ヒット位置に最も近い空きサブ空間を探索）
+        // 1) クリックしたブロックが既存cut_blockなら、その隙間に充填
         if (level.getBlockEntity(clickedPos) instanceof CutBlockEntity existingBe) {
             if (!existingBe.isEmpty()) {
-                int[] bounds = existingBe.findBestBoundsForPlacement(hitVec, clickedPos, yLevel, hLevel, facing, clickedFace);
+                int[] bounds = existingBe.findBestBoundsForPlacement(hitVec, clickedPos, xLevel, yLevel, zLevel, clickedFace);
                 if (bounds != null && existingBe.canAddEntry(bounds)) {
                     if (!level.isClientSide) {
                         existingBe.addEntry(data.state(), bounds);
@@ -69,10 +61,9 @@ public class CutBlockItem extends BlockItem {
         net.minecraft.core.BlockPos placePos = clickedPos.relative(clickedFace);
         net.minecraft.world.level.block.state.BlockState placeState = level.getBlockState(placePos);
         boolean canReplace = placeState.canBeReplaced(new net.minecraft.world.item.context.BlockPlaceContext(context));
-        // 既存cut_blockが空きを持つ場合も隙間として扱う（placePosがcut_blockで空きがあれば充填）
         if (level.getBlockEntity(placePos) instanceof CutBlockEntity placeBe) {
             if (!placeBe.isEmpty()) {
-                int[] bounds = placeBe.findBestBoundsForPlacement(hitVec, placePos, yLevel, hLevel, facing, clickedFace);
+                int[] bounds = placeBe.findBestBoundsForPlacement(hitVec, placePos, xLevel, yLevel, zLevel, clickedFace);
                 if (bounds != null && placeBe.canAddEntry(bounds)) {
                     if (!level.isClientSide) {
                         placeBe.addEntry(data.state(), bounds);
@@ -85,19 +76,23 @@ public class CutBlockItem extends BlockItem {
                     return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
                 }
             }
-            // 重なる場合は通常のBlockItem配置は不可
             return net.minecraft.world.InteractionResult.FAIL;
         }
         if (!canReplace) {
             return net.minecraft.world.InteractionResult.FAIL;
         }
-        // 通常の新規ブロック配置（空気またはreplaceable）— ヒット位置でサブ空間を決定
         if (!level.isClientSide) {
             net.minecraft.world.level.block.state.BlockState newState = ruby.bamboo.core.init.BambooBlocks.CUT_BLOCK.get().defaultBlockState()
-                    .setValue(ruby.bamboo.block.CutBlock.FACING, facing);
+                    .setValue(ruby.bamboo.block.CutBlock.FACING, context.getHorizontalDirection().getOpposite());
+            // FACINGのY軸対策
+            try {
+                net.minecraft.core.Direction facing = context.getHorizontalDirection().getOpposite();
+                if (facing.getAxis() == net.minecraft.core.Direction.Axis.Y) facing = net.minecraft.core.Direction.NORTH;
+                newState = ruby.bamboo.core.init.BambooBlocks.CUT_BLOCK.get().defaultBlockState().setValue(ruby.bamboo.block.CutBlock.FACING, facing);
+            } catch (Exception e) {}
             level.setBlock(placePos, newState, 3);
             if (level.getBlockEntity(placePos) instanceof CutBlockEntity newBe) {
-                int[] bounds = CutBlockEntity.computeBoundsFromHit(hitVec, placePos, clickedPos, yLevel, hLevel, facing, clickedFace);
+                int[] bounds = CutBlockEntity.computeBoundsFromHit(hitVec, placePos, clickedPos, xLevel, yLevel, zLevel, null, clickedFace);
                 if (!newBe.addEntry(data.state(), bounds)) {
                     newBe.clearEntries();
                     newBe.addEntry(data.state(), bounds);
@@ -126,21 +121,51 @@ public class CutBlockItem extends BlockItem {
     public Component getName(ItemStack stack) {
         CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(stack);
         if (data.state().isAir()) {
+            // Bounds配列由来のドロップは BlockEntityTag に入っているが CutState が無い場合もある
+            // その場合は Bounds からサイズを推定
+            try {
+                net.minecraft.nbt.CompoundTag tag = stack.getTag();
+                if (tag != null && tag.contains("BlockEntityTag", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
+                    net.minecraft.nbt.CompoundTag bet = tag.getCompound("BlockEntityTag");
+                    if (bet.contains(CutBlockEntity.TAG_BOUNDS, net.minecraft.nbt.Tag.TAG_INT_ARRAY)) {
+                        int[] b = bet.getIntArray(CutBlockEntity.TAG_BOUNDS);
+                        if (b.length >= 6) {
+                            int xSize = b[3] - b[0];
+                            int ySize = b[4] - b[1];
+                            int zSize = b[5] - b[2];
+                            String base = "カットブロック";
+                            // 内部Stateがあればそれを使う
+                            if (bet.contains(CutBlockEntity.TAG_STATE, net.minecraft.nbt.Tag.TAG_COMPOUND)) {
+                                try {
+                                    net.minecraft.world.level.block.state.BlockState st = net.minecraft.nbt.NbtUtils.readBlockState(net.minecraft.core.registries.BuiltInRegistries.BLOCK.asLookup(), bet.getCompound(CutBlockEntity.TAG_STATE));
+                                    base = st.getBlock().getName().getString();
+                                } catch (Exception e) {}
+                            }
+                            if (xSize == 16 && ySize == 16 && zSize == 16) return Component.literal(base);
+                            // サイズが正規(4/8/16)でない場合はカスタム
+                            boolean valid = (xSize == 16 || xSize == 8 || xSize == 4) && (ySize == 16 || ySize == 8 || ySize == 4) && (zSize == 16 || zSize == 8 || zSize == 4);
+                            if (!valid) return Component.literal(base + " (カスタム)");
+                            return Component.literal(base + " (" + xSize + "×" + ySize + "×" + zSize + ")");
+                        }
+                    }
+                }
+            } catch (Exception e) {}
             return super.getName(stack);
         }
         String baseName = data.state().getBlock().getName().getString();
-        int hSize = CutBlockEntity.levelToSize(data.hLevel());
+        int xSize = CutBlockEntity.levelToSize(data.xLevel());
         int ySize = CutBlockEntity.levelToSize(data.yLevel());
-        // フルならサイズ省略
-        if (hSize == 16 && ySize == 16) {
+        int zSize = CutBlockEntity.levelToSize(data.zLevel());
+        if (xSize == 16 && ySize == 16 && zSize == 16) {
             return Component.literal(baseName);
         }
-        return Component.literal(baseName + " (" + hSize + "×" + ySize + ")");
+        // 内部形状不一致チェック: entries由来のBoundsが levelに収まらない場合はカスタムと表示 (通常は起こらないが回収品での不一致対策)
+        // ここでは純粋に level 由来なので常に正規
+        return Component.literal(baseName + " (" + xSize + "×" + ySize + "×" + zSize + ")");
     }
 
     @Override
     public String getDescriptionId(ItemStack stack) {
-        // 表示名はgetNameで上書きするので、IDは通常通り
         return super.getDescriptionId(stack);
     }
 }
