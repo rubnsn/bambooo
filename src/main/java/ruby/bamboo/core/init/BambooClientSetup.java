@@ -71,6 +71,9 @@ public final class BambooClientSetup {
                 }
             }
 
+            // 壁棚 -> cutout (薄板モデル)
+            cutout(BambooBlocks.WALL_SHELF.get());
+
             // 石臼の BER 登録 (旧 TESR 相当)
             net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
                     BambooBlockEntities.MILL_STONE_BE.get(),
@@ -92,6 +95,11 @@ public final class BambooClientSetup {
             // 袋 GUI の Screen 登録
             net.minecraft.client.gui.screens.MenuScreens.register(BambooMenus.SACK.get(),
                     ruby.bamboo.gui.SackScreen::new);
+
+            // 壁棚の BER 登録 (sakura-master WallShelfItemRender 相当)
+            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+                    BambooBlockEntities.WALL_SHELF_BE.get(),
+                    ruby.bamboo.block.entity.WallShelfBlockRenderer::new);
 
             // 引き戸の BER 登録 (sakura-master SlideDoorRender 相当)
             net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(

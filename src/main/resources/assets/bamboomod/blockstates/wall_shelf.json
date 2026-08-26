@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "bamboomod:block/wall_shelf", "y": 180 },
+    "facing=south": { "model": "bamboomod:block/wall_shelf" },
+    "facing=west":  { "model": "bamboomod:block/wall_shelf", "y": 90 },
+    "facing=east":  { "model": "bamboomod:block/wall_shelf", "y": 270 }
+  }
+}

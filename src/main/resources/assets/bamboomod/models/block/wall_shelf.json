@@ -1,0 +1,21 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "bamboomod:block/wall_shelf",
+    "all": "bamboomod:block/wall_shelf"
+  },
+  "elements": [
+    {
+      "from": [0, 5, 8],
+      "to": [16, 6, 16],
+      "faces": {
+        "north": { "uv": [0, 8, 16, 9], "texture": "#all" },
+        "east": { "uv": [0, 9, 8, 10], "texture": "#all" },
+        "south": { "uv": [0, 8, 16, 9], "texture": "#all" },
+        "west": { "uv": [0, 9, 8, 10], "texture": "#all" },
+        "up": { "uv": [0, 0, 16, 8], "texture": "#all" },
+        "down": { "uv": [0, 0, 16, 8], "texture": "#all" }
+      }
+    }
+  ]
+}

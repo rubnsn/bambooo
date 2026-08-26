@@ -245,6 +245,10 @@ public final class BambooBlocks {
     // ===== 布団 (旧 huton) =====
     public static final RegistryObject<HutonBlock> HUTON = register("huton", HutonBlock::new);
 
+    // ===== 壁棚 (sakura-master WallShelf) =====
+    public static final RegistryObject<ruby.bamboo.block.WallShelfBlock> WALL_SHELF = register("wall_shelf",
+            ruby.bamboo.block.WallShelfBlock::new);
+
     // ===== ミニチュア (箱庭) — 単一アイテム + NBT Size(4,8,12,16) =====
     public static final RegistryObject<MiniatureBlock> MINIATURE = registerMiniature();
 

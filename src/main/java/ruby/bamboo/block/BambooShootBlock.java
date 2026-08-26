@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BushBlock;
@@ -46,12 +47,15 @@ public class BambooShootBlock extends BushBlock implements net.minecraft.world.l
 
     /**
      * 竹へ成長できるか (旧 canChildGrow): 頭上空き + 人工光7以上。
+     * 旧: chunk.getLightFor(EnumSkyBlock.BLOCK, pos) > 7
+     * 現行誤りだった getMaxLocalRawBrightness (sky+block) は太陽光でも成長してしまうため、
+     * LightLayer.BLOCK のみに修正し、竹の自動増殖を抑止する特殊条件を復元。
      */
     private boolean canGrowToBamboo(ServerLevel level, BlockPos pos) {
         if (!level.isEmptyBlock(pos.above())) {
             return false;
         }
-        return level.getMaxLocalRawBrightness(pos) > 7;
+        return level.getBrightness(LightLayer.BLOCK, pos) > 7;
     }
 
     private void tryBambooGrowth(ServerLevel level, BlockPos pos, float probability) {

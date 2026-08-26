@@ -8,6 +8,7 @@ import ruby.bamboo.block.entity.JPChestBlockEntity;
 import ruby.bamboo.block.entity.MillStoneBlockEntity;
 import ruby.bamboo.block.entity.MiniatureBlockEntity;
 import ruby.bamboo.block.entity.SlideDoorBlockEntity;
+import ruby.bamboo.block.entity.WallShelfBlockEntity;
 
 /**
  * BlockEntityType 登録。JPChest 用に新規追加 (旧 1.10.2 版は TileEntity 登録を
@@ -44,6 +45,13 @@ public final class BambooBlockEntities {
                             BambooBlocks.SHOJI.get(), BambooBlocks.SHOJI_YOKOGUMI.get(), BambooBlocks.SHOJI_TATEGUMI.get(),
                             BambooBlocks.SHOJI_YUKIMI.get(), BambooBlocks.HUSUMA.get(), BambooBlocks.GLASS_DOOR.get(),
                             BambooBlocks.GLASS_DOOR_GRID.get())
+                            .build(null));
+
+    /** 壁棚 (sakura-master WallShelf) */
+    public static final RegistryObject<BlockEntityType<WallShelfBlockEntity>> WALL_SHELF_BE = BambooMod.BLOCK_ENTITIES
+            .register(
+                    "wall_shelf",
+                    () -> BlockEntityType.Builder.of(WallShelfBlockEntity::new, BambooBlocks.WALL_SHELF.get())
                             .build(null));
 
     /** ミニチュア (箱庭) — Phase A データ層 */
