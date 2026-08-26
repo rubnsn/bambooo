@@ -42,54 +42,55 @@ public class CutBlockItem extends BlockItem {
         // 旧27種はOTHERとして扱い置換不可（QAデバッグで互換不要）
         if (!isMulti && tier == CutBlockEntity.Tier.OTHER) return net.minecraft.world.InteractionResult.FAIL;
 
-        // 1) クリックしたブロックが既存cut_blockなら、その隙間に充填
-        if (!isMulti && level.getBlockEntity(clickedPos) instanceof CutBlockEntity existingBe) {
-            if (!existingBe.isEmpty()) {
-                int[] bounds = null;
-                if (tier == CutBlockEntity.Tier.HALF) {
-                    bounds = computeHalfBoundsForExisting(hitVec, clickedPos, clickedFace);
-                } else if (tier == CutBlockEntity.Tier.EIGHT) {
-                    bounds = computeCubeBoundsForExisting(hitVec, clickedPos, clickedFace, 8, existingBe);
-                } else if (tier == CutBlockEntity.Tier.QUARTER) {
-                    bounds = computeCubeBoundsForExisting(hitVec, clickedPos, clickedFace, 4, existingBe);
+        // 1) クリックしたブロックが既存cut_blockなら、RAY HIT面で前面/背面を判定し前面なら同一座標内に充填 (全Tier)
+        if (!isMulti && level.getBlockEntity(clickedPos) instanceof CutBlockEntity existingBe && !existingBe.isEmpty()) {
+            int[] insideCand = CutBlockEntity.getInsideCandidate(existingBe, clickedPos, hitVec, clickedFace, tier);
+            if (insideCand != null) {
+                if (!level.isClientSide) {
+                    existingBe.addEntry(data.state(), insideCand);
+                    if (player == null || !player.getAbilities().instabuild) stack.shrink(1);
+                    level.sendBlockUpdated(clickedPos, existingBe.getBlockState(), existingBe.getBlockState(), 3);
+                    level.playSound(null, clickedPos, existingBe.getBlockState().getSoundType().getPlaceSound(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
                 }
-                if (bounds != null && existingBe.canAddEntry(bounds)) {
-                    if (!level.isClientSide) {
-                        existingBe.addEntry(data.state(), bounds);
-                        if (player == null || !player.getAbilities().instabuild) stack.shrink(1);
-                        level.sendBlockUpdated(clickedPos, existingBe.getBlockState(), existingBe.getBlockState(), 3);
-                        level.playSound(null, clickedPos, existingBe.getBlockState().getSoundType().getPlaceSound(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
-                    }
-                    return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
-                }
+                return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
             }
+            // 前面でない(背面ヒット)ならフォールスルーして隣接へ
         }
 
         // 2) 新規配置: 隣接位置
         net.minecraft.core.BlockPos placePos = clickedPos.relative(clickedFace);
         net.minecraft.world.level.block.state.BlockState placeState = level.getBlockState(placePos);
         boolean canReplace = placeState.canBeReplaced(new net.minecraft.world.item.context.BlockPlaceContext(context));
-        if (!isMulti && level.getBlockEntity(placePos) instanceof CutBlockEntity placeBe) {
-            if (!placeBe.isEmpty()) {
-                int[] bounds = null;
-                if (tier == CutBlockEntity.Tier.HALF) {
-                    bounds = CutBlockEntity.computeHalfBounds(hitVec, clickedPos, clickedFace);
-                    // 新規隣接の場合は computeHalfBounds は既に隣接側を返すのでそのまま
-                    // ただし existing と new で中心の意味が逆なので、新規の場合はそのまま（隣接側）
-                } else if (tier == CutBlockEntity.Tier.EIGHT) {
-                    bounds = CutBlockEntity.computeCubeBoundsForNewPlacement(hitVec, clickedPos, clickedFace, 8);
-                } else if (tier == CutBlockEntity.Tier.QUARTER) {
-                    bounds = CutBlockEntity.computeCubeBoundsForNewPlacement(hitVec, clickedPos, clickedFace, 4);
+        // 隣接が既存cut_blockなら、RAYで前面(隣接内空隙)かを判定し該当なら充填 (全Tier)。HALF/EIGHT/QUARTER共通
+        if (!isMulti && level.getBlockEntity(placePos) instanceof CutBlockEntity placeBe && !placeBe.isEmpty()) {
+            int[] adjCand = CutBlockEntity.getAdjacentCandidate(placeBe, placePos, hitVec, clickedFace, tier);
+            if (adjCand != null) {
+                if (!level.isClientSide) {
+                    placeBe.addEntry(data.state(), adjCand);
+                    if (player == null || !player.getAbilities().instabuild) stack.shrink(1);
+                    level.sendBlockUpdated(placePos, placeBe.getBlockState(), placeBe.getBlockState(), 3);
+                    level.playSound(null, placePos, placeBe.getBlockState().getSoundType().getPlaceSound(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
                 }
-                if (bounds != null && placeBe.canAddEntry(bounds)) {
-                    if (!level.isClientSide) {
-                        placeBe.addEntry(data.state(), bounds);
-                        if (player == null || !player.getAbilities().instabuild) stack.shrink(1);
-                        level.sendBlockUpdated(placePos, placeBe.getBlockState(), placeBe.getBlockState(), 3);
-                        level.playSound(null, placePos, placeBe.getBlockState().getSoundType().getPlaceSound(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
-                    }
-                    return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
+                return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
+            }
+            // 前面でないが占有されている → 新規配置不可
+            return net.minecraft.world.InteractionResult.FAIL;
+        }
+        // 隣接が空のcut_blockなら新規配置として充填 (空は常に受け入れ)
+        if (!isMulti && level.getBlockEntity(placePos) instanceof CutBlockEntity emptyPlaceBe && emptyPlaceBe.isEmpty()) {
+            int[] b;
+            if (tier == CutBlockEntity.Tier.HALF) b = CutBlockEntity.computeHalfBounds(hitVec, clickedPos, clickedFace);
+            else if (tier == CutBlockEntity.Tier.EIGHT) b = CutBlockEntity.computeCubeBoundsForNewPlacement(hitVec, clickedPos, clickedFace, 8);
+            else if (tier == CutBlockEntity.Tier.QUARTER) b = CutBlockEntity.computeCubeBoundsForNewPlacement(hitVec, clickedPos, clickedFace, 4);
+            else b = new int[]{0,0,0,8,16,16};
+            if (b != null && emptyPlaceBe.canAddEntry(b)) {
+                if (!level.isClientSide) {
+                    emptyPlaceBe.addEntry(data.state(), b);
+                    if (player == null || !player.getAbilities().instabuild) stack.shrink(1);
+                    level.sendBlockUpdated(placePos, emptyPlaceBe.getBlockState(), emptyPlaceBe.getBlockState(), 3);
+                    level.playSound(null, placePos, emptyPlaceBe.getBlockState().getSoundType().getPlaceSound(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
                 }
+                return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
             }
             return net.minecraft.world.InteractionResult.FAIL;
         }

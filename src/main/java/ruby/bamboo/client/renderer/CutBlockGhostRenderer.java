@@ -83,58 +83,31 @@ public class CutBlockGhostRenderer {
         if (tier == CutBlockEntity.Tier.OTHER) return;
         BlockPos ghostPos = null;
         int[] bounds = null;
-        if (mc.level.getBlockEntity(hitPos) instanceof CutBlockEntity existingBe) {
-            if (!existingBe.isEmpty()) {
-                int[] tryBounds = null;
-                if (tier == CutBlockEntity.Tier.HALF) {
-                    // 既存へのハーフはヒット側に寄せる
-                    double fx = hitVec.x - hitPos.getX();
-                    double fy = hitVec.y - hitPos.getY();
-                    double fz = hitVec.z - hitPos.getZ();
-                    if (fx < 0) fx = 0; if (fx > 1) fx = 1;
-                    if (fy < 0) fy = 0; if (fy > 1) fy = 1;
-                    if (fz < 0) fz = 0; if (fz > 1) fz = 1;
-                    // 簡易: computeHalfBoundsの既存版を呼べないので面ごとの分岐を再現
-                    boolean cx, cy, cz;
-                    switch (face) {
-                        case UP -> { cx = fx >= 0.25 && fx <= 0.75; cz = fz >= 0.25 && fz <= 0.75; if (cx && cz) tryBounds = new int[]{0,8,0,16,16,16}; else if (Math.abs(fx-0.5) > Math.abs(fz-0.5)) tryBounds = fx < 0.5 ? new int[]{0,0,0,8,16,16} : new int[]{8,0,0,16,16,16}; else tryBounds = fz < 0.5 ? new int[]{0,0,0,16,16,8} : new int[]{0,0,8,16,16,16}; }
-                        case DOWN -> { cx = fx >= 0.25 && fx <= 0.75; cz = fz >= 0.25 && fz <= 0.75; if (cx && cz) tryBounds = new int[]{0,0,0,16,8,16}; else if (Math.abs(fx-0.5) > Math.abs(fz-0.5)) tryBounds = fx < 0.5 ? new int[]{0,0,0,8,16,16} : new int[]{8,0,0,16,16,16}; else tryBounds = fz < 0.5 ? new int[]{0,0,0,16,16,8} : new int[]{0,0,8,16,16,16}; }
-                        case NORTH -> { cx = fx >= 0.25 && fx <= 0.75; cy = fy >= 0.25 && fy <= 0.75; if (cx && cy) tryBounds = new int[]{0,0,0,16,16,8}; else if (Math.abs(fx-0.5) > Math.abs(fy-0.5)) tryBounds = fx < 0.5 ? new int[]{0,0,0,8,16,16} : new int[]{8,0,0,16,16,16}; else tryBounds = fy < 0.5 ? new int[]{0,0,0,16,8,16} : new int[]{0,8,0,16,16,16}; }
-                        case SOUTH -> { cx = fx >= 0.25 && fx <= 0.75; cy = fy >= 0.25 && fy <= 0.75; if (cx && cy) tryBounds = new int[]{0,0,8,16,16,16}; else if (Math.abs(fx-0.5) > Math.abs(fy-0.5)) tryBounds = fx < 0.5 ? new int[]{0,0,0,8,16,16} : new int[]{8,0,0,16,16,16}; else tryBounds = fy < 0.5 ? new int[]{0,0,0,16,8,16} : new int[]{0,8,0,16,16,16}; }
-                        case WEST -> { cz = fz >= 0.25 && fz <= 0.75; cy = fy >= 0.25 && fy <= 0.75; if (cz && cy) tryBounds = new int[]{0,0,0,8,16,16}; else if (Math.abs(fz-0.5) > Math.abs(fy-0.5)) tryBounds = fz < 0.5 ? new int[]{0,0,0,16,16,8} : new int[]{0,0,8,16,16,16}; else tryBounds = fy < 0.5 ? new int[]{0,0,0,16,8,16} : new int[]{0,8,0,16,16,16}; }
-                        case EAST -> { cz = fz >= 0.25 && fz <= 0.75; cy = fy >= 0.25 && fy <= 0.75; if (cz && cy) tryBounds = new int[]{8,0,0,16,16,16}; else if (Math.abs(fz-0.5) > Math.abs(fy-0.5)) tryBounds = fz < 0.5 ? new int[]{0,0,0,16,16,8} : new int[]{0,0,8,16,16,16}; else tryBounds = fy < 0.5 ? new int[]{0,0,0,16,8,16} : new int[]{0,8,0,16,16,16}; }
-                        default -> tryBounds = CutBlockEntity.computeHalfBounds(hitVec, hitPos, face);
-                    }
-                } else {
-                    int size = tier == CutBlockEntity.Tier.EIGHT ? 8 : 4;
-                    tryBounds = existingBe.findBestBoundsForPlacement(hitVec, hitPos, CutBlockEntity.sizeToLevel(size), CutBlockEntity.sizeToLevel(size), CutBlockEntity.sizeToLevel(size), null);
-                }
-                if (tryBounds != null && existingBe.canAddEntry(tryBounds)) {
-                    ghostPos = hitPos;
-                    bounds = tryBounds;
-                }
+        // 既存BEへの吸着表示は RAY HIT面で前面(同一座標内空隙)かを判定。全Tier共通
+        if (mc.level.getBlockEntity(hitPos) instanceof CutBlockEntity existingBe && !existingBe.isEmpty()) {
+            int[] cand = CutBlockEntity.getInsideCandidate(existingBe, hitPos, hitVec, face, tier);
+            if (cand != null) {
+                ghostPos = hitPos;
+                bounds = cand;
             }
         }
         if (ghostPos == null) {
             BlockPos placePosTmp = hitPos.relative(face);
             BlockState placeState = mc.level.getBlockState(placePosTmp);
             boolean canReplace = placeState.canBeReplaced();
-            if (mc.level.getBlockEntity(placePosTmp) instanceof CutBlockEntity placeBe) {
-                if (!placeBe.isEmpty()) {
-                    int[] tryBounds = null;
-                    if (tier == CutBlockEntity.Tier.HALF) tryBounds = CutBlockEntity.computeHalfBounds(hitVec, hitPos, face);
-                    else { int s = tier == CutBlockEntity.Tier.EIGHT ? 8 : 4; tryBounds = CutBlockEntity.computeCubeBoundsForNewPlacement(hitVec, hitPos, face, s); }
-                    if (tryBounds != null && placeBe.canAddEntry(tryBounds)) {
-                        ghostPos = placePosTmp;
-                        bounds = tryBounds;
-                    } else {
-                        return;
-                    }
-                } else {
+            if (mc.level.getBlockEntity(placePosTmp) instanceof CutBlockEntity placeBe && !placeBe.isEmpty()) {
+                int[] adjCand = CutBlockEntity.getAdjacentCandidate(placeBe, placePosTmp, hitVec, face, tier);
+                if (adjCand != null) {
                     ghostPos = placePosTmp;
-                    if (tier == CutBlockEntity.Tier.HALF) bounds = CutBlockEntity.computeHalfBounds(hitVec, hitPos, face);
-                    else { int s = tier == CutBlockEntity.Tier.EIGHT ? 8 : 4; bounds = CutBlockEntity.computeCubeBoundsForNewPlacement(hitVec, hitPos, face, s); }
+                    bounds = adjCand;
+                } else {
+                    return;
                 }
+            } else if (mc.level.getBlockEntity(placePosTmp) instanceof CutBlockEntity placeBeEmpty) {
+                // 空のcut_blockは新規配置として扱う
+                ghostPos = placePosTmp;
+                if (tier == CutBlockEntity.Tier.HALF) bounds = CutBlockEntity.computeHalfBounds(hitVec, hitPos, face);
+                else { int s = tier == CutBlockEntity.Tier.EIGHT ? 8 : 4; bounds = CutBlockEntity.computeCubeBoundsForNewPlacement(hitVec, hitPos, face, s); }
             } else {
                 if (!canReplace) return;
                 ghostPos = placePosTmp;

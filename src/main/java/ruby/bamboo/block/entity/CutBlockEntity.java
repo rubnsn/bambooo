@@ -246,6 +246,168 @@ public class CutBlockEntity extends BlockEntity {
         return new int[]{xOff, yOff, zOff, xOff + size, yOff + size, zOff + size};
     }
 
+    // ===== 前面(同一座標内空隙)/背面(隣接) 判定 — RAYのHIT面で正しく分岐 =====
+    // hitVec + face*eps が同一BlockPos内の空隙セルに入るなら前面(=inside)、外へ出るなら背面(=adjacent)
+    private static final double HIT_EPS = 0.005;
+
+    /** 既存BE内で hitVec+face*eps が空隙セルに入るかを判定。Tierで分岐し canAddEntry も確認 */
+    public static boolean shouldFillInside(CutBlockEntity be, BlockPos bePos, net.minecraft.world.phys.Vec3 hitVec, Direction face, Tier tier) {
+        return getInsideCandidate(be, bePos, hitVec, face, tier) != null;
+    }
+
+    /** 前面判定が真の時の candidate bounds を返す。偽なら null */
+    public static int[] getInsideCandidate(CutBlockEntity be, BlockPos bePos, net.minecraft.world.phys.Vec3 hitVec, Direction face, Tier tier) {
+        if (be == null || bePos == null || hitVec == null || face == null || tier == null) return null;
+        if (tier == Tier.OTHER || tier == Tier.FULL) return null;
+        if (be.isEmpty()) return null;
+        net.minecraft.world.phys.Vec3 insidePos = hitVec.add(face.getStepX() * HIT_EPS, face.getStepY() * HIT_EPS, face.getStepZ() * HIT_EPS);
+        double fx = insidePos.x - bePos.getX();
+        double fy = insidePos.y - bePos.getY();
+        double fz = insidePos.z - bePos.getZ();
+        if (fx < -1e-6 || fx > 1 + 1e-6 || fy < -1e-6 || fy > 1 + 1e-6 || fz < -1e-6 || fz > 1 + 1e-6) {
+            return null; // 外へ出た → 隣接
+        }
+        if (fx < 0) fx = 0; if (fx > 1) fx = 1;
+        if (fy < 0) fy = 0; if (fy > 1) fy = 1;
+        if (fz < 0) fz = 0; if (fz > 1) fz = 1;
+        int[] candidate = null;
+        if (tier == Tier.HALF) {
+            candidate = computeHalfBoundsForExistingInternal(hitVec, bePos, face);
+            if (candidate == null) return null;
+            if (!containsVec(insidePos, bePos, candidate)) return null;
+        } else if (tier == Tier.EIGHT) {
+            int xo = (int)Math.floor(fx * 2) * 8;
+            int yo = (int)Math.floor(fy * 2) * 8;
+            int zo = (int)Math.floor(fz * 2) * 8;
+            if (xo < 0) xo = 0; if (xo > 8) xo = 8;
+            if (yo < 0) yo = 0; if (yo > 8) yo = 8;
+            if (zo < 0) zo = 0; if (zo > 8) zo = 8;
+            candidate = new int[]{xo, yo, zo, xo + 8, yo + 8, zo + 8};
+        } else if (tier == Tier.QUARTER) {
+            int xo = (int)Math.floor(fx * 4) * 4;
+            int yo = (int)Math.floor(fy * 4) * 4;
+            int zo = (int)Math.floor(fz * 4) * 4;
+            if (xo < 0) xo = 0; if (xo > 12) xo = 12;
+            if (yo < 0) yo = 0; if (yo > 12) yo = 12;
+            if (zo < 0) zo = 0; if (zo > 12) zo = 12;
+            candidate = new int[]{xo, yo, zo, xo + 4, yo + 4, zo + 4};
+        }
+        if (candidate == null) return null;
+        if (!be.canAddEntry(candidate)) return null;
+        return candidate;
+    }
+
+    /** candidate bounds が insidePos を含むか */
+    private static boolean containsVec(net.minecraft.world.phys.Vec3 pos, BlockPos origin, int[] b) {
+        double fx = pos.x - origin.getX();
+        double fy = pos.y - origin.getY();
+        double fz = pos.z - origin.getZ();
+        double x = fx * 16, y = fy * 16, z = fz * 16;
+        double eps = 1e-6;
+        return x >= b[0] - eps && x <= b[3] + eps && y >= b[1] - eps && y <= b[4] + eps && z >= b[2] - eps && z <= b[5] + eps;
+    }
+
+    /** HALF既存充填用のboundsを hitVec/face から算出。CutBlockItemの private をBE側に移設 */
+    public static int[] computeHalfBoundsForExistingInternal(net.minecraft.world.phys.Vec3 hitVec, BlockPos pos, Direction face) {
+        double fx = hitVec.x - pos.getX();
+        double fy = hitVec.y - pos.getY();
+        double fz = hitVec.z - pos.getZ();
+        if (fx < 0) fx = 0; if (fx > 1) fx = 1;
+        if (fy < 0) fy = 0; if (fy > 1) fy = 1;
+        if (fz < 0) fz = 0; if (fz > 1) fz = 1;
+        switch (face) {
+            case UP -> {
+                boolean cx = fx >= 0.25 && fx <= 0.75;
+                boolean cz = fz >= 0.25 && fz <= 0.75;
+                if (cx && cz) return new int[]{0, 8, 0, 16, 16, 16};
+                double dx = Math.abs(fx - 0.5), dz = Math.abs(fz - 0.5);
+                if (dx > dz) return fx < 0.5 ? new int[]{0,0,0,8,16,16} : new int[]{8,0,0,16,16,16};
+                else return fz < 0.5 ? new int[]{0,0,0,16,16,8} : new int[]{0,0,8,16,16,16};
+            }
+            case DOWN -> {
+                boolean cx = fx >= 0.25 && fx <= 0.75;
+                boolean cz = fz >= 0.25 && fz <= 0.75;
+                if (cx && cz) return new int[]{0, 0, 0, 16, 8, 16};
+                double dx = Math.abs(fx - 0.5), dz = Math.abs(fz - 0.5);
+                if (dx > dz) return fx < 0.5 ? new int[]{0,0,0,8,16,16} : new int[]{8,0,0,16,16,16};
+                else return fz < 0.5 ? new int[]{0,0,0,16,16,8} : new int[]{0,0,8,16,16,16};
+            }
+            case NORTH -> {
+                boolean cx = fx >= 0.25 && fx <= 0.75;
+                boolean cy = fy >= 0.25 && fy <= 0.75;
+                if (cx && cy) return new int[]{0, 0, 0, 16, 16, 8};
+                double dx = Math.abs(fx - 0.5), dy = Math.abs(fy - 0.5);
+                if (dx > dy) return fx < 0.5 ? new int[]{0,0,0,8,16,16} : new int[]{8,0,0,16,16,16};
+                else return fy < 0.5 ? new int[]{0,0,0,16,8,16} : new int[]{0,8,0,16,16,16};
+            }
+            case SOUTH -> {
+                boolean cx = fx >= 0.25 && fx <= 0.75;
+                boolean cy = fy >= 0.25 && fy <= 0.75;
+                if (cx && cy) return new int[]{0, 0, 8, 16, 16, 16};
+                double dx = Math.abs(fx - 0.5), dy = Math.abs(fy - 0.5);
+                if (dx > dy) return fx < 0.5 ? new int[]{0,0,0,8,16,16} : new int[]{8,0,0,16,16,16};
+                else return fy < 0.5 ? new int[]{0,0,0,16,8,16} : new int[]{0,8,0,16,16,16};
+            }
+            case WEST -> {
+                boolean cz = fz >= 0.25 && fz <= 0.75;
+                boolean cy = fy >= 0.25 && fy <= 0.75;
+                if (cz && cy) return new int[]{0, 0, 0, 8, 16, 16};
+                double dz = Math.abs(fz - 0.5), dy = Math.abs(fy - 0.5);
+                if (dz > dy) return fz < 0.5 ? new int[]{0,0,0,16,16,8} : new int[]{0,0,8,16,16,16};
+                else return fy < 0.5 ? new int[]{0,0,0,16,8,16} : new int[]{0,8,0,16,16,16};
+            }
+            case EAST -> {
+                boolean cz = fz >= 0.25 && fz <= 0.75;
+                boolean cy = fy >= 0.25 && fy <= 0.75;
+                if (cz && cy) return new int[]{8, 0, 0, 16, 16, 16};
+                double dz = Math.abs(fz - 0.5), dy = Math.abs(fy - 0.5);
+                if (dz > dy) return fz < 0.5 ? new int[]{0,0,0,16,16,8} : new int[]{0,0,8,16,16,16};
+                else return fy < 0.5 ? new int[]{0,0,0,16,8,16} : new int[]{0,8,0,16,16,16};
+            }
+            default -> {}
+        }
+        return new int[]{0, 0, 0, 8, 16, 16};
+    }
+
+    /** 隣接BE用の candidate を返す。前面判定が真なら bounds、偽なら null */
+    public static int[] getAdjacentCandidate(CutBlockEntity placeBe, BlockPos placePos, net.minecraft.world.phys.Vec3 hitVec, Direction face, Tier tier) {
+        if (placeBe == null || placePos == null || hitVec == null || face == null || tier == null) return null;
+        if (tier == Tier.OTHER || tier == Tier.FULL) return null;
+        if (placeBe.isEmpty()) return null;
+        net.minecraft.world.phys.Vec3 insidePlace = hitVec.add(face.getStepX() * HIT_EPS, face.getStepY() * HIT_EPS, face.getStepZ() * HIT_EPS);
+        double fx = insidePlace.x - placePos.getX();
+        double fy = insidePlace.y - placePos.getY();
+        double fz = insidePlace.z - placePos.getZ();
+        if (fx < -1e-6 || fx > 1 + 1e-6 || fy < -1e-6 || fy > 1 + 1e-6 || fz < -1e-6 || fz > 1 + 1e-6) return null;
+        if (fx < 0) fx = 0; if (fx > 1) fx = 1;
+        if (fy < 0) fy = 0; if (fy > 1) fy = 1;
+        if (fz < 0) fz = 0; if (fz > 1) fz = 1;
+        int[] candidate;
+        if (tier == Tier.HALF) {
+            candidate = computeHalfBounds(insidePlace, placePos, face);
+            if (candidate == null) candidate = computeHalfBounds(hitVec, placePos, face);
+        } else if (tier == Tier.EIGHT) {
+            int xo = (int)Math.floor(fx * 2) * 8;
+            int yo = (int)Math.floor(fy * 2) * 8;
+            int zo = (int)Math.floor(fz * 2) * 8;
+            candidate = new int[]{xo, yo, zo, xo + 8, yo + 8, zo + 8};
+        } else if (tier == Tier.QUARTER) {
+            int xo = (int)Math.floor(fx * 4) * 4;
+            int yo = (int)Math.floor(fy * 4) * 4;
+            int zo = (int)Math.floor(fz * 4) * 4;
+            candidate = new int[]{xo, yo, zo, xo + 4, yo + 4, zo + 4};
+        } else return null;
+        if (candidate == null) return null;
+        if (!placeBe.canAddEntry(candidate)) return null;
+        if (!containsVec(insidePlace, placePos, candidate)) return null;
+        return candidate;
+    }
+
+    /** 隣接BE用にも同一判定を流用。insidePos( hitVec+face*eps )が placePos 内に入るかで判定 */
+    public static boolean shouldFillAdjacentInside(CutBlockEntity placeBe, BlockPos placePos, net.minecraft.world.phys.Vec3 hitVec, Direction face, Tier tier) {
+        return getAdjacentCandidate(placeBe, placePos, hitVec, face, tier) != null;
+    }
+
     public int getXSize() {
         return levelToSize(this.xLevel);
     }
