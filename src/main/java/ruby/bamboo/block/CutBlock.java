@@ -200,20 +200,13 @@ public class CutBlock extends BaseEntityBlock {
                 if (!cut.getEntries().isEmpty()) {
                     List<ItemStack> result = new java.util.ArrayList<>();
                     for (CutBlockEntity.CutEntry e : cut.getEntries()) {
-                        ItemStack s = new ItemStack(this);
-                        CompoundTag bet = new CompoundTag();
-                        bet.put(CutBlockEntity.TAG_STATE, net.minecraft.nbt.NbtUtils.writeBlockState(e.state));
-                        bet.putIntArray(CutBlockEntity.TAG_BOUNDS, e.bounds);
                         int xSize = e.bounds[3] - e.bounds[0];
                         int ySize = e.bounds[4] - e.bounds[1];
                         int zSize = e.bounds[5] - e.bounds[2];
-                        bet.putByte(CutBlockEntity.TAG_X_LEVEL, CutBlockEntity.sizeToLevel(xSize));
-                        bet.putByte(CutBlockEntity.TAG_Y_LEVEL, CutBlockEntity.sizeToLevel(ySize));
-                        bet.putByte(CutBlockEntity.TAG_Z_LEVEL, CutBlockEntity.sizeToLevel(zSize));
-                        // 旧 HLevel 互換 (Xと同値)
-                        bet.putByte(CutBlockEntity.TAG_H_LEVEL, CutBlockEntity.sizeToLevel(xSize));
-                        CompoundTag tag = s.getOrCreateTag();
-                        tag.put(BLOCK_ENTITY_TAG, bet);
+                        byte xl = CutBlockEntity.sizeToLevel(xSize);
+                        byte yl = CutBlockEntity.sizeToLevel(ySize);
+                        byte zl = CutBlockEntity.sizeToLevel(zSize);
+                        ItemStack s = ruby.bamboo.crafting.CutBlockRecipe.createCutBlockStack(e.state, xl, yl, zl);
                         result.add(s);
                     }
                     return result;
@@ -252,22 +245,15 @@ public class CutBlock extends BaseEntityBlock {
     public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
         if (level.getBlockEntity(pos) instanceof CutBlockEntity be) {
             if (!be.isEmpty() && !be.getEntries().isEmpty()) {
-                // サーバセーフ: クライアントクラス(Minecraft)を参照しない。先頭エントリを返す簡易仕様 (Miniature準拠)
+                // サーバセーフ: 先頭エントリを同等のcut_blockとして返す。BoundsではなくCutState+X/Y/ZLevelでスタック可能に
                 CutBlockEntity.CutEntry first = be.getEntries().get(0);
-                ItemStack s = new ItemStack(this);
-                CompoundTag bet = new CompoundTag();
-                bet.put(CutBlockEntity.TAG_STATE, net.minecraft.nbt.NbtUtils.writeBlockState(first.state));
-                bet.putIntArray(CutBlockEntity.TAG_BOUNDS, first.bounds);
                 int xSize = first.bounds[3] - first.bounds[0];
                 int ySize = first.bounds[4] - first.bounds[1];
                 int zSize = first.bounds[5] - first.bounds[2];
-                bet.putByte(CutBlockEntity.TAG_X_LEVEL, CutBlockEntity.sizeToLevel(xSize));
-                bet.putByte(CutBlockEntity.TAG_Y_LEVEL, CutBlockEntity.sizeToLevel(ySize));
-                bet.putByte(CutBlockEntity.TAG_Z_LEVEL, CutBlockEntity.sizeToLevel(zSize));
-                bet.putByte(CutBlockEntity.TAG_H_LEVEL, CutBlockEntity.sizeToLevel(xSize));
-                CompoundTag tag = s.getOrCreateTag();
-                tag.put(BLOCK_ENTITY_TAG, bet);
-                return s;
+                byte xl = CutBlockEntity.sizeToLevel(xSize);
+                byte yl = CutBlockEntity.sizeToLevel(ySize);
+                byte zl = CutBlockEntity.sizeToLevel(zSize);
+                return ruby.bamboo.crafting.CutBlockRecipe.createCutBlockStack(first.state, xl, yl, zl);
             }
             if (!be.isEmpty()) {
                 ItemStack stack = new ItemStack(this);
@@ -350,8 +336,8 @@ public class CutBlock extends BaseEntityBlock {
                     if (hit != null && hit.getBlockPos().equals(pos)) {
                         CutBlockEntity.CutEntry target = findHitEntry(be, pos, hit);
                         if (target != null) {
-                            // Miniature準拠: 内部ブロックの硬度・適正ツール・エンチャを反映
-                            return target.state.getDestroyProgress(player, blockGetter, pos);
+                            // ツールによらず葉っぱ相当の固定硬度 (誤破壊防止)。ツール・エンチャ無視で20tick
+                            return 0.05f;
                         }
                     }
                     // 空隙を叩いた場合は外枠を壊さない
@@ -372,17 +358,10 @@ public class CutBlock extends BaseEntityBlock {
             super.playerWillDestroy(level, pos, state, player);
             return;
         }
+        // 中身ありは外枠を壊さず、内部破壊は BreakEvent に一本化 (二重ドロップ防止)
+        // クライアントでは予測削除を抑止するため何もしない
         if (level.isClientSide) return;
-        net.minecraft.world.phys.BlockHitResult hit = getHitForPlayer(player, level, pos);
-        if (hit == null || !hit.getBlockPos().equals(pos)) {
-            return;
-        }
-        CutBlockEntity.CutEntry target = findHitEntry(be, pos, hit);
-        if (target == null) {
-            return;
-        }
-        boolean isCreative = player.isCreative();
-        breakInnerForAttack(be, target, level, pos, player, !isCreative);
+        return;
     }
 
     public net.minecraft.world.phys.BlockHitResult getHitForPlayer(net.minecraft.world.entity.player.Player player, Level level, BlockPos pos) {
@@ -465,13 +444,18 @@ public class CutBlock extends BaseEntityBlock {
         if (toRemove == null && isOldSingle) {
             toRemove = target;
         }
-        if (level instanceof net.minecraft.server.level.ServerLevel slevel && drop) {
+        if (drop && !level.isClientSide) {
+            // 同等のカットブロックを返す (8x8x8土→8x8x8土のcut_block)。原料は返さず、同じNBTならスタックする
+            int xS = target.bounds[3] - target.bounds[0];
+            int yS = target.bounds[4] - target.bounds[1];
+            int zS = target.bounds[5] - target.bounds[2];
+            byte xl = CutBlockEntity.sizeToLevel(xS);
+            byte yl = CutBlockEntity.sizeToLevel(yS);
+            byte zl = CutBlockEntity.sizeToLevel(zS);
+            ItemStack cutStack = ruby.bamboo.crafting.CutBlockRecipe.createCutBlockStack(target.state, xl, yl, zl);
+            Block.popResource(level, pos, cutStack);
+            try { player.awardStat(net.minecraft.stats.Stats.BLOCK_MINED.get(this)); } catch (Exception e) {}
             ItemStack held = player.getMainHandItem();
-            var drops = Block.getDrops(inner, slevel, pos, be, player, held);
-            for (ItemStack st : drops) {
-                Block.popResource(level, pos, st);
-            }
-            try { player.awardStat(net.minecraft.stats.Stats.BLOCK_MINED.get(inner.getBlock())); } catch (Exception e) {}
             if (!player.isCreative() && !held.isEmpty() && held.isDamageableItem()) {
                 try { held.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(net.minecraft.world.InteractionHand.MAIN_HAND)); } catch (Exception e) {}
             }

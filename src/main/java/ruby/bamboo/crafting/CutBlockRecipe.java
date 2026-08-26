@@ -235,9 +235,6 @@ public class CutBlockRecipe implements CraftingRecipe {
         bet.putByte(CutBlockEntity.TAG_Z_LEVEL, zLevel);
         CompoundTag tag = stack.getOrCreateTag();
         tag.put("BlockEntityTag", bet);
-        tag.putByte(CutBlockEntity.TAG_X_LEVEL, xLevel);
-        tag.putByte(CutBlockEntity.TAG_Y_LEVEL, yLevel);
-        tag.putByte(CutBlockEntity.TAG_Z_LEVEL, zLevel);
         return stack;
     }
 
