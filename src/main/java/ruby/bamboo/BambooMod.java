@@ -75,6 +75,10 @@ public class BambooMod {
     public static final RegistryObject<net.minecraft.world.item.crafting.RecipeType<ruby.bamboo.crafting.grind.BambooGrindRecipe>> MILLSTONE_RECIPE_TYPE = RECIPE_TYPES
             .register("millstone", () -> net.minecraft.world.item.crafting.RecipeType.simple(new net.minecraft.resources.ResourceLocation(MODID, "millstone")));
 
+    /** カットブロックレシピの Serializer (プランA: B+K 動的レシピ) */
+    public static final RegistryObject<net.minecraft.world.item.crafting.RecipeSerializer<ruby.bamboo.crafting.CutBlockRecipe>> CUT_BLOCK_SERIALIZER = RECIPE_SERIALIZERS
+            .register("cut_block", () -> new ruby.bamboo.crafting.CutBlockRecipe.Serializer());
+
     /** 旧 EnumCreateTab.TAB_BAMBOO の後継。アイコンはたけのこ(仮)。 */
     public static final RegistryObject<CreativeModeTab> BAMBOO_TAB = CREATIVE_TABS.register("bamboo",
             () -> CreativeModeTab.builder()

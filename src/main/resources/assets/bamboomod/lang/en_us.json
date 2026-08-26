@@ -194,5 +194,6 @@
   "bamboomod.config.miniature.render.maxCells": "Max detailed cells",
   "bamboomod.config.miniature.render.maxDistance": "Max distance",
   "bamboomod.config.miniature.render.placeholder": "Placeholder mode",
-  "bamboomod.config.miniature.render.lodShell": "Shell LOD on boundary"
+  "bamboomod.config.miniature.render.lodShell": "Shell LOD on boundary",
+  "block.bamboomod.cut_block": "Cut Block"
 }
