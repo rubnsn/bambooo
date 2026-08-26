@@ -48,19 +48,53 @@ public class CutBlockGhostRenderer {
         if (bhr.getType() != HitResult.Type.BLOCK) return;
         BlockPos hitPos = bhr.getBlockPos();
         Direction face = bhr.getDirection();
-        BlockPos placePos = hitPos.relative(face);
-        // 設置可能か簡易チェック
-        BlockState placeState = mc.level.getBlockState(placePos);
-        if (!placeState.canBeReplaced()) return;
-
-        // heldからBoundsを取得
+        net.minecraft.world.phys.Vec3 hitVec = bhr.getLocation();
+        // heldからデータ取得
         CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(held);
-        if (data.state().isAir()) return; // 空のcut_blockはゴーストなし
-        // FACINGはプレイヤー向きから決定（CutBlock#getStateForPlacementと同様）
+        if (data.state().isAir()) return;
         Direction facing = player.getDirection().getOpposite();
-        // 向きが水平でない場合はNORTH
         if (facing.getAxis() == Direction.Axis.Y) facing = Direction.NORTH;
-        int[] bounds = computeBounds(data.yLevel(), data.hLevel(), facing);
+
+        // 1) 既存cut_blockの隙間へのゴースト（同一座標）— 空きサブ空間をヒットに最も近いものでプレビュー
+        BlockPos ghostPos = null;
+        int[] bounds = null;
+        if (mc.level.getBlockEntity(hitPos) instanceof CutBlockEntity existingBe) {
+            if (!existingBe.isEmpty()) {
+                int[] tryBounds = existingBe.findBestBoundsForPlacement(hitVec, hitPos, data.yLevel(), data.hLevel(), facing, face);
+                if (tryBounds != null && existingBe.canAddEntry(tryBounds)) {
+                    ghostPos = hitPos;
+                    bounds = tryBounds;
+                } else {
+                    // 隙間が無い場合は隣接への配置を試みるため ghostPos は null のまま
+                }
+            }
+        }
+        // 2) 隣接位置への新規ゴースト
+        if (ghostPos == null) {
+            BlockPos placePosTmp = hitPos.relative(face);
+            BlockState placeState = mc.level.getBlockState(placePosTmp);
+            boolean canReplace = placeState.canBeReplaced();
+            if (mc.level.getBlockEntity(placePosTmp) instanceof CutBlockEntity placeBe) {
+                if (!placeBe.isEmpty()) {
+                    int[] tryBounds = placeBe.findBestBoundsForPlacement(hitVec, placePosTmp, data.yLevel(), data.hLevel(), facing, face);
+                    if (tryBounds != null && placeBe.canAddEntry(tryBounds)) {
+                        ghostPos = placePosTmp;
+                        bounds = tryBounds;
+                    } else {
+                        return;
+                    }
+                } else {
+                    ghostPos = placePosTmp;
+                    bounds = CutBlockEntity.computeBoundsFromHit(hitVec, placePosTmp, hitPos, data.yLevel(), data.hLevel(), facing, face);
+                }
+            } else {
+                if (!canReplace) return;
+                ghostPos = placePosTmp;
+                bounds = CutBlockEntity.computeBoundsFromHit(hitVec, ghostPos, hitPos, data.yLevel(), data.hLevel(), facing, face);
+            }
+        }
+        if (ghostPos == null || bounds == null) return;
+        BlockPos placePos = ghostPos;
         float minX = bounds[0] / 16f;
         float minY = bounds[1] / 16f;
         float minZ = bounds[2] / 16f;

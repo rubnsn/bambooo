@@ -38,10 +38,30 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
         if (be == null || be.getLevel() == null || be.isEmpty()) {
             return;
         }
+        // 新: 複数エントリがある場合はそれぞれを描画
+        if (!be.getEntries().isEmpty()) {
+            for (CutBlockEntity.CutEntry entry : be.getEntries()) {
+                BlockState state = entry.state;
+                if (state == null || state.isAir()) continue;
+                int[] b = entry.bounds;
+                float minX = b[0] / 16f;
+                float minY = b[1] / 16f;
+                float minZ = b[2] / 16f;
+                float maxX = b[3] / 16f;
+                float maxY = b[4] / 16f;
+                float maxZ = b[5] / 16f;
+                if (minX == 0 && minY == 0 && minZ == 0 && maxX == 1 && maxY == 1 && maxZ == 1) {
+                    renderFull(be, state, poseStack, bufferSource, packedLight, packedOverlay);
+                } else {
+                    renderClipped(be, state, minX, minY, minZ, maxX, maxY, maxZ, poseStack, bufferSource, packedLight, packedOverlay);
+                }
+            }
+            return;
+        }
         BlockState cutState = be.getCutState();
         if (cutState.isAir()) return;
 
-        // FACING取得
+        // FACING取得（旧互換）
         Direction facing = Direction.NORTH;
         try {
             BlockState outer = be.getBlockState();
