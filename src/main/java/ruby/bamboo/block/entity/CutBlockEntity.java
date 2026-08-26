@@ -89,6 +89,163 @@ public class CutBlockEntity extends BlockEntity {
         return (byte) ((level + 1) % 3);
     }
 
+    // ===== 3種簡素化 Tier 判定 =====
+    public static boolean isHalfLevels(byte x, byte y, byte z) {
+        return (x == 1 && y == 0 && z == 0) || (x == 0 && y == 1 && z == 0) || (x == 0 && y == 0 && z == 1);
+    }
+
+    public static boolean isEightLevels(byte x, byte y, byte z) {
+        return x == 1 && y == 1 && z == 1;
+    }
+
+    public static boolean isQuarterLevels(byte x, byte y, byte z) {
+        return x == 2 && y == 2 && z == 2;
+    }
+
+    public static boolean isFullLevels(byte x, byte y, byte z) {
+        return x == 0 && y == 0 && z == 0;
+    }
+
+    public enum Tier { FULL, HALF, EIGHT, QUARTER, OTHER }
+
+    public static Tier getTierFromLevels(byte x, byte y, byte z) {
+        if (isFullLevels(x, y, z)) return Tier.FULL;
+        if (isHalfLevels(x, y, z)) return Tier.HALF;
+        if (isEightLevels(x, y, z)) return Tier.EIGHT;
+        if (isQuarterLevels(x, y, z)) return Tier.QUARTER;
+        return Tier.OTHER;
+    }
+
+    public static Tier getTierFromStack(net.minecraft.world.item.ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return Tier.OTHER;
+        if (stack.getItem() instanceof net.minecraft.world.item.BlockItem bi) {
+            BlockState st = bi.getBlock().defaultBlockState();
+            if (isFullCubeState(st)) return Tier.FULL;
+            return Tier.OTHER;
+        }
+        // cut_block は level で判定
+        CutBlockData d = readFromStack(stack);
+        if (d.state().isAir()) return Tier.OTHER;
+        // entries持ちは単一とみなさない（混合）
+        if (!readEntriesFromStack(stack).isEmpty()) return Tier.OTHER;
+        return getTierFromLevels(d.xLevel(), d.yLevel(), d.zLevel());
+    }
+
+    public static boolean isHalfBounds(int[] b) {
+        if (b == null || b.length < 6) return false;
+        int xs = b[3] - b[0], ys = b[4] - b[1], zs = b[5] - b[2];
+        return (xs == 8 && ys == 16 && zs == 16) || (xs == 16 && ys == 8 && zs == 16) || (xs == 16 && ys == 16 && zs == 8);
+    }
+
+    public static boolean isEightBounds(int[] b) {
+        if (b == null || b.length < 6) return false;
+        return b[3] - b[0] == 8 && b[4] - b[1] == 8 && b[5] - b[2] == 8;
+    }
+
+    public static boolean isQuarterBounds(int[] b) {
+        if (b == null || b.length < 6) return false;
+        return b[3] - b[0] == 4 && b[4] - b[1] == 4 && b[5] - b[2] == 4;
+    }
+
+    /** ハーフ(8x16x16) 6姿勢をヒット位置と面から決定。中央8x8は面平行、周辺は縦半 */
+    public static int[] computeHalfBounds(net.minecraft.world.phys.Vec3 hitVec, BlockPos clickedPos, Direction clickedFace) {
+        double fx = hitVec.x - clickedPos.getX();
+        double fy = hitVec.y - clickedPos.getY();
+        double fz = hitVec.z - clickedPos.getZ();
+        // clamp 0-1
+        if (fx < 0) fx = 0; if (fx > 1) fx = 1;
+        if (fy < 0) fy = 0; if (fy > 1) fy = 1;
+        if (fz < 0) fz = 0; if (fz > 1) fz = 1;
+        // 面ごとの平面軸と中心判定（中央8x8 = 0.25-0.75）
+        switch (clickedFace) {
+            case UP, DOWN -> {
+                boolean centerX = fx >= 0.25 && fx <= 0.75;
+                boolean centerZ = fz >= 0.25 && fz <= 0.75;
+                if (centerX && centerZ) {
+                    // 面平行ハーフ
+                    if (clickedFace == Direction.UP) return new int[]{0, 0, 0, 16, 8, 16}; // 下半
+                    else return new int[]{0, 8, 0, 16, 16, 16}; // 上半
+                }
+                double dx = Math.abs(fx - 0.5);
+                double dz = Math.abs(fz - 0.5);
+                if (dx > dz) {
+                    if (fx < 0.5) return new int[]{0, 0, 0, 8, 16, 16}; // 西
+                    else return new int[]{8, 0, 0, 16, 16, 16}; // 東
+                } else {
+                    if (fz < 0.5) return new int[]{0, 0, 0, 16, 16, 8}; // 北
+                    else return new int[]{0, 0, 8, 16, 16, 16}; // 南
+                }
+            }
+            case NORTH, SOUTH -> {
+                boolean centerX = fx >= 0.25 && fx <= 0.75;
+                boolean centerY = fy >= 0.25 && fy <= 0.75;
+                if (centerX && centerY) {
+                    if (clickedFace == Direction.NORTH) return new int[]{0, 0, 8, 16, 16, 16}; // 南半
+                    else return new int[]{0, 0, 0, 16, 16, 8}; // 北半
+                }
+                double dx = Math.abs(fx - 0.5);
+                double dy = Math.abs(fy - 0.5);
+                if (dx > dy) {
+                    if (fx < 0.5) return new int[]{0, 0, 0, 8, 16, 16};
+                    else return new int[]{8, 0, 0, 16, 16, 16};
+                } else {
+                    if (fy < 0.5) return new int[]{0, 0, 0, 16, 8, 16};
+                    else return new int[]{0, 8, 0, 16, 16, 16};
+                }
+            }
+            case WEST, EAST -> {
+                boolean centerZ = fz >= 0.25 && fz <= 0.75;
+                boolean centerY = fy >= 0.25 && fy <= 0.75;
+                if (centerZ && centerY) {
+                    if (clickedFace == Direction.WEST) return new int[]{8, 0, 0, 16, 16, 16}; // 東半
+                    else return new int[]{0, 0, 0, 8, 16, 16}; // 西半
+                }
+                double dz = Math.abs(fz - 0.5);
+                double dy = Math.abs(fy - 0.5);
+                if (dz > dy) {
+                    if (fz < 0.5) return new int[]{0, 0, 0, 16, 16, 8};
+                    else return new int[]{0, 0, 8, 16, 16, 16};
+                } else {
+                    if (fy < 0.5) return new int[]{0, 0, 0, 16, 8, 16};
+                    else return new int[]{0, 8, 0, 16, 16, 16};
+                }
+            }
+            default -> {}
+        }
+        return new int[]{0, 0, 0, 8, 16, 16};
+    }
+
+    /** 新規配置用キューブ(8 or 4) のbounds。面隣接側に寄せる */
+    public static int[] computeCubeBoundsForNewPlacement(net.minecraft.world.phys.Vec3 hitVec, BlockPos clickedPos, Direction clickedFace, int size) {
+        double fx = hitVec.x - clickedPos.getX();
+        double fy = hitVec.y - clickedPos.getY();
+        double fz = hitVec.z - clickedPos.getZ();
+        if (fx < 0) fx = 0; if (fx > 1) fx = 1;
+        if (fy < 0) fy = 0; if (fy > 1) fy = 1;
+        if (fz < 0) fz = 0; if (fz > 1) fz = 1;
+        int xOff, yOff, zOff;
+        if (size == 8) {
+            xOff = fx > 0.5 ? 8 : 0;
+            yOff = fy > 0.5 ? 8 : 0;
+            zOff = fz > 0.5 ? 8 : 0;
+        } else {
+            if (fx < 0.25) xOff = 0; else if (fx < 0.5) xOff = 4; else if (fx < 0.75) xOff = 8; else xOff = 12;
+            if (fy < 0.25) yOff = 0; else if (fy < 0.5) yOff = 4; else if (fy < 0.75) yOff = 8; else yOff = 12;
+            if (fz < 0.25) zOff = 0; else if (fz < 0.5) zOff = 4; else if (fz < 0.75) zOff = 8; else zOff = 12;
+        }
+        // 法線軸は隣接側に固定
+        switch (clickedFace) {
+            case UP -> yOff = 0;
+            case DOWN -> yOff = 16 - size;
+            case NORTH -> zOff = 16 - size;
+            case SOUTH -> zOff = 0;
+            case WEST -> xOff = 16 - size;
+            case EAST -> xOff = 0;
+            default -> {}
+        }
+        return new int[]{xOff, yOff, zOff, xOff + size, yOff + size, zOff + size};
+    }
+
     public int getXSize() {
         return levelToSize(this.xLevel);
     }

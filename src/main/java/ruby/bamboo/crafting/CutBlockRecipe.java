@@ -24,11 +24,12 @@ import ruby.bamboo.core.init.BambooBlocks;
 import ruby.bamboo.core.init.BambooItems;
 
 /**
- * カットブロックの動的レシピ — 3軸絶対切断。
+ * カットブロックの動的レシピ — 3種簡素化。
  * B(任意フルキューブ or 既存cut_block) + K(刀) の2アイテムで、
- * 横隣接→X切断(8×16×16)、縦隣接→Y切断(16×8×16)、斜め隣接→Z切断(16×16×8) に分岐。
- * 刀は消費しない。Bは消費して新しいcut_blockを生成する。
- * 2×2/3×3 いずれのグリッドでも成立。
+ * フル(16³) → ハーフ(8x16x16)×2
+ * ハーフ → 8x8x8×4
+ * 8x8x8 → 4x4x4×4
+ * 循環なし。刀は消費しない。2×2/3×3いずれでも成立、隣接方向不問。
  */
 public class CutBlockRecipe implements CraftingRecipe {
 
@@ -73,6 +74,7 @@ public class CutBlockRecipe implements CraftingRecipe {
         boolean horizontal = (y0 == y1 && Math.abs(x0 - x1) == 1);
         boolean vertical = (x0 == x1 && Math.abs(y0 - y1) == 1);
         boolean diagonal = (Math.abs(x0 - x1) == 1 && Math.abs(y0 - y1) == 1);
+        // 3種簡素化では方向不問で隣接なら成立
         return horizontal || vertical || diagonal;
     }
 
@@ -98,6 +100,7 @@ public class CutBlockRecipe implements CraftingRecipe {
         if (bStack.isEmpty() || kStack.isEmpty()) return ItemStack.EMPTY;
         if (!isValidMaterial(bStack)) return ItemStack.EMPTY;
 
+        // 隣接チェック（方向不問）
         int bx = bIndex % width;
         int by = bIndex / width;
         int kx = kIndex % width;
@@ -108,34 +111,38 @@ public class CutBlockRecipe implements CraftingRecipe {
         if (!isHorizontal && !isVertical && !isDiagonal) return ItemStack.EMPTY;
 
         BlockState baseState;
-        byte xLevel, yLevel, zLevel;
+        CutBlockEntity.Tier tier;
         if (isCutBlock(bStack)) {
+            if (!CutBlockEntity.readEntriesFromStack(bStack).isEmpty()) return ItemStack.EMPTY;
             CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(bStack);
             baseState = data.state();
-            xLevel = data.xLevel();
-            yLevel = data.yLevel();
-            zLevel = data.zLevel();
             if (baseState.isAir()) return ItemStack.EMPTY;
+            tier = CutBlockEntity.getTierFromLevels(data.xLevel(), data.yLevel(), data.zLevel());
+            if (tier == CutBlockEntity.Tier.OTHER || tier == CutBlockEntity.Tier.FULL) return ItemStack.EMPTY;
         } else if (bStack.getItem() instanceof BlockItem blockItem) {
             Block block = blockItem.getBlock();
             baseState = block.defaultBlockState();
             if (!CutBlockEntity.isFullCubeState(baseState)) return ItemStack.EMPTY;
-            xLevel = 0;
-            yLevel = 0;
-            zLevel = 0;
+            tier = CutBlockEntity.Tier.FULL;
         } else {
             return ItemStack.EMPTY;
         }
 
-        if (isHorizontal) {
-            xLevel = CutBlockEntity.nextLevel(xLevel);
-        } else if (isVertical) {
-            yLevel = CutBlockEntity.nextLevel(yLevel);
-        } else {
-            zLevel = CutBlockEntity.nextLevel(zLevel);
+        // 3段階: FULL->HALF×2, HALF->EIGHT×4, EIGHT->QUARTER×4
+        if (tier == CutBlockEntity.Tier.FULL) {
+            ItemStack out = createCutBlockStack(baseState, (byte)1, (byte)0, (byte)0); // 8x16x16 canonical
+            out.setCount(2);
+            return out;
+        } else if (tier == CutBlockEntity.Tier.HALF) {
+            ItemStack out = createCutBlockStack(baseState, (byte)1, (byte)1, (byte)1); // 8x8x8
+            out.setCount(4);
+            return out;
+        } else if (tier == CutBlockEntity.Tier.EIGHT) {
+            ItemStack out = createCutBlockStack(baseState, (byte)2, (byte)2, (byte)2); // 4x4x4
+            out.setCount(4);
+            return out;
         }
-
-        return createCutBlockStack(baseState, xLevel, yLevel, zLevel);
+        return ItemStack.EMPTY;
     }
 
     @Override
@@ -215,10 +222,11 @@ public class CutBlockRecipe implements CraftingRecipe {
     private static boolean isValidMaterial(ItemStack stack) {
         if (stack.isEmpty()) return false;
         if (isCutBlock(stack)) {
-            // 1.切り始めはフルキューブのみ、2.複合化したカットキューブは拒否
             if (!CutBlockEntity.readEntriesFromStack(stack).isEmpty()) return false;
             CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(stack);
-            return !data.state().isAir();
+            if (data.state().isAir()) return false;
+            CutBlockEntity.Tier t = CutBlockEntity.getTierFromLevels(data.xLevel(), data.yLevel(), data.zLevel());
+            return t == CutBlockEntity.Tier.FULL || t == CutBlockEntity.Tier.HALF || t == CutBlockEntity.Tier.EIGHT;
         }
         if (stack.getItem() instanceof BlockItem blockItem) {
             Block block = blockItem.getBlock();
