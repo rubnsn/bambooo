@@ -179,6 +179,13 @@ public class CutBlockItemRenderer extends BlockEntityWithoutLevelRenderer {
         if (spriteWest == null) spriteWest = fallback;
         if (spriteEast == null) spriteEast = fallback;
 
+        int colorDown = getColorForDir(model, cutState, Direction.DOWN);
+        int colorUp = getColorForDir(model, cutState, Direction.UP);
+        int colorNorth = getColorForDir(model, cutState, Direction.NORTH);
+        int colorSouth = getColorForDir(model, cutState, Direction.SOUTH);
+        int colorWest = getColorForDir(model, cutState, Direction.WEST);
+        int colorEast = getColorForDir(model, cutState, Direction.EAST);
+
         RenderType rt = RenderType.cutout();
         try {
             RandomSource rand = RandomSource.create();
@@ -203,22 +210,22 @@ public class CutBlockItemRenderer extends BlockEntityWithoutLevelRenderer {
         Matrix4f mat = pose.pose();
         Matrix3f normal = pose.normal();
 
-        drawQuad(vc, mat, normal, spriteDown,
+        drawQuad(vc, mat, normal, spriteDown, colorDown,
                 minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ,
                 0, -1, 0, packedLight, packedOverlay);
-        drawQuad(vc, mat, normal, spriteUp,
+        drawQuad(vc, mat, normal, spriteUp, colorUp,
                 minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, minX, maxY, minZ,
                 0, 1, 0, packedLight, packedOverlay);
-        drawQuad(vc, mat, normal, spriteNorth,
+        drawQuad(vc, mat, normal, spriteNorth, colorNorth,
                 maxX, minY, minZ, minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ,
                 0, 0, -1, packedLight, packedOverlay);
-        drawQuad(vc, mat, normal, spriteSouth,
+        drawQuad(vc, mat, normal, spriteSouth, colorSouth,
                 minX, minY, maxZ, maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ,
                 0, 0, 1, packedLight, packedOverlay);
-        drawQuad(vc, mat, normal, spriteWest,
+        drawQuad(vc, mat, normal, spriteWest, colorWest,
                 minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ,
                 -1, 0, 0, packedLight, packedOverlay);
-        drawQuad(vc, mat, normal, spriteEast,
+        drawQuad(vc, mat, normal, spriteEast, colorEast,
                 maxX, minY, maxZ, maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ,
                 1, 0, 0, packedLight, packedOverlay);
     }
@@ -250,7 +257,42 @@ public class CutBlockItemRenderer extends BlockEntityWithoutLevelRenderer {
         return null;
     }
 
-    private void drawQuad(VertexConsumer vc, Matrix4f mat, Matrix3f normal, TextureAtlasSprite sprite,
+    private int getTintForDir(BakedModel model, BlockState state, Direction dir) {
+        try {
+            RandomSource rand = RandomSource.create(state.getSeed(BlockPos.ZERO));
+            ModelData md = ModelData.EMPTY;
+            try {
+                md = model.getModelData(null, BlockPos.ZERO, state, ModelData.EMPTY);
+            } catch (Exception e) {}
+            var quads = model.getQuads(state, dir, rand, md, null);
+            if (quads != null && !quads.isEmpty()) {
+                return quads.get(0).getTintIndex();
+            }
+            var general = model.getQuads(state, null, rand, md, null);
+            if (general != null) {
+                for (var q : general) {
+                    if (q.getDirection() == dir) {
+                        return q.getTintIndex();
+                    }
+                }
+            }
+        } catch (Exception e) {
+        }
+        return -1;
+    }
+
+    private int getColorForDir(BakedModel model, BlockState state, Direction dir) {
+        int tint = getTintForDir(model, state, dir);
+        if (tint == -1) return -1;
+        try {
+            // 汎用的にBlockColors経由。対応していないブロックは-1で乗算しない
+            return Minecraft.getInstance().getBlockColors().getColor(state, null, null, tint);
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    private void drawQuad(VertexConsumer vc, Matrix4f mat, Matrix3f normal, TextureAtlasSprite sprite, int tintColor,
             float x1, float y1, float z1,
             float x2, float y2, float z2,
             float x3, float y3, float z3,
@@ -291,10 +333,16 @@ public class CutBlockItemRenderer extends BlockEntityWithoutLevelRenderer {
             us[3] = lerp(u1, u2, z4);
             vs[3] = lerp(v1, v2, 1 - y4);
         }
-        vc.vertex(mat, x1, y1, z1).color(1f, 1f, 1f, 1f).uv(us[0], vs[0]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x2, y2, z2).color(1f, 1f, 1f, 1f).uv(us[1], vs[1]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x3, y3, z3).color(1f, 1f, 1f, 1f).uv(us[2], vs[2]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x4, y4, z4).color(1f, 1f, 1f, 1f).uv(us[3], vs[3]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
+        float r = 1f, g = 1f, b = 1f;
+        if (tintColor != -1) {
+            r = ((tintColor >> 16) & 0xFF) / 255f;
+            g = ((tintColor >> 8) & 0xFF) / 255f;
+            b = (tintColor & 0xFF) / 255f;
+        }
+        vc.vertex(mat, x1, y1, z1).color(r, g, b, 1f).uv(us[0], vs[0]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
+        vc.vertex(mat, x2, y2, z2).color(r, g, b, 1f).uv(us[1], vs[1]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
+        vc.vertex(mat, x3, y3, z3).color(r, g, b, 1f).uv(us[2], vs[2]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
+        vc.vertex(mat, x4, y4, z4).color(r, g, b, 1f).uv(us[3], vs[3]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
     }
 
     private static float lerp(float a, float b, float t) {
