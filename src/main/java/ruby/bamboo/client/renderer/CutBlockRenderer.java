@@ -52,7 +52,7 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
                 if (minX == 0 && minY == 0 && minZ == 0 && maxX == 1 && maxY == 1 && maxZ == 1) {
                     renderFull(be, state, poseStack, bufferSource, packedLight, packedOverlay);
                 } else {
-                    renderClipped(be, state, minX, minY, minZ, maxX, maxY, maxZ, poseStack, bufferSource, packedLight, packedOverlay);
+                    renderClipped(be, entry, minX, minY, minZ, maxX, maxY, maxZ, poseStack, bufferSource, packedLight, packedOverlay);
                 }
             }
             return;
@@ -164,6 +164,180 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
         drawQuad(vc, mat, normal, spriteEast, colorEast,
                 maxX, minY, maxZ, maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ,
                 1, 0, 0, packedLight, packedOverlay);
+    }
+
+    private void renderClipped(CutBlockEntity be, CutBlockEntity.CutEntry entry,
+            float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
+            PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+        BlockState cutState = entry.state;
+        BakedModel model = this.blockRenderer.getBlockModel(cutState);
+        TextureAtlasSprite spriteUp = getSpriteForDir(model, cutState, Direction.UP, be);
+        TextureAtlasSprite spriteDown = getSpriteForDir(model, cutState, Direction.DOWN, be);
+        TextureAtlasSprite spriteNorth = getSpriteForDir(model, cutState, Direction.NORTH, be);
+        TextureAtlasSprite spriteSouth = getSpriteForDir(model, cutState, Direction.SOUTH, be);
+        TextureAtlasSprite spriteWest = getSpriteForDir(model, cutState, Direction.WEST, be);
+        TextureAtlasSprite spriteEast = getSpriteForDir(model, cutState, Direction.EAST, be);
+
+        TextureAtlasSprite fallback = model.getParticleIcon(ModelData.EMPTY);
+        if (spriteUp == null) spriteUp = fallback;
+        if (spriteDown == null) spriteDown = fallback;
+        if (spriteNorth == null) spriteNorth = fallback;
+        if (spriteSouth == null) spriteSouth = fallback;
+        if (spriteWest == null) spriteWest = fallback;
+        if (spriteEast == null) spriteEast = fallback;
+
+        int colorDown = getColorForDir(model, cutState, Direction.DOWN, be);
+        int colorUp = getColorForDir(model, cutState, Direction.UP, be);
+        int colorNorth = getColorForDir(model, cutState, Direction.NORTH, be);
+        int colorSouth = getColorForDir(model, cutState, Direction.SOUTH, be);
+        int colorWest = getColorForDir(model, cutState, Direction.WEST, be);
+        int colorEast = getColorForDir(model, cutState, Direction.EAST, be);
+
+        RenderType rt = RenderType.cutout();
+        try {
+            RandomSource rand = RandomSource.create();
+            ModelData md = ModelData.EMPTY;
+            try {
+                md = model.getModelData(be.getLevel(), be.getBlockPos(), cutState, ModelData.EMPTY);
+            } catch (Exception e) {}
+            var types = model.getRenderTypes(cutState, rand, md);
+            if (!types.isEmpty()) {
+                rt = types.iterator().next();
+                for (RenderType t : types) {
+                    if (t == RenderType.translucent() || t == RenderType.cutoutMipped()) {
+                        rt = t;
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {}
+
+        VertexConsumer vc = bufferSource.getBuffer(rt);
+        PoseStack.Pose pose = poseStack.last();
+        Matrix4f mat = pose.pose();
+        Matrix3f normal = pose.normal();
+
+        // 内部隣接面カリング: 相手が不透明かつ自身を覆うならスキップ
+        if (!shouldCull(be, entry, Direction.DOWN))
+            drawQuad(vc, mat, normal, spriteDown, colorDown,
+                    minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ,
+                    0, -1, 0, packedLight, packedOverlay);
+        if (!shouldCull(be, entry, Direction.UP))
+            drawQuad(vc, mat, normal, spriteUp, colorUp,
+                    minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, minX, maxY, minZ,
+                    0, 1, 0, packedLight, packedOverlay);
+        if (!shouldCull(be, entry, Direction.NORTH))
+            drawQuad(vc, mat, normal, spriteNorth, colorNorth,
+                    maxX, minY, minZ, minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ,
+                    0, 0, -1, packedLight, packedOverlay);
+        if (!shouldCull(be, entry, Direction.SOUTH))
+            drawQuad(vc, mat, normal, spriteSouth, colorSouth,
+                    minX, minY, maxZ, maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ,
+                    0, 0, 1, packedLight, packedOverlay);
+        if (!shouldCull(be, entry, Direction.WEST))
+            drawQuad(vc, mat, normal, spriteWest, colorWest,
+                    minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ,
+                    -1, 0, 0, packedLight, packedOverlay);
+        if (!shouldCull(be, entry, Direction.EAST))
+            drawQuad(vc, mat, normal, spriteEast, colorEast,
+                    maxX, minY, maxZ, maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ,
+                    1, 0, 0, packedLight, packedOverlay);
+    }
+
+    private boolean shouldCull(CutBlockEntity be, CutBlockEntity.CutEntry self, Direction dir) {
+        if (be == null || self == null || be.getEntries().isEmpty()) return false;
+        int[] b = self.bounds;
+        // 隣接面を覆うかは複数小片の合算で判定（ハーフにEIGHT4個等のケース）
+        // 16x16グリッドで自己面をカバーするかをチェック
+        boolean[][] covered = new boolean[16][16];
+        boolean hasAdjacent = false;
+        for (CutBlockEntity.CutEntry other : be.getEntries()) {
+            if (other == self) continue;
+            int[] o = other.bounds;
+            boolean adjacent = false;
+            switch (dir) {
+                case DOWN -> adjacent = b[1] == o[4];
+                case UP -> adjacent = b[4] == o[1];
+                case NORTH -> adjacent = b[2] == o[5];
+                case SOUTH -> adjacent = b[5] == o[2];
+                case WEST -> adjacent = b[0] == o[3];
+                case EAST -> adjacent = b[3] == o[0];
+            }
+            if (!adjacent) continue;
+            // 同種判定は内部ブロックの実際のブロックで比較。透過でも同ブロックならカリング可
+            boolean sameBlock = self.state.getBlock() == other.state.getBlock();
+            boolean otherTranslucent = isTranslucent(other.state, be);
+            boolean selfTranslucent = isTranslucent(self.state, be);
+            boolean otherOpaque = isOpaque(other.state, be);
+            boolean canCullThisOther;
+            if (otherTranslucent || selfTranslucent) {
+                if (sameBlock && otherTranslucent && selfTranslucent) {
+                    canCullThisOther = true;
+                } else {
+                    canCullThisOther = otherOpaque;
+                }
+            } else {
+                canCullThisOther = otherOpaque;
+            }
+            if (!canCullThisOther) continue;
+            hasAdjacent = true;
+            // 2軸での重なりをcoveredにマーク
+            int minA = 0, maxA = 0, minB = 0, maxB = 0;
+            switch (dir) {
+                case DOWN, UP -> { minA = Math.max(b[0], o[0]); maxA = Math.min(b[3], o[3]); minB = Math.max(b[2], o[2]); maxB = Math.min(b[5], o[5]); }
+                case NORTH, SOUTH -> { minA = Math.max(b[0], o[0]); maxA = Math.min(b[3], o[3]); minB = Math.max(b[1], o[1]); maxB = Math.min(b[4], o[4]); }
+                case WEST, EAST -> { minA = Math.max(b[1], o[1]); maxA = Math.min(b[4], o[4]); minB = Math.max(b[2], o[2]); maxB = Math.min(b[5], o[5]); }
+            }
+            if (minA >= maxA || minB >= maxB) continue;
+            for (int a = minA; a < maxA; a++) for (int bb = minB; bb < maxB; bb++) covered[a][bb] = true;
+        }
+        if (!hasAdjacent) return false;
+        // 自己面の全セルが覆われているか
+        switch (dir) {
+            case DOWN, UP -> {
+                for (int x = b[0]; x < b[3]; x++) for (int z = b[2]; z < b[5]; z++) if (!covered[x][z]) return false;
+            }
+            case NORTH, SOUTH -> {
+                for (int x = b[0]; x < b[3]; x++) for (int y = b[1]; y < b[4]; y++) if (!covered[x][y]) return false;
+            }
+            case WEST, EAST -> {
+                for (int y = b[1]; y < b[4]; y++) for (int z = b[2]; z < b[5]; z++) if (!covered[y][z]) return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isTranslucent(BlockState state, CutBlockEntity be) {
+        if (state == null) return false;
+        try {
+            BakedModel m = this.blockRenderer.getBlockModel(state);
+            ModelData md = ModelData.EMPTY;
+            try { md = m.getModelData(be.getLevel(), be.getBlockPos(), state, ModelData.EMPTY); } catch (Exception e) {}
+            RandomSource rand = RandomSource.create(state.getSeed(be.getBlockPos()));
+            var types = m.getRenderTypes(state, rand, md);
+            for (RenderType rt : types) {
+                if (rt == RenderType.translucent()) return true;
+            }
+        } catch (Exception e) {}
+        return false;
+    }
+
+    private boolean isOpaque(BlockState state, CutBlockEntity be) {
+        if (state == null || state.isAir()) return false;
+        // 色付きガラス等の透過はスキップ対象外（同色ガラスはshouldCullで例外扱い）
+        if (isTranslucent(state, be)) return false;
+        try {
+            if (!state.canOcclude()) return false;
+        } catch (Exception e) {}
+        try {
+            // フルキューブ形状かつ固体なら不透明。階段等の非フルはここでfalse
+            if (be.getLevel() != null) {
+                if (!CutBlockEntity.isFullCubeState(state, be.getLevel(), be.getBlockPos())) return false;
+            } else {
+                if (!CutBlockEntity.isFullCubeState(state)) return false;
+            }
+        } catch (Exception e) { return false; }
+        return true;
     }
 
     private TextureAtlasSprite getSpriteForDir(BakedModel model, BlockState state, Direction dir, CutBlockEntity be) {
