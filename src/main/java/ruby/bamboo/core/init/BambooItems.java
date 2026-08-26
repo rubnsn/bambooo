@@ -83,7 +83,7 @@ public final class BambooItems {
 
     /** 手裏剣腕輪 (旧 NinjaBracelet。耐久384、即射+クール20tick) */
     public static final RegistryObject<ruby.bamboo.item.NinjaBraceletItem> NINJA_BRACELET = register("ninja_bracelet",
-            () -> new ruby.bamboo.item.NinjaBraceletItem(new Item.Properties().durability(384).stacksTo(1)));
+            () -> new ruby.bamboo.item.NinjaBraceletItem(new Item.Properties().durability(384)));
 
     // ===== 弓矢 (旧 BambooBow + arrow 6種の 1.20.1 移植。アンチ矢はオミット) =====
 
