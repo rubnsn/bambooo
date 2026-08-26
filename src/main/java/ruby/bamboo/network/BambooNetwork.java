@@ -32,5 +32,9 @@ public final class BambooNetwork {
                 KaginawaInputPacket::encode,
                 KaginawaInputPacket::decode,
                 KaginawaInputPacket::handle);
+        CHANNEL.registerMessage(nextId(), FlashJumpPacket.class,
+                FlashJumpPacket::encode,
+                FlashJumpPacket::decode,
+                FlashJumpPacket::handle);
     }
 }

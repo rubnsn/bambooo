@@ -1,7 +1,9 @@
 package ruby.bamboo.core.init;
 
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraftforge.registries.RegistryObject;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.enchant.CriticalThrow;
@@ -60,5 +62,24 @@ public final class BambooEnchantments {
     }
 
     public static void init() {
+        // クリエタブへエンチャ本を追加（最大レベルのみ、調整用。バニラの StoredEnchantments NBT流用）
+        addBook(QUICK_THROW);
+        addBook(POWER_THROW);
+        addBook(CRITICAL_THROW);
+        addBook(POISON_THROW);
+        addBook(SNIPE_THROW);
+        addBook(ECONOMY_BRACELET);
+        addBook(UNBREAKING_BRACELET);
+        addBook(PICKPOCKET);
+        addBook(DOUBLE_THROW);
+        addBook(TRIPLE_THROW);
+        addBook(FLAME_THROW);
+        addBook(FLASH_JUMP);
+        addBook(INFINITY_THROW);
+    }
+
+    private static void addBook(RegistryObject<Enchantment> ro) {
+        ruby.bamboo.core.init.BambooItems.addCreativeStack(
+                () -> EnchantedBookItem.createForEnchantment(new EnchantmentInstance(ro.get(), ro.get().getMaxLevel())));
     }
 }

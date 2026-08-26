@@ -14,6 +14,11 @@ import ruby.bamboo.item.NinjaBraceletItem;
 /**
  * 閃跳 (flash_jump) ハンドラ。
  * 空中で1回のみ発動、着地でリセット、クール無し、耐久消費無し。
+ * <p>
+ * ジャンプキー検出はバニラの `player.jumping` だけでは空中での rising edge が
+ * サーバで安定しないため、クライアントの {@link ruby.bamboo.client.FlashJumpClientHandler}
+ * が `input.jumping` の rising edge を検出し {@link ruby.bamboo.network.FlashJumpPacket}
+ * でサーバへ通知。サーバはパケットで受信した forward/strafe を用いて実行する。
  */
 @Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class FlashJumpHandler {
@@ -25,51 +30,60 @@ public class FlashJumpHandler {
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         Player player = event.player;
-        if (player.level().isClientSide) return; // サーバのみで処理、クライアントは動きを補間
+        if (player.level().isClientSide) return; // クライアントは FlashJumpClientHandler で処理
         if (player.isSpectator() || player.isCreative() && player.getAbilities().flying) return;
 
-        // 着地でリセット
+        // 着地でリセット（サーバ側の airTicks と flashed はパケット処理でも参照）
         if (player.onGround() || player.isInWater() || player.isInLava() || player.isFallFlying()) {
             player.getPersistentData().putBoolean(TAG_FLASHED, false);
             player.getPersistentData().putInt(TAG_AIR_TICKS, 0);
             return;
         }
 
-        // 空中
+        // 空中カウントを進める（handlePacket で airTicks < 3 チェックに利用）
         int airTicks = player.getPersistentData().getInt(TAG_AIR_TICKS) + 1;
         player.getPersistentData().putInt(TAG_AIR_TICKS, airTicks);
+    }
 
+    /**
+     * パケット受信時にサーバで実行。WASD入力方向へ閃跳。
+     */
+    public static void handlePacket(net.minecraft.server.level.ServerPlayer player, float forward, float strafe) {
+        if (player.isSpectator() || player.isCreative() && player.getAbilities().flying) return;
+        if (player.onGround() || player.isInWater() || player.isInLava() || player.isFallFlying()) return;
         if (player.getPersistentData().getBoolean(TAG_FLASHED)) return;
-
-        // 腕輪所持チェック (インベントリ or 手持ち)
         if (!hasFlashJump(player)) return;
+        int airTicks = player.getPersistentData().getInt(TAG_AIR_TICKS);
+        if (airTicks < 3) return; // 地上離脱直後の誤爆防止（旧5→3に緩和）
+        doFlashJump(player, forward, strafe);
+    }
 
-        // 発動条件: 空中に入ってから一定tick (5) 経過し、上昇中 or ジャンプ入力相当
-        // サーバではキー入力を直接取れないため、Y速度が正 または 空中tickが一定で発動
-        // WASD入力は look方向への加速として反映、入力がなければ真上へ
+    static void doFlashJump(Player player, float forward, float strafe) {
         Vec3 motion = player.getDeltaMovement();
-        boolean isRising = motion.y > -0.1; // 落下直前でも発動可能にするため緩め
-        if (airTicks < 5) return;
-        // 地上から離れてから一度だけ発動: 上昇中 or 横移動中
-        if (!isRising && motion.horizontalDistanceSqr() < 0.01) return;
-
-        // 発動
-        Vec3 look = player.getLookAngle();
-        // 横入力の有無は motion から推定、look方向へ加速
-        double pushX = look.x * 0.6;
-        double pushZ = look.z * 0.6;
+        Vec3 dir;
+        if (forward == 0.0F && strafe == 0.0F) {
+            Vec3 look = player.getLookAngle();
+            dir = new Vec3(look.x, 0, look.z).normalize();
+            // 入力無しは真上に少し寄せる
+            if (dir.lengthSqr() < 1.0E-6) dir = new Vec3(0, 1, 0);
+        } else {
+            float yawRad = player.getYRot() * (float) Math.PI / 180F;
+            Vec3 forwardVec = new Vec3(-Math.sin(yawRad), 0, Math.cos(yawRad)).normalize();
+            Vec3 strafeVec = new Vec3(Math.cos(yawRad), 0, Math.sin(yawRad)).normalize();
+            dir = forwardVec.scale(forward).add(strafeVec.scale(strafe)).normalize();
+        }
+        double pushX = dir.x * 0.6;
+        double pushZ = dir.z * 0.6;
         double pushY = 0.4;
-        // 既存速度に加算
         player.setDeltaMovement(motion.add(pushX, pushY, pushZ));
         player.hurtMarked = true;
         player.hasImpulse = true;
         player.getPersistentData().putBoolean(TAG_FLASHED, true);
-        // 音任意: エンダードラゴン羽ばたき等
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, net.minecraft.sounds.SoundSource.PLAYERS, 0.6F, 1.4F);
     }
 
-    private static boolean hasFlashJump(Player player) {
+    public static boolean hasFlashJump(Player player) {
         for (ItemStack s : player.getInventory().items) {
             if (!s.isEmpty() && s.getItem() instanceof NinjaBraceletItem) {
                 if (EnchantmentHelper.getItemEnchantmentLevel(BambooEnchantments.FLASH_JUMP.get(), s) > 0) return true;

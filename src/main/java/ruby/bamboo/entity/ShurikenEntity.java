@@ -167,14 +167,15 @@ public class ShurikenEntity extends AbstractArrow {
         Vec3 motion = this.getDeltaMovement();
         this.setDeltaMovement(motion.x, motion.y - 0.03, motion.z);
 
-        // snipe追尾 (lv1-3、lvあたり0.3ブロック補正、エイムアシスト)
-        if (this.snipeLevel > 0 && !this.inGround && this.tickCount % 2 == 0) {
+        // snipe追尾 (lv1-3、lvあたり0.3ブロック補正を拡張、エイムアシスト強化)
+        if (this.snipeLevel > 0 && !this.inGround) {
             LivingEntity target = findSnipeTarget();
             if (target != null) {
                 Vec3 toTarget = target.position().add(0, target.getEyeHeight() * 0.5, 0).subtract(this.position()).normalize();
                 Vec3 cur = this.getDeltaMovement().normalize();
-                double lerp = 0.02 * this.snipeLevel; // lv1:0.02, lv3:0.06
-                Vec3 blended = cur.lerp(toTarget, lerp);
+                // 旧 0.02*lv は弱すぎたため 0.10~0.18 に強化 (約5倍)
+                double lerp = 0.10 + (this.snipeLevel - 1) * 0.04; // lv1:0.10, lv2:0.14, lv3:0.18
+                Vec3 blended = cur.lerp(toTarget, lerp).normalize();
                 double speed = this.getDeltaMovement().length();
                 this.setDeltaMovement(blended.scale(speed));
             }
@@ -184,29 +185,33 @@ public class ShurikenEntity extends AbstractArrow {
     private LivingEntity findSnipeTarget() {
         Entity owner = this.getOwner();
         if (owner == null) return null;
-        // 半径16、視線から0.9*lvブロック以内にいる最も近いLiving
-        double range = 16.0;
+        // 半径24に拡張、前方かつ横ズレが threshold 以内の最も近いLivingを優先
+        double range = 24.0;
         var aabb = this.getBoundingBox().inflate(range);
         LivingEntity best = null;
+        double bestLateral = Double.MAX_VALUE;
         double bestDist = Double.MAX_VALUE;
         for (LivingEntity e : this.level().getEntitiesOfClass(LivingEntity.class, aabb, e2 -> e2 != owner && e2.isAlive() && !e2.isSpectator())) {
-            double dist = this.distanceToSqr(e);
-            if (dist < bestDist) {
-                // エイムアシスト範囲チェック: 照準線からの距離
-                Vec3 toE = e.position().add(0, e.getEyeHeight() * 0.5, 0).subtract(this.position());
-                Vec3 dir = this.getDeltaMovement().normalize();
-                double dot = toE.normalize().dot(dir);
-                if (dot < 0.9) continue; // 前方およそ25度以内
-                // 横ズレが 0.9*lv 以内
-                double cross = toE.cross(dir).length();
-                double lateral = cross / toE.length() * toE.length(); // 簡易横ズレ
-                // 0.3/lv補正なのでしきい値もそれに合わせる
-                double threshold = 0.5 + this.snipeLevel * 0.3;
-                // 横ズレがthresholdより大きいと追尾しない
-                // 近似: 正規化した内積で判断
-                if (1.0 - dot > threshold * 0.1) continue;
+            Vec3 toE = e.position().add(0, e.getEyeHeight() * 0.5, 0).subtract(this.position());
+            double distSqr = this.distanceToSqr(e);
+            // 前方判定: 内積が正 (=前方) かつ沿い距離が range 以内
+            Vec3 dir = this.getDeltaMovement().normalize();
+            double dot = toE.normalize().dot(dir);
+            if (dot <= 0) continue; // 後方は除外
+            // 横ズレ = |toE x dir| (dirは正規化)
+            double lateral = toE.cross(dir).length();
+            // 沿い距離 = toE・dir
+            double forward = toE.dot(dir);
+            if (forward < 0 || forward > range) continue;
+            // しきい値: lv1:1.5, lv2:2.5, lv3:3.5 ブロック（旧0.3/lvでは狭すぎ）
+            // 10ブロック先で 8.5°/14°/19° 相当、体感しやすい範囲
+            double threshold = 1.5 + (this.snipeLevel - 1) * 1.0;
+            if (lateral > threshold) continue;
+            // 横ズレが小さいものを優先、同点なら距離が近いもの
+            if (lateral < bestLateral - 0.1 || (Math.abs(lateral - bestLateral) < 0.1 && distSqr < bestDist)) {
                 best = e;
-                bestDist = dist;
+                bestLateral = lateral;
+                bestDist = distSqr;
             }
         }
         return best;
