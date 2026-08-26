@@ -35,7 +35,16 @@ public class CutBlockItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     public static CutBlockItemRenderer getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new CutBlockItemRenderer();
+            try {
+                INSTANCE = new CutBlockItemRenderer();
+            } catch (Exception e) {
+                // Minecraft未初期化時のフォールバック (サーバ側や早期ロードでのNPE防止)
+                try {
+                    INSTANCE = new CutBlockItemRenderer(true);
+                } catch (Exception e2) {
+                    return null;
+                }
+            }
         }
         return INSTANCE;
     }
@@ -43,6 +52,11 @@ public class CutBlockItemRenderer extends BlockEntityWithoutLevelRenderer {
     private CutBlockItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
                 Minecraft.getInstance().getEntityModels());
+    }
+
+    // フォールバック用 (dispatcher/modelsがnullでもsuper呼び出しを通す)
+    private CutBlockItemRenderer(boolean dummy) {
+        super(null, null);
     }
 
     @Override

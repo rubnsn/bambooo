@@ -31,16 +31,20 @@ public class CutBlockItem extends BlockItem {
         net.minecraft.world.entity.player.Player player = context.getPlayer();
         net.minecraft.world.item.ItemStack stack = context.getItemInHand();
         if (stack.isEmpty()) return super.useOn(context);
+        // 複数Entriesを持つhoe回収品かどうか
+        java.util.List<ruby.bamboo.block.entity.CutBlockEntity.CutEntry> multiEntries = ruby.bamboo.block.entity.CutBlockEntity.readEntriesFromStack(stack);
+        boolean isMulti = !multiEntries.isEmpty();
         CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(stack);
-        if (data.state().isAir()) {
-            return super.useOn(context);
+        if (data.state().isAir() && !isMulti) {
+            // 空のcut_blockはクラフト以外で生成されるべきではない。置けずにFAIL
+            return net.minecraft.world.InteractionResult.FAIL;
         }
         byte xLevel = data.xLevel();
         byte yLevel = data.yLevel();
         byte zLevel = data.zLevel();
 
-        // 1) クリックしたブロックが既存cut_blockなら、その隙間に充填
-        if (level.getBlockEntity(clickedPos) instanceof CutBlockEntity existingBe) {
+        // 1) クリックしたブロックが既存cut_blockなら、その隙間に充填 (単一のみ。複数hoe回収品は充填不可)
+        if (!isMulti && level.getBlockEntity(clickedPos) instanceof CutBlockEntity existingBe) {
             if (!existingBe.isEmpty()) {
                 int[] bounds = existingBe.findBestBoundsForPlacement(hitVec, clickedPos, xLevel, yLevel, zLevel, clickedFace);
                 if (bounds != null && existingBe.canAddEntry(bounds)) {
@@ -61,7 +65,7 @@ public class CutBlockItem extends BlockItem {
         net.minecraft.core.BlockPos placePos = clickedPos.relative(clickedFace);
         net.minecraft.world.level.block.state.BlockState placeState = level.getBlockState(placePos);
         boolean canReplace = placeState.canBeReplaced(new net.minecraft.world.item.context.BlockPlaceContext(context));
-        if (level.getBlockEntity(placePos) instanceof CutBlockEntity placeBe) {
+        if (!isMulti && level.getBlockEntity(placePos) instanceof CutBlockEntity placeBe) {
             if (!placeBe.isEmpty()) {
                 int[] bounds = placeBe.findBestBoundsForPlacement(hitVec, placePos, xLevel, yLevel, zLevel, clickedFace);
                 if (bounds != null && placeBe.canAddEntry(bounds)) {
@@ -78,6 +82,10 @@ public class CutBlockItem extends BlockItem {
             }
             return net.minecraft.world.InteractionResult.FAIL;
         }
+        // 複数hoe回収品は既存BEへの充填を許可しない。新規空きのみ
+        if (isMulti && level.getBlockEntity(placePos) instanceof CutBlockEntity) {
+            return net.minecraft.world.InteractionResult.FAIL;
+        }
         if (!canReplace) {
             return net.minecraft.world.InteractionResult.FAIL;
         }
@@ -92,12 +100,25 @@ public class CutBlockItem extends BlockItem {
             } catch (Exception e) {}
             level.setBlock(placePos, newState, 3);
             if (level.getBlockEntity(placePos) instanceof CutBlockEntity newBe) {
-                int[] bounds = CutBlockEntity.computeBoundsFromHit(hitVec, placePos, clickedPos, xLevel, yLevel, zLevel, null, clickedFace);
-                if (!newBe.addEntry(data.state(), bounds)) {
-                    newBe.clearEntries();
-                    newBe.addEntry(data.state(), bounds);
+                if (isMulti) {
+                    net.minecraft.nbt.CompoundTag tag = stack.getTag();
+                    if (tag != null && tag.contains("BlockEntityTag", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
+                        net.minecraft.nbt.CompoundTag bet = tag.getCompound("BlockEntityTag");
+                        newBe.readSyncData(bet);
+                    } else {
+                        // フォールバック: 手動
+                        newBe.clearEntries();
+                        for (var e : multiEntries) newBe.addEntry(e.state, e.bounds);
+                    }
+                    level.sendBlockUpdated(placePos, newState, newState, 3);
+                } else {
+                    int[] bounds = CutBlockEntity.computeBoundsFromHit(hitVec, placePos, clickedPos, xLevel, yLevel, zLevel, null, clickedFace);
+                    if (!newBe.addEntry(data.state(), bounds)) {
+                        newBe.clearEntries();
+                        newBe.addEntry(data.state(), bounds);
+                    }
+                    level.sendBlockUpdated(placePos, newState, newState, 3);
                 }
-                level.sendBlockUpdated(placePos, newState, newState, 3);
             }
             if (player == null || !player.getAbilities().instabuild) {
                 stack.shrink(1);
@@ -112,13 +133,26 @@ public class CutBlockItem extends BlockItem {
         consumer.accept(new IClientItemExtensions() {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                return CutBlockItemRenderer.getInstance();
+                var r = CutBlockItemRenderer.getInstance();
+                if (r != null) return r;
+                // サーバ側や初期化失敗時のフォールバックではバニラレンダラーに委譲
+                return null;
             }
         });
     }
 
     @Override
     public Component getName(ItemStack stack) {
+        var multi = CutBlockEntity.readEntriesFromStack(stack);
+        if (!multi.isEmpty()) {
+            // 複数パーツを持つhoe回収品は代表で表示
+            try {
+                String base = multi.get(0).state.getBlock().getName().getString();
+                if (multi.size() > 1) {
+                    return Component.literal(base + " (複合×" + multi.size() + ")");
+                }
+            } catch (Exception e) {}
+        }
         CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(stack);
         if (data.state().isAir()) {
             // Bounds配列由来のドロップは BlockEntityTag に入っているが CutState が無い場合もある

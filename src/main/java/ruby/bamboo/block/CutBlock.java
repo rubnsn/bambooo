@@ -74,7 +74,34 @@ public class CutBlock extends BaseEntityBlock {
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (level.getBlockEntity(pos) instanceof CutBlockEntity be) {
+            java.util.List<CutBlockEntity.CutEntry> entries = CutBlockEntity.readEntriesFromStack(stack);
+            if (!entries.isEmpty()) {
+                // 複数Entriesを持つhoe回収品はそのまま復元
+                CompoundTag tag = stack.getTag();
+                if (tag != null && tag.contains(BLOCK_ENTITY_TAG, net.minecraft.nbt.Tag.TAG_COMPOUND)) {
+                    CompoundTag bet = tag.getCompound(BLOCK_ENTITY_TAG);
+                    be.readSyncData(bet);
+                    be.invalidateShapeCache();
+                    level.sendBlockUpdated(pos, state, state, 3);
+                } else {
+                    // フォールバック: 手動追加
+                    be.clearEntries();
+                    for (CutBlockEntity.CutEntry e : entries) {
+                        be.addEntry(e.state, e.bounds);
+                    }
+                    level.sendBlockUpdated(pos, state, state, 3);
+                }
+                return;
+            }
             CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(stack);
+            // 空のcut_blockは論理的に存在しないため、空ならブロック自体を除去してFAIL相当にする
+            if (data.state().isAir()) {
+                // バニラ経由で置かれた空BEを即時除去し、空タグ送出を防ぐ
+                if (!level.isClientSide) {
+                    level.removeBlock(pos, false);
+                }
+                return;
+            }
             be.setCutState(data.state());
             be.setLevels(data.xLevel(), data.yLevel(), data.zLevel());
             be.invalidateShapeCache();
@@ -187,8 +214,6 @@ public class CutBlock extends BaseEntityBlock {
                         bet.putByte(CutBlockEntity.TAG_H_LEVEL, CutBlockEntity.sizeToLevel(xSize));
                         CompoundTag tag = s.getOrCreateTag();
                         tag.put(BLOCK_ENTITY_TAG, bet);
-                        tag.put(CutBlockEntity.TAG_STATE, net.minecraft.nbt.NbtUtils.writeBlockState(e.state));
-                        tag.putIntArray(CutBlockEntity.TAG_BOUNDS, e.bounds);
                         result.add(s);
                     }
                     return result;
@@ -204,7 +229,6 @@ public class CutBlock extends BaseEntityBlock {
                 cut.writeSyncData(bet);
                 CompoundTag tag = stack.getOrCreateTag();
                 tag.put(BLOCK_ENTITY_TAG, bet);
-                tag.putString("CutStateName", cut.getCutState().getBlock().toString());
                 if (list.isEmpty()) {
                     list.add(stack);
                 }
@@ -228,39 +252,19 @@ public class CutBlock extends BaseEntityBlock {
     public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
         if (level.getBlockEntity(pos) instanceof CutBlockEntity be) {
             if (!be.isEmpty() && !be.getEntries().isEmpty()) {
-                try {
-                    net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-                    if (mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult bhr && bhr.getBlockPos().equals(pos)) {
-                        net.minecraft.world.phys.Vec3 hit = bhr.getLocation();
-                        for (CutBlockEntity.CutEntry e : be.getEntries()) {
-                            int[] b = e.bounds;
-                            double hx = (hit.x - pos.getX()) * 16;
-                            double hy = (hit.y - pos.getY()) * 16;
-                            double hz = (hit.z - pos.getZ()) * 16;
-                            if (hx >= b[0] && hx < b[3] && hy >= b[1] && hy < b[4] && hz >= b[2] && hz < b[5]) {
-                                ItemStack s = new ItemStack(this);
-                                CompoundTag bet = new CompoundTag();
-                                bet.put(CutBlockEntity.TAG_STATE, net.minecraft.nbt.NbtUtils.writeBlockState(e.state));
-                                bet.putIntArray(CutBlockEntity.TAG_BOUNDS, e.bounds);
-                                int xSize = e.bounds[3] - e.bounds[0];
-                                int ySize = e.bounds[4] - e.bounds[1];
-                                int zSize = e.bounds[5] - e.bounds[2];
-                                bet.putByte(CutBlockEntity.TAG_X_LEVEL, CutBlockEntity.sizeToLevel(xSize));
-                                bet.putByte(CutBlockEntity.TAG_Y_LEVEL, CutBlockEntity.sizeToLevel(ySize));
-                                bet.putByte(CutBlockEntity.TAG_Z_LEVEL, CutBlockEntity.sizeToLevel(zSize));
-                                CompoundTag tag = s.getOrCreateTag();
-                                tag.put(BLOCK_ENTITY_TAG, bet);
-                                return s;
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                }
+                // サーバセーフ: クライアントクラス(Minecraft)を参照しない。先頭エントリを返す簡易仕様 (Miniature準拠)
                 CutBlockEntity.CutEntry first = be.getEntries().get(0);
                 ItemStack s = new ItemStack(this);
                 CompoundTag bet = new CompoundTag();
                 bet.put(CutBlockEntity.TAG_STATE, net.minecraft.nbt.NbtUtils.writeBlockState(first.state));
                 bet.putIntArray(CutBlockEntity.TAG_BOUNDS, first.bounds);
+                int xSize = first.bounds[3] - first.bounds[0];
+                int ySize = first.bounds[4] - first.bounds[1];
+                int zSize = first.bounds[5] - first.bounds[2];
+                bet.putByte(CutBlockEntity.TAG_X_LEVEL, CutBlockEntity.sizeToLevel(xSize));
+                bet.putByte(CutBlockEntity.TAG_Y_LEVEL, CutBlockEntity.sizeToLevel(ySize));
+                bet.putByte(CutBlockEntity.TAG_Z_LEVEL, CutBlockEntity.sizeToLevel(zSize));
+                bet.putByte(CutBlockEntity.TAG_H_LEVEL, CutBlockEntity.sizeToLevel(xSize));
                 CompoundTag tag = s.getOrCreateTag();
                 tag.put(BLOCK_ENTITY_TAG, bet);
                 return s;
@@ -291,7 +295,11 @@ public class CutBlock extends BaseEntityBlock {
 
     // ===== 細かい除去: ミニチュア準拠の左クリック/破壊進行度/WillDestroy =====
 
-    private static final ThreadLocal<Boolean> ALLOW_CUT_REMOVAL = ThreadLocal.withInitial(() -> false);
+    static final ThreadLocal<Boolean> ALLOW_CUT_REMOVAL = ThreadLocal.withInitial(() -> false);
+
+    public static boolean isRemovalAllowed() {
+        return Boolean.TRUE.equals(ALLOW_CUT_REMOVAL.get());
+    }
 
     @Override
     public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, boolean willHarvest, net.minecraft.world.level.material.FluidState fluid) {
@@ -342,9 +350,11 @@ public class CutBlock extends BaseEntityBlock {
                     if (hit != null && hit.getBlockPos().equals(pos)) {
                         CutBlockEntity.CutEntry target = findHitEntry(be, pos, hit);
                         if (target != null) {
-                            return 2.0f;
+                            // Miniature準拠: 内部ブロックの硬度・適正ツール・エンチャを反映
+                            return target.state.getDestroyProgress(player, blockGetter, pos);
                         }
                     }
+                    // 空隙を叩いた場合は外枠を壊さない
                     return 0.0f;
                 }
             }
@@ -363,15 +373,8 @@ public class CutBlock extends BaseEntityBlock {
             return;
         }
         if (level.isClientSide) return;
-        if (player.getMainHandItem().getItem() instanceof net.minecraft.world.item.HoeItem) {
-            return;
-        }
         net.minecraft.world.phys.BlockHitResult hit = getHitForPlayer(player, level, pos);
         if (hit == null || !hit.getBlockPos().equals(pos)) {
-            if (!player.isCreative() && !be.getEntries().isEmpty()) {
-                CutBlockEntity.CutEntry first = be.getEntries().get(0);
-                breakInnerForAttack(be, first, level, pos, player, true);
-            }
             return;
         }
         CutBlockEntity.CutEntry target = findHitEntry(be, pos, hit);
@@ -382,7 +385,11 @@ public class CutBlock extends BaseEntityBlock {
         breakInnerForAttack(be, target, level, pos, player, !isCreative);
     }
 
-    private net.minecraft.world.phys.BlockHitResult getHitForPlayer(net.minecraft.world.entity.player.Player player, Level level, BlockPos pos) {
+    public net.minecraft.world.phys.BlockHitResult getHitForPlayer(net.minecraft.world.entity.player.Player player, Level level, BlockPos pos) {
+        return getHitForPlayerStatic(player, level, pos);
+    }
+
+    public static net.minecraft.world.phys.BlockHitResult getHitForPlayerStatic(net.minecraft.world.entity.player.Player player, Level level, BlockPos pos) {
         try {
             double reach = player.isCreative() ? 5.0 : 4.5;
             net.minecraft.world.phys.Vec3 eye = player.getEyePosition(1.0f);
@@ -396,11 +403,15 @@ public class CutBlock extends BaseEntityBlock {
         }
     }
 
+    public static CutBlockEntity.CutEntry findHitEntryStatic(CutBlockEntity be, BlockPos pos, net.minecraft.world.phys.BlockHitResult hit) {
+        return findHitEntry(be, pos, hit);
+    }
+
     private CutBlockEntity.CutEntry findHitEntry(CutBlockEntity be, BlockPos pos, net.minecraft.world.phys.Vec3 hitVec) {
         return findHitEntry(be, pos, new net.minecraft.world.phys.BlockHitResult(hitVec, net.minecraft.core.Direction.UP, pos, false));
     }
 
-    private CutBlockEntity.CutEntry findHitEntry(CutBlockEntity be, BlockPos pos, net.minecraft.world.phys.BlockHitResult hit) {
+    public static CutBlockEntity.CutEntry findHitEntry(CutBlockEntity be, BlockPos pos, net.minecraft.world.phys.BlockHitResult hit) {
         net.minecraft.world.phys.Vec3 hitVec = hit.getLocation();
         net.minecraft.core.Direction face = hit.getDirection();
         double hx = (hitVec.x - pos.getX()) * 16;
@@ -442,7 +453,7 @@ public class CutBlock extends BaseEntityBlock {
         return null;
     }
 
-    private void breakInnerForAttack(CutBlockEntity be, CutBlockEntity.CutEntry target, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, boolean drop) {
+    public void breakInnerForAttack(CutBlockEntity be, CutBlockEntity.CutEntry target, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, boolean drop) {
         BlockState inner = target.state;
         if (inner == null || inner.isAir()) return;
         CutBlockEntity.CutEntry toRemove = null;

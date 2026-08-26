@@ -576,6 +576,17 @@ public class CutBlockEntity extends BlockEntity {
     @Override
     public void handleUpdateTag(CompoundTag tag) {
         super.handleUpdateTag(tag);
+        if (tag == null) {
+            this.entries.clear();
+            this.cutState = Blocks.AIR.defaultBlockState();
+            this.xLevel = 0;
+            this.yLevel = 0;
+            this.zLevel = 0;
+            this.shapeCache = null;
+            this.dirty = false;
+            this.syncTimer = 0;
+            return;
+        }
         readSyncData(tag);
     }
 
@@ -588,7 +599,19 @@ public class CutBlockEntity extends BlockEntity {
 
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-        readSyncData(pkt.getTag());
+        CompoundTag tag = pkt.getTag();
+        if (tag == null) {
+            this.entries.clear();
+            this.cutState = Blocks.AIR.defaultBlockState();
+            this.xLevel = 0;
+            this.yLevel = 0;
+            this.zLevel = 0;
+            this.shapeCache = null;
+            this.dirty = false;
+            this.syncTimer = 0;
+            return;
+        }
+        readSyncData(tag);
     }
 
     public void writeSyncData(CompoundTag tag) {
@@ -610,6 +633,17 @@ public class CutBlockEntity extends BlockEntity {
     }
 
     public void readSyncData(CompoundTag tag) {
+        if (tag == null) {
+            this.entries.clear();
+            this.cutState = Blocks.AIR.defaultBlockState();
+            this.xLevel = 0;
+            this.yLevel = 0;
+            this.zLevel = 0;
+            this.shapeCache = null;
+            this.dirty = false;
+            this.syncTimer = 0;
+            return;
+        }
         this.entries.clear();
         this.shapeCache = null;
         if (tag.contains(TAG_ENTRIES, Tag.TAG_LIST)) {
@@ -731,6 +765,23 @@ public class CutBlockEntity extends BlockEntity {
             return new CutBlockData(Blocks.AIR.defaultBlockState(), (byte) 0, (byte) 0, (byte) 0);
         }
         CompoundTag bet = tag.contains("BlockEntityTag", Tag.TAG_COMPOUND) ? tag.getCompound("BlockEntityTag") : tag;
+        // Entriesがある場合は先頭エントリを代表として返す (表示用)。複数復元は readEntriesFromStack を使う
+        if (bet.contains(TAG_ENTRIES, Tag.TAG_LIST)) {
+            net.minecraft.nbt.ListTag list = bet.getList(TAG_ENTRIES, Tag.TAG_COMPOUND);
+            if (!list.isEmpty()) {
+                CompoundTag entryTag = list.getCompound(0);
+                if (entryTag.contains(TAG_STATE, Tag.TAG_COMPOUND)) {
+                    BlockState s = readBlockStateFallback(entryTag.getCompound(TAG_STATE));
+                    int[] bounds = entryTag.getIntArray(TAG_BOUNDS);
+                    if (s != null && !s.isAir() && bounds.length >= 6) {
+                        byte xl = sizeToLevel(bounds[3] - bounds[0]);
+                        byte yl = sizeToLevel(bounds[4] - bounds[1]);
+                        byte zl = sizeToLevel(bounds[5] - bounds[2]);
+                        return new CutBlockData(s, xl, yl, zl);
+                    }
+                }
+            }
+        }
         BlockState state = Blocks.AIR.defaultBlockState();
         byte xLevel = 0, yLevel = 0, zLevel = 0;
         if (bet.contains(TAG_CUT_STATE, Tag.TAG_COMPOUND)) {
@@ -744,8 +795,10 @@ public class CutBlockEntity extends BlockEntity {
         else if (bet.contains(TAG_Y_LEVEL, Tag.TAG_INT)) yLevel = clampLevelStatic((byte) bet.getInt(TAG_Y_LEVEL));
         if (bet.contains(TAG_Z_LEVEL, Tag.TAG_BYTE)) zLevel = clampLevelStatic(bet.getByte(TAG_Z_LEVEL));
         else if (bet.contains(TAG_Z_LEVEL, Tag.TAG_INT)) zLevel = clampLevelStatic((byte) bet.getInt(TAG_Z_LEVEL));
-        // Bounds配列があればサイズから逆算 (単一エントリのドロップ由来)
-        if (bet.contains(TAG_BOUNDS, Tag.TAG_INT_ARRAY) && !bet.contains(TAG_X_LEVEL, Tag.TAG_BYTE) && !bet.contains(TAG_X_LEVEL, Tag.TAG_INT)) {
+        // Bounds配列があればサイズから逆算 (単一エントリのドロップ由来でXLevelが無い場合のみ)
+        if (bet.contains(TAG_BOUNDS, Tag.TAG_INT_ARRAY) && !bet.contains(TAG_X_LEVEL, Tag.TAG_BYTE) && !bet.contains(TAG_X_LEVEL, Tag.TAG_INT)
+                && !bet.contains(TAG_Y_LEVEL, Tag.TAG_BYTE) && !bet.contains(TAG_Y_LEVEL, Tag.TAG_INT)
+                && !bet.contains(TAG_Z_LEVEL, Tag.TAG_BYTE) && !bet.contains(TAG_Z_LEVEL, Tag.TAG_INT)) {
             int[] b = bet.getIntArray(TAG_BOUNDS);
             if (b.length >= 6) {
                 xLevel = sizeToLevel(b[3] - b[0]);
@@ -754,6 +807,33 @@ public class CutBlockEntity extends BlockEntity {
             }
         }
         return new CutBlockData(state, xLevel, yLevel, zLevel);
+    }
+
+    /**
+     * ItemStackから Entries リストを読み取る (複数復元用)。空なら空リスト。
+     */
+    public static java.util.List<CutEntry> readEntriesFromStack(net.minecraft.world.item.ItemStack stack) {
+        java.util.List<CutEntry> result = new java.util.ArrayList<>();
+        if (stack == null || stack.isEmpty()) return result;
+        CompoundTag tag = stack.getTag();
+        if (tag == null) return result;
+        CompoundTag bet = tag.contains("BlockEntityTag", Tag.TAG_COMPOUND) ? tag.getCompound("BlockEntityTag") : tag;
+        if (!bet.contains(TAG_ENTRIES, Tag.TAG_LIST)) return result;
+        net.minecraft.nbt.ListTag list = bet.getList(TAG_ENTRIES, Tag.TAG_COMPOUND);
+        for (int i = 0; i < list.size(); i++) {
+            CompoundTag entryTag = list.getCompound(i);
+            if (!entryTag.contains(TAG_STATE, Tag.TAG_COMPOUND)) continue;
+            BlockState s = readBlockStateFallback(entryTag.getCompound(TAG_STATE));
+            if (s == null || s.isAir()) continue;
+            int[] bounds = entryTag.getIntArray(TAG_BOUNDS);
+            if (bounds.length < 6) continue;
+            for (int j = 0; j < 6; j++) {
+                if (bounds[j] < 0) bounds[j] = 0;
+                if (bounds[j] > 16) bounds[j] = 16;
+            }
+            result.add(new CutEntry(s, bounds));
+        }
+        return result;
     }
 
     private static byte clampLevelStatic(byte v) {
