@@ -1,0 +1,18 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "",
+  "ingredients": [
+    { "item": "minecraft:iron_ingot" },
+    { "item": "minecraft:iron_ingot" },
+    { "item": "minecraft:iron_ingot" },
+    { "item": "minecraft:iron_ingot" }
+  ],
+  "result": {
+    "item": "bamboomod:shuriken_iron",
+    "count": 16
+  },
+  "experience": 0.5,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

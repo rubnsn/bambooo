@@ -58,6 +58,9 @@ public class BambooMod {
     /** RecipeType 用 DeferredRegister (囲炉裏レシピ) */
     public static final DeferredRegister<net.minecraft.world.item.crafting.RecipeType<?>> RECIPE_TYPES = DeferredRegister
             .create(ForgeRegistries.RECIPE_TYPES, MODID);
+    /** Enchantment 用 DeferredRegister (腕輪エンチャント13種) */
+    public static final DeferredRegister<net.minecraft.world.item.enchantment.Enchantment> ENCHANTMENTS = DeferredRegister
+            .create(Registries.ENCHANTMENT, MODID);
 
     /** 囲炉裏レシピの Serializer */
     public static final RegistryObject<net.minecraft.world.item.crafting.RecipeSerializer<ruby.bamboo.crafting.cooking.BambooCampfireRecipe>> CAMPFIRE_SERIALIZER = RECIPE_SERIALIZERS
@@ -116,6 +119,7 @@ public class BambooMod {
         ENTITY_TYPES.register(modEventBus);
         RECIPE_SERIALIZERS.register(modEventBus);
         RECIPE_TYPES.register(modEventBus);
+        ENCHANTMENTS.register(modEventBus);
 
         // コンテンツ登録 (DeferredRegisterへの登録は静的初期化時に実行される)
         BambooBlocks.init();
@@ -124,6 +128,7 @@ public class BambooMod {
         BambooMenus.init();
         BambooParticles.init();
         BambooEntities.init();
+        ruby.bamboo.core.init.BambooEnchantments.init();
 
         // レシピ登録 (FMLCommonSetupEvent で実行)
         ruby.bamboo.crafting.BambooRecipes.register(modEventBus);
