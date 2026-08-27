@@ -197,5 +197,7 @@
   "bamboomod.config.miniature.render.maxDistance": "Max distance",
   "bamboomod.config.miniature.render.placeholder": "Placeholder mode",
   "bamboomod.config.miniature.render.lodShell": "Shell LOD on boundary",
-  "block.bamboomod.cut_block": "Cut Block"
+  "block.bamboomod.cut_block": "Cut Block",
+  "block.bamboomod.spring_block": "Spring Block",
+  "block.bamboomod.spring_water": "Hot Spring Water"
 }

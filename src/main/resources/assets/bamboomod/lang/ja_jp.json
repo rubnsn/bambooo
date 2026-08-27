@@ -197,5 +197,7 @@
   "bamboomod.config.miniature.render.maxDistance": "詳細描画距離",
   "bamboomod.config.miniature.render.placeholder": "超過時の表示",
   "bamboomod.config.miniature.render.lodShell": "境界で殻のみ描画(滑らか)",
-  "block.bamboomod.cut_block": "カットブロック"
+  "block.bamboomod.cut_block": "カットブロック",
+  "block.bamboomod.spring_block": "源泉",
+  "block.bamboomod.spring_water": "温泉水"
 }

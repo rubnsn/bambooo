@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "spring_level=0": { "model": "minecraft:block/water" },
+    "spring_level=1": { "model": "minecraft:block/water" },
+    "spring_level=2": { "model": "minecraft:block/water" },
+    "spring_level=3": { "model": "minecraft:block/water" },
+    "spring_level=4": { "model": "minecraft:block/water" },
+    "spring_level=5": { "model": "minecraft:block/water" },
+    "spring_level=6": { "model": "minecraft:block/water" },
+    "spring_level=7": { "model": "minecraft:block/water" },
+    "spring_level=8": { "model": "minecraft:block/water" }
+  }
+}

@@ -120,6 +120,8 @@ public final class BambooClientSetup {
                     ruby.bamboo.client.renderer.CutBlockRenderer::new);
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.CUT_BLOCK.get(), RenderType.cutout());
 
+            // 温泉水 — 半透明 (Phase B)
+            ItemBlockRenderTypes.setRenderLayer(BambooBlocks.SPRING_WATER.get(), RenderType.translucent());
             // 布団用椅子エンティティ (huton_chair) — 不可視レンダラ。未登録だと shouldRender で NPE
             net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.HUTON_CHAIR.get(),
                     ruby.bamboo.client.renderer.ChairRenderer::new);

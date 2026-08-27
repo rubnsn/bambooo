@@ -14,12 +14,14 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
 import ruby.bamboo.core.config.MiniatureConfig;
+import ruby.bamboo.core.config.SpringConfig;
 import ruby.bamboo.core.init.BambooBlockEntities;
 import ruby.bamboo.core.init.BambooBlocks;
 import ruby.bamboo.core.init.BambooEntities;
 import ruby.bamboo.core.init.BambooItems;
 import ruby.bamboo.core.init.BambooMenus;
 import ruby.bamboo.core.init.BambooParticles;
+import ruby.bamboo.core.init.SpringFluids;
 
 /**
  * BambooMod 1.20.1 移植版 メインクラス。
@@ -61,6 +63,12 @@ public class BambooMod {
     /** Enchantment 用 DeferredRegister (腕輪エンチャント13種) */
     public static final DeferredRegister<net.minecraft.world.item.enchantment.Enchantment> ENCHANTMENTS = DeferredRegister
             .create(Registries.ENCHANTMENT, MODID);
+    /** FluidType 用 DeferredRegister (温泉) */
+    public static final DeferredRegister<net.minecraftforge.fluids.FluidType> FLUID_TYPES = DeferredRegister
+            .create(ForgeRegistries.Keys.FLUID_TYPES, MODID);
+    /** Fluid 用 DeferredRegister (温泉) */
+    public static final DeferredRegister<net.minecraft.world.level.material.Fluid> FLUIDS = DeferredRegister
+            .create(ForgeRegistries.FLUIDS, MODID);
 
     /** 囲炉裏レシピの Serializer */
     public static final RegistryObject<net.minecraft.world.item.crafting.RecipeSerializer<ruby.bamboo.crafting.cooking.BambooCampfireRecipe>> CAMPFIRE_SERIALIZER = RECIPE_SERIALIZERS
@@ -75,9 +83,18 @@ public class BambooMod {
     public static final RegistryObject<net.minecraft.world.item.crafting.RecipeType<ruby.bamboo.crafting.grind.BambooGrindRecipe>> MILLSTONE_RECIPE_TYPE = RECIPE_TYPES
             .register("millstone", () -> net.minecraft.world.item.crafting.RecipeType.simple(new net.minecraft.resources.ResourceLocation(MODID, "millstone")));
 
-    /** カットブロックレシピの Serializer (プランA: B+K 動的レシピ) */
+<    /** カットブロックレシピの Serializer (プランA: B+K 動的レシピ) */
     public static final RegistryObject<net.minecraft.world.item.crafting.RecipeSerializer<ruby.bamboo.crafting.CutBlockRecipe>> CUT_BLOCK_SERIALIZER = RECIPE_SERIALIZERS
             .register("cut_block", () -> new ruby.bamboo.crafting.CutBlockRecipe.Serializer());
+    /** 温泉 FluidType */
+    public static final RegistryObject<net.minecraftforge.fluids.FluidType> HOT_SPRING_TYPE = FLUID_TYPES
+            .register("bamboo_hot_spring", SpringFluids::createHotSpringType);
+    /** 温泉 Fluid Source */
+    public static final RegistryObject<net.minecraftforge.fluids.ForgeFlowingFluid> SPRING_WATER_SOURCE = FLUIDS
+            .register("spring_water", () -> new net.minecraftforge.fluids.ForgeFlowingFluid.Source(SpringFluids.props()));
+    /** 温泉 Fluid Flowing */
+    public static final RegistryObject<net.minecraftforge.fluids.ForgeFlowingFluid> SPRING_WATER_FLOWING = FLUIDS
+            .register("spring_water_flowing", () -> new net.minecraftforge.fluids.ForgeFlowingFluid.Flowing(SpringFluids.props()));
 
     /** 旧 EnumCreateTab.TAB_BAMBOO の後継。アイコンはたけのこ(仮)。 */
     public static final RegistryObject<CreativeModeTab> BAMBOO_TAB = CREATIVE_TABS.register("bamboo",
@@ -111,6 +128,9 @@ public class BambooMod {
                     () -> new net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory(
                             (mc, screen) -> new ruby.bamboo.client.gui.MiniatureConfigScreen(screen)));
         }
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                net.minecraftforge.fml.config.ModConfig.Type.COMMON,
+                SpringConfig.COMMON_SPEC, "bamboomod-spring.toml");
         IEventBus modEventBus = context.getModEventBus();
 
         // 登録順: BLOCKS/ITEMS を先に接続してから各初期化クラスで register 呼び出し
@@ -124,6 +144,8 @@ public class BambooMod {
         RECIPE_SERIALIZERS.register(modEventBus);
         RECIPE_TYPES.register(modEventBus);
         ENCHANTMENTS.register(modEventBus);
+        FLUID_TYPES.register(modEventBus);
+        FLUIDS.register(modEventBus);
 
         // コンテンツ登録 (DeferredRegisterへの登録は静的初期化時に実行される)
         BambooBlocks.init();
