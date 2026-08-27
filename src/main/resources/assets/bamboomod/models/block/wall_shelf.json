@@ -1,8 +1,8 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "bamboomod:block/wall_shelf",
-    "all": "bamboomod:block/wall_shelf"
+    "particle": "minecraft:block/oak_planks",
+    "all": "minecraft:block/oak_planks"
   },
   "elements": [
     {
