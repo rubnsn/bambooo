@@ -50,3 +50,4 @@ opencode.json
 mc.code-workspace
 # エージェント編集禁止: .gitignore の変更はユーザー確認必須 (Agent: DO NOT EDIT without user approval)
 AGENTS.md
+net/

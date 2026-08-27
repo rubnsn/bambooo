@@ -225,9 +225,25 @@ public class CutBlockEntity extends BlockEntity {
         if (fz < 0) fz = 0; if (fz > 1) fz = 1;
         int xOff, yOff, zOff;
         if (size == 8) {
-            xOff = fx > 0.5 ? 8 : 0;
-            yOff = fy > 0.5 ? 8 : 0;
-            zOff = fz > 0.5 ? 8 : 0;
+            // 8は4刻みで3択(0,4,8)。ヒット最近傍で選択し中央(4)も可能に
+            // 各軸で候補中心(4,8,12)との距離が最小のものを選ぶ (ブレークポイント 6,10)
+            double x16 = fx * 16, y16 = fy * 16, z16 = fz * 16;
+            int bestX = 0; double bestXd = Double.MAX_VALUE;
+            for (int cand : new int[]{0, 4, 8}) {
+                double d = Math.abs((cand + 4) - x16);
+                if (d < bestXd) { bestXd = d; bestX = cand; }
+            }
+            int bestY = 0; double bestYd = Double.MAX_VALUE;
+            for (int cand : new int[]{0, 4, 8}) {
+                double d = Math.abs((cand + 4) - y16);
+                if (d < bestYd) { bestYd = d; bestY = cand; }
+            }
+            int bestZ = 0; double bestZd = Double.MAX_VALUE;
+            for (int cand : new int[]{0, 4, 8}) {
+                double d = Math.abs((cand + 4) - z16);
+                if (d < bestZd) { bestZd = d; bestZ = cand; }
+            }
+            xOff = bestX; yOff = bestY; zOff = bestZ;
         } else {
             if (fx < 0.25) xOff = 0; else if (fx < 0.5) xOff = 4; else if (fx < 0.75) xOff = 8; else xOff = 12;
             if (fy < 0.25) yOff = 0; else if (fy < 0.5) yOff = 4; else if (fy < 0.75) yOff = 8; else yOff = 12;
@@ -276,13 +292,38 @@ public class CutBlockEntity extends BlockEntity {
             if (candidate == null) return null;
             if (!containsVec(insidePos, bePos, candidate)) return null;
         } else if (tier == Tier.EIGHT) {
-            int xo = (int)Math.floor(fx * 2) * 8;
-            int yo = (int)Math.floor(fy * 2) * 8;
-            int zo = (int)Math.floor(fz * 2) * 8;
-            if (xo < 0) xo = 0; if (xo > 8) xo = 8;
-            if (yo < 0) yo = 0; if (yo > 8) yo = 8;
-            if (zo < 0) zo = 0; if (zo > 8) zo = 8;
-            candidate = new int[]{xo, yo, zo, xo + 8, yo + 8, zo + 8};
+            // 8x8x8 は 4刻み(0,4,8)で最近傍探索。中央配置も許可しハーフ面上に9通りを実現
+            int bestXo = -1, bestYo = -1, bestZo = -1;
+            double bestDist = Double.MAX_VALUE;
+            double ix = fx * 16, iy = fy * 16, iz = fz * 16;
+            for (int xo : new int[]{0, 4, 8}) {
+                for (int yo : new int[]{0, 4, 8}) {
+                    for (int zo : new int[]{0, 4, 8}) {
+                        int[] cand = new int[]{xo, yo, zo, xo + 8, yo + 8, zo + 8};
+                        if (!containsVec(insidePos, bePos, cand)) continue;
+                        if (!be.canAddEntry(cand)) continue;
+                        double cx = xo + 4, cy = yo + 4, cz = zo + 4;
+                        double dx = cx - ix, dy = cy - iy, dz = cz - iz;
+                        double d = dx * dx + dy * dy + dz * dz;
+                        if (d < bestDist) {
+                            bestDist = d;
+                            bestXo = xo; bestYo = yo; bestZo = zo;
+                        }
+                    }
+                }
+            }
+            if (bestXo >= 0) {
+                candidate = new int[]{bestXo, bestYo, bestZo, bestXo + 8, bestYo + 8, bestZo + 8};
+            } else {
+                // フォールバック: 旧ロジック(0,8)のみで再試行
+                int xo = (int)Math.floor(fx * 2) * 8;
+                int yo = (int)Math.floor(fy * 2) * 8;
+                int zo = (int)Math.floor(fz * 2) * 8;
+                if (xo < 0) xo = 0; if (xo > 8) xo = 8;
+                if (yo < 0) yo = 0; if (yo > 8) yo = 8;
+                if (zo < 0) zo = 0; if (zo > 8) zo = 8;
+                candidate = new int[]{xo, yo, zo, xo + 8, yo + 8, zo + 8};
+            }
         } else if (tier == Tier.QUARTER) {
             int xo = (int)Math.floor(fx * 4) * 4;
             int yo = (int)Math.floor(fy * 4) * 4;
@@ -387,10 +428,33 @@ public class CutBlockEntity extends BlockEntity {
             candidate = computeHalfBounds(insidePlace, placePos, face);
             if (candidate == null) candidate = computeHalfBounds(hitVec, placePos, face);
         } else if (tier == Tier.EIGHT) {
-            int xo = (int)Math.floor(fx * 2) * 8;
-            int yo = (int)Math.floor(fy * 2) * 8;
-            int zo = (int)Math.floor(fz * 2) * 8;
-            candidate = new int[]{xo, yo, zo, xo + 8, yo + 8, zo + 8};
+            int bestXo = -1, bestYo = -1, bestZo = -1;
+            double bestDist = Double.MAX_VALUE;
+            double ix = fx * 16, iy = fy * 16, iz = fz * 16;
+            for (int xo : new int[]{0, 4, 8}) {
+                for (int yo : new int[]{0, 4, 8}) {
+                    for (int zo : new int[]{0, 4, 8}) {
+                        int[] cand = new int[]{xo, yo, zo, xo + 8, yo + 8, zo + 8};
+                        if (!containsVec(insidePlace, placePos, cand)) continue;
+                        if (!placeBe.canAddEntry(cand)) continue;
+                        double cx = xo + 4, cy = yo + 4, cz = zo + 4;
+                        double dx = cx - ix, dy = cy - iy, dz = cz - iz;
+                        double d = dx * dx + dy * dy + dz * dz;
+                        if (d < bestDist) {
+                            bestDist = d;
+                            bestXo = xo; bestYo = yo; bestZo = zo;
+                        }
+                    }
+                }
+            }
+            if (bestXo >= 0) {
+                candidate = new int[]{bestXo, bestYo, bestZo, bestXo + 8, bestYo + 8, bestZo + 8};
+            } else {
+                int xo = (int)Math.floor(fx * 2) * 8;
+                int yo = (int)Math.floor(fy * 2) * 8;
+                int zo = (int)Math.floor(fz * 2) * 8;
+                candidate = new int[]{xo, yo, zo, xo + 8, yo + 8, zo + 8};
+            }
         } else if (tier == Tier.QUARTER) {
             int xo = (int)Math.floor(fx * 4) * 4;
             int yo = (int)Math.floor(fy * 4) * 4;
@@ -684,13 +748,13 @@ public class CutBlockEntity extends BlockEntity {
         java.util.List<Integer> yOffsets = new java.util.ArrayList<>();
         java.util.List<Integer> zOffsets = new java.util.ArrayList<>();
         if (xSize == 16) xOffsets.add(0);
-        else if (xSize == 8) { xOffsets.add(0); xOffsets.add(8); }
+        else if (xSize == 8) { xOffsets.add(0); xOffsets.add(4); xOffsets.add(8); }
         else { xOffsets.add(0); xOffsets.add(4); xOffsets.add(8); xOffsets.add(12); }
         if (ySize == 16) yOffsets.add(0);
-        else if (ySize == 8) { yOffsets.add(0); yOffsets.add(8); }
+        else if (ySize == 8) { yOffsets.add(0); yOffsets.add(4); yOffsets.add(8); }
         else { yOffsets.add(0); yOffsets.add(4); yOffsets.add(8); yOffsets.add(12); }
         if (zSize == 16) zOffsets.add(0);
-        else if (zSize == 8) { zOffsets.add(0); zOffsets.add(8); }
+        else if (zSize == 8) { zOffsets.add(0); zOffsets.add(4); zOffsets.add(8); }
         else { zOffsets.add(0); zOffsets.add(4); zOffsets.add(8); zOffsets.add(12); }
 
         double hitX = hitVec.x - pos.getX();
@@ -755,8 +819,13 @@ public class CutBlockEntity extends BlockEntity {
         if (xSize != 16) {
             if (canUseX) {
                 if (xSize == 8) {
-                    minX = fracX > 0.5 ? 8 : 0;
-                    maxX = minX + 8;
+                    double x16 = fracX * 16;
+                    int best = 0; double bestD = Double.MAX_VALUE;
+                    for (int cand : new int[]{0, 4, 8}) {
+                        double d = Math.abs((cand + 4) - x16);
+                        if (d < bestD) { bestD = d; best = cand; }
+                    }
+                    minX = best; maxX = minX + 8;
                 } else if (xSize == 4) {
                     if (fracX < 0.25) minX = 0;
                     else if (fracX < 0.5) minX = 4;
@@ -773,8 +842,13 @@ public class CutBlockEntity extends BlockEntity {
         if (ySize != 16) {
             if (canUseY) {
                 if (ySize == 8) {
-                    minY = fracY > 0.5 ? 8 : 0;
-                    maxY = minY + 8;
+                    double y16 = fracY * 16;
+                    int best = 0; double bestD = Double.MAX_VALUE;
+                    for (int cand : new int[]{0, 4, 8}) {
+                        double d = Math.abs((cand + 4) - y16);
+                        if (d < bestD) { bestD = d; best = cand; }
+                    }
+                    minY = best; maxY = minY + 8;
                 } else if (ySize == 4) {
                     if (fracY < 0.25) minY = 0;
                     else if (fracY < 0.5) minY = 4;
@@ -791,8 +865,13 @@ public class CutBlockEntity extends BlockEntity {
         if (zSize != 16) {
             if (canUseZ) {
                 if (zSize == 8) {
-                    minZ = fracZ > 0.5 ? 8 : 0;
-                    maxZ = minZ + 8;
+                    double z16 = fracZ * 16;
+                    int best = 0; double bestD = Double.MAX_VALUE;
+                    for (int cand : new int[]{0, 4, 8}) {
+                        double d = Math.abs((cand + 4) - z16);
+                        if (d < bestD) { bestD = d; best = cand; }
+                    }
+                    minZ = best; maxZ = minZ + 8;
                 } else if (zSize == 4) {
                     if (fracZ < 0.25) minZ = 0;
                     else if (fracZ < 0.5) minZ = 4;
