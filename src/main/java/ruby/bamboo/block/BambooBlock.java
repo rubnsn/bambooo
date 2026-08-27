@@ -2,6 +2,7 @@ package ruby.bamboo.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -14,6 +15,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import ruby.bamboo.core.init.BambooBlocks;
@@ -48,7 +50,24 @@ public class BambooBlock extends BushBlock implements BonemealableBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        return SHAPE;
+        Vec3 off = state.getOffset(level, pos);
+        return SHAPE.move(off.x, 0.0D, off.z);
+    }
+
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
+        Vec3 off = state.getOffset(level, pos);
+        return SHAPE.move(off.x, 0.0D, off.z);
+    }
+
+    /**
+     * 根本座標で束ねたXZ揺らぎ: 同一 x,z 柱の全段が同じ seed/offset を共有し、柱が折れず直立する。
+     * バニラ BambooStalkBlock は Y を含むため段ごとにずれるが、本 mod の 1.10.2 由来の太い竹(12px)は
+     * ずれが目立つため Y=0 固定で統一する。DoublePlantBlock#getSeed と同趣旨。
+     */
+    @Override
+    public long getSeed(BlockState state, BlockPos pos) {
+        return Mth.getSeed(pos.getX(), 0, pos.getZ());
     }
 
     @Override

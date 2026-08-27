@@ -99,11 +99,12 @@ public final class BambooBlocks {
 
     // ===== 第4弾: シンプル植物 (竹・たけのこ・稲・さくら系) =====
 
-    /** 竹ブロック (旧 bamboo)。BlockItem無し (ドロップは別アイテム bamboo、植え付けは bamboo_shoot) */
+    /** 竹ブロック (旧 bamboo)。BlockItem無し (ドロップは別アイテム bamboo、植え付けは bamboo_shoot)。XZオフセット(seed揺らぎ)あり */
     public static final RegistryObject<BambooBlock> BAMBOO = registerNoItem("bamboo",
             () -> new BambooBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.PLANT).sound(SoundType.BAMBOO)
-                    .strength(0.5f).randomTicks().noOcclusion()));
+                    .strength(0.5f).randomTicks().noOcclusion().dynamicShape()
+                    .offsetType(BlockBehaviour.OffsetType.XZ)));
 
     /** たけのこ (旧 bamboo_shoot / shoot) */
     public static final RegistryObject<BambooShootBlock> BAMBOO_SHOOT = register("bamboo_shoot",
