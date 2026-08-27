@@ -1,36 +1,17 @@
-﻿{
+{
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
-  "ingredients": [
-      {
-        "item": "minecraft:sand"
-      },
-      {
-        "item": "minecraft:sand"
-      },
-      {
-        "item": "minecraft:sand"
-      },
-      {
-        "item": "minecraft:sand"
-      },
-      {
-        "item": "minecraft:sand"
-      },
-      {
-        "item": "minecraft:sand"
-      },
-      {
-        "item": "minecraft:sand"
-      },
-      {
-        "item": "minecraft:sand"
-      },
-      {
-        "item": "minecraft:white_dye"
-      }
+  "pattern": [
+    "XXX",
+    "X X",
+    "XXX"
   ],
+  "key": {
+    "X": {
+      "item": "minecraft:sand"
+    }
+  },
   "result": {
     "item": "bamboomod:plaster",
     "count": 8

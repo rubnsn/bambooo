@@ -2,17 +2,15 @@
   "type": "bamboomod:campfire",
   "category": "combat",
   "group": "",
-  "ingredients": [
-    {
-      "tag": "forge:bamboo"
-    },
-    {
-      "tag": "forge:bamboo"
-    },
-    {
+  "pattern": [
+    "B",
+    "B"
+  ],
+  "key": {
+    "B": {
       "tag": "forge:bamboo"
     }
-  ],
+  },
   "result": {
     "item": "bamboomod:bambooarrow",
     "count": 8

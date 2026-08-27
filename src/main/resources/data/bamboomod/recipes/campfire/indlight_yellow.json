@@ -2,35 +2,19 @@
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
-  "ingredients": [
-    {
+  "pattern": [
+    "XXX",
+    "XYX",
+    "XXX"
+  ],
+  "key": {
+    "X": {
       "item": "minecraft:yellow_stained_glass"
     },
-    {
-      "item": "minecraft:yellow_stained_glass"
-    },
-    {
-      "item": "minecraft:yellow_stained_glass"
-    },
-    {
-      "item": "minecraft:yellow_stained_glass"
-    },
-    {
-      "item": "minecraft:yellow_stained_glass"
-    },
-    {
-      "item": "minecraft:yellow_stained_glass"
-    },
-    {
-      "item": "minecraft:yellow_stained_glass"
-    },
-    {
-      "item": "minecraft:yellow_stained_glass"
-    },
-    {
+    "Y": {
       "item": "minecraft:glowstone_dust"
     }
-  ],
+  },
   "result": {
     "item": "bamboomod:indlight_yellow",
     "count": 12

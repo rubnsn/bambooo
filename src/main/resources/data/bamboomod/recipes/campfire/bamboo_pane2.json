@@ -2,20 +2,18 @@
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
-  "ingredients": [
-      {
-        "item": "bamboomod:bamboo"
-      },
-      {
-        "item": "bamboomod:bamboo_pane"
-      },
-      {
-        "item": "bamboomod:bamboo"
-      },
-      {
-        "item": "bamboomod:bamboo_pane"
-      }
+  "pattern": [
+    "XYX",
+    "XYX"
   ],
+  "key": {
+    "X": {
+      "item": "bamboomod:bamboo"
+    },
+    "Y": {
+      "item": "bamboomod:bamboo_pane"
+    }
+  },
   "result": {
     "item": "bamboomod:bamboo_pane2",
     "count": 8

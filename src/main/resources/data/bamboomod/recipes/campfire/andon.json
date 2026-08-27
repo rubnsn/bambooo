@@ -1,39 +1,25 @@
-﻿{
+{
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
-  "ingredients": [
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:paper"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:torch"
-      },
-      {
-        "item": "minecraft:stick"
-      }
+  "pattern": [
+    "XXX",
+    "XPX",
+    "XYX"
   ],
+  "key": {
+    "X": {
+      "item": "minecraft:stick"
+    },
+    "Y": {
+      "item": "minecraft:torch"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    }
+  },
   "result": {
-    "item": "bamboomod:andon",
-    "count": 1
+    "item": "bamboomod:andon"
   },
   "experience": 0.35,
   "cookingtime": 200,

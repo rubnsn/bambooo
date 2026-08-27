@@ -2,16 +2,19 @@
   "type": "bamboomod:campfire",
   "category": "misc",
   "group": "",
-  "ingredients": [
-    { "item": "minecraft:iron_ingot" },
-    { "item": "minecraft:iron_ingot" },
-    { "item": "minecraft:iron_ingot" },
-    { "item": "minecraft:iron_ingot" },
-    { "item": "minecraft:string" },
-    { "item": "minecraft:string" },
-    { "item": "minecraft:string" },
-    { "item": "minecraft:string" }
+  "pattern": [
+    "XXY",
+    "X Y",
+    "YYY"
   ],
+  "key": {
+    "X": {
+      "item": "minecraft:iron_ingot"
+    },
+    "Y": {
+      "tag": "forge:leather"
+    }
+  },
   "result": {
     "item": "bamboomod:ninja_bracelet"
   },

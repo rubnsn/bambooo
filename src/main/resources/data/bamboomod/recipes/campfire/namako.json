@@ -2,35 +2,19 @@
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
-  "ingredients": [
-      {
-        "item": "bamboomod:plaster"
-      },
-      {
-        "item": "bamboomod:kawara"
-      },
-      {
-        "item": "bamboomod:plaster"
-      },
-      {
-        "item": "bamboomod:kawara"
-      },
-      {
-        "item": "bamboomod:bamboo"
-      },
-      {
-        "item": "bamboomod:plaster"
-      },
-      {
-        "item": "bamboomod:kawara"
-      },
-      {
-        "item": "bamboomod:plaster"
-      },
-      {
-        "item": "bamboomod:kawara"
-      }
+  "pattern": [
+    "XYX",
+    "Y Y",
+    "XYX"
   ],
+  "key": {
+    "X": {
+      "item": "bamboomod:plaster"
+    },
+    "Y": {
+      "item": "bamboomod:kawara"
+    }
+  },
   "result": {
     "item": "bamboomod:namako",
     "count": 8

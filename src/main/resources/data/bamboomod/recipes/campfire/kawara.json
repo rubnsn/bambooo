@@ -1,36 +1,17 @@
-﻿{
+{
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
-  "ingredients": [
-      {
-        "item": "minecraft:brick"
-      },
-      {
-        "item": "minecraft:brick"
-      },
-      {
-        "item": "minecraft:brick"
-      },
-      {
-        "item": "minecraft:brick"
-      },
-      {
-        "item": "minecraft:brick"
-      },
-      {
-        "item": "minecraft:brick"
-      },
-      {
-        "item": "minecraft:brick"
-      },
-      {
-        "item": "minecraft:brick"
-      },
-      {
-        "item": "minecraft:black_dye"
-      }
+  "pattern": [
+    "XXX",
+    "X X",
+    "XXX"
   ],
+  "key": {
+    "X": {
+      "item": "minecraft:brick"
+    }
+  },
   "result": {
     "item": "bamboomod:kawara",
     "count": 8

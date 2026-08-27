@@ -2,12 +2,16 @@
   "type": "bamboomod:campfire",
   "category": "misc",
   "group": "",
-  "ingredients": [
-    { "item": "minecraft:iron_ingot" },
-    { "item": "minecraft:iron_ingot" },
-    { "item": "minecraft:iron_ingot" },
-    { "item": "minecraft:iron_ingot" }
+  "pattern": [
+    " S ",
+    "S S",
+    " S "
   ],
+  "key": {
+    "S": {
+      "tag": "forge:ingots/iron"
+    }
+  },
   "result": {
     "item": "bamboomod:shuriken_iron",
     "count": 16

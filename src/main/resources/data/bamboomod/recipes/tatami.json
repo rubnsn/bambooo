@@ -2,8 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "pattern": [
-    "SS",
-    "SS"
+    " S ",
+    "S S",
+    " S "
   ],
   "key": {
     "S": {
