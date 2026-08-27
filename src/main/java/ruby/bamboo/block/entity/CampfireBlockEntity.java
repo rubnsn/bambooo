@@ -234,35 +234,38 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
             this.nowCookingResult = found.getResultItem(level.registryAccess()).copy();
             return true;
         }
-        // バニラ精錬フォールバック (素材1個時のみ)
-        net.minecraft.world.item.crafting.RecipeType<net.minecraft.world.item.crafting.SmeltingRecipe> smeltingType = net.minecraft.world.item.crafting.RecipeType.SMELTING;
-        if (countNonEmpty() == 1) {
-            ItemStack single = getSingleStack();
-            if (single != null) {
-                var smelting = level.getRecipeManager().getRecipeFor(smeltingType, new net.minecraft.world.SimpleContainer(single), level);
-                if (smelting.isPresent()) {
-                    ItemStack res = smelting.get().getResultItem(level.registryAccess());
-                    if (!res.isEmpty()) {
-                        // smeltingをBambooCampfireRecipe風にラップ
-                        NonNullList<net.minecraft.world.item.crafting.Ingredient> ing = NonNullList.create();
-                        ing.add(net.minecraft.world.item.crafting.Ingredient.of(single));
-                        this.entry = new BambooCampfireRecipe(
-                                new net.minecraft.resources.ResourceLocation("bamboomod", "smelting_" + smelting.get().getId().getPath()),
-                                "", BambooCampfireRecipe.Category.MISC, ing, res.copy(), smelting.get().getExperience(), 200, 200);
-                        this.nowCookingResult = res.copy();
-                        return true;
-                    }
-                }
-            }
-        }
         return false;
     }
 
     private BambooCampfireRecipe findRecipe() {
+        if (level == null) return null;
         // 0-8 をSimpleContainerで検索 (9サイズ。 fuel/result は含めない)
         net.minecraft.world.SimpleContainer inv = new net.minecraft.world.SimpleContainer(9);
         for (int i = 0; i < 9; i++) inv.setItem(i, items.get(i).copy());
-        return level.getRecipeManager().getRecipeFor(BambooMod.CAMPFIRE_RECIPE_TYPE.get(), inv, level).orElse(null);
+        var campfire = level.getRecipeManager().getRecipeFor(BambooMod.CAMPFIRE_RECIPE_TYPE.get(), inv, level);
+        if (campfire.isPresent()) {
+            return campfire.orElse(null);
+        }
+        // バニラ精錬フォールバック (素材1個時のみ) — canCooking/updateBurn 共通。cookingTime/experienceはバニラ準拠、fuelCostは囲炉裏固定200
+        if (countNonEmpty() == 1) {
+            ItemStack single = getSingleStack();
+            if (single != null) {
+                var smelting = level.getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING,
+                        new net.minecraft.world.SimpleContainer(single), level);
+                if (smelting.isPresent()) {
+                    var recipe = smelting.get();
+                    ItemStack res = recipe.getResultItem(level.registryAccess());
+                    if (!res.isEmpty()) {
+                        NonNullList<net.minecraft.world.item.crafting.Ingredient> ing = NonNullList.create();
+                        ing.add(net.minecraft.world.item.crafting.Ingredient.of(single));
+                        return new BambooCampfireRecipe(
+                                new net.minecraft.resources.ResourceLocation("bamboomod", "smelting_" + recipe.getId().getPath()),
+                                "", BambooCampfireRecipe.Category.MISC, ing, res.copy(), recipe.getExperience(), recipe.getCookingTime(), 200);
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private int countNonEmpty() {
