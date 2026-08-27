@@ -2,17 +2,22 @@ package ruby.bamboo.compat.jei;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.constants.RecipeTypes;
+import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
+import java.util.List;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.core.init.BambooBlocks;
+import ruby.bamboo.core.init.BambooItems;
 import ruby.bamboo.core.init.BambooMenus;
 import ruby.bamboo.crafting.cooking.BambooCampfireRecipe;
 import ruby.bamboo.crafting.grind.BambooGrindRecipe;
@@ -31,37 +36,73 @@ public class BambooJeiPlugin implements IModPlugin {
     }
 
     @Override
+    public void registerItemSubtypes(mezz.jei.api.registration.ISubtypeRegistration registration) {
+        // cut_block / miniature は NBT で区別されるため、JEI の重複警告を解消し正しく表示するために NBT をサブタイプとして扱う
+        try {
+            registration.useNbtForSubtypes(BambooBlocks.CUT_BLOCK.get().asItem());
+        } catch (Exception e) {}
+        try {
+            registration.useNbtForSubtypes(BambooBlocks.MINIATURE.get().asItem());
+        } catch (Exception e) {}
+        try {
+            // 袋やカットブロックの NBT バリアントを持つアイテムも念のため
+            registration.useNbtForSubtypes(BambooItems.SACK.get());
+        } catch (Exception e) {}
+    }
+
+    @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         IGuiHelper guiHelper = registration.getJeiHelpers().getGuiHelper();
         registration.addRecipeCategories(
                 new CampfireCategory(guiHelper),
-                new MillstoneCategory(guiHelper)
+                new MillstoneCategory(guiHelper),
+                new CutBlockCategory(guiHelper)
         );
     }
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         var minecraft = Minecraft.getInstance();
+        // JEI専用カットブロックレシピ (レベル未依存で生成可能)
+        List<net.minecraft.world.item.crafting.CraftingRecipe> cutJei = List.of();
+        try {
+            cutJei = CutBlockJeiRecipes.createJeiRecipes();
+            BambooMod.LOGGER.info("CutBlock JEI dummy recipes generated: {}", cutJei.size());
+        } catch (Exception e) {
+            BambooMod.LOGGER.warn("Failed to generate CutBlock JEI recipes", e);
+        }
+
         if (minecraft.level == null) {
-            // サーバ側やワールド未ロード時は登録できない。JEIはデータリロード時に再呼出されるためここではスキップ
-            // フォールバック: シングルサーバーがあればそちらから取得
             var server = minecraft.getSingleplayerServer();
             if (server != null) {
                 var mgr = server.getRecipeManager();
                 registration.addRecipes(CampfireCategory.TYPE, mgr.getAllRecipesFor(BambooMod.CAMPFIRE_RECIPE_TYPE.get()));
                 registration.addRecipes(MillstoneCategory.TYPE, mgr.getAllRecipesFor(BambooMod.MILLSTONE_RECIPE_TYPE.get()));
             }
+            // JEI表示専用
+            if (!cutJei.isEmpty()) {
+                registration.addRecipes(RecipeTypes.CRAFTING, cutJei);
+                registration.addRecipes(CutBlockCategory.TYPE, cutJei);
+                BambooMod.LOGGER.info("CutBlock JEI recipes registered to CRAFTING and cut_block (server fallback): {}", cutJei.size());
+            }
             return;
         }
         var mgr = minecraft.level.getRecipeManager();
         registration.addRecipes(CampfireCategory.TYPE, mgr.getAllRecipesFor(BambooMod.CAMPFIRE_RECIPE_TYPE.get()));
         registration.addRecipes(MillstoneCategory.TYPE, mgr.getAllRecipesFor(BambooMod.MILLSTONE_RECIPE_TYPE.get()));
+        if (!cutJei.isEmpty()) {
+            registration.addRecipes(RecipeTypes.CRAFTING, cutJei);
+            registration.addRecipes(CutBlockCategory.TYPE, cutJei);
+            BambooMod.LOGGER.info("CutBlock JEI recipes registered to CRAFTING and cut_block: {}", cutJei.size());
+        }
     }
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         registration.addRecipeCatalyst(new ItemStack(BambooBlocks.CAMPFIRE.get()), CampfireCategory.TYPE);
         registration.addRecipeCatalyst(new ItemStack(BambooBlocks.MILLSTONE.get()), MillstoneCategory.TYPE);
+        // カットブロック専用カテゴリの触媒は作業台のみ（左ペインに透明カットブロックが出ないように）
+        registration.addRecipeCatalyst(new ItemStack(net.minecraft.world.level.block.Blocks.CRAFTING_TABLE), CutBlockCategory.TYPE);
     }
 
     @Override
@@ -79,5 +120,18 @@ public class BambooJeiPlugin implements IModPlugin {
         registration.addRecipeTransferHandler(ruby.bamboo.gui.CampfireMenu.class, BambooMenus.CAMPFIRE.get(), CampfireCategory.TYPE, 0, 9, 11, 36);
         // 石臼: 0 入力1 → プレイヤーINV 3-38 (36スロット)
         registration.addRecipeTransferHandler(ruby.bamboo.gui.MillStoneMenu.class, BambooMenus.MILL_STONE.get(), MillstoneCategory.TYPE, 0, 1, 3, 36);
+    }
+
+    @Override
+    public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
+        // 空のカットブロック(透明)は入手不可ダミーなので JEI の材料リストから隠す
+        try {
+            var ingredientManager = runtime.getIngredientManager();
+            var empty = new ItemStack(BambooBlocks.CUT_BLOCK.get());
+            ingredientManager.removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, List.of(empty));
+            BambooMod.LOGGER.info("Hid empty cut_block from JEI ingredient list");
+        } catch (Exception e) {
+            BambooMod.LOGGER.warn("Failed to hide empty cut_block from JEI", e);
+        }
     }
 }
