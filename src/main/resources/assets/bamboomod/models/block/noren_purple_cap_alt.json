@@ -1,0 +1,8 @@
+﻿{
+  "parent": "minecraft:block/iron_bars_cap_alt",
+  "textures": {
+    "particle": "bamboomod:block/noren_purple",
+    "bars": "bamboomod:block/noren_purple",
+    "edge": "bamboomod:block/noren_purple"
+  }
+}

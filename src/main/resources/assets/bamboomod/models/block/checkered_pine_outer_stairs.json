@@ -1,0 +1,8 @@
+﻿{
+  "parent": "minecraft:block/outer_stairs",
+  "textures": {
+    "bottom": "bamboomod:block/checkered_pine",
+    "top": "bamboomod:block/checkered_pine",
+    "side": "bamboomod:block/checkered_pine"
+  }
+}

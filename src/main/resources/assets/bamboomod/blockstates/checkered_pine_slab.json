@@ -1,0 +1,7 @@
+﻿{
+  "variants": {
+    "type=bottom": { "model": "bamboomod:block/checkered_pine_slab" },
+    "type=top": { "model": "bamboomod:block/checkered_pine_slab_top" },
+    "type=double": { "model": "bamboomod:block/checkered_pine" }
+  }
+}

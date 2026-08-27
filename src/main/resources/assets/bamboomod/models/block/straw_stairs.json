@@ -1,0 +1,8 @@
+﻿{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "bamboomod:block/straw_block",
+    "top": "bamboomod:block/straw_block",
+    "side": "bamboomod:block/straw_block"
+  }
+}
