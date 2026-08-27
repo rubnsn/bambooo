@@ -85,6 +85,10 @@ public final class BambooItems {
     public static final RegistryObject<ruby.bamboo.item.NinjaBraceletItem> NINJA_BRACELET = register("ninja_bracelet",
             () -> new ruby.bamboo.item.NinjaBraceletItem(new Item.Properties().durability(384)));
 
+    /** 田んぼクワ (sakura PaddyFieldHoe。DIAMOND相当、maxStack 1) */
+    public static final RegistryObject<ruby.bamboo.item.PaddyFieldHoeItem> PADDY_FIELD_HOE = register("paddy_field_hoe",
+            () -> new ruby.bamboo.item.PaddyFieldHoeItem(new Item.Properties()));
+
     // ===== 弓矢 (旧 BambooBow + arrow 6種の 1.20.1 移植。アンチ矢はオミット) =====
 
     /** 竹弓 (旧 BambooBow)。耐久400 */

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "bamboomod:item/paddy_field_hoe"
+  }
+}
