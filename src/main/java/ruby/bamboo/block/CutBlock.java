@@ -535,6 +535,52 @@ public class CutBlock extends BaseEntityBlock {
                 level.playSound(null, pos, net.minecraft.sounds.SoundEvents.ITEM_PICKUP, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
                 return net.minecraft.world.InteractionResult.SUCCESS;
             }
+            // 手持ちがカットブロックなら設置を優先 (内部GUIより先)
+            if (!held.isEmpty() && held.is(ruby.bamboo.core.init.BambooBlocks.CUT_BLOCK.get().asItem())) {
+                CutBlockEntity.Tier tier = CutBlockEntity.getTierFromStack(held);
+                if (tier != CutBlockEntity.Tier.OTHER && tier != CutBlockEntity.Tier.FULL) {
+                    CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(held);
+                    if (!data.state().isAir()) {
+                        int[] cand = CutBlockEntity.getInsideCandidate(be, pos, hit.getLocation(), hit.getDirection(), tier);
+                        if (cand != null) {
+                            if (level.isClientSide) return net.minecraft.world.InteractionResult.SUCCESS;
+                            be.addEntry(data.state(), cand);
+                            if (!player.getAbilities().instabuild) held.shrink(1);
+                            level.sendBlockUpdated(pos, state, state, 3);
+                            level.playSound(null, pos, state.getSoundType(level, pos, player).getPlaceSound(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+                            return net.minecraft.world.InteractionResult.SUCCESS;
+                        }
+                    }
+                }
+                // 手持ちがカットブロックの場合は GUI を開かず設置試行のみで終了
+                return net.minecraft.world.InteractionResult.PASS;
+            }
+            // スニーク中は GUI を開かずバニラ設置に譲る
+            if (player.isShiftKeyDown()) {
+                return net.minecraft.world.InteractionResult.PASS;
+            }
+            // 内部ブロックの GUI 委譲 (TEなしのみ)
+            CutBlockEntity.CutEntry entry = findHitEntry(be, pos, hit);
+            BlockState inner = entry != null ? entry.state : be.getCutState();
+            if (inner == null || inner.isAir()) return net.minecraft.world.InteractionResult.PASS;
+            if (inner.hasBlockEntity()) return net.minecraft.world.InteractionResult.PASS;
+            // MenuProvider があれば開く (作業台等) — stillValid が cut_block を参照するようにラップ
+            var provider = getMenuProviderForCutBlock(level, pos, inner, entry != null ? entry.bounds : null);
+            if (provider != null) {
+                if (!level.isClientSide) {
+                    player.openMenu(provider);
+                }
+                return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
+            }
+            // フォールバック: 内部ブロックの use に委譲 (Grindstone/Stonecutter/Loom 等)
+            try {
+                net.minecraft.world.InteractionResult res = inner.use(level, player, hand, hit);
+                if (res != net.minecraft.world.InteractionResult.PASS) {
+                    return res;
+                }
+            } catch (Exception e) {
+                // 委譲先で例外が出ても無視して PASS
+            }
         }
         return net.minecraft.world.InteractionResult.PASS;
     }
@@ -543,5 +589,129 @@ public class CutBlock extends BaseEntityBlock {
     public BlockState updateShape(BlockState state, Direction dir, BlockState neighborState,
             LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
         return state;
+    }
+
+    /**
+     * 内部ブロックの MenuProvider をカットブロック用にラップ。
+     * バニラの stillValid が `level.getBlockState(pos).is(CRAFTING_TABLE)` 等で
+     * cut_block 位置のブロックをチェックするため、cut_block が該当 inner を含むか + 距離で判定する
+     * カスタム MenuProvider を返す。TEなしGUIのみ対象。
+     */
+    private static net.minecraft.world.MenuProvider getMenuProviderForCutBlock(Level level, BlockPos pos, BlockState inner, int[] bounds) {
+        // まず inner 自体の provider を取得し、無ければ null
+        var vanillaProvider = inner.getMenuProvider(level, pos);
+        if (vanillaProvider == null) return null;
+        net.minecraft.network.chat.Component title = vanillaProvider.getDisplayName();
+        // 作業台は最も需要が高いので専用ラップ (他は generic な距離チェックにフォールバック)
+        if (inner.is(net.minecraft.world.level.block.Blocks.CRAFTING_TABLE)) {
+            return new net.minecraft.world.SimpleMenuProvider((id, inv, pl) -> {
+                return new net.minecraft.world.inventory.CraftingMenu(id, inv, net.minecraft.world.inventory.ContainerLevelAccess.create(level, pos)) {
+                    @Override
+                    public boolean stillValid(net.minecraft.world.entity.player.Player p) {
+                        if (level.getBlockEntity(pos) instanceof CutBlockEntity be) {
+                            boolean has = be.getCutState().is(net.minecraft.world.level.block.Blocks.CRAFTING_TABLE);
+                            if (!has) {
+                                for (var e : be.getEntries()) {
+                                    if (e.state.is(net.minecraft.world.level.block.Blocks.CRAFTING_TABLE)) { has = true; break; }
+                                }
+                            }
+                            if (has) {
+                                double dx = p.getX() - (pos.getX() + 0.5);
+                                double dy = p.getY() - (pos.getY() + 0.5);
+                                double dz = p.getZ() - (pos.getZ() + 0.5);
+                                return dx * dx + dy * dy + dz * dz < 64.0;
+                            }
+                        }
+                        return false;
+                    }
+                };
+            }, title);
+        }
+        if (inner.is(net.minecraft.world.level.block.Blocks.STONECUTTER)) {
+            return new net.minecraft.world.SimpleMenuProvider((id, inv, pl) -> {
+                return new net.minecraft.world.inventory.StonecutterMenu(id, inv, net.minecraft.world.inventory.ContainerLevelAccess.create(level, pos)) {
+                    @Override
+                    public boolean stillValid(net.minecraft.world.entity.player.Player p) {
+                        if (level.getBlockEntity(pos) instanceof CutBlockEntity be) {
+                            boolean has = be.getCutState().is(net.minecraft.world.level.block.Blocks.STONECUTTER);
+                            if (!has) for (var e : be.getEntries()) if (e.state.is(net.minecraft.world.level.block.Blocks.STONECUTTER)) { has = true; break; }
+                            if (has) {
+                                double dx = p.getX() - (pos.getX() + 0.5);
+                                double dy = p.getY() - (pos.getY() + 0.5);
+                                double dz = p.getZ() - (pos.getZ() + 0.5);
+                                return dx*dx+dy*dy+dz*dz < 64.0;
+                            }
+                        }
+                        return false;
+                    }
+                };
+            }, title);
+        }
+        if (inner.is(net.minecraft.world.level.block.Blocks.GRINDSTONE)) {
+            return new net.minecraft.world.SimpleMenuProvider((id, inv, pl) -> {
+                return new net.minecraft.world.inventory.GrindstoneMenu(id, inv, net.minecraft.world.inventory.ContainerLevelAccess.create(level, pos)) {
+                    @Override
+                    public boolean stillValid(net.minecraft.world.entity.player.Player p) {
+                        if (level.getBlockEntity(pos) instanceof CutBlockEntity be) {
+                            boolean has = be.getCutState().is(net.minecraft.world.level.block.Blocks.GRINDSTONE);
+                            if (!has) for (var e : be.getEntries()) if (e.state.is(net.minecraft.world.level.block.Blocks.GRINDSTONE)) { has = true; break; }
+                            if (has) {
+                                double dx = p.getX() - (pos.getX() + 0.5);
+                                double dy = p.getY() - (pos.getY() + 0.5);
+                                double dz = p.getZ() - (pos.getZ() + 0.5);
+                                return dx*dx+dy*dy+dz*dz < 64.0;
+                            }
+                        }
+                        return false;
+                    }
+                };
+            }, title);
+        }
+        if (inner.is(net.minecraft.world.level.block.Blocks.LOOM)) {
+            return new net.minecraft.world.SimpleMenuProvider((id, inv, pl) -> {
+                return new net.minecraft.world.inventory.LoomMenu(id, inv, net.minecraft.world.inventory.ContainerLevelAccess.create(level, pos)) {
+                    @Override
+                    public boolean stillValid(net.minecraft.world.entity.player.Player p) {
+                        if (level.getBlockEntity(pos) instanceof CutBlockEntity be) {
+                            boolean has = be.getCutState().is(net.minecraft.world.level.block.Blocks.LOOM);
+                            if (!has) for (var e : be.getEntries()) if (e.state.is(net.minecraft.world.level.block.Blocks.LOOM)) { has = true; break; }
+                            if (has) {
+                                double dx = p.getX() - (pos.getX() + 0.5);
+                                double dy = p.getY() - (pos.getY() + 0.5);
+                                double dz = p.getZ() - (pos.getZ() + 0.5);
+                                return dx*dx+dy*dy+dz*dz < 64.0;
+                            }
+                        }
+                        return false;
+                    }
+                };
+            }, title);
+        }
+        if (inner.is(net.minecraft.world.level.block.Blocks.CARTOGRAPHY_TABLE)) {
+            return new net.minecraft.world.SimpleMenuProvider((id, inv, pl) -> {
+                return new net.minecraft.world.inventory.CartographyTableMenu(id, inv, net.minecraft.world.inventory.ContainerLevelAccess.create(level, pos)) {
+                    @Override
+                    public boolean stillValid(net.minecraft.world.entity.player.Player p) {
+                        if (level.getBlockEntity(pos) instanceof CutBlockEntity be) {
+                            boolean has = be.getCutState().is(net.minecraft.world.level.block.Blocks.CARTOGRAPHY_TABLE);
+                            if (!has) for (var e : be.getEntries()) if (e.state.is(net.minecraft.world.level.block.Blocks.CARTOGRAPHY_TABLE)) { has = true; break; }
+                            if (has) {
+                                double dx = p.getX() - (pos.getX() + 0.5);
+                                double dy = p.getY() - (pos.getY() + 0.5);
+                                double dz = p.getZ() - (pos.getZ() + 0.5);
+                                return dx*dx+dy*dy+dz*dz < 64.0;
+                            }
+                        }
+                        return false;
+                    }
+                };
+            }, title);
+        }
+        if (inner.is(net.minecraft.world.level.block.Blocks.SMITHING_TABLE)) {
+            // SmithingTable は 1.20.1 では GUI を持たないため vanillaProvider は null のはずだが念のため
+            return vanillaProvider;
+        }
+        // その他 TEなしGUIはそのまま返す (stillValid は cut_block では正しく動かない可能性があるが稀)
+        return vanillaProvider;
     }
 }
