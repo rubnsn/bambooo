@@ -2,32 +2,16 @@
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
-  "ingredients": [
-    {
-      "item": "minecraft:birch_planks"
-    },
-    {
-      "item": "minecraft:birch_planks"
-    },
-    {
-      "item": "minecraft:birch_planks"
-    },
-    {
-      "item": "minecraft:birch_planks"
-    },
-    {
-      "item": "minecraft:birch_planks"
-    },
-    {
-      "item": "minecraft:birch_planks"
-    },
-    {
-      "item": "minecraft:birch_planks"
-    },
-    {
+  "pattern": [
+    "XXX",
+    "X X",
+    "XXX"
+  ],
+  "key": {
+    "X": {
       "item": "minecraft:birch_planks"
     }
-  ],
+  },
   "result": {
     "item": "bamboomod:cbirch",
     "count": 8

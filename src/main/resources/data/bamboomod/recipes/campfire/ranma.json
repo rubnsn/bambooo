@@ -1,27 +1,16 @@
-﻿{
+{
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
-  "ingredients": [
-      {
-        "item": "minecraft:oak_planks"
-      },
-      {
-        "item": "minecraft:oak_planks"
-      },
-      {
-        "item": "minecraft:oak_planks"
-      },
-      {
-        "item": "minecraft:oak_planks"
-      },
-      {
-        "item": "minecraft:oak_planks"
-      },
-      {
-        "item": "minecraft:oak_planks"
-      }
+  "pattern": [
+    "XXX",
+    "XXX"
   ],
+  "key": {
+    "X": {
+      "item": "minecraft:oak_planks"
+    }
+  },
   "result": {
     "item": "bamboomod:ranma",
     "count": 8

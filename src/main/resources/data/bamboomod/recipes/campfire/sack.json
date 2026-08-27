@@ -2,35 +2,21 @@
   "type": "bamboomod:campfire",
   "category": "misc",
   "group": "",
-  "ingredients": [
-    {
+  "pattern": [
+    "SSS",
+    "W W",
+    "WWW"
+  ],
+  "key": {
+    "S": {
       "item": "minecraft:string"
     },
-    {
-      "item": "minecraft:string"
-    },
-    {
-      "item": "minecraft:string"
-    },
-    {
-      "tag": "minecraft:wool"
-    },
-    {
-      "tag": "minecraft:wool"
-    },
-    {
-      "tag": "minecraft:wool"
-    },
-    {
-      "tag": "minecraft:wool"
-    },
-    {
+    "W": {
       "tag": "minecraft:wool"
     }
-  ],
+  },
   "result": {
-    "item": "bamboomod:sack",
-    "count": 1
+    "item": "bamboomod:sack"
   },
   "experience": 0.35,
   "cookingtime": 200,

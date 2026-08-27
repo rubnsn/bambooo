@@ -2,32 +2,16 @@
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
-  "ingredients": [
-    {
-      "item": "minecraft:brick"
-    },
-    {
-      "item": "minecraft:brick"
-    },
-    {
-      "item": "minecraft:brick"
-    },
-    {
-      "item": "minecraft:brick"
-    },
-    {
-      "item": "minecraft:brick"
-    },
-    {
-      "item": "minecraft:brick"
-    },
-    {
-      "item": "minecraft:brick"
-    },
-    {
+  "pattern": [
+    "XXX",
+    "X X",
+    "XXX"
+  ],
+  "key": {
+    "X": {
       "item": "minecraft:brick"
     }
-  ],
+  },
   "result": {
     "item": "bamboomod:kawara",
     "count": 8

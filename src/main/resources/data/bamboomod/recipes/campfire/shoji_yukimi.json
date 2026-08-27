@@ -2,35 +2,22 @@
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
-  "ingredients": [
-    {
-      "item": "minecraft:stick"
-    },
-    {
-      "item": "minecraft:paper"
-    },
-    {
-      "item": "minecraft:stick"
-    },
-    {
-      "item": "minecraft:paper"
-    },
-    {
-      "item": "minecraft:stick"
-    },
-    {
-      "item": "minecraft:paper"
-    },
-    {
-      "item": "minecraft:stick"
-    },
-    {
-      "item": "minecraft:glass_pane"
-    },
-    {
-      "item": "minecraft:stick"
-    }
+  "pattern": [
+    "XYX",
+    "X X",
+    "XZX"
   ],
+  "key": {
+    "X": {
+      "item": "minecraft:stick"
+    },
+    "Y": {
+      "item": "minecraft:paper"
+    },
+    "Z": {
+      "item": "minecraft:glass_pane"
+    }
+  },
   "result": {
     "item": "bamboomod:shoji_yukimi",
     "count": 2

@@ -2,32 +2,21 @@
   "type": "bamboomod:campfire",
   "category": "misc",
   "group": "",
-  "ingredients": [
-    {
-      "item": "minecraft:cobblestone"
-    },
-    {
-      "item": "minecraft:cobblestone"
-    },
-    {
-      "item": "minecraft:cobblestone"
-    },
-    {
-      "item": "minecraft:cobblestone"
-    },
-    {
-      "item": "minecraft:cobblestone"
-    },
-    {
-      "item": "minecraft:cobblestone"
-    },
-    {
-      "item": "minecraft:cobblestone"
-    }
+  "pattern": [
+    "S  ",
+    "XXX",
+    "XXX"
   ],
+  "key": {
+    "X": {
+      "item": "minecraft:cobblestone"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
   "result": {
-    "item": "bamboomod:millstone",
-    "count": 1
+    "item": "bamboomod:millstone"
   },
   "experience": 0.35,
   "cookingtime": 200,

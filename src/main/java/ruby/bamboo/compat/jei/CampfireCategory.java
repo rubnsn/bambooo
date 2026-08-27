@@ -70,12 +70,27 @@ public class CampfireCategory implements IRecipeCategory<BambooCampfireRecipe> {
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, BambooCampfireRecipe recipe, IFocusGroup focuses) {
-        // 3x3 入力 (左上 3,3 を原点に 18px 間隔)。ingredients.size() は 1-9
-        for (int i = 0; i < recipe.getIngredients().size(); i++) {
-            Ingredient ing = recipe.getIngredients().get(i);
-            int x = (i % 3) * 18 + 3;
-            int y = (i / 3) * 18 + 3;
-            builder.addSlot(RecipeIngredientRole.INPUT, x, y).addIngredients(ing);
+        // 3x3 入力 (左上 3,3 を原点に 18px 間隔)
+        if (recipe.isShaped()) {
+            int w = recipe.getWidth();
+            int h = recipe.getHeight();
+            var pattern = recipe.getPattern();
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    Ingredient ing = pattern.get(y * w + x);
+                    if (ing.isEmpty()) continue;
+                    int sx = x * 18 + 3;
+                    int sy = y * 18 + 3;
+                    builder.addSlot(RecipeIngredientRole.INPUT, sx, sy).addIngredients(ing);
+                }
+            }
+        } else {
+            for (int i = 0; i < recipe.getIngredients().size(); i++) {
+                Ingredient ing = recipe.getIngredients().get(i);
+                int x = (i % 3) * 18 + 3;
+                int y = (i / 3) * 18 + 3;
+                builder.addSlot(RecipeIngredientRole.INPUT, x, y).addIngredients(ing);
+            }
         }
         // 出力 (右側中央)
         ItemStack result = recipe.getResultItem(RegistryAccess.EMPTY);
@@ -106,8 +121,8 @@ public class CampfireCategory implements IRecipeCategory<BambooCampfireRecipe> {
 
     @Override
     public void getTooltip(ITooltipBuilder tooltip, BambooCampfireRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
-        // 矢印ホバーで shapeless を示す (JEI の shapelessIndicator 相当の簡易表示)
-        if (61 <= mouseX && mouseX < 85 && 19 <= mouseY && mouseY < 36) {
+        // 矢印ホバーで shapeless のみ表示 (定型は表示しない)
+        if (!recipe.isShaped() && 61 <= mouseX && mouseX < 85 && 19 <= mouseY && mouseY < 36) {
             tooltip.add(Component.translatable("jei.tooltip.shapeless.recipe"));
         }
     }

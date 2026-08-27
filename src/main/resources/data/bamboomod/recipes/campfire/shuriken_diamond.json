@@ -2,12 +2,16 @@
   "type": "bamboomod:campfire",
   "category": "misc",
   "group": "",
-  "ingredients": [
-    { "tag": "forge:gems/diamond" },
-    { "tag": "forge:gems/diamond" },
-    { "tag": "forge:gems/diamond" },
-    { "tag": "forge:gems/diamond" }
+  "pattern": [
+    " S ",
+    "S S",
+    " S "
   ],
+  "key": {
+    "S": {
+      "tag": "forge:gems/diamond"
+    }
+  },
   "result": {
     "item": "bamboomod:shuriken_diamond",
     "count": 32

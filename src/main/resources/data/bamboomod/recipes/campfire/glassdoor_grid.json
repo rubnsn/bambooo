@@ -1,36 +1,20 @@
-﻿{
+{
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
-  "ingredients": [
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:glass_pane"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:glass_pane"
-      },
-      {
-        "item": "minecraft:stick"
-      }
+  "pattern": [
+    "XYX",
+    "XXX",
+    "XYX"
   ],
+  "key": {
+    "X": {
+      "item": "minecraft:stick"
+    },
+    "Y": {
+      "item": "minecraft:glass_pane"
+    }
+  },
   "result": {
     "item": "bamboomod:glassdoor_grid",
     "count": 2

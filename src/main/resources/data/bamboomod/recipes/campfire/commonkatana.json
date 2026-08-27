@@ -2,20 +2,21 @@
   "type": "bamboomod:campfire",
   "category": "equipment",
   "group": "",
-  "ingredients": [
-    {
-      "tag": "forge:bamboo"
-    },
-    {
-      "tag": "forge:bamboo"
-    },
-    {
-      "item": "minecraft:iron_ingot"
-    }
+  "pattern": [
+    "X",
+    "X",
+    "Y"
   ],
+  "key": {
+    "X": {
+      "item": "minecraft:iron_ingot"
+    },
+    "Y": {
+      "tag": "forge:bamboo"
+    }
+  },
   "result": {
-    "item": "bamboomod:commonkatana",
-    "count": 1
+    "item": "bamboomod:commonkatana"
   },
   "experience": 0.35,
   "cookingtime": 200,

@@ -2,12 +2,16 @@
   "type": "bamboomod:campfire",
   "category": "misc",
   "group": "",
-  "ingredients": [
-    { "tag": "forge:cobblestone" },
-    { "tag": "forge:cobblestone" },
-    { "tag": "forge:cobblestone" },
-    { "tag": "forge:cobblestone" }
+  "pattern": [
+    " S ",
+    "S S",
+    " S "
   ],
+  "key": {
+    "S": {
+      "tag": "forge:cobblestone"
+    }
+  },
   "result": {
     "item": "bamboomod:shuriken_stone",
     "count": 4

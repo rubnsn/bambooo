@@ -1,36 +1,20 @@
-﻿{
+{
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
-  "ingredients": [
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:paper"
-      },
-      {
-        "item": "minecraft:paper"
-      },
-      {
-        "item": "minecraft:paper"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:stick"
-      }
+  "pattern": [
+    "XXX",
+    "YYY",
+    "XXX"
   ],
+  "key": {
+    "X": {
+      "item": "minecraft:stick"
+    },
+    "Y": {
+      "item": "minecraft:paper"
+    }
+  },
   "result": {
     "item": "bamboomod:shoji_yokogumi",
     "count": 2
