@@ -232,5 +232,6 @@ public class NinjaBraceletItem extends Item {
         if (eco > 0) {
             tooltip.add(Component.translatable("attribute.modifier.equals.0", ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(eco), Component.translatable("tooltip.bamboomod.throwing_save")).withStyle(net.minecraft.ChatFormatting.DARK_GREEN));
         }
+        tooltip.add(Component.translatable("tooltip.bamboomod.flash_jump").withStyle(net.minecraft.ChatFormatting.AQUA));
     }
 }

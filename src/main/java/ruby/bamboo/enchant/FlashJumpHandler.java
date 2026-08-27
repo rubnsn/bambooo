@@ -1,18 +1,15 @@
 package ruby.bamboo.enchant;
 
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ruby.bamboo.BambooMod;
-import ruby.bamboo.core.init.BambooEnchantments;
 import ruby.bamboo.item.NinjaBraceletItem;
 
 /**
- * 閃跳 (flash_jump) ハンドラ。
+ * 閃跳ハンドラ（腕輪所持で発動）。
  * 空中で1回のみ発動、着地でリセット、クール無し、耐久消費無し。
  * <p>
  * ジャンプキー検出はバニラの `player.jumping` だけでは空中での rising edge が
@@ -84,21 +81,7 @@ public class FlashJumpHandler {
     }
 
     public static boolean hasFlashJump(Player player) {
-        for (ItemStack s : player.getInventory().items) {
-            if (!s.isEmpty() && s.getItem() instanceof NinjaBraceletItem) {
-                if (EnchantmentHelper.getItemEnchantmentLevel(BambooEnchantments.FLASH_JUMP.get(), s) > 0) return true;
-            }
-        }
-        for (ItemStack s : player.getInventory().offhand) {
-            if (!s.isEmpty() && s.getItem() instanceof NinjaBraceletItem) {
-                if (EnchantmentHelper.getItemEnchantmentLevel(BambooEnchantments.FLASH_JUMP.get(), s) > 0) return true;
-            }
-        }
-        for (ItemStack s : player.getInventory().armor) {
-            if (!s.isEmpty() && s.getItem() instanceof NinjaBraceletItem) {
-                if (EnchantmentHelper.getItemEnchantmentLevel(BambooEnchantments.FLASH_JUMP.get(), s) > 0) return true;
-            }
-        }
-        return false;
+        return player.getMainHandItem().getItem() instanceof NinjaBraceletItem
+                || player.getOffhandItem().getItem() instanceof NinjaBraceletItem;
     }
 }

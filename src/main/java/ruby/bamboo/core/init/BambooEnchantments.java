@@ -10,7 +10,6 @@ import ruby.bamboo.enchant.CriticalThrow;
 import ruby.bamboo.enchant.DoubleThrow;
 import ruby.bamboo.enchant.EconomyBracelet;
 import ruby.bamboo.enchant.FlameThrow;
-import ruby.bamboo.enchant.FlashJump;
 import ruby.bamboo.enchant.InfinityThrow;
 import ruby.bamboo.enchant.Pickpocket;
 import ruby.bamboo.enchant.PoisonThrow;
@@ -22,7 +21,7 @@ import ruby.bamboo.enchant.UnbreakingBracelet;
 import ruby.bamboo.item.BraceletEnchantmentCategory;
 
 /**
- * 腕輪エンチャント13種登録 (HiganEnchant 13種の 1.20.1 移植)。
+ * 腕輪エンチャント12種登録 (HiganEnchant 13種の 1.20.1 移植、flash_jump は腕輪所持能力へ移行)。
  */
 public final class BambooEnchantments {
 
@@ -52,8 +51,6 @@ public final class BambooEnchantments {
             () -> new TripleThrow(Enchantment.Rarity.RARE, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
     public static final RegistryObject<Enchantment> FLAME_THROW = register("flame_throw",
             () -> new FlameThrow(Enchantment.Rarity.RARE, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
-    public static final RegistryObject<Enchantment> FLASH_JUMP = register("flash_jump",
-            () -> new FlashJump(Enchantment.Rarity.RARE, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
     public static final RegistryObject<Enchantment> INFINITY_THROW = register("infinity_throw",
             () -> new InfinityThrow(Enchantment.Rarity.RARE, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
 
@@ -74,7 +71,6 @@ public final class BambooEnchantments {
         addBook(DOUBLE_THROW);
         addBook(TRIPLE_THROW);
         addBook(FLAME_THROW);
-        addBook(FLASH_JUMP);
         addBook(INFINITY_THROW);
     }
 
