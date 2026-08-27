@@ -70,6 +70,8 @@ public final class BambooClientSetup {
                     ItemBlockRenderTypes.setRenderLayer(b, RenderType.cutout());
                 }
             }
+            // 竹鉢 -> cutout
+            cutout(BambooBlocks.BAMBOO_POT.get());
 
             // 壁棚 -> cutout (薄板モデル)
             cutout(BambooBlocks.WALL_SHELF.get());
@@ -119,6 +121,11 @@ public final class BambooClientSetup {
                     BambooBlockEntities.CUT_BLOCK_BE.get(),
                     ruby.bamboo.client.renderer.CutBlockRenderer::new);
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.CUT_BLOCK.get(), RenderType.cutout());
+
+            // 竹鉢の BER 登録
+            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+                    BambooBlockEntities.BAMBOO_POT_BE.get(),
+                    ruby.bamboo.block.entity.BambooPotBlockRenderer::new);
 
             // 布団用椅子エンティティ (huton_chair) — 不可視レンダラ。未登録だと shouldRender で NPE
             net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.HUTON_CHAIR.get(),

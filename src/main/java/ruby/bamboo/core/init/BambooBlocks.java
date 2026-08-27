@@ -257,6 +257,10 @@ public final class BambooBlocks {
     // ===== カットブロック — 単一ブロック + NBT CutState/YLevel/HLevel =====
     public static final RegistryObject<CutBlock> CUT_BLOCK = registerCutBlock();
 
+    // ===== 竹鉢 (sakura BambooPot 移植) =====
+    public static final RegistryObject<ruby.bamboo.block.BambooPotBlock> BAMBOO_POT = register("bamboo_pot",
+            ruby.bamboo.block.BambooPotBlock::new);
+
     // ===== 第6弾: 広葉樹の葉4種 (旧 broad_leave meta=0-3 を独立ブロック化) =====
 
     /** 広葉 (緑/赤/黄/橙)。テクスチャ共通 broadleaf.png を BlockColor で色乗算 */
