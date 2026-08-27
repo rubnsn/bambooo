@@ -1,35 +1,32 @@
-﻿{
+{
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
   "ingredients": [
-      {
-        "item": "minecraft:wheat"
-      },
-      {
-        "item": "minecraft:wheat"
-      },
-      {
-        "item": "minecraft:wheat"
-      },
-      {
-        "item": "minecraft:wheat"
-      },
-      {
-        "item": "minecraft:bamboo"
-      },
-      {
-        "item": "minecraft:wheat"
-      },
-      {
-        "item": "minecraft:wheat"
-      },
-      {
-        "item": "minecraft:wheat"
-      },
-      {
-        "item": "minecraft:wheat"
-      }
+    {
+      "item": "minecraft:wheat"
+    },
+    {
+      "item": "minecraft:wheat"
+    },
+    {
+      "item": "minecraft:wheat"
+    },
+    {
+      "item": "minecraft:wheat"
+    },
+    {
+      "item": "minecraft:wheat"
+    },
+    {
+      "item": "minecraft:wheat"
+    },
+    {
+      "item": "minecraft:wheat"
+    },
+    {
+      "item": "minecraft:wheat"
+    }
   ],
   "result": {
     "item": "bamboomod:kaya",

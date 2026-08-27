@@ -6,11 +6,11 @@
     { "item": "minecraft:iron_ingot" },
     { "item": "minecraft:iron_ingot" },
     { "item": "minecraft:iron_ingot" },
-    { "item": "minecraft:iron_ingot" },
-    { "item": "minecraft:string" },
-    { "item": "minecraft:string" },
-    { "item": "minecraft:string" },
-    { "item": "minecraft:string" }
+    { "tag": "forge:leather" },
+    { "tag": "forge:leather" },
+    { "tag": "forge:leather" },
+    { "tag": "forge:leather" },
+    { "tag": "forge:leather" }
   ],
   "result": {
     "item": "bamboomod:ninja_bracelet"

@@ -2,14 +2,11 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    " B ",
+    "   ",
     "XYX",
     "ZZZ"
   ],
   "key": {
-    "B": {
-      "item": "bamboomod:bamboo"
-    },
     "X": {
       "item": "minecraft:iron_bars"
     },

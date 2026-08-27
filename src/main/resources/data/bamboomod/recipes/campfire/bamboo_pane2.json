@@ -3,18 +3,24 @@
   "category": "blocks",
   "group": "",
   "ingredients": [
-      {
-        "item": "bamboomod:bamboo"
-      },
-      {
-        "item": "bamboomod:bamboo_pane"
-      },
-      {
-        "item": "bamboomod:bamboo"
-      },
-      {
-        "item": "bamboomod:bamboo_pane"
-      }
+    {
+      "item": "bamboomod:bamboo"
+    },
+    {
+      "item": "bamboomod:bamboo_pane"
+    },
+    {
+      "item": "bamboomod:bamboo"
+    },
+    {
+      "item": "bamboomod:bamboo"
+    },
+    {
+      "item": "bamboomod:bamboo_pane"
+    },
+    {
+      "item": "bamboomod:bamboo"
+    }
   ],
   "result": {
     "item": "bamboomod:bamboo_pane2",

@@ -3,33 +3,30 @@
   "category": "blocks",
   "group": "",
   "ingredients": [
-      {
-        "item": "minecraft:spruce_planks"
-      },
-      {
-        "item": "minecraft:spruce_planks"
-      },
-      {
-        "item": "minecraft:spruce_planks"
-      },
-      {
-        "item": "minecraft:spruce_planks"
-      },
-      {
-        "item": "bamboomod:bamboo"
-      },
-      {
-        "item": "minecraft:spruce_planks"
-      },
-      {
-        "item": "minecraft:spruce_planks"
-      },
-      {
-        "item": "minecraft:spruce_planks"
-      },
-      {
-        "item": "minecraft:spruce_planks"
-      }
+    {
+      "item": "minecraft:spruce_planks"
+    },
+    {
+      "item": "minecraft:spruce_planks"
+    },
+    {
+      "item": "minecraft:spruce_planks"
+    },
+    {
+      "item": "minecraft:spruce_planks"
+    },
+    {
+      "item": "minecraft:spruce_planks"
+    },
+    {
+      "item": "minecraft:spruce_planks"
+    },
+    {
+      "item": "minecraft:spruce_planks"
+    },
+    {
+      "item": "minecraft:spruce_planks"
+    }
   ],
   "result": {
     "item": "bamboomod:cpine",

@@ -1,35 +1,32 @@
-﻿{
+{
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
   "ingredients": [
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:paper"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:paper"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:stick"
-      },
-      {
-        "item": "minecraft:paper"
-      },
-      {
-        "item": "minecraft:stick"
-      }
+    {
+      "item": "minecraft:stick"
+    },
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "item": "minecraft:stick"
+    },
+    {
+      "item": "minecraft:stick"
+    },
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "item": "minecraft:stick"
+    },
+    {
+      "item": "minecraft:stick"
+    },
+    {
+      "item": "minecraft:stick"
+    }
   ],
   "result": {
     "item": "bamboomod:husuma",

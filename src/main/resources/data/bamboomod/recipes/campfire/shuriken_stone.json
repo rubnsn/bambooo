@@ -3,10 +3,10 @@
   "category": "misc",
   "group": "",
   "ingredients": [
-    { "item": "minecraft:cobblestone" },
-    { "item": "minecraft:cobblestone" },
-    { "item": "minecraft:cobblestone" },
-    { "item": "minecraft:cobblestone" }
+    { "tag": "forge:cobblestone" },
+    { "tag": "forge:cobblestone" },
+    { "tag": "forge:cobblestone" },
+    { "tag": "forge:cobblestone" }
   ],
   "result": {
     "item": "bamboomod:shuriken_stone",

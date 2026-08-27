@@ -1,35 +1,29 @@
-﻿{
+{
   "type": "bamboomod:campfire",
   "category": "blocks",
   "group": "",
   "ingredients": [
-      {
-        "item": "minecraft:lapis_lazuli"
-      },
-      {
-        "item": "minecraft:lapis_lazuli"
-      },
-      {
-        "item": "minecraft:lapis_lazuli"
-      },
-      {
-        "item": "minecraft:lapis_lazuli"
-      },
-      {
-        "item": "minecraft:jack_o_lantern"
-      },
-      {
-        "item": "minecraft:lapis_lazuli"
-      },
-      {
-        "item": "minecraft:lapis_lazuli"
-      },
-      {
-        "item": "minecraft:lapis_lazuli"
-      },
-      {
-        "item": "minecraft:lapis_lazuli"
-      }
+    {
+      "item": "minecraft:lapis_lazuli"
+    },
+    {
+      "item": "minecraft:lapis_lazuli"
+    },
+    {
+      "item": "minecraft:lapis_lazuli"
+    },
+    {
+      "item": "minecraft:lapis_lazuli"
+    },
+    {
+      "item": "minecraft:lapis_lazuli"
+    },
+    {
+      "item": "minecraft:lapis_lazuli"
+    },
+    {
+      "item": "minecraft:jack_o_lantern"
+    }
   ],
   "result": {
     "item": "bamboomod:kitunebi",

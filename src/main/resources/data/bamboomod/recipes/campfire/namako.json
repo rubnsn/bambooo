@@ -3,33 +3,30 @@
   "category": "blocks",
   "group": "",
   "ingredients": [
-      {
-        "item": "bamboomod:plaster"
-      },
-      {
-        "item": "bamboomod:kawara"
-      },
-      {
-        "item": "bamboomod:plaster"
-      },
-      {
-        "item": "bamboomod:kawara"
-      },
-      {
-        "item": "bamboomod:bamboo"
-      },
-      {
-        "item": "bamboomod:plaster"
-      },
-      {
-        "item": "bamboomod:kawara"
-      },
-      {
-        "item": "bamboomod:plaster"
-      },
-      {
-        "item": "bamboomod:kawara"
-      }
+    {
+      "item": "bamboomod:plaster"
+    },
+    {
+      "item": "bamboomod:kawara"
+    },
+    {
+      "item": "bamboomod:plaster"
+    },
+    {
+      "item": "bamboomod:kawara"
+    },
+    {
+      "item": "bamboomod:plaster"
+    },
+    {
+      "item": "bamboomod:kawara"
+    },
+    {
+      "item": "bamboomod:plaster"
+    },
+    {
+      "item": "bamboomod:kawara"
+    }
   ],
   "result": {
     "item": "bamboomod:namako",

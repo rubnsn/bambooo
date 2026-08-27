@@ -3,33 +3,30 @@
   "category": "blocks",
   "group": "",
   "ingredients": [
-      {
-        "item": "minecraft:birch_planks"
-      },
-      {
-        "item": "minecraft:birch_planks"
-      },
-      {
-        "item": "minecraft:birch_planks"
-      },
-      {
-        "item": "minecraft:birch_planks"
-      },
-      {
-        "item": "bamboomod:bamboo"
-      },
-      {
-        "item": "minecraft:birch_planks"
-      },
-      {
-        "item": "minecraft:birch_planks"
-      },
-      {
-        "item": "minecraft:birch_planks"
-      },
-      {
-        "item": "minecraft:birch_planks"
-      }
+    {
+      "item": "minecraft:birch_planks"
+    },
+    {
+      "item": "minecraft:birch_planks"
+    },
+    {
+      "item": "minecraft:birch_planks"
+    },
+    {
+      "item": "minecraft:birch_planks"
+    },
+    {
+      "item": "minecraft:birch_planks"
+    },
+    {
+      "item": "minecraft:birch_planks"
+    },
+    {
+      "item": "minecraft:birch_planks"
+    },
+    {
+      "item": "minecraft:birch_planks"
+    }
   ],
   "result": {
     "item": "bamboomod:cbirch",
