@@ -235,6 +235,11 @@ public class BambooCampfireRecipe implements Recipe<Container> {
         return group;
     }
 
+    @Override
+    public boolean isSpecial() {
+        return true;
+    }
+
     /**
      * Serializer (JSON + ネットワーク)。
      * vanilla ShapedRecipe/ ShapelessRecipe + SimpleCookingSerializer を参考に fuelCost を追加。

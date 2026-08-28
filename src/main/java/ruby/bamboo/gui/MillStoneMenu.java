@@ -4,18 +4,15 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.StackedContents;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.inventory.RecipeBookMenu;
-import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
 import ruby.bamboo.core.init.BambooMenus;
 
 /**
- * 石臼のメニュー (旧 ContainerMillStone の移植) — レシピブック対応。
+ * 石臼のメニュー (旧 ContainerMillStone の移植)。
  * <p>
  * スロット配置は旧版と同一:
  * <ul>
@@ -26,11 +23,9 @@ import ruby.bamboo.core.init.BambooMenus;
  * </ul>
  * containerData 3値: grindMotion(0-3) / progress(0-3) / isGrind(0/1)
  * <p>
- * レシピブックは1入力→1出力(+ボーナス)で、vanilla furnace同様のTypeを持つ。
+ * 1.20.1 では RecipeBook は JEI 代替のため無効化 (AbstractContainerMenu)。
  */
-public class MillStoneMenu extends RecipeBookMenu<Container> {
-
-    public static final RecipeBookType BAMBOO_MILLSTONE_TYPE = RecipeBookType.create("BAMBOO_MILLSTONE");
+public class MillStoneMenu extends AbstractContainerMenu {
 
     private final Container container;
     private final ContainerData data;
@@ -62,13 +57,6 @@ public class MillStoneMenu extends RecipeBookMenu<Container> {
         }
 
         this.addDataSlots(data);
-
-        // 実績なしでも表示: サーバ側で自動アンロック (初回開封フォールバック)
-        if (playerInventory.player instanceof net.minecraft.server.level.ServerPlayer sp) {
-            try {
-                ruby.bamboo.core.init.BambooRecipeUnlocker.awardMillstoneRecipes(sp);
-            } catch (Exception ignored) {}
-        }
     }
 
     /** 出力専用スロット (旧 SlotMillStone 相当: isItemValid=false) */
@@ -82,52 +70,6 @@ public class MillStoneMenu extends RecipeBookMenu<Container> {
             return false;
         }
     }
-
-    // ===== RecipeBookMenu 契約 =====
-
-    @Override
-    public void fillCraftSlotsStackedContents(StackedContents helper) {
-        if (container instanceof ruby.bamboo.block.entity.MillStoneBlockEntity be) {
-            be.fillStackedContents(helper);
-        } else {
-            ItemStack s = container.getItem(0);
-            if (!s.isEmpty()) helper.accountStack(s);
-        }
-    }
-
-    @Override
-    public void clearCraftingContent() {
-        // 入力のみクリア、出力1,2は残す (shouldMoveToInventory false)
-        this.getSlot(0).set(ItemStack.EMPTY);
-    }
-
-    @Override
-    public boolean recipeMatches(Recipe<? super Container> recipe) {
-        return recipe.matches(container, getLevel());
-    }
-
-    private net.minecraft.world.level.Level getLevel() {
-        if (container instanceof net.minecraft.world.level.block.entity.BlockEntity be && be.getLevel() != null) return be.getLevel();
-        return null;
-    }
-
-    @Override
-    public int getResultSlotIndex() { return 1; }
-
-    @Override
-    public int getGridWidth() { return 1; }
-
-    @Override
-    public int getGridHeight() { return 1; }
-
-    @Override
-    public int getSize() { return 3; }
-
-    @Override
-    public RecipeBookType getRecipeBookType() { return BAMBOO_MILLSTONE_TYPE; }
-
-    @Override
-    public boolean shouldMoveToInventory(int index) { return index == 0; }
 
     // ===== GUI描画用の同期値 =====
 

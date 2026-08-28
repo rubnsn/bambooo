@@ -4,19 +4,16 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.StackedContents;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.inventory.RecipeBookMenu;
-import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.core.init.BambooMenus;
 
 /**
- * 囲炉裏のメニュー (旧 ContainerCampfire の移植) — レシピブック対応。
+ * 囲炉裏のメニュー (旧 ContainerCampfire の移植)。
  * <p>
  * スロット配置は旧版と同一:
  * <ul>
@@ -27,12 +24,9 @@ import ruby.bamboo.core.init.BambooMenus;
  * </ul>
  * containerData 2値: fuelRatio(%) / cookRatio(%)
  * <p>
- * バニラ準拠のRecipeBook対応: RecipeBookMenuを継承し、ServerPlaceRecipeのゴースト配置を
- * vanillaネットワーク (ServerboundPlaceRecipePacket) 経由で処理する。
+ * 1.20.1 では RecipeBook は JEI 代替のため無効化 (AbstractContainerMenu)。
  */
-public class CampfireMenu extends RecipeBookMenu<Container> {
-
-    public static final RecipeBookType BAMBOO_CAMPFIRE_TYPE = RecipeBookType.create("BAMBOO_CAMPFIRE");
+public class CampfireMenu extends AbstractContainerMenu {
 
     private final Container container;
     private final ContainerData data;
@@ -68,14 +62,6 @@ public class CampfireMenu extends RecipeBookMenu<Container> {
         }
 
         this.addDataSlots(data);
-
-        // 実績なしでも表示: サーバ側でメニュー生成時に自動アンロック (ログイン時の付与に加え、既存ワールドの初回開封でも付与)
-        if (playerInventory.player instanceof net.minecraft.server.level.ServerPlayer sp) {
-            // 遅延させず即時付与を試みる。RecipeManagerがまだ同期前でも次回ログインで補完される。
-            try {
-                ruby.bamboo.core.init.BambooRecipeUnlocker.awardCampfireRecipes(sp);
-            } catch (Exception ignored) {}
-        }
     }
 
     /** 出力専用スロット (旧 SlotCampfire 相当: isItemValid=false) */
@@ -88,79 +74,6 @@ public class CampfireMenu extends RecipeBookMenu<Container> {
         public boolean mayPlace(ItemStack stack) {
             return false;
         }
-    }
-
-    // ===== RecipeBookMenu 契約 =====
-
-    @Override
-    public void fillCraftSlotsStackedContents(StackedContents helper) {
-        // 0-8 素材のみをStackedContentsへ (燃料9は除外、炉ポリシー準拠)
-        if (container instanceof ruby.bamboo.block.entity.CampfireBlockEntity be) {
-            be.fillStackedContents(helper);
-        } else {
-            for (int i = 0; i < 9; i++) {
-                ItemStack s = container.getItem(i);
-                if (!s.isEmpty()) helper.accountStack(s);
-            }
-        }
-    }
-
-    @Override
-    public void clearCraftingContent() {
-        // 3x3素材 + 結果をクリア、燃料は残す
-        for (int i = 0; i < 9; i++) this.getSlot(i).set(ItemStack.EMPTY);
-        this.getSlot(10).set(ItemStack.EMPTY);
-    }
-
-    @Override
-    public boolean recipeMatches(Recipe<? super Container> recipe) {
-        // containerはCampfireBlockEntityでもSimpleContainerでもRecipe.matchesが9スロットで判定可能
-        return recipe.matches(container, getPlayerLevel());
-    }
-
-    private net.minecraft.world.level.Level getPlayerLevel() {
-        // containerがBEならそのlevel、SimpleContainerならplayer level経由が必要だが
-        // client側ではBambooCampfireRecipe.matchesはlevel未使用、server側はBEのlevelが非null
-        if (container instanceof net.minecraft.world.level.block.entity.BlockEntity be && be.getLevel() != null) {
-            return be.getLevel();
-        }
-        // fallback: menuのスロットからplayerを取得できないため、BambooMod側でlevelを解決する
-        // recipeMatchesはServerPlaceRecipeから呼ばれる際にはserver levelが渡されるが、ここではplayer由来levelを返す。
-        // 簡易的にOVERWORLDのRecipeManager検索でlevel依存を回避するため、空のlevelチェックは行わない
-        // クライアント側ではlevel nullでもshapeless判定は通るように、nullチェックをBambooCampfireRecipe側で許容する
-        // ここでは null を許容せず、containerのサイズのみで判定したいため、recipe側でlevelがnullでも判定可能にしている
-        // ただし vanilla呼び出しは level != null を仮定するため、BE以外の場合はlevelをnullで呼ぶ
-        return container instanceof net.minecraft.world.level.block.entity.BlockEntity be2 ? be2.getLevel() : null;
-    }
-
-    @Override
-    public int getResultSlotIndex() {
-        return 10;
-    }
-
-    @Override
-    public int getGridWidth() {
-        return 3;
-    }
-
-    @Override
-    public int getGridHeight() {
-        return 3;
-    }
-
-    @Override
-    public int getSize() {
-        return 11;
-    }
-
-    @Override
-    public RecipeBookType getRecipeBookType() {
-        return BAMBOO_CAMPFIRE_TYPE;
-    }
-
-    @Override
-    public boolean shouldMoveToInventory(int index) {
-        return index != 9; // 燃料スロット以外
     }
 
     // ===== GUI描画用の同期値 =====

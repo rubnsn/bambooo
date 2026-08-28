@@ -79,11 +79,10 @@ public class BambooJeiPlugin implements IModPlugin {
                 registration.addRecipes(CampfireCategory.TYPE, mgr.getAllRecipesFor(BambooMod.CAMPFIRE_RECIPE_TYPE.get()));
                 registration.addRecipes(MillstoneCategory.TYPE, mgr.getAllRecipesFor(BambooMod.MILLSTONE_RECIPE_TYPE.get()));
             }
-            // JEI表示専用
+            // JEI表示専用 — CRAFTINGへの二重登録はDecoder(12)の原因のためcut_blockのみに
             if (!cutJei.isEmpty()) {
-                registration.addRecipes(RecipeTypes.CRAFTING, cutJei);
                 registration.addRecipes(CutBlockCategory.TYPE, cutJei);
-                BambooMod.LOGGER.info("CutBlock JEI recipes registered to CRAFTING and cut_block (server fallback): {}", cutJei.size());
+                BambooMod.LOGGER.info("CutBlock JEI recipes registered to cut_block only (server fallback): {}", cutJei.size());
             }
             return;
         }
@@ -91,9 +90,8 @@ public class BambooJeiPlugin implements IModPlugin {
         registration.addRecipes(CampfireCategory.TYPE, mgr.getAllRecipesFor(BambooMod.CAMPFIRE_RECIPE_TYPE.get()));
         registration.addRecipes(MillstoneCategory.TYPE, mgr.getAllRecipesFor(BambooMod.MILLSTONE_RECIPE_TYPE.get()));
         if (!cutJei.isEmpty()) {
-            registration.addRecipes(RecipeTypes.CRAFTING, cutJei);
             registration.addRecipes(CutBlockCategory.TYPE, cutJei);
-            BambooMod.LOGGER.info("CutBlock JEI recipes registered to CRAFTING and cut_block: {}", cutJei.size());
+            BambooMod.LOGGER.info("CutBlock JEI recipes registered to cut_block only: {}", cutJei.size());
         }
     }
 

@@ -103,6 +103,9 @@ public class BambooGrindRecipe implements Recipe<Container> {
     @Override
     public String getGroup() { return group; }
 
+    @Override
+    public boolean isSpecial() { return true; }
+
     public static class Serializer implements RecipeSerializer<BambooGrindRecipe> {
 
         @Override

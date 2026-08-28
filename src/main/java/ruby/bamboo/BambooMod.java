@@ -121,17 +121,16 @@ public class BambooMod {
         net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
                 net.minecraftforge.fml.config.ModConfig.Type.CLIENT,
                 MiniatureConfig.CLIENT_SPEC, "bamboomod-miniature.toml");
-        // Config GUI — ModList の「Config」ボタンを有効化
+        IEventBus modEventBus = context.getModEventBus();
+        // Config GUI — ModList の「Config」ボタンを有効化（DEDICATED_SERVER では Screen をロードしないよう DistExecutor 経由で分離）
         if (net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.CLIENT) {
-            net.minecraftforge.fml.ModLoadingContext.get().registerExtensionPoint(
-                    net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory.class,
-                    () -> new net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory(
-                            (mc, screen) -> new ruby.bamboo.client.gui.MiniatureConfigScreen(screen)));
+            net.minecraftforge.fml.DistExecutor.unsafeRunWhenOn(
+                    net.minecraftforge.api.distmarker.Dist.CLIENT,
+                    () -> () -> ruby.bamboo.client.ClientConfigRegistration.register());
         }
         net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
                 net.minecraftforge.fml.config.ModConfig.Type.COMMON,
                 SpringConfig.COMMON_SPEC, "bamboomod-spring.toml");
-        IEventBus modEventBus = context.getModEventBus();
 
         // 登録順: BLOCKS/ITEMS を先に接続してから各初期化クラスで register 呼び出し
         BLOCKS.register(modEventBus);
