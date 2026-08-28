@@ -72,23 +72,92 @@ public final class SpringFluids {
                     public int getTintColor(net.minecraft.world.level.material.FluidState state,
                                             net.minecraft.world.level.BlockAndTintGetter getter,
                                             net.minecraft.core.BlockPos pos) {
-                        if (getter != null && pos != null && getter instanceof net.minecraft.world.level.Level lvl) {
+                        if (getter != null && pos != null) {
                             try {
-                                var st = lvl.getBlockState(pos);
-                                if (st.getBlock() instanceof ruby.bamboo.block.SpringWaterBlock) {
-                                    var src = ruby.bamboo.block.SpringWaterBlock.findSource(lvl, pos, st, 32);
-                                    int base = ruby.bamboo.block.SpringColor.DEFAULT.color;
-                                    if (src != null) {
-                                        var srcSt = lvl.getBlockState(src);
-                                        if (srcSt.getBlock() instanceof ruby.bamboo.block.SpringBlock) base = srcSt.getValue(ruby.bamboo.block.SpringBlock.COLOR).color;
+                                // sakura 1.16.5 HotSpring.HotWater.getColor 相当: biomeBlendRadius で周囲を平均
+                                int blend = 2;
+                                try { blend = Math.min(net.minecraft.client.Minecraft.getInstance().options.biomeBlendRadius().get(), 2); } catch (Exception e) { blend = 1; }
+                                int rSum = 0, gSum = 0, bSum = 0, cnt = 0;
+                                net.minecraft.core.BlockPos.MutableBlockPos m = new net.minecraft.core.BlockPos.MutableBlockPos();
+                                for (int dx = -blend; dx <= blend; dx++) {
+                                    for (int dz = -blend; dz <= blend; dz++) {
+                                        m.set(pos.getX() + dx, pos.getY(), pos.getZ() + dz);
+                                        var f = getter.getFluidState(m);
+                                        boolean isSpring = f.getType() == BambooMod.SPRING_WATER_SOURCE.get() || f.getType() == BambooMod.SPRING_WATER_FLOWING.get();
+                                        // 水没の場合は block が spring_water でなくても fluid が spring なら対象
+                                        if (!isSpring) continue;
+                                        var st = getter.getBlockState(m);
+                                        int col;
+                                        if (st.getBlock() instanceof ruby.bamboo.block.SpringWaterBlock) {
+                                            var src = ruby.bamboo.block.SpringWaterBlock.findSource(getter, m, st, 32);
+                                            int base = ruby.bamboo.block.SpringColor.DEFAULT.color;
+                                            if (src != null) {
+                                                var srcSt = getter.getBlockState(src);
+                                                if (srcSt.getBlock() instanceof ruby.bamboo.block.SpringBlock) base = srcSt.getValue(ruby.bamboo.block.SpringBlock.COLOR).color;
+                                            }
+                                            // 染料色は tint で薄めず鮮やかに、DEFAULT のみ tint 乗算
+                                            if (base != ruby.bamboo.block.SpringColor.DEFAULT.color && base != ruby.bamboo.block.SpringColor.VANILLA.color) {
+                                                col = 0xFF000000 | base;
+                                            } else {
+                                                int tint;
+                                                try { tint = ruby.bamboo.core.config.SpringConfig.COMMON.tintColor.get(); } catch (Exception ex){ tint = 0xE0F8FF; }
+                                                col = multiplyColor(base, tint);
+                                            }
+                                        } else {
+                                            // 水没など block が spring_water でない場合は近傍の spring_water ブロックから色を借用
+                                            col = resolveWaterloggedColor(getter, m);
+                                            if (col == 0) continue;
+                                        }
+                                        rSum += (col >> 16) & 0xFF;
+                                        gSum += (col >> 8) & 0xFF;
+                                        bSum += col & 0xFF;
+                                        cnt++;
                                     }
-                                    int tint;
-                                    try { tint = ruby.bamboo.core.config.SpringConfig.COMMON.tintColor.get(); } catch (Exception e){ tint = 0xE0F8FF; }
-                                    return multiplyColor(base, tint);
                                 }
+                                if (cnt > 0) {
+                                    return 0xFF000000 | ((rSum / cnt) << 16) | ((gSum / cnt) << 8) | (bSum / cnt);
+                                }
+                                // フォールバック: 単一pos
+                                var st0 = getter.getBlockState(pos);
+                                if (st0.getBlock() instanceof ruby.bamboo.block.SpringWaterBlock) {
+                                    var src0 = ruby.bamboo.block.SpringWaterBlock.findSource(getter, pos, st0, 32);
+                                    int base0 = ruby.bamboo.block.SpringColor.DEFAULT.color;
+                                    if (src0 != null) {
+                                        var srcSt0 = getter.getBlockState(src0);
+                                        if (srcSt0.getBlock() instanceof ruby.bamboo.block.SpringBlock) base0 = srcSt0.getValue(ruby.bamboo.block.SpringBlock.COLOR).color;
+                                    }
+                                    if (base0 != ruby.bamboo.block.SpringColor.DEFAULT.color && base0 != ruby.bamboo.block.SpringColor.VANILLA.color) return 0xFF000000 | base0;
+                                    int tint0;
+                                    try { tint0 = ruby.bamboo.core.config.SpringConfig.COMMON.tintColor.get(); } catch (Exception e){ tint0 = 0xE0F8FF; }
+                                    return multiplyColor(base0, tint0);
+                                }
+                                // 水没フォールバック
+                                int wl = resolveWaterloggedColor(getter, pos);
+                                if (wl != 0) return wl;
                             } catch (Exception e) {}
                         }
                         return getTintColor();
+                    }
+
+                    private int resolveWaterloggedColor(net.minecraft.world.level.BlockAndTintGetter getter, net.minecraft.core.BlockPos p) {
+                        // 周囲6方向の spring_water ブロックから最も近い源泉色を借用
+                        for (net.minecraft.core.Direction d : net.minecraft.core.Direction.values()) {
+                            var n = p.relative(d);
+                            var ns = getter.getBlockState(n);
+                            if (ns.getBlock() instanceof ruby.bamboo.block.SpringWaterBlock) {
+                                var src = ruby.bamboo.block.SpringWaterBlock.findSource(getter, n, ns, 32);
+                                int base = ruby.bamboo.block.SpringColor.DEFAULT.color;
+                                if (src != null) {
+                                    var srcSt = getter.getBlockState(src);
+                                    if (srcSt.getBlock() instanceof ruby.bamboo.block.SpringBlock) base = srcSt.getValue(ruby.bamboo.block.SpringBlock.COLOR).color;
+                                }
+                                if (base != ruby.bamboo.block.SpringColor.DEFAULT.color && base != ruby.bamboo.block.SpringColor.VANILLA.color) return 0xFF000000 | base;
+                                int tint;
+                                try { tint = ruby.bamboo.core.config.SpringConfig.COMMON.tintColor.get(); } catch (Exception e){ tint = 0xE0F8FF; }
+                                return multiplyColor(base, tint);
+                            }
+                        }
+                        return 0;
                     }
                 });
             }

@@ -200,7 +200,7 @@ public final class BambooClientSetup {
         event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR, BambooBlocks.GINKGO_LEAVES.get());
         event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR, BambooBlocks.HINOKI_LEAVES.get());
 
-        // 温泉水 — PARENT_DIR で源泉の COLOR を辿り、Forest×tint + 3-4ブロック馴染み (BE無し)
+        // 温泉水 — PARENT_DIR で源泉の COLOR を辿り、染料色は鮮やかに、DEFAULTのみtint乗算 + 3-4ブロック馴染み
         event.register((state, level, pos, tintIndex) -> {
             if (tintIndex != 0) return 0xFFFFFF;
             if (level == null || pos == null) {
@@ -208,7 +208,7 @@ public final class BambooClientSetup {
                 try { tint2 = ruby.bamboo.core.config.SpringConfig.COMMON.tintColor.get(); } catch (Exception e) { tint2 = 0xE0F8FF; }
                 return ruby.bamboo.block.SpringWaterBlock.multiplyColor(ruby.bamboo.block.SpringColor.DEFAULT.color, tint2);
             }
-            // 源泉の色を PARENT_DIR 鎖で辿る
+            // 源泉の色を PARENT_DIR 鎖で辿る（ChunkRenderCache でも動作する BlockAndTintGetter 版）
             var srcPos = ruby.bamboo.block.SpringWaterBlock.findSource(level, pos, state, 32);
             int baseColor;
             if (srcPos != null) {
@@ -217,11 +217,16 @@ public final class BambooClientSetup {
                     baseColor = srcState.getValue(ruby.bamboo.block.SpringBlock.COLOR).color;
                 } else baseColor = ruby.bamboo.block.SpringColor.DEFAULT.color;
             } else baseColor = ruby.bamboo.block.SpringColor.DEFAULT.color;
-            // 周囲3-4ブロックで平均して馴染ませる
+            // 染料色は tint で薄めず純色で、DEFAULT/VANILLA のみ Forest×tint
             int tint;
             try { tint = ruby.bamboo.core.config.SpringConfig.COMMON.tintColor.get(); } catch (Exception e) { tint = 0xE0F8FF; }
-            int selfCol = ruby.bamboo.block.SpringWaterBlock.multiplyColor(baseColor, tint);
-            // 3x3 サンプリングで平均
+            int selfCol;
+            if (baseColor != ruby.bamboo.block.SpringColor.DEFAULT.color && baseColor != ruby.bamboo.block.SpringColor.VANILLA.color) {
+                selfCol = 0xFF000000 | baseColor;
+            } else {
+                selfCol = ruby.bamboo.block.SpringWaterBlock.multiplyColor(baseColor, tint);
+            }
+            // 3x3 サンプリングで平均して馴染ませる（sakura 流のブレンドを簡略化）
             int rSum = (selfCol >> 16) & 0xFF, gSum = (selfCol >> 8) & 0xFF, bSum = selfCol & 0xFF, cnt = 1;
             for (var dir : net.minecraft.core.Direction.Plane.HORIZONTAL) {
                 var off = pos.relative(dir);
@@ -233,7 +238,9 @@ public final class BambooClientSetup {
                     var offSrcState = level.getBlockState(offSrc);
                     if (offSrcState.getBlock() instanceof ruby.bamboo.block.SpringBlock) offBase = offSrcState.getValue(ruby.bamboo.block.SpringBlock.COLOR).color;
                 }
-                int offCol = ruby.bamboo.block.SpringWaterBlock.multiplyColor(offBase, tint);
+                int offCol;
+                if (offBase != ruby.bamboo.block.SpringColor.DEFAULT.color && offBase != ruby.bamboo.block.SpringColor.VANILLA.color) offCol = 0xFF000000 | offBase;
+                else offCol = ruby.bamboo.block.SpringWaterBlock.multiplyColor(offBase, tint);
                 rSum += (offCol >> 16) & 0xFF; gSum += (offCol >> 8) & 0xFF; bSum += offCol & 0xFF; cnt++;
             }
             if (cnt == 1) return selfCol;
