@@ -214,13 +214,9 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
                 level.scheduleTick(pos, this, getEvaporationDelay());
             } else {
                 // 新たに拡散可能な空間ができたら再スケジュール（上面以外）— lv に依らず起床させ拡散を優先
-                if (dir != Direction.UP) {
-                    boolean canSpread = false;
-                    if (neighborState.hasProperty(BlockStateProperties.WATERLOGGED)) {
-                        canSpread = !neighborState.getValue(BlockStateProperties.WATERLOGGED) && neighborState.getFluidState().isEmpty();
-                    } else {
-                        canSpread = level.isEmptyBlock(neighborPos) || neighborState.canBeReplaced();
-                    }
+                // 水没は固体として拡散対象外（バニラ水フォールバック廃止）
+                if (dir != Direction.UP && !neighborState.hasProperty(BlockStateProperties.WATERLOGGED)) {
+                    boolean canSpread = level.isEmptyBlock(neighborPos) || neighborState.canBeReplaced();
                     if (canSpread) {
                         int dist = Math.abs(neighborPos.getX() - src.getX()) + Math.abs(neighborPos.getZ() - src.getZ());
                         if (dist <= getMaxRadius()) {
@@ -239,12 +235,8 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
             BlockPos src = findSource(level, pos, state, 32);
             if (src != null) {
                 BlockState neighborState = level.getBlockState(neighborPos);
-                boolean isNeighborEmpty = false;
-                if (neighborState.hasProperty(BlockStateProperties.WATERLOGGED)) {
-                    isNeighborEmpty = !neighborState.getValue(BlockStateProperties.WATERLOGGED) && neighborState.getFluidState().isEmpty();
-                } else {
-                    isNeighborEmpty = level.isEmptyBlock(neighborPos) || neighborState.canBeReplaced();
-                }
+                if (neighborState.hasProperty(BlockStateProperties.WATERLOGGED)) return;
+                boolean isNeighborEmpty = level.isEmptyBlock(neighborPos) || neighborState.canBeReplaced();
                 if (isNeighborEmpty) {
                     // lv 値に依らず起床 — tick 側で拡散可否(lv>1)を判定し拡散を優先する
                     int dist = Math.abs(neighborPos.getX() - src.getX()) + Math.abs(neighborPos.getZ() - src.getZ());
@@ -271,27 +263,32 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
         int lv = state.getValue(LEVEL);
         // 1低(最小) ->7高(満水)で管理。0はバニラSOURCEと被るため不使用だが、誤って0が来たら1として扱う
         if (lv == 0) lv = 1;
-        // 拡散を最優先で探索（満水 7 も含めて実行。1は拡散不可のため trySpread 内で弾く）
+        int maxHere = getMaxLevelAt(level, pos);
+        // 拡散を最優先で探索（上限 7 も含めて実行。1は拡散不可のため trySpread 内で弾く）
         boolean didSpread = false;
         if (lv > 1) {
             didSpread = trySpread(level, pos, state, src);
         }
-        if (lv < 7) {
-            // 最もレベルが低い(低水位)ものを見つけて持ち上げる（均一化）
+        if (lv < maxHere) {
+            // 最もレベルが低い(低水位)ものを見つけて持ち上げる（均一化）— 距離上限を考慮
             BlockPos bestPos = pos;
             int bestLv = lv;
+            int bestMax = maxHere;
             for (Direction d : Direction.Plane.HORIZONTAL) {
                 BlockPos off = pos.relative(d);
                 BlockState offState = level.getBlockState(off);
                 if (!offState.is(this)) continue;
                 int offLv = offState.getValue(LEVEL);
                 if (offLv == 0) offLv = 1;
+                int offMax = getMaxLevelAt(level, off);
+                if (offLv >= offMax) continue;
                 if (offLv < bestLv) {
                     bestLv = offLv;
                     bestPos = off;
+                    bestMax = offMax;
                 }
             }
-            if (bestLv < 7) {
+            if (bestLv < bestMax) {
                 BlockState bestState = level.getBlockState(bestPos);
                 if (bestState.is(this)) {
                     // 0の補正
@@ -301,6 +298,9 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
                     }
                     levelUp(level, bestPos, bestState);
                 }
+            } else {
+                // 自身が最も低い場合は自身を上昇
+                levelUp(level, pos, state);
             }
             level.scheduleTick(pos, this, getWaterDelay());
             return;
@@ -322,32 +322,17 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
         if (lv <= 1) return false; // 最低(1)では拡散不可、2以上なら即拡散
         boolean placed = false;
         // 上面以外へ同時拡散（水平4方向 + 真下）— 拡散を均一化より先に行う
+        // 水没は行わずフェンス等は固体として拡散をブロック（バニラ水フォールバック廃止）
         for (Direction dir : Direction.values()) {
             if (dir == Direction.UP) continue;
             BlockPos cand = pos.relative(dir);
             BlockState candState = level.getBlockState(cand);
             if (candState.is(this)) continue;
-            // 水没対応: waterloggable なら水没させる
-            if (candState.hasProperty(BlockStateProperties.WATERLOGGED)) {
-                if (!candState.getValue(BlockStateProperties.WATERLOGGED) && candState.getFluidState().isEmpty()) {
-                    int dist = Math.abs(cand.getX() - src.getX()) + Math.abs(cand.getZ() - src.getZ());
-                    if (dist > getMaxRadius()) continue;
-                    BlockState waterlogged = candState.setValue(BlockStateProperties.WATERLOGGED, Boolean.TRUE);
-                    level.setBlock(cand, waterlogged, 3);
-                    level.scheduleTick(cand, candState.getFluidState().getType(), getWaterDelay());
-                    placed = true;
-                    continue;
-                } else {
-                    continue;
-                }
-            }
+            if (candState.hasProperty(BlockStateProperties.WATERLOGGED)) continue;
             boolean empty = level.isEmptyBlock(cand) || candState.canBeReplaced();
             if (!empty) continue;
             int dist = Math.abs(cand.getX() - src.getX()) + Math.abs(cand.getZ() - src.getZ());
-            if (dist > getMaxRadius()) {
-                if (level.isEmptyBlock(cand)) level.setBlock(cand, net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(), 3);
-                continue;
-            }
+            if (dist > getMaxRadius()) continue;
             Direction toParent = dir.getOpposite();
             BlockState ns = this.defaultBlockState().setValue(LEVEL, 1).setValue(PARENT_DIR, toParent);
             level.setBlock(cand, ns, 3);
@@ -415,14 +400,31 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
         return bestDir;
     }
 
+    /** 距離に応じた水位上限: 0で7、32で1に線形減少 */
+    public static int getMaxLevelForDist(int dist) {
+        int maxR = getMaxRadiusStatic();
+        if (dist <= 0) return 7;
+        if (dist >= maxR) return 1;
+        return Math.max(1, 7 - (dist * 6) / maxR);
+    }
+
+    public static int getMaxLevelAt(Level level, BlockPos pos) {
+        BlockState st = level.getBlockState(pos);
+        BlockPos src = findSource(level, pos, st, 32);
+        if (src == null) return 7;
+        int dist = Math.abs(pos.getX() - src.getX()) + Math.abs(pos.getZ() - src.getZ());
+        return getMaxLevelForDist(dist);
+    }
+
     public static boolean levelUp(Level level, BlockPos pos, BlockState state) {
         int lv = state.getValue(LEVEL);
-        // 1低 ->7高 で上昇（Waterの0はSOURCEで使わないため1起点）
-        if (lv < 7) {
+        if (lv == 0) lv = 1;
+        int max = getMaxLevelAt(level, pos);
+        // 距離上限に近づくほど上限が下がり、32地点は1で停止
+        if (lv < max) {
             int next = lv + 1;
+            if (next > max) next = max;
             if (next > 7) next = 7;
-            // 0は誤配置の可能性があるため1起点に補正
-            if (lv == 0) next = 1;
             BlockState ns = state.setValue(LEVEL, next);
             level.setBlock(pos, ns, 3);
             level.scheduleTick(pos, BambooBlocks.SPRING_WATER.get(), getWaterDelayStatic());
