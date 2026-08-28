@@ -1,2595 +1,291 @@
 {
   "variants": {
-    "level=0,parent_dir=north,spring_level=5": {
+    "level=0,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=6,parent_dir=west,spring_level=8": {
+    "level=0,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=10,parent_dir=west,spring_level=6": {
+    "level=0,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=3,parent_dir=north,spring_level=1": {
+    "level=0,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=9,parent_dir=east,spring_level=2": {
+    "level=0,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=6,parent_dir=down,spring_level=0": {
+    "level=0,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=1,parent_dir=south,spring_level=4": {
+    "level=1,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=4,parent_dir=south,spring_level=4": {
+    "level=1,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=5,parent_dir=east,spring_level=6": {
+    "level=1,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=12,parent_dir=west,spring_level=8": {
+    "level=1,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=2,parent_dir=west,spring_level=5": {
+    "level=1,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=14,parent_dir=up,spring_level=8": {
+    "level=1,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=5,parent_dir=up,spring_level=0": {
+    "level=10,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=11,parent_dir=north,spring_level=4": {
+    "level=10,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=13,parent_dir=down,spring_level=3": {
+    "level=10,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=0,parent_dir=west,spring_level=3": {
+    "level=10,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=7,parent_dir=west,spring_level=7": {
+    "level=10,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=8,parent_dir=west,spring_level=5": {
+    "level=10,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=7,parent_dir=down,spring_level=0": {
+    "level=11,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=5,parent_dir=up,spring_level=8": {
+    "level=11,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=12,parent_dir=south,spring_level=2": {
+    "level=11,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=8,parent_dir=west,spring_level=3": {
+    "level=11,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=3,parent_dir=up,spring_level=4": {
+    "level=11,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=10,parent_dir=south,spring_level=0": {
+    "level=11,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=13,parent_dir=down,spring_level=2": {
+    "level=12,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=3,parent_dir=down,spring_level=1": {
+    "level=12,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=8,parent_dir=east,spring_level=4": {
+    "level=12,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=10,parent_dir=north,spring_level=4": {
+    "level=12,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=10,parent_dir=east,spring_level=6": {
+    "level=12,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=2,parent_dir=east,spring_level=4": {
+    "level=12,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=15,parent_dir=west,spring_level=3": {
+    "level=13,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=3,parent_dir=east,spring_level=4": {
+    "level=13,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=5,parent_dir=west,spring_level=5": {
+    "level=13,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=14,parent_dir=north,spring_level=5": {
+    "level=13,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=9,parent_dir=up,spring_level=4": {
+    "level=13,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=6,parent_dir=north,spring_level=2": {
+    "level=13,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=11,parent_dir=down,spring_level=0": {
+    "level=14,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=4,parent_dir=east,spring_level=2": {
+    "level=14,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=14,parent_dir=east,spring_level=0": {
+    "level=14,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=6,parent_dir=north,spring_level=4": {
+    "level=14,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=7,parent_dir=down,spring_level=7": {
+    "level=14,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=1,parent_dir=down,spring_level=5": {
+    "level=14,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=15,parent_dir=east,spring_level=4": {
+    "level=15,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=14,parent_dir=down,spring_level=2": {
+    "level=15,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=0,parent_dir=east,spring_level=2": {
+    "level=15,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=2,parent_dir=up,spring_level=1": {
+    "level=15,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=12,parent_dir=north,spring_level=8": {
+    "level=15,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=3,parent_dir=up,spring_level=3": {
+    "level=15,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=7,parent_dir=east,spring_level=5": {
+    "level=2,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=9,parent_dir=east,spring_level=8": {
+    "level=2,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=14,parent_dir=north,spring_level=7": {
+    "level=2,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=7,parent_dir=down,spring_level=8": {
+    "level=2,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=6,parent_dir=down,spring_level=6": {
+    "level=2,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=2,parent_dir=west,spring_level=3": {
+    "level=2,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=3,parent_dir=north,spring_level=3": {
+    "level=3,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=5,parent_dir=south,spring_level=3": {
+    "level=3,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=7,parent_dir=west,spring_level=2": {
+    "level=3,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=0,parent_dir=west,spring_level=5": {
+    "level=3,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=3,parent_dir=west,spring_level=1": {
+    "level=3,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=9,parent_dir=south,spring_level=4": {
+    "level=3,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=11,parent_dir=south,spring_level=3": {
+    "level=4,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=5,parent_dir=up,spring_level=6": {
+    "level=4,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=12,parent_dir=south,spring_level=8": {
+    "level=4,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=13,parent_dir=east,spring_level=6": {
+    "level=4,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=3,parent_dir=north,spring_level=0": {
+    "level=4,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=13,parent_dir=west,spring_level=1": {
+    "level=4,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=14,parent_dir=north,spring_level=0": {
+    "level=5,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=8,parent_dir=south,spring_level=2": {
+    "level=5,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=6,parent_dir=north,spring_level=7": {
+    "level=5,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=10,parent_dir=north,spring_level=0": {
+    "level=5,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=8,parent_dir=east,spring_level=0": {
+    "level=5,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=0,parent_dir=down,spring_level=7": {
+    "level=5,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=8,parent_dir=north,spring_level=5": {
+    "level=6,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=4,parent_dir=east,spring_level=8": {
+    "level=6,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=14,parent_dir=south,spring_level=3": {
+    "level=6,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=7,parent_dir=down,spring_level=1": {
+    "level=6,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=12,parent_dir=down,spring_level=6": {
+    "level=6,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=6,parent_dir=south,spring_level=7": {
+    "level=6,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=15,parent_dir=up,spring_level=4": {
+    "level=7,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=5,parent_dir=south,spring_level=4": {
+    "level=7,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=14,parent_dir=down,spring_level=8": {
+    "level=7,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=0,parent_dir=east,spring_level=8": {
+    "level=7,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=13,parent_dir=up,spring_level=0": {
+    "level=7,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=1,parent_dir=south,spring_level=3": {
+    "level=7,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=6,parent_dir=south,spring_level=1": {
+    "level=8,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=1,parent_dir=west,spring_level=3": {
+    "level=8,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=15,parent_dir=north,spring_level=1": {
+    "level=8,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=3,parent_dir=down,spring_level=2": {
+    "level=8,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=11,parent_dir=up,spring_level=7": {
+    "level=8,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=2,parent_dir=east,spring_level=6": {
+    "level=8,parent_dir=west": {
       "model": "minecraft:block/water"
     },
-    "level=7,parent_dir=up,spring_level=7": {
+    "level=9,parent_dir=down": {
       "model": "minecraft:block/water"
     },
-    "level=13,parent_dir=down,spring_level=4": {
+    "level=9,parent_dir=east": {
       "model": "minecraft:block/water"
     },
-    "level=13,parent_dir=west,spring_level=2": {
+    "level=9,parent_dir=north": {
       "model": "minecraft:block/water"
     },
-    "level=15,parent_dir=west,spring_level=8": {
+    "level=9,parent_dir=south": {
       "model": "minecraft:block/water"
     },
-    "level=14,parent_dir=down,spring_level=0": {
+    "level=9,parent_dir=up": {
       "model": "minecraft:block/water"
     },
-    "level=0,parent_dir=east,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=north,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=north,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=west,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=east,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=down,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=up,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=west,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=north,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=south,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=down,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=south,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=west,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=north,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=north,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=east,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=west,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=east,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=down,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=north,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=north,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=east,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=south,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=west,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=west,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=east,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=north,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=down,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=west,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=south,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=west,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=down,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=down,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=north,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=up,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=west,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=east,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=east,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=east,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=east,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=up,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=north,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=up,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=down,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=up,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=east,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=west,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=south,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=east,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=up,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=down,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=up,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=east,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=east,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=down,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=north,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=up,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=south,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=north,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=east,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=up,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=down,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=north,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=down,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=up,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=south,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=north,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=south,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=down,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=down,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=down,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=north,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=down,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=east,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=down,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=up,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=west,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=north,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=up,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=west,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=west,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=west,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=east,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=up,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=south,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=down,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=up,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=down,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=north,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=down,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=north,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=down,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=east,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=up,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=north,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=down,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=east,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=east,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=up,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=west,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=west,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=west,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=west,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=up,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=east,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=down,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=north,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=east,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=north,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=up,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=north,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=west,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=up,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=west,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=up,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=north,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=north,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=west,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=north,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=down,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=east,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=down,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=down,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=north,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=down,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=south,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=west,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=down,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=up,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=up,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=west,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=west,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=down,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=north,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=west,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=south,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=up,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=down,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=up,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=west,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=south,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=south,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=west,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=down,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=south,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=down,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=up,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=up,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=south,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=down,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=south,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=south,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=north,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=down,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=west,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=west,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=down,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=west,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=south,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=west,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=north,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=west,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=east,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=west,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=up,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=west,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=south,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=down,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=east,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=down,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=down,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=up,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=north,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=south,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=west,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=west,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=west,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=east,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=east,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=north,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=north,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=north,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=north,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=north,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=west,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=north,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=down,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=east,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=west,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=north,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=down,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=south,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=west,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=up,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=down,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=down,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=east,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=north,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=west,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=east,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=down,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=up,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=down,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=up,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=up,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=west,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=west,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=north,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=west,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=east,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=down,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=up,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=south,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=west,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=north,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=north,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=down,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=west,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=south,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=east,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=up,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=south,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=up,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=up,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=south,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=up,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=up,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=north,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=west,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=west,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=down,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=west,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=west,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=down,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=down,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=up,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=south,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=east,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=down,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=down,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=east,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=north,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=up,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=up,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=east,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=north,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=down,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=up,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=down,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=east,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=west,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=west,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=north,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=down,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=up,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=south,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=down,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=south,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=up,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=west,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=up,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=east,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=north,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=north,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=up,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=up,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=down,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=down,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=north,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=east,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=east,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=west,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=east,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=north,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=north,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=north,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=east,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=up,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=down,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=west,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=west,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=west,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=south,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=north,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=north,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=down,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=down,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=south,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=west,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=down,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=down,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=east,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=down,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=north,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=down,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=down,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=east,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=east,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=east,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=south,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=west,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=south,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=south,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=down,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=east,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=west,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=west,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=west,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=east,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=down,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=north,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=up,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=up,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=down,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=east,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=east,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=north,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=east,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=west,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=south,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=north,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=west,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=north,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=up,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=down,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=west,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=down,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=east,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=west,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=down,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=down,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=east,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=down,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=down,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=east,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=up,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=east,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=west,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=up,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=down,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=west,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=north,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=east,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=west,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=east,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=north,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=up,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=west,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=up,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=north,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=down,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=down,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=down,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=west,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=south,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=down,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=west,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=down,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=east,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=north,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=east,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=east,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=north,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=up,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=down,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=3,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=east,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=south,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=east,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=west,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=10,parent_dir=up,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=down,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=east,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=south,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=up,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=north,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=west,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=north,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=north,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=north,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=west,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=east,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=north,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=4,parent_dir=north,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=east,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=west,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=west,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=south,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=west,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=east,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=13,parent_dir=down,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=12,parent_dir=east,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=2,parent_dir=up,spring_level=6": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=down,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=8,parent_dir=north,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=5,parent_dir=west,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=0,parent_dir=south,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=down,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=11,parent_dir=east,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=west,spring_level=0": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=south,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=6,parent_dir=south,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=west,spring_level=1": {
-      "model": "minecraft:block/water"
-    },
-    "level=14,parent_dir=east,spring_level=2": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=south,spring_level=4": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=north,spring_level=3": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=1,parent_dir=south,spring_level=7": {
-      "model": "minecraft:block/water"
-    },
-    "level=7,parent_dir=up,spring_level=5": {
-      "model": "minecraft:block/water"
-    },
-    "level=9,parent_dir=south,spring_level=8": {
-      "model": "minecraft:block/water"
-    },
-    "level=15,parent_dir=west,spring_level=6": {
+    "level=9,parent_dir=west": {
       "model": "minecraft:block/water"
     }
   }

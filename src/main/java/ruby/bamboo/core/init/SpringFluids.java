@@ -29,14 +29,14 @@ public final class SpringFluids {
                 .tickRate(20);
     }
 
-    /** バイオーム水色×tint の乗算 (BlockColor と同ロジック) */
+    /** バイオーム水色×tint の乗算 (BlockColor と同ロジック) — 戻りは ARGB(FF固定)で不透明 */
     public static int multiplyColor(int biome, int tint) {
         int r1 = (biome >> 16) & 0xFF, g1 = (biome >> 8) & 0xFF, b1 = biome & 0xFF;
         int r2 = (tint >> 16) & 0xFF, g2 = (tint >> 8) & 0xFF, b2 = tint & 0xFF;
         int r = r1 * r2 / 255;
         int g = g1 * g2 / 255;
         int b = b1 * b2 / 255;
-        return (r << 16) | (g << 8) | b;
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
 
     public static FluidType createHotSpringType() {

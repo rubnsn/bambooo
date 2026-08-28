@@ -237,7 +237,7 @@ public final class BambooClientSetup {
                 rSum += (offCol >> 16) & 0xFF; gSum += (offCol >> 8) & 0xFF; bSum += offCol & 0xFF; cnt++;
             }
             if (cnt == 1) return selfCol;
-            return ((rSum / cnt) << 16) | ((gSum / cnt) << 8) | (bSum / cnt);
+            return 0xFF000000 | ((rSum / cnt) << 16) | ((gSum / cnt) << 8) | (bSum / cnt);
         }, BambooBlocks.SPRING_WATER.get());
     }
 

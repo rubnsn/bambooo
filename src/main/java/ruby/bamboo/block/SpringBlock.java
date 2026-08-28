@@ -73,7 +73,7 @@ public class SpringBlock extends Block {
             }
         } else if (level.isEmptyBlock(above)) {
             BlockState newState = BambooBlocks.SPRING_WATER.get().defaultBlockState()
-                    .setValue(SpringWaterBlock.SPRING_LEVEL, 1)
+                    .setValue(net.minecraft.world.level.block.LiquidBlock.LEVEL, 1)
                     .setValue(SpringWaterBlock.PARENT_DIR, net.minecraft.core.Direction.DOWN);
             level.setBlock(above, newState, 3);
             level.scheduleTick(above, BambooBlocks.SPRING_WATER.get(), getWaterDelay());
