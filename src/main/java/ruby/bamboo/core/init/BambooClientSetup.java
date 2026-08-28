@@ -120,8 +120,10 @@ public final class BambooClientSetup {
                     ruby.bamboo.client.renderer.CutBlockRenderer::new);
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.CUT_BLOCK.get(), RenderType.cutout());
 
-            // 温泉水 — 半透明 (Phase B)
+            // 温泉水 — 半透明 (Phase B) — ブロックと流体両方をtranslucentに (バニラ水と同様)
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.SPRING_WATER.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(BambooMod.SPRING_WATER_SOURCE.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(BambooMod.SPRING_WATER_FLOWING.get(), RenderType.translucent());
             // 布団用椅子エンティティ (huton_chair) — 不可視レンダラ。未登録だと shouldRender で NPE
             net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.HUTON_CHAIR.get(),
                     ruby.bamboo.client.renderer.ChairRenderer::new);
@@ -197,6 +199,46 @@ public final class BambooClientSetup {
         event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR, BambooBlocks.MAPLE_LEAVES.get());
         event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR, BambooBlocks.GINKGO_LEAVES.get());
         event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR, BambooBlocks.HINOKI_LEAVES.get());
+
+        // 温泉水 — PARENT_DIR で源泉の COLOR を辿り、Forest×tint + 3-4ブロック馴染み (BE無し)
+        event.register((state, level, pos, tintIndex) -> {
+            if (tintIndex != 0) return 0xFFFFFF;
+            if (level == null || pos == null) {
+                int tint2;
+                try { tint2 = ruby.bamboo.core.config.SpringConfig.COMMON.tintColor.get(); } catch (Exception e) { tint2 = 0xE0F8FF; }
+                return ruby.bamboo.block.SpringWaterBlock.multiplyColor(ruby.bamboo.block.SpringColor.DEFAULT.color, tint2);
+            }
+            // 源泉の色を PARENT_DIR 鎖で辿る
+            var srcPos = ruby.bamboo.block.SpringWaterBlock.findSource(level, pos, state, 32);
+            int baseColor;
+            if (srcPos != null) {
+                var srcState = level.getBlockState(srcPos);
+                if (srcState.getBlock() instanceof ruby.bamboo.block.SpringBlock) {
+                    baseColor = srcState.getValue(ruby.bamboo.block.SpringBlock.COLOR).color;
+                } else baseColor = ruby.bamboo.block.SpringColor.DEFAULT.color;
+            } else baseColor = ruby.bamboo.block.SpringColor.DEFAULT.color;
+            // 周囲3-4ブロックで平均して馴染ませる
+            int tint;
+            try { tint = ruby.bamboo.core.config.SpringConfig.COMMON.tintColor.get(); } catch (Exception e) { tint = 0xE0F8FF; }
+            int selfCol = ruby.bamboo.block.SpringWaterBlock.multiplyColor(baseColor, tint);
+            // 3x3 サンプリングで平均
+            int rSum = (selfCol >> 16) & 0xFF, gSum = (selfCol >> 8) & 0xFF, bSum = selfCol & 0xFF, cnt = 1;
+            for (var dir : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                var off = pos.relative(dir);
+                var offState = level.getBlockState(off);
+                if (!offState.is(BambooBlocks.SPRING_WATER.get())) continue;
+                var offSrc = ruby.bamboo.block.SpringWaterBlock.findSource(level, off, offState, 32);
+                int offBase = ruby.bamboo.block.SpringColor.DEFAULT.color;
+                if (offSrc != null) {
+                    var offSrcState = level.getBlockState(offSrc);
+                    if (offSrcState.getBlock() instanceof ruby.bamboo.block.SpringBlock) offBase = offSrcState.getValue(ruby.bamboo.block.SpringBlock.COLOR).color;
+                }
+                int offCol = ruby.bamboo.block.SpringWaterBlock.multiplyColor(offBase, tint);
+                rSum += (offCol >> 16) & 0xFF; gSum += (offCol >> 8) & 0xFF; bSum += offCol & 0xFF; cnt++;
+            }
+            if (cnt == 1) return selfCol;
+            return ((rSum / cnt) << 16) | ((gSum / cnt) << 8) | (bSum / cnt);
+        }, BambooBlocks.SPRING_WATER.get());
     }
 
     /**

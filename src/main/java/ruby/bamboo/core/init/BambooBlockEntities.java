@@ -10,7 +10,6 @@ import ruby.bamboo.block.entity.MillStoneBlockEntity;
 import ruby.bamboo.block.entity.MiniatureBlockEntity;
 import ruby.bamboo.block.entity.SlideDoorBlockEntity;
 import ruby.bamboo.block.entity.WallShelfBlockEntity;
-import ruby.bamboo.block.entity.SpringWaterBlockEntity;
 
 /**
  * BlockEntityType 登録。JPChest 用に新規追加 (旧 1.10.2 版は TileEntity 登録を
@@ -68,13 +67,6 @@ public final class BambooBlockEntities {
             .register(
                     "cut_block",
                     () -> BlockEntityType.Builder.of(CutBlockEntity::new, BambooBlocks.CUT_BLOCK.get())
-                            .build(null));
-
-    /** 温泉水 (源泉) */
-    public static final RegistryObject<BlockEntityType<SpringWaterBlockEntity>> SPRING_WATER_BE = BambooMod.BLOCK_ENTITIES
-            .register(
-                    "spring_water",
-                    () -> BlockEntityType.Builder.of(SpringWaterBlockEntity::new, BambooBlocks.SPRING_WATER.get())
                             .build(null));
     /**
      * 静的初期化順序の保証用ダミー。BambooMod コンストラクタから呼ばれる。

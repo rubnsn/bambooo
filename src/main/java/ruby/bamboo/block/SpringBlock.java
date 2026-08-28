@@ -18,9 +18,9 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import ruby.bamboo.core.config.SpringConfig;
 import ruby.bamboo.core.init.BambooBlocks;
-import ruby.bamboo.block.entity.SpringWaterBlockEntity;
 
 /**
  * 源泉ブロック — 1.20.1移植版。
@@ -29,18 +29,24 @@ import ruby.bamboo.block.entity.SpringWaterBlockEntity;
 public class SpringBlock extends Block {
 
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
+    public static final EnumProperty<SpringColor> COLOR = EnumProperty.create("color", SpringColor.class);
 
     public SpringBlock() {
         super(Properties.of()
                 .mapColor(MapColor.STONE)
                 .sound(SoundType.STONE)
                 .strength(1.0f, 300.0f));
-        this.registerDefaultState(this.stateDefinition.any().setValue(ACTIVE, Boolean.FALSE));
+        this.registerDefaultState(this.stateDefinition.any().setValue(ACTIVE, Boolean.FALSE).setValue(COLOR, SpringColor.DEFAULT));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ACTIVE);
+        builder.add(ACTIVE, COLOR);
+    }
+
+    /** 源泉の色を取得（水側はこの色を辿る） */
+    public SpringColor getSpringColor(BlockState state) {
+        return state.getValue(COLOR);
     }
 
     @Override
@@ -59,31 +65,39 @@ public class SpringBlock extends Block {
         BlockPos above = pos.above();
         BlockState aboveState = level.getBlockState(above);
         if (aboveState.is(BambooBlocks.SPRING_WATER.get())) {
-            // 満水チェックと水位+1
-            boolean up = SpringWaterBlockEntity.levelUp(level, above, aboveState);
+            boolean up = SpringWaterBlock.levelUp(level, above, aboveState);
             if (up) {
                 level.scheduleTick(above, BambooBlocks.SPRING_WATER.get(), getWaterDelay());
             } else {
-                // 満水: 源泉自身は再スケジュールせず停止 (旧準拠)
                 return;
             }
         } else if (level.isEmptyBlock(above)) {
             BlockState newState = BambooBlocks.SPRING_WATER.get().defaultBlockState()
-                    .setValue(SpringWaterBlock.SPRING_LEVEL, 1);
+                    .setValue(SpringWaterBlock.SPRING_LEVEL, 1)
+                    .setValue(SpringWaterBlock.PARENT_DIR, net.minecraft.core.Direction.DOWN);
             level.setBlock(above, newState, 3);
-            // BEがあれば親を自分(湧出源)に設定
-            if (level.getBlockEntity(above) instanceof SpringWaterBlockEntity be) {
-                be.setParent(above);
-            }
             level.scheduleTick(above, BambooBlocks.SPRING_WATER.get(), getWaterDelay());
         } else {
             level.setBlock(pos, state.setValue(ACTIVE, Boolean.FALSE), 3);
-            // 上が塞がれたら停止、再スケジュールしない
             return;
         }
         if (state.getValue(ACTIVE)) {
             level.scheduleTick(pos, this, getSourceDelay());
         }
+    }
+
+    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+        if (!state.is(newState.getBlock())) {
+            if (!level.isClientSide) {
+                BlockPos above = pos.above();
+                BlockState aboveState = level.getBlockState(above);
+                if (aboveState.is(BambooBlocks.SPRING_WATER.get())) {
+                    level.scheduleTick(above, BambooBlocks.SPRING_WATER.get(), getEvaporationDelay());
+                }
+            }
+        }
+        super.onRemove(state, level, pos, newState, isMoving);
     }
 
     @Override
@@ -107,11 +121,7 @@ public class SpringBlock extends Block {
             BlockPos above = pos.above();
             BlockState aboveState = level.getBlockState(above);
             if (aboveState.is(BambooBlocks.SPRING_WATER.get())) {
-                if (level.getBlockEntity(above) instanceof SpringWaterBlockEntity be) {
-                    be.setDead();
-                    // 即時乾燥スケジュールを開始
-                    level.scheduleTick(above, BambooBlocks.SPRING_WATER.get(), getEvaporationDelay());
-                }
+                level.scheduleTick(above, BambooBlocks.SPRING_WATER.get(), getEvaporationDelay());
             }
         }
         return InteractionResult.SUCCESS;
