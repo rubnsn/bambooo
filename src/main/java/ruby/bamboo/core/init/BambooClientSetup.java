@@ -50,6 +50,10 @@ public final class BambooClientSetup {
             cutout(BambooBlocks.BAMBOO_PANE2.get());
             cutout(BambooBlocks.BAMBOO_PANE3.get());
             cutout(BambooBlocks.RANMA.get());
+            // sakura deco: すだれ/のれん -> cutout
+            cutout(BambooBlocks.BLIND.get());
+            cutout(BambooBlocks.NOREN_BLUE.get());
+            cutout(BambooBlocks.NOREN_PURPLE.get());
             // 狐火 -> cutout (cross モデル、透過テクスチャ。旧 BlockRenderLayer.CUTOUT 相当)
             cutout(BambooBlocks.KITSUNEBI.get());
             // 葉 -> cutout_mipped

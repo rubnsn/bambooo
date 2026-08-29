@@ -1,0 +1,7 @@
+﻿{
+  "variants": {
+    "type=bottom": { "model": "bamboomod:block/sakura_slab" },
+    "type=top": { "model": "bamboomod:block/sakura_slab_top" },
+    "type=double": { "model": "bamboomod:block/sakura_planks" }
+  }
+}

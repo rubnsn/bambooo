@@ -1,0 +1,8 @@
+﻿{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "bamboomod:block/tatami_tan",
+    "top": "bamboomod:block/tatami_tan",
+    "side": "bamboomod:block/tatami_tan"
+  }
+}

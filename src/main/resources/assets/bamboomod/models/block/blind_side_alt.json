@@ -1,0 +1,8 @@
+﻿{
+  "parent": "minecraft:block/iron_bars_side_alt",
+  "textures": {
+    "particle": "bamboomod:block/blind",
+    "bars": "bamboomod:block/blind",
+    "edge": "bamboomod:block/blind"
+  }
+}

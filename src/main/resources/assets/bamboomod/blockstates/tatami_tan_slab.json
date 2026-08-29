@@ -1,0 +1,7 @@
+﻿{
+  "variants": {
+    "type=bottom": { "model": "bamboomod:block/tatami_tan_slab" },
+    "type=top": { "model": "bamboomod:block/tatami_tan_slab_top" },
+    "type=double": { "model": "bamboomod:block/tatami_tan" }
+  }
+}
