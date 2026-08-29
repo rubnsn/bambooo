@@ -2,8 +2,10 @@ package ruby.bamboo.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -13,9 +15,14 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.network.PacketDistributor;
 import ruby.bamboo.api.ILightColor;
+import ruby.bamboo.core.init.BambooCapabilities;
+import ruby.bamboo.network.BambooNetwork;
+import ruby.bamboo.network.ColoredLightSyncPacket;
 
 /**
  * 間接照明。旧 IndLight (1.10.2) の移植。
@@ -180,5 +187,47 @@ public class IndLightBlock extends Block implements ILightColor {
     @Override
     public int getLightColor(BlockState state, BlockGetter level, BlockPos pos) {
         return this.color.mapColor;
+    }
+
+    @Override
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
+        super.onPlace(state, level, pos, oldState, isMoving);
+        if (oldState.getBlock() == state.getBlock()) {
+            return;
+        }
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        if (!serverLevel.hasChunkAt(pos)) {
+            return;
+        }
+        LevelChunk chunk = serverLevel.getChunkAt(pos);
+        chunk.getCapability(BambooCapabilities.COLORED_LIGHT).ifPresent(storage -> {
+            storage.getMap().put(Long.valueOf(pos.asLong()), this.color.mapColor & 0xFFFFFF);
+            chunk.setUnsaved(true);
+            ColoredLightSyncPacket pkt = new ColoredLightSyncPacket(chunk.getPos(), storage.getMap());
+            BambooNetwork.CHANNEL.send(PacketDistributor.TRACKING_CHUNK.with(() -> chunk), pkt);
+        });
+    }
+
+    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+        super.onRemove(state, level, pos, newState, isMoving);
+        if (newState.getBlock() == state.getBlock()) {
+            return;
+        }
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        if (!serverLevel.hasChunkAt(pos)) {
+            return;
+        }
+        LevelChunk chunk = serverLevel.getChunkAt(pos);
+        chunk.getCapability(BambooCapabilities.COLORED_LIGHT).ifPresent(storage -> {
+            storage.getMap().remove(Long.valueOf(pos.asLong()));
+            chunk.setUnsaved(true);
+            ColoredLightSyncPacket pkt = new ColoredLightSyncPacket(chunk.getPos(), storage.getMap());
+            BambooNetwork.CHANNEL.send(PacketDistributor.TRACKING_CHUNK.with(() -> chunk), pkt);
+        });
     }
 }

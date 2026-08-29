@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "package": "ruby.bamboo.mixin",
+  "refmap": "bamboomod.refmap.json",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "LightTextureMixin"
+  ],
+  "minVersion": "0.8"
+}

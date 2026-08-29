@@ -53,7 +53,7 @@ public class ColoredLightSyncPacket {
         for (int i = 0; i < size; i++) {
             long p = buf.readLong();
             int c = buf.readInt();
-            map.put(p, c);
+            map.put(Long.valueOf(p), c);
         }
         return new ColoredLightSyncPacket(pos, map);
     }

@@ -48,7 +48,7 @@ public class ColoredLightStorage implements INBTSerializable<CompoundTag> {
         ListTag list = n.getList("Lights", 10);
         for (Tag e : list) {
             CompoundTag t = (CompoundTag) e;
-            map.put(t.getLong("p"), t.getInt("c"));
+            map.put(Long.valueOf(t.getLong("p")), t.getInt("c"));
         }
     }
 }

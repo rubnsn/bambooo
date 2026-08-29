@@ -3,6 +3,7 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.spongepowered.mixin' version '0.7.+'
 }
 
 version = mod_version
@@ -147,6 +148,17 @@ dependencies {
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
+    // Mixin — Phase C scaffolding (LightTextureMixin 用 refmap 生成)
+    implementation 'org.spongepowered:mixin:0.8.5'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5'
+    // Mixin AP は内部で Gson/Guava/ASM を使うため annotationProcessor 側にも明示
+    annotationProcessor 'com.google.code.gson:gson:2.10.1'
+    annotationProcessor 'com.google.guava:guava:31.1-jre'
+    annotationProcessor 'org.ow2.asm:asm:9.2'
+    annotationProcessor 'org.ow2.asm:asm-tree:9.2'
+    annotationProcessor 'org.ow2.asm:asm-commons:9.2'
+    annotationProcessor 'org.ow2.asm:asm-util:9.2'
+
     // JEI — compile against API, runtime with full jar (JEI is optional, client only)
     compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
     compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
@@ -221,6 +233,10 @@ publishing {
             url "file://${project.projectDir}/mcmodsrepo"
         }
     }
+}
+
+mixin {
+    add sourceSets.main, "bamboomod.refmap.json"
 }
 
 tasks.withType(JavaCompile).configureEach {
