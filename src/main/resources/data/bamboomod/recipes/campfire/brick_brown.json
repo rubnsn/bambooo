@@ -1,0 +1,25 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "color_brick",
+  "pattern": [
+    "BBB",
+    "B#B",
+    "BBB"
+  ],
+  "key": {
+    "#": {
+      "tag": "forge:dyes/brown"
+    },
+    "B": {
+      "tag": "forge:ingots/brick"
+    }
+  },
+  "result": {
+    "item": "bamboomod:brick_brown",
+    "count": 2
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

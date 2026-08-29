@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "bamboomod:straw_block"
+    }
+  },
+  "result": {
+    "item": "bamboomod:straw_slab",
+    "count": 6
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "bamboomod:tatami"
+    }
+  },
+  "result": {
+    "item": "bamboomod:tatami_slab",
+    "count": 6
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "checkered_slab",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "bamboomod:checkered_birch"
+    }
+  },
+  "result": {
+    "item": "bamboomod:checkered_birch_slab",
+    "count": 6
+  }
+}
