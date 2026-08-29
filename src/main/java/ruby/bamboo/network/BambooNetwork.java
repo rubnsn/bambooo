@@ -36,5 +36,13 @@ public final class BambooNetwork {
                 FlashJumpPacket::encode,
                 FlashJumpPacket::decode,
                 FlashJumpPacket::handle);
+        CHANNEL.registerMessage(nextId(), WishOpenPacket.class,
+                WishOpenPacket::encode,
+                WishOpenPacket::decode,
+                WishOpenPacket::handle);
+        CHANNEL.registerMessage(nextId(), WishRequestPacket.class,
+                WishRequestPacket::encode,
+                WishRequestPacket::decode,
+                WishRequestPacket::handle);
     }
 }
