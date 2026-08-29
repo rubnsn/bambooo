@@ -199,5 +199,13 @@
   "bamboomod.config.miniature.render.lodShell": "Shell LOD on boundary",
   "block.bamboomod.cut_block": "Cut Block",
   "block.bamboomod.spring_block": "Spring Block",
-  "block.bamboomod.spring_water": "Hot Spring Water"
+  "block.bamboomod.spring_water": "Hot Spring Water",
+  "bamboomod.wish.title": "A tremendous fortune smiles upon you! What do you wish for?",
+  "bamboomod.wish.button": "Wish",
+  "bamboomod.wish.result.generic": "Your wish has been granted...",
+  "bamboomod.wish.fallback.water": "Lukewarm water bubbles up...",
+  "bamboomod.wish.fallback.pain": "You feel a slight pain...",
+  "bamboomod.wish.fallback.xp": "You feel your experience drain a little...",
+  "bamboomod.wish.fallback.iron": "Not bad, I guess.",
+  "bamboomod.wish.greed.line": "That... might be a bit too greedy, don't you think?"
 }
