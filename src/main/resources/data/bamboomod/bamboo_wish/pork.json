@@ -1,0 +1,13 @@
+{
+  "id": "wish/pork",
+  "pattern": "豚肉|ぶたにく|pork",
+  "match": "regex",
+  "priority": false,
+  "weight": 1,
+  "message": "bamboomod.wish.result.generic",
+  "effect": {
+    "type": "give_item",
+    "item": "minecraft:porkchop",
+    "count": 3
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "wish/greed",
+  "pattern": "全部|全て|無限|たくさん|999|∞",
+  "match": "regex",
+  "priority": true,
+  "weight": 1,
+  "message": "bamboomod.wish.greed.line",
+  "effect": {
+    "type": "punishment",
+    "kind": "lightning"
+  }
+}
