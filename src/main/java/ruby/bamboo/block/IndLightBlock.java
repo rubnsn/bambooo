@@ -15,6 +15,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import ruby.bamboo.api.ILightColor;
+
 /**
  * 間接照明。旧 IndLight (1.10.2) の移植。
  * <p>
@@ -25,7 +27,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * (NORTH=面上方向, SOUTH=面下方向, EAST=面向かって右, WEST=左。旧 getActualState 相当)。
  * 光源レベル15。描画は cutout (旧 BlockRenderLayer.TRANSLUCENT 相当処理)。
  */
-public class IndLightBlock extends Block {
+public class IndLightBlock extends Block implements ILightColor {
 
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
@@ -173,5 +175,10 @@ public class IndLightBlock extends Block {
             return false;
         }
         return other.color == this.color && target.getValue(FACING) == state.getValue(FACING);
+    }
+
+    @Override
+    public int getLightColor(BlockState state, BlockGetter level, BlockPos pos) {
+        return this.color.mapColor;
     }
 }
