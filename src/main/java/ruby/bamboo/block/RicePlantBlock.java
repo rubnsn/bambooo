@@ -50,9 +50,10 @@ public class RicePlantBlock extends CropBlock {
 
     @Override
     protected boolean mayPlaceOn(BlockState state, BlockGetter level, BlockPos pos) {
+        // 循環参照防止: state.canSustainPlant -> Block.canSustainPlant -> BushBlock.mayPlaceOn -> RicePlantBlock.mayPlaceOn のループを避ける
+        // 旧3条件目は canSustainPlant への委譲だったが、FARMLAND以外の土で無限再帰するため削除
         return state.is(net.minecraft.world.level.block.Blocks.FARMLAND)
-                || state.getBlock() instanceof PaddyFieldBlock
-                || state.canSustainPlant(level, pos, Direction.UP, this);
+                || state.getBlock() instanceof PaddyFieldBlock;
     }
 
     @Override

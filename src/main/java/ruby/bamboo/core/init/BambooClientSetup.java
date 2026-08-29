@@ -78,6 +78,9 @@ public final class BambooClientSetup {
             // 壁棚 -> cutout (薄板モデル)
             cutout(BambooBlocks.WALL_SHELF.get());
 
+            // 田んぼ -> 半ブロック(高さ8) + 水張り時は水色上面。water_stillテクスチャの半透明を正しく描画するため translucent
+            ItemBlockRenderTypes.setRenderLayer(BambooBlocks.PADDY_FIELD.get(), RenderType.translucent());
+
             // 石臼の BER 登録 (旧 TESR 相当)
             net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
                     BambooBlockEntities.MILL_STONE_BE.get(),

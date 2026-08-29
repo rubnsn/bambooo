@@ -10,6 +10,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -19,6 +20,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.PlantType;
 import ruby.bamboo.core.init.BambooBlocks;
@@ -32,12 +35,29 @@ import ruby.bamboo.core.init.BambooBlocks;
 public class PaddyFieldBlock extends FarmBlock implements SimpleWaterloggedBlock {
 
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
+    /** 半ブロック高さ (10/16)。water有無の視認性向上とユーザー要望対応。土戻りは無効化済 */
+    public static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 10, 16);
 
     public PaddyFieldBlock(BlockBehaviour.Properties props) {
         super(props);
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(MOISTURE, Integer.valueOf(0))
                 .setValue(WATERLOGGED, Boolean.FALSE));
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
+        return SHAPE;
+    }
+
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
+        return SHAPE;
+    }
+
+    @Override
+    public VoxelShape getVisualShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
+        return SHAPE;
     }
 
     @Override
@@ -100,18 +120,56 @@ public class PaddyFieldBlock extends FarmBlock implements SimpleWaterloggedBlock
         return state.setValue(WATERLOGGED, waterlogged).setValue(MOISTURE, waterlogged ? 7 : 0);
     }
 
-    // ===== 成長加速 (sakura tick相当) =====
-
+    // ===== 成長加速 (sakura tick相当) + 土戻り無効化 =====
+    // FarmBlock.tick / randomTick は canSurvive失敗やMOISTURE枯渇で turnToDirt するが、田んぼは自然に土へ戻さない
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        super.tick(state, level, pos, random);
-        tryAccelerate(state, level, pos, random);
+        // super.tickのturnToDirtを潰す: canSurviveチェックのみスキップし、流体tickは維持しない
+        // 水張り時はMOISTUREを常に7に維持（vanilla isNearWaterでは水没田んぼが水扱いされないため）
+        var cur = level.getBlockState(pos);
+        if (cur.getBlock() == this && cur.getValue(WATERLOGGED) && cur.getValue(MOISTURE) != 7) {
+            level.setBlock(pos, cur.setValue(MOISTURE, 7), 2);
+        }
+        var target = level.getBlockState(pos);
+        if (target.getBlock() == this) {
+            tryAccelerate(target, level, pos, random);
+        }
     }
 
     @Override
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        super.randomTick(state, level, pos, random);
-        tryAccelerate(state, level, pos, random);
+        // vanillaの水分拡散ロジックを土戻り無しで再現
+        var cur = level.getBlockState(pos);
+        if (cur.getBlock() != this) {
+            return;
+        }
+        // 水張り時は常に7
+        if (cur.getValue(WATERLOGGED)) {
+            if (cur.getValue(MOISTURE) != 7) {
+                level.setBlock(pos, cur.setValue(MOISTURE, 7), 2);
+                cur = cur.setValue(MOISTURE, 7);
+            }
+        } else {
+            // 非水没時はvanilla同様に isNearWater / 降雨で湿潤、乾燥時は減算のみで土には戻さない
+            int moisture = cur.getValue(MOISTURE);
+            boolean nearWater = isNearWater(level, pos) || level.isRainingAt(pos.above());
+            if (!nearWater) {
+                if (moisture > 0) {
+                    level.setBlock(pos, cur.setValue(MOISTURE, moisture - 1), 2);
+                    cur = cur.setValue(MOISTURE, moisture - 1);
+                } else {
+                    // 旧: shouldMaintainFarmland==false なら turnToDirt だが田んぼは潰す
+                    // 何もしない = 土に戻さない
+                }
+            } else if (moisture < 7) {
+                level.setBlock(pos, cur.setValue(MOISTURE, 7), 2);
+                cur = cur.setValue(MOISTURE, 7);
+            }
+        }
+        var target = level.getBlockState(pos);
+        if (target.getBlock() == this) {
+            tryAccelerate(target, level, pos, random);
+        }
     }
 
     private void tryAccelerate(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
@@ -167,8 +225,15 @@ public class PaddyFieldBlock extends FarmBlock implements SimpleWaterloggedBlock
         if (!level.isClientSide) {
             BlockState fromState = level.getBlockState(fromPos);
             if (fromState.getBlock() == this && isHorizontalPos(pos, fromPos)) {
-                if (state.getValue(WATERLOGGED) != fromState.getValue(WATERLOGGED)) {
-                    level.setBlock(pos, state.setValue(WATERLOGGED, fromState.getValue(WATERLOGGED)), 3);
+                boolean fromWater = fromState.getValue(WATERLOGGED);
+                boolean curWater = state.getValue(WATERLOGGED);
+                if (curWater != fromWater) {
+                    BlockState newState = state.setValue(WATERLOGGED, fromWater);
+                    // 水張り同期時はMOISTUREも7/維持で合わせる（成長加速がMOISTURE==7前提のため）
+                    if (fromWater) {
+                        newState = newState.setValue(MOISTURE, 7);
+                    }
+                    level.setBlock(pos, newState, 3);
                 }
             }
         }
@@ -183,6 +248,16 @@ public class PaddyFieldBlock extends FarmBlock implements SimpleWaterloggedBlock
             }
         }
         return false;
+    }
+
+    private static boolean isNearWater(LevelReader level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        for (BlockPos p : BlockPos.betweenClosed(pos.offset(-4, 0, -4), pos.offset(4, 1, 4))) {
+            if (state.canBeHydrated(level, p, level.getFluidState(p), pos)) {
+                return true;
+            }
+        }
+        return net.minecraftforge.common.FarmlandWaterManager.hasBlockWaterTicket(level, pos);
     }
 
     @Override

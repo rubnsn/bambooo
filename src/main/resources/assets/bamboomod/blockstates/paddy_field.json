@@ -7,14 +7,14 @@
     "moisture=4,waterlogged=false": { "model": "bamboomod:block/paddy_field" },
     "moisture=5,waterlogged=false": { "model": "bamboomod:block/paddy_field" },
     "moisture=6,waterlogged=false": { "model": "bamboomod:block/paddy_field" },
-    "moisture=7,waterlogged=false": { "model": "bamboomod:block/paddy_field" },
-    "moisture=0,waterlogged=true": { "model": "bamboomod:block/paddy_field" },
-    "moisture=1,waterlogged=true": { "model": "bamboomod:block/paddy_field" },
-    "moisture=2,waterlogged=true": { "model": "bamboomod:block/paddy_field" },
-    "moisture=3,waterlogged=true": { "model": "bamboomod:block/paddy_field" },
-    "moisture=4,waterlogged=true": { "model": "bamboomod:block/paddy_field" },
-    "moisture=5,waterlogged=true": { "model": "bamboomod:block/paddy_field" },
-    "moisture=6,waterlogged=true": { "model": "bamboomod:block/paddy_field" },
-    "moisture=7,waterlogged=true": { "model": "bamboomod:block/paddy_field" }
+    "moisture=7,waterlogged=false": { "model": "bamboomod:block/paddy_field_moist" },
+    "moisture=0,waterlogged=true": { "model": "bamboomod:block/paddy_field_water" },
+    "moisture=1,waterlogged=true": { "model": "bamboomod:block/paddy_field_water" },
+    "moisture=2,waterlogged=true": { "model": "bamboomod:block/paddy_field_water" },
+    "moisture=3,waterlogged=true": { "model": "bamboomod:block/paddy_field_water" },
+    "moisture=4,waterlogged=true": { "model": "bamboomod:block/paddy_field_water" },
+    "moisture=5,waterlogged=true": { "model": "bamboomod:block/paddy_field_water" },
+    "moisture=6,waterlogged=true": { "model": "bamboomod:block/paddy_field_water" },
+    "moisture=7,waterlogged=true": { "model": "bamboomod:block/paddy_field_water" }
   }
 }
