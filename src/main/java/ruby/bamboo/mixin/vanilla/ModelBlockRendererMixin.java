@@ -22,11 +22,6 @@ import ruby.bamboo.util.ColoredLightUtil;
 public abstract class ModelBlockRendererMixin {
 
     @Unique
-    private static final org.slf4j.Logger bamboomod$LOGGER = com.mojang.logging.LogUtils.getLogger();
-    @Unique
-    private static int bamboomod$logCounter = 0;
-
-    @Unique
     private static final ThreadLocal<Vector3f> bamboomod$currentTint = ThreadLocal.withInitial(() -> new Vector3f(1, 1, 1));
 
     @Inject(method = "tesselateBlock", at = @At("HEAD"))
@@ -38,11 +33,6 @@ public abstract class ModelBlockRendererMixin {
         try {
             Vector3f tint = ColoredLightUtil.getTint(pos, level);
             bamboomod$currentTint.set(tint);
-            if (tint.x != 1 || tint.y != 1 || tint.z != 1) {
-                if (bamboomod$logCounter++ % 200 == 0) {
-                    bamboomod$LOGGER.info("[bamboomod] ModelBlockRendererMixin tesselateBlock tint {} at {} state {}", String.format("(%.2f,%.2f,%.2f)", tint.x, tint.y, tint.z), pos, state);
-                }
-            }
         } catch (Exception e) {
             bamboomod$currentTint.set(new Vector3f(1, 1, 1));
         }
@@ -57,11 +47,6 @@ public abstract class ModelBlockRendererMixin {
         try {
             Vector3f tint = ColoredLightUtil.getTint(pos, level);
             bamboomod$currentTint.set(tint);
-            if (tint.x != 1 || tint.y != 1 || tint.z != 1) {
-                if (bamboomod$logCounter++ % 200 == 0) {
-                    bamboomod$LOGGER.info("[bamboomod] ModelBlockRendererMixin tesselateBlock2 tint {} at {} state {}", String.format("(%.2f,%.2f,%.2f)", tint.x, tint.y, tint.z), pos, state);
-                }
-            }
         } catch (Exception e) {
             bamboomod$currentTint.set(new Vector3f(1, 1, 1));
         }

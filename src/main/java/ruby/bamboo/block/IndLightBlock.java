@@ -208,7 +208,6 @@ public class IndLightBlock extends Block implements ILightColor {
                     c2.getCapability(BambooCapabilities.COLORED_LIGHT).ifPresent(s2 -> s2.invalidateTintCache());
                 }
             }
-            com.mojang.logging.LogUtils.getLogger().info("[bamboomod] IndLight onPlace {} color {} chunk {} mapSize {} ver {}", pos, String.format("#%06X", this.color.mapColor & 0xFFFFFF), chunk.getPos(), storage.getMap().size(), storage.getVersion());
         });
     }
 
@@ -234,7 +233,6 @@ public class IndLightBlock extends Block implements ILightColor {
                     c2.getCapability(BambooCapabilities.COLORED_LIGHT).ifPresent(s2 -> s2.invalidateTintCache());
                 }
             }
-            com.mojang.logging.LogUtils.getLogger().info("[bamboomod] IndLight onRemove {} chunk {} mapSize {} ver {}", pos, chunk.getPos(), storage.getMap().size(), storage.getVersion());
         });
     }
 }

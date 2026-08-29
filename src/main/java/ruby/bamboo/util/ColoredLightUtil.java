@@ -19,8 +19,8 @@ import java.util.List;
  */
 public final class ColoredLightUtil {
 
-    private static final int RADIUS = 12;
-    private static final float RADIUS_F = 12.0f;
+    private static final int RADIUS = 16;
+    private static final float RADIUS_F = 16.0f;
 
     private ColoredLightUtil() {
     }
@@ -35,22 +35,19 @@ public final class ColoredLightUtil {
         if (colors == null || weights == null || colors.isEmpty() || colors.size() != weights.size()) {
             return 0xFFFFFF;
         }
+        // スクリーン合成: 1-(1-a)(1-b) で多色ほど白に近づく。重みwは寄与度として c*w をスクリーンする
         float r = 0f;
         float g = 0f;
         float b = 0f;
-        float sumW = 0f;
         for (int i = 0; i < colors.size(); i++) {
             int c = colors.get(i) & 0xFFFFFF;
             float w = weights.get(i);
-            r += ((c >> 16) & 0xFF) * w;
-            g += ((c >> 8) & 0xFF) * w;
-            b += (c & 0xFF) * w;
-            sumW += w;
-        }
-        if (sumW > 0.001f) {
-            r /= sumW;
-            g /= sumW;
-            b /= sumW;
+            float cr = ((c >> 16) & 0xFF) * w;
+            float cg = ((c >> 8) & 0xFF) * w;
+            float cb = (c & 0xFF) * w;
+            r = 255f - (255f - r) * (255f - cr) / 255f;
+            g = 255f - (255f - g) * (255f - cg) / 255f;
+            b = 255f - (255f - b) * (255f - cb) / 255f;
         }
         int ri = Math.min(255, Math.max(0, Math.round(r)));
         int gi = Math.min(255, Math.max(0, Math.round(g)));
@@ -65,14 +62,30 @@ public final class ColoredLightUtil {
      *
      * @return 1.0基準の乗算係数 (白=1,1,1)。光源が無ければ 1,1,1 を返す。
      */
+    private static java.lang.reflect.Field LEVEL_FIELD = null;
+    private static Class<?> LEVEL_FIELD_CLASS = null;
+
     private static Level extractLevel(BlockGetter getter) {
         if (getter instanceof Level lvl) return lvl;
-        try {
-            var f = getter.getClass().getDeclaredField("level");
-            f.setAccessible(true);
-            Object v = f.get(getter);
-            if (v instanceof Level lvl2) return lvl2;
-        } catch (Exception ignored) {
+        Class<?> clz = getter.getClass();
+        if (LEVEL_FIELD != null && LEVEL_FIELD_CLASS == clz) {
+            try {
+                Object v = LEVEL_FIELD.get(getter);
+                if (v instanceof Level lvl2) return lvl2;
+            } catch (Exception ignored) {
+            }
+        } else {
+            try {
+                var f = clz.getDeclaredField("level");
+                f.setAccessible(true);
+                Object v = f.get(getter);
+                if (v instanceof Level lvl2) {
+                    LEVEL_FIELD = f;
+                    LEVEL_FIELD_CLASS = clz;
+                    return lvl2;
+                }
+            } catch (Exception ignored) {
+            }
         }
         try {
             var mc = net.minecraft.client.Minecraft.getInstance();
@@ -229,6 +242,18 @@ public final class ColoredLightUtil {
         }
 
         if (colors.isEmpty()) {
+            if (lvlForCache != null && lvlForCache.hasChunkAt(shadedPos)) {
+                LevelChunk chunkPut = lvlForCache.getChunkAt(shadedPos);
+                var optPut = chunkPut.getCapability(BambooCapabilities.COLORED_LIGHT);
+                if (optPut.isPresent()) {
+                    var storagePut = optPut.orElse(null);
+                    if (storagePut != null) {
+                        synchronized (storagePut.getTintCache()) {
+                            storagePut.getTintCache().put(shadedPos.asLong(), 0xFFFFFF);
+                        }
+                    }
+                }
+            }
             return new Vector3f(1f, 1f, 1f);
         }
 
@@ -238,7 +263,7 @@ public final class ColoredLightUtil {
         float totalWeight = 0f;
         for (float w : weights) totalWeight += w;
         // 複数光源でも 1 でクランプ。0.8掛けで近距離でも20%白を残して暗すぎを緩和
-        float alpha = Math.min(1f, totalWeight) * 0.8f;
+        float alpha = Math.min(1f, totalWeight) * 1f;
         int blendedPure = blendAdditive(colors, weights);
         int pr = (blendedPure >> 16) & 0xFF;
         int pg = (blendedPure >> 8) & 0xFF;
@@ -247,7 +272,14 @@ public final class ColoredLightUtil {
         int fr = Math.round(255 * (1 - alpha) + pr * alpha);
         int fg = Math.round(255 * (1 - alpha) + pg * alpha);
         int fb = Math.round(255 * (1 - alpha) + pb * alpha);
-        // 正規化で最大チャネルを1に近づけるオプションは一旦なし (lerpで十分明るくなる)
+        // B: 輝度正規化 - 最大チャネルを255に合わせて乗算でも暗くならないように色相のみ残す
+        float max = Math.max(fr, Math.max(fg, fb));
+        if (max > 0 && max < 255) {
+            float s = 255f / max;
+            fr = Math.min(255, Math.round(fr * s));
+            fg = Math.min(255, Math.round(fg * s));
+            fb = Math.min(255, Math.round(fb * s));
+        }
         int blended = (fr << 16) | (fg << 8) | fb;
         // キャッシュ保存 (RenderChunkRegion でも Level 経由で保存)
         if (lvlForCache != null && lvlForCache.hasChunkAt(shadedPos)) {
