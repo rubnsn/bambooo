@@ -219,6 +219,12 @@
   "block.bamboomod.noren_blue": "のれん (青)",
   "block.bamboomod.noren_purple": "のれん (紫)",
   "block.bamboomod.brick_orange": "レンガ (橙)",
+  "block.bamboomod.brick_orange_slab": "ハーフレンガ (橙)",
+  "block.bamboomod.brick_orange_stairs": "レンガ階段 (橙)",
   "block.bamboomod.brick_white": "レンガ (白)",
-  "block.bamboomod.brick_brown": "レンガ (茶)"
+  "block.bamboomod.brick_white_slab": "ハーフレンガ (白)",
+  "block.bamboomod.brick_white_stairs": "レンガ階段 (白)",
+  "block.bamboomod.brick_brown": "レンガ (茶)",
+  "block.bamboomod.brick_brown_slab": "ハーフレンガ (茶)",
+  "block.bamboomod.brick_brown_stairs": "レンガ階段 (茶)"
 }

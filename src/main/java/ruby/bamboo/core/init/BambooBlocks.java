@@ -334,16 +334,37 @@ public final class BambooBlocks {
     public static final RegistryObject<NorenBlock> NOREN_BLUE = register("noren_blue", NorenBlock::new);
     public static final RegistryObject<NorenBlock> NOREN_PURPLE = register("noren_purple", NorenBlock::new);
 
-    // brick 3件 (sakura 51-53): 単品cube
+    // brick 3件 (sakura 51-53): cube + slab + stairs (v2: brick 3色にハーフ/階段追加)
     public static final RegistryObject<Block> BRICK_ORANGE = register("brick_orange",
             () -> new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_ORANGE).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+    public static final RegistryObject<SlabBlock> BRICK_ORANGE_SLAB = register("brick_orange_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_ORANGE).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+    public static final RegistryObject<StairBlock> BRICK_ORANGE_STAIRS = register("brick_orange_stairs",
+            () -> new StairBlock(BRICK_ORANGE.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.TERRACOTTA_ORANGE).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
     public static final RegistryObject<Block> BRICK_WHITE = register("brick_white",
             () -> new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.QUARTZ).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+    public static final RegistryObject<SlabBlock> BRICK_WHITE_SLAB = register("brick_white_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.QUARTZ).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+    public static final RegistryObject<StairBlock> BRICK_WHITE_STAIRS = register("brick_white_stairs",
+            () -> new StairBlock(BRICK_WHITE.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.QUARTZ).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
     public static final RegistryObject<Block> BRICK_BROWN = register("brick_brown",
             () -> new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+    public static final RegistryObject<SlabBlock> BRICK_BROWN_SLAB = register("brick_brown_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+    public static final RegistryObject<StairBlock> BRICK_BROWN_STAIRS = register("brick_brown_stairs",
+            () -> new StairBlock(BRICK_BROWN.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
     // ===== 第6弾: 広葉樹の葉4種 (旧 broad_leave meta=0-3 を独立ブロック化) =====
 
     /** 広葉 (緑/赤/黄/橙)。テクスチャ共通 broadleaf.png を BlockColor で色乗算 */

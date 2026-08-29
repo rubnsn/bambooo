@@ -219,6 +219,12 @@
   "block.bamboomod.noren_blue": "Noren (Blue)",
   "block.bamboomod.noren_purple": "Noren (Purple)",
   "block.bamboomod.brick_orange": "Brick (Orange)",
+  "block.bamboomod.brick_orange_slab": "Brick Slab (Orange)",
+  "block.bamboomod.brick_orange_stairs": "Brick Stairs (Orange)",
   "block.bamboomod.brick_white": "Brick (White)",
-  "block.bamboomod.brick_brown": "Brick (Brown)"
+  "block.bamboomod.brick_white_slab": "Brick Slab (White)",
+  "block.bamboomod.brick_white_stairs": "Brick Stairs (White)",
+  "block.bamboomod.brick_brown": "Brick (Brown)",
+  "block.bamboomod.brick_brown_slab": "Brick Slab (Brown)",
+  "block.bamboomod.brick_brown_stairs": "Brick Stairs (Brown)"
 }
