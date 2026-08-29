@@ -30,6 +30,7 @@ import ruby.bamboo.block.MapleLeaveBlock;
 import ruby.bamboo.block.MapleLogBlock;
 import ruby.bamboo.block.MapleSaplingBlock;
 import ruby.bamboo.block.MillStoneBlock;
+import ruby.bamboo.block.PaddyFieldBlock;
 import ruby.bamboo.block.RicePlantBlock;
 import ruby.bamboo.block.SakuraLeaveBlock;
 import ruby.bamboo.block.SakuraLogBlock;
@@ -121,6 +122,12 @@ public final class BambooBlocks {
             () -> new RicePlantBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.PLANT).sound(SoundType.CROP)
                     .strength(0.0f).randomTicks().noCollission().instabreak()));
+
+    /** 田んぼ (旧 paddy_field / sakura PaddyField)。FarmlandBlock継承 + WATERLOGGED */
+    public static final RegistryObject<PaddyFieldBlock> PADDY_FIELD = register("paddy_field",
+            () -> new PaddyFieldBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DIRT).sound(SoundType.GRAVEL)
+                    .strength(0.6F).randomTicks()));
 
     /** 桜の苗木 (旧 sakura_sapling) */
     public static final RegistryObject<SakuraSaplingBlock> SAKURA_SAPLING = register("sakura_sapling",
