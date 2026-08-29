@@ -36,5 +36,9 @@ public final class BambooNetwork {
                 FlashJumpPacket::encode,
                 FlashJumpPacket::decode,
                 FlashJumpPacket::handle);
+        CHANNEL.registerMessage(nextId(), ColoredLightSyncPacket.class,
+                ColoredLightSyncPacket::encode,
+                ColoredLightSyncPacket::decode,
+                ColoredLightSyncPacket::handle);
     }
 }
