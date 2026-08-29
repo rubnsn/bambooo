@@ -195,6 +195,18 @@ public class CutBlock extends BaseEntityBlock {
         return true;
     }
 
+    @Override
+    public float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
+        // アンビエント適応: BEがフルキューブなら固体と同様に 0.2、部分/空なら 1.0
+        // これにより隣接ブロックのAOが占有率に応じて適応する。BER側の面 shade は Renderer で処理
+        if (level.getBlockEntity(pos) instanceof CutBlockEntity be) {
+            if (!be.isEmpty() && be.isFullCube()) {
+                return 0.2F;
+            }
+        }
+        return 1.0F;
+    }
+
     // ===== Drops / Pick =====
 
     @Override
