@@ -1,5 +1,6 @@
 package ruby.bamboo.util;
 
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
@@ -37,12 +38,19 @@ public final class ColoredLightUtil {
         float r = 0f;
         float g = 0f;
         float b = 0f;
+        float sumW = 0f;
         for (int i = 0; i < colors.size(); i++) {
             int c = colors.get(i) & 0xFFFFFF;
             float w = weights.get(i);
             r += ((c >> 16) & 0xFF) * w;
             g += ((c >> 8) & 0xFF) * w;
             b += (c & 0xFF) * w;
+            sumW += w;
+        }
+        if (sumW > 0.001f) {
+            r /= sumW;
+            g /= sumW;
+            b /= sumW;
         }
         int ri = Math.min(255, Math.max(0, Math.round(r)));
         int gi = Math.min(255, Math.max(0, Math.round(g)));
@@ -57,23 +65,117 @@ public final class ColoredLightUtil {
      *
      * @return 1.0基準の乗算係数 (白=1,1,1)。光源が無ければ 1,1,1 を返す。
      */
+    private static Level extractLevel(BlockGetter getter) {
+        if (getter instanceof Level lvl) return lvl;
+        try {
+            var f = getter.getClass().getDeclaredField("level");
+            f.setAccessible(true);
+            Object v = f.get(getter);
+            if (v instanceof Level lvl2) return lvl2;
+        } catch (Exception ignored) {
+        }
+        try {
+            var mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc != null && mc.level != null) return mc.level;
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    private static void ensureChunkScanned(LevelChunk chunk, Level lvl) {
+        var opt = chunk.getCapability(BambooCapabilities.COLORED_LIGHT);
+        if (!opt.isPresent()) return;
+        var storage = opt.orElse(null);
+        if (storage == null || storage.isScanned()) return;
+        synchronized (storage) {
+            if (storage.isScanned()) return;
+            storage.setScanned(true);
+            // パレットで枝刈り: IndLight を含むセクションだけを走査
+            int minSec = lvl.getMinSection();
+            var sections = chunk.getSections();
+            for (int si = 0; si < sections.length; si++) {
+                var sec = sections[si];
+                if (sec == null || sec.hasOnlyAir()) continue;
+                var states = sec.getStates();
+                boolean maybeHas = false;
+                try {
+                    maybeHas = states.maybeHas(s -> s.getBlock() instanceof ILightColor);
+                } catch (Exception e) {
+                    maybeHas = true;
+                }
+                if (!maybeHas) continue;
+                int secY = minSec + si;
+                int baseY = secY << 4;
+                int baseX = chunk.getPos().x << 4;
+                int baseZ = chunk.getPos().z << 4;
+                for (int x = 0; x < 16; x++) {
+                    for (int y = 0; y < 16; y++) {
+                        for (int z = 0; z < 16; z++) {
+                            BlockPos p = new BlockPos(baseX + x, baseY + y, baseZ + z);
+                            BlockState st;
+                            try {
+                                st = sec.getBlockState(x, y, z);
+                            } catch (Exception ignored) {
+                                continue;
+                            }
+                            if (!(st.getBlock() instanceof ILightColor light)) continue;
+                            int col = light.getLightColor(st, lvl, p) & 0xFFFFFF;
+                            storage.getMap().put(Long.valueOf(p.asLong()), col);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public static Vector3f getTint(BlockPos shadedPos, BlockGetter level) {
         if (shadedPos == null || level == null) {
             return new Vector3f(1f, 1f, 1f);
         }
 
+        Level lvlForCache = extractLevel(level);
+        // B-2: tintCache参照 (shadedPosの属するchunkのcache) — RenderChunkRegion でも Level 経由で引く
+        if (lvlForCache != null && lvlForCache.hasChunkAt(shadedPos)) {
+            LevelChunk chunkCache = lvlForCache.getChunkAt(shadedPos);
+            var optCache = chunkCache.getCapability(BambooCapabilities.COLORED_LIGHT);
+            if (optCache.isPresent()) {
+                var storageCache = optCache.orElse(null);
+                if (storageCache != null) {
+                    Long2IntMap tintCache = storageCache.getTintCache();
+                    long key = shadedPos.asLong();
+                    synchronized (tintCache) {
+                        if (tintCache.containsKey(key)) {
+                            int cached = tintCache.get(key);
+                            if (cached == 0xFFFFFF) return new Vector3f(1f, 1f, 1f);
+                            float cr = ((cached >> 16) & 0xFF) / 255f;
+                            float cg = ((cached >> 8) & 0xFF) / 255f;
+                            float cb = (cached & 0xFF) / 255f;
+                            return new Vector3f(cr, cg, cb);
+                        }
+                    }
+                }
+            }
+        }
+
         java.util.ArrayList<Integer> colors = new java.util.ArrayList<>();
         java.util.ArrayList<Float> weights = new java.util.ArrayList<>();
 
-        boolean usedCap = false;
+        Level capLevel = extractLevel(level);
 
-        // capability sparse 走査 (Level の場合のみ)
-        if (level instanceof Level lvl) {
-            // 半径12は最大で chunk 3x3 を跨ぐため、周辺チャンクを取得
+        // 遅延1回スキャン: 描画で触れたチャンクのみをパレット枝刈りで走査し map を遅延構築。常時 98k *100 を避ける
+        if (capLevel != null) {
+            Level lvl = capLevel;
             int cx0 = (shadedPos.getX() - RADIUS) >> 4;
             int cx1 = (shadedPos.getX() + RADIUS) >> 4;
             int cz0 = (shadedPos.getZ() - RADIUS) >> 4;
             int cz1 = (shadedPos.getZ() + RADIUS) >> 4;
+            for (int cx = cx0; cx <= cx1; cx++) {
+                for (int cz = cz0; cz <= cz1; cz++) {
+                    if (!lvl.hasChunk(cx, cz)) continue;
+                    LevelChunk chunk = lvl.getChunk(cx, cz);
+                    ensureChunkScanned(chunk, lvl);
+                }
+            }
             for (int cx = cx0; cx <= cx1; cx++) {
                 for (int cz = cz0; cz <= cz1; cz++) {
                     if (!lvl.hasChunk(cx, cz)) {
@@ -92,7 +194,6 @@ public final class ColoredLightUtil {
                     if (map == null || map.isEmpty()) {
                         continue;
                     }
-                    usedCap = true;
                     for (Object2IntMap.Entry<Long> e : map.object2IntEntrySet()) {
                         long packed = e.getKey().longValue();
                         BlockPos lightPos = BlockPos.of(packed);
@@ -127,73 +228,43 @@ public final class ColoredLightUtil {
             }
         }
 
-        // capability が空 or 非Level の場合はフォールバック走査 (周辺ブロックを直接見る)
-        if (!usedCap) {
-            // 走査 fallback: 半径12 立方体を全走査するのは重いため、capability 無し時のみ実行
-            // BlockGetter が Level でない場合でも動作する (クライアント World で capability が未同期の場合など)
-            for (int dx = -RADIUS; dx <= RADIUS; dx++) {
-                for (int dy = -RADIUS; dy <= RADIUS; dy++) {
-                    for (int dz = -RADIUS; dz <= RADIUS; dz++) {
-                        double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                        if (dist > RADIUS_F) {
-                            continue;
-                        }
-                        BlockPos p = shadedPos.offset(dx, dy, dz);
-                        // 範囲外チャンクはスキップ (hasChunkAt 相当のチェック)
-                        if (level instanceof Level lvl2 && !lvl2.hasChunkAt(p)) {
-                            continue;
-                        }
-                        BlockState st;
-                        try {
-                            st = level.getBlockState(p);
-                        } catch (Exception ignored) {
-                            continue;
-                        }
-                        if (!(st.getBlock() instanceof ILightColor light)) {
-                            continue;
-                        }
-                        int color = light.getLightColor(st, level, p) & 0xFFFFFF;
-                        int lightLevel = st.getLightEmission(level, p);
-                        if (lightLevel <= 0) {
-                            lightLevel = 15;
-                        }
-                        float w = (float) (1.0 / (1.0 + dist) * (lightLevel / 15.0f));
-                        if (w <= 0.001f) {
-                            continue;
-                        }
-                        colors.add(color);
-                        weights.add(w);
-                    }
-                }
-            }
-        }
-
         if (colors.isEmpty()) {
             return new Vector3f(1f, 1f, 1f);
         }
 
-        int blended = blendAdditive(colors, weights);
-        float r = ((blended >> 16) & 0xFF) / 255f;
-        float g = ((blended >> 8) & 0xFF) / 255f;
-        float b = (blended & 0xFF) / 255f;
-        // 白(1,1,1)を基準に色を乗算する係数として返す。
-        // 現状 additive のため暗い場所でも色が乗るが、Phase D で頂点 bake 時に intensity で再調整する。
-        // ここでは純粋な blended/255 を返す (白飛びを避けるため 0..1 クランプ済み)
-        // 白光のみなら 1,1,1 に近づくよう補正: lerp(1, blended/255, weightSum clamped) でも良いが Phase C は単純に返す
-        // ただし何も無い時は 1,1,1 を返すため、 blended が白に近い場合は tint も白になる
-        // additive で薄まるのを防ぐため、最大 weight が小さいときは白に寄せる
-        // 簡易: 最大 weight で lerp
-        float maxW = 0f;
-        for (float w : weights) {
-            if (w > maxW) {
-                maxW = w;
+        // 距離減衰を正しく反映: blended は加重平均で純色 (距離に依らず同じになる) なので、
+        // totalWeight(=sum w)で白とのlerp強度 alpha を決める。
+        // 単一光源 di=0 -> w=1 -> alpha~1(純色に近い)、di=12 -> w=0.076 -> alpha~0.07(ほぼ白)
+        float totalWeight = 0f;
+        for (float w : weights) totalWeight += w;
+        // 複数光源でも 1 でクランプ。0.8掛けで近距離でも20%白を残して暗すぎを緩和
+        float alpha = Math.min(1f, totalWeight) * 0.8f;
+        int blendedPure = blendAdditive(colors, weights);
+        int pr = (blendedPure >> 16) & 0xFF;
+        int pg = (blendedPure >> 8) & 0xFF;
+        int pb = blendedPure & 0xFF;
+        // 白(255,255,255) と pure の lerp
+        int fr = Math.round(255 * (1 - alpha) + pr * alpha);
+        int fg = Math.round(255 * (1 - alpha) + pg * alpha);
+        int fb = Math.round(255 * (1 - alpha) + pb * alpha);
+        // 正規化で最大チャネルを1に近づけるオプションは一旦なし (lerpで十分明るくなる)
+        int blended = (fr << 16) | (fg << 8) | fb;
+        // キャッシュ保存 (RenderChunkRegion でも Level 経由で保存)
+        if (lvlForCache != null && lvlForCache.hasChunkAt(shadedPos)) {
+            LevelChunk chunkPut = lvlForCache.getChunkAt(shadedPos);
+            var optPut = chunkPut.getCapability(BambooCapabilities.COLORED_LIGHT);
+            if (optPut.isPresent()) {
+                var storagePut = optPut.orElse(null);
+                if (storagePut != null) {
+                    synchronized (storagePut.getTintCache()) {
+                        storagePut.getTintCache().put(shadedPos.asLong(), blended & 0xFFFFFF);
+                    }
+                }
             }
         }
-        float t = Math.min(1f, maxW * 2f); // 近距離で t=1, 遠距離で 0 に近づく
-        return new Vector3f(
-                1f + (r - 1f) * t,
-                1f + (g - 1f) * t,
-                1f + (b - 1f) * t
-        );
+        float r = (fr & 0xFF) / 255f;
+        float g = (fg & 0xFF) / 255f;
+        float b = (fb & 0xFF) / 255f;
+        return new Vector3f(r, g, b);
     }
 }

@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Specification-Title: bamboomod
+Specification-Vendor: Ruby
+Specification-Version: 1
+Implementation-Title: mc
+Implementation-Version: 1.20.1-0.3
+Implementation-Vendor: Ruby
+Implementation-Timestamp: 2026-08-29T18:46:26+0900
+MixinConfigs: bamboomod.mixins.json
+
