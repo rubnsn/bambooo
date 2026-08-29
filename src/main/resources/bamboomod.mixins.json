@@ -4,7 +4,9 @@
   "refmap": "bamboomod.refmap.json",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "LightTextureMixin"
+    "LightTextureMixin",
+    "sodium.SodiumBlockRendererMixin",
+    "embeddium.EmbeddiumBlockRendererMixin"
   ],
   "minVersion": "0.8"
 }
