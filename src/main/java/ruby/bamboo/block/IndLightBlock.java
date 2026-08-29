@@ -14,11 +14,9 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import ruby.bamboo.api.ILightColor;
-import ruby.bamboo.core.init.BambooCapabilities;
 
 /**
  * 間接照明。旧 IndLight (1.10.2) の移植。
@@ -188,51 +186,12 @@ public class IndLightBlock extends Block implements ILightColor {
     @Override
     public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
         super.onPlace(state, level, pos, oldState, isMoving);
-        if (oldState.getBlock() == state.getBlock()) {
-            return;
-        }
-        if (!level.hasChunkAt(pos)) {
-            return;
-        }
-        LevelChunk chunk = level.getChunkAt(pos);
-        chunk.getCapability(BambooCapabilities.COLORED_LIGHT).ifPresent(storage -> {
-            storage.getMap().put(Long.valueOf(pos.asLong()), this.color.mapColor & 0xFFFFFF);
-            storage.setScanned(true);
-            storage.incrementVersion();
-            for (int dx = -1; dx <= 1; dx++) {
-                for (int dz = -1; dz <= 1; dz++) {
-                    int cx = chunk.getPos().x + dx;
-                    int cz = chunk.getPos().z + dz;
-                    if (!level.hasChunk(cx, cz)) continue;
-                    LevelChunk c2 = level.getChunk(cx, cz);
-                    c2.getCapability(BambooCapabilities.COLORED_LIGHT).ifPresent(s2 -> s2.invalidateTintCache());
-                }
-            }
-        });
+        // 実処理は LevelMixin.markAndNotifyBlock で両side対応（マルチのクライアントで onPlace は呼ばれないため）
     }
 
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
         super.onRemove(state, level, pos, newState, isMoving);
-        if (newState.getBlock() == state.getBlock()) {
-            return;
-        }
-        if (!level.hasChunkAt(pos)) {
-            return;
-        }
-        LevelChunk chunk = level.getChunkAt(pos);
-        chunk.getCapability(BambooCapabilities.COLORED_LIGHT).ifPresent(storage -> {
-            storage.getMap().remove(Long.valueOf(pos.asLong()));
-            storage.incrementVersion();
-            for (int dx = -1; dx <= 1; dx++) {
-                for (int dz = -1; dz <= 1; dz++) {
-                    int cx = chunk.getPos().x + dx;
-                    int cz = chunk.getPos().z + dz;
-                    if (!level.hasChunk(cx, cz)) continue;
-                    LevelChunk c2 = level.getChunk(cx, cz);
-                    c2.getCapability(BambooCapabilities.COLORED_LIGHT).ifPresent(s2 -> s2.invalidateTintCache());
-                }
-            }
-        });
+        // 実処理は LevelMixin で同様に処理
     }
 }

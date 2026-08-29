@@ -19,8 +19,8 @@ import java.util.List;
  */
 public final class ColoredLightUtil {
 
-    private static final int RADIUS = 16;
-    private static final float RADIUS_F = 16.0f;
+    private static final int RADIUS = 12;
+    private static final float RADIUS_F = 12.0f;
 
     private ColoredLightUtil() {
     }
@@ -263,7 +263,7 @@ public final class ColoredLightUtil {
         float totalWeight = 0f;
         for (float w : weights) totalWeight += w;
         // 複数光源でも 1 でクランプ。0.8掛けで近距離でも20%白を残して暗すぎを緩和
-        float alpha = Math.min(1f, totalWeight) * 1f;
+        float alpha = Math.min(1f, totalWeight) * 0.8f;
         int blendedPure = blendAdditive(colors, weights);
         int pr = (blendedPure >> 16) & 0xFF;
         int pg = (blendedPure >> 8) & 0xFF;
