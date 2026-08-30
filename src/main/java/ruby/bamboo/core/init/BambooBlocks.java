@@ -268,6 +268,10 @@ public final class BambooBlocks {
     // ===== カットブロック — 単一ブロック + NBT CutState/YLevel/HLevel =====
     public static final RegistryObject<CutBlock> CUT_BLOCK = registerCutBlock();
 
+    // ===== 竹鉢 (sakura BambooPot 移植) =====
+    public static final RegistryObject<ruby.bamboo.block.BambooPotBlock> BAMBOO_POT = register("bamboo_pot",
+            ruby.bamboo.block.BambooPotBlock::new);
+
     // ===== 源泉・温泉水 =====
     public static final RegistryObject<SpringBlock> SPRING_BLOCK = register("spring_block", SpringBlock::new);
     public static final RegistryObject<SpringWaterBlock> SPRING_WATER = registerNoItem("spring_water",

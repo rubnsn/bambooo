@@ -74,6 +74,8 @@ public final class BambooClientSetup {
                     ItemBlockRenderTypes.setRenderLayer(b, RenderType.cutout());
                 }
             }
+            // 竹鉢 -> cutout
+            cutout(BambooBlocks.BAMBOO_POT.get());
 
             // 壁棚 -> cutout (薄板モデル)
             cutout(BambooBlocks.WALL_SHELF.get());
@@ -126,6 +128,11 @@ public final class BambooClientSetup {
                     BambooBlockEntities.CUT_BLOCK_BE.get(),
                     ruby.bamboo.client.renderer.CutBlockRenderer::new);
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.CUT_BLOCK.get(), RenderType.cutout());
+
+            // 竹鉢の BER 登録
+            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+                    BambooBlockEntities.BAMBOO_POT_BE.get(),
+                    ruby.bamboo.block.entity.BambooPotBlockRenderer::new);
 
             // 温泉水 — 半透明 (Phase B) — ブロックと流体両方をtranslucentに (バニラ水と同様)
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.SPRING_WATER.get(), RenderType.translucent());
