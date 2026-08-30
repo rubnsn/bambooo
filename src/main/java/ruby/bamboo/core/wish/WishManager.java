@@ -18,13 +18,16 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
 import ruby.bamboo.core.config.WishConfig;
+import ruby.bamboo.util.WishEntitySearch;
 import ruby.bamboo.util.WishItemSearch;
 import ruby.bamboo.util.WishNormalizer;
 
@@ -103,7 +106,15 @@ public final class WishManager {
             return;
         }
 
-        // 3. item prefix decomposition
+        // 3. entity name direct summon (動物/モンスター名をそのまま入力)
+        EntityType<?> hitType = WishEntitySearch.find(normalized, level);
+        if (hitType != null) {
+            summonEntityType(player, hitType, 1);
+            player.displayClientMessage(Component.translatable("bamboomod.wish.result.generic").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            return;
+        }
+
+        // 4. item prefix decomposition
         String searchTerm = extractItemSearchTerm(normalized);
         if (searchTerm != null) {
             if (searchTerm.isEmpty()) {
@@ -119,7 +130,7 @@ public final class WishManager {
             return;
         }
 
-        // 4. fallback
+        // 5. fallback
         fallback(player);
     }
 
@@ -246,8 +257,14 @@ public final class WishManager {
     private static void giveItemWithAutoEnchant(ServerPlayer player, Item item, int count, Boolean enchantedFlag, RandomSource random, String messageKey) {
         ItemStack stack = new ItemStack(item, count);
         boolean enchanted = enchantedFlag != null ? enchantedFlag : stack.getMaxDamage() > 0;
+        boolean over = false;
         if (enchanted && stack.isEnchantable()) {
             stack = EnchantmentHelper.enchantItem(random, stack, 30, true);
+            // 低確率でエンチャントテーブル最大値+1 が宿る（Elonaの「神」の祝福的なもの）
+            int overChance = WishConfig.COMMON.overenchantChance.get();
+            if (overChance > 0 && random.nextInt(overChance) == 0) {
+                over = tryOverEnchant(stack, random);
+            }
         }
         ServerLevel level = player.serverLevel();
         double x = player.getX();
@@ -258,11 +275,26 @@ public final class WishManager {
         entity.setPickUpDelay(10);
         level.addFreshEntity(entity);
         level.playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, 1.0F);
-        if (messageKey != null) {
+        if (over) {
+            player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
+        } else if (messageKey != null) {
             player.displayClientMessage(Component.translatable(messageKey).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
         } else {
             player.displayClientMessage(Component.translatable("bamboomod.wish.result.generic").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
         }
+    }
+
+    /**
+     * 既存エンチャントのどれか1件を最大レベル+1に引き上げる。
+     * @return 成功したら true（エンチャントが1つも無ければ false）
+     */
+    private static boolean tryOverEnchant(ItemStack stack, RandomSource random) {
+        java.util.Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(stack);
+        if (map.isEmpty()) return false;
+        List<Enchantment> keys = new ArrayList<>(map.keySet());
+        Enchantment ench = keys.get(random.nextInt(keys.size()));
+        stack.enchant(ench, ench.getMaxLevel() + 1);
+        return true;
     }
 
     private static void teleportRandom(ServerPlayer player, int range, RandomSource random) {
@@ -293,6 +325,14 @@ public final class WishManager {
             LOGGER.warn("Unknown entity {}", entityId);
             return;
         }
+        summonEntityType(player, type, count);
+    }
+
+    /**
+     * 指定 EntityType をプレイヤー前方 3 ブロックに召喚する。
+     * テイム可能な動物（オオカミ/ネコ/オウム等）は自動テイム、馬系は乗れるよう懐かせる。
+     */
+    private static void summonEntityType(ServerPlayer player, EntityType<?> type, int count) {
         ServerLevel level = player.serverLevel();
         var look = player.getLookAngle();
         double sx = player.getX() + look.x * 3;
@@ -309,6 +349,14 @@ public final class WishManager {
                     // some versions require setOwnerUUID
                 }
                 tamable.setOwnerUUID(player.getUUID());
+            }
+            if (entity instanceof AbstractHorse horse) {
+                try {
+                    horse.tameWithName(player);
+                } catch (Exception e) {
+                    // fall through: untamed horse is still a friend
+                }
+                horse.setOwnerUUID(player.getUUID());
             }
             level.addFreshEntity(entity);
         }

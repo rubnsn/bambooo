@@ -26,6 +26,7 @@ public class WishConfig {
         public final ForgeConfigSpec.ConfigValue<String> fallbackMode;
         public final ForgeConfigSpec.IntValue wishTimeoutTicks;
         public final ForgeConfigSpec.BooleanValue punishGreed;
+        public final ForgeConfigSpec.IntValue overenchantChance;
 
         public Common(ForgeConfigSpec.Builder b) {
             b.push("wish");
@@ -44,6 +45,8 @@ public class WishConfig {
                     .defineInRange("wishTimeoutTicks", 400, 100, 6000);
             punishGreed = b.comment("Enable greed punishment")
                     .define("punishGreed", true);
+            overenchantChance = b.comment("Chance 1/overenchantChance that one enchantment on a wished tool exceeds its max level by 1 (0 to disable)")
+                    .defineInRange("overenchantChance", 10, 0, 1000);
             b.pop();
         }
     }

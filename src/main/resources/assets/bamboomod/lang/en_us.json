@@ -207,5 +207,6 @@
   "bamboomod.wish.fallback.pain": "You feel a slight pain...",
   "bamboomod.wish.fallback.xp": "You feel your experience drain a little...",
   "bamboomod.wish.fallback.iron": "Not bad, I guess.",
-  "bamboomod.wish.greed.line": "That... might be a bit too greedy, don't you think?"
+  "bamboomod.wish.greed.line": "That... might be a bit too greedy, don't you think?",
+  "bamboomod.wish.result.overenchant": "A divine blessing... a power beyond limits dwells within!"
 }

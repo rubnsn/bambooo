@@ -1,0 +1,1 @@
+{"id": "wish/mob_slime",   "pattern": "スライム|slime",   "match": "regex",   "priority": false,   "weight": 1,   "message": "bamboomod.wish.result.generic",   "effect": {"type": "summon", "entity": "minecraft:slime", "count": 1} }

@@ -1,0 +1,1 @@
+{"id": "wish/diamond_boots",   "pattern": "ダイヤのブーツ|diamond boots",   "match": "regex",   "priority": false,   "weight": 1,   "message": "bamboomod.wish.result.generic",   "effect": {"type": "give_item", "item": "minecraft:diamond_boots", "count": 1, "enchanted": true} }

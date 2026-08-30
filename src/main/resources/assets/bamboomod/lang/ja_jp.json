@@ -207,5 +207,6 @@
   "bamboomod.wish.fallback.pain": "体が少し痛む…",
   "bamboomod.wish.fallback.xp": "経験が少し失われた…",
   "bamboomod.wish.fallback.iron": "まあまあだ",
-  "bamboomod.wish.greed.line": "それは…ちょっと行き過ぎなんじゃないかなあ"
+  "bamboomod.wish.greed.line": "それは…ちょっと行き過ぎなんじゃないかなあ",
+  "bamboomod.wish.result.overenchant": "神のご加護か…上限を超えた力が宿った！"
 }
