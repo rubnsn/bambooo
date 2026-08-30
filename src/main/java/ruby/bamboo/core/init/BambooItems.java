@@ -89,6 +89,10 @@ public final class BambooItems {
     public static final RegistryObject<ruby.bamboo.item.PaddyFieldHoeItem> PADDY_FIELD_HOE = register("paddy_field_hoe",
             () -> new ruby.bamboo.item.PaddyFieldHoeItem(new Item.Properties()));
 
+    /** 願いワンド (デバッグ用。右クリックで願い発動、耐久1) */
+    public static final RegistryObject<ruby.bamboo.item.WishWandItem> WISH_WAND = register("wish_wand",
+            () -> new ruby.bamboo.item.WishWandItem(new Item.Properties().durability(1)));
+
     // ===== 弓矢 (旧 BambooBow + arrow 6種の 1.20.1 移植。アンチ矢はオミット) =====
 
     /** 竹弓 (旧 BambooBow)。耐久400 */

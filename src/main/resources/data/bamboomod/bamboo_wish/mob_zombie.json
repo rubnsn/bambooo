@@ -1,0 +1,1 @@
+{"id": "wish/mob_zombie",   "pattern": "ゾンビ|ぞんび|zombie",   "match": "regex",   "priority": false,   "weight": 1,   "message": "bamboomod.wish.result.generic",   "effect": {"type": "summon", "entity": "minecraft:zombie", "count": 1} }

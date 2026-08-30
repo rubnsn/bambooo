@@ -1,0 +1,11 @@
+{
+  "id": "wish/heal",
+  "pattern": "元気|げんき|回復|heal",
+  "match": "regex",
+  "priority": false,
+  "weight": 1,
+  "message": "bamboomod.wish.result.generic",
+  "effect": {
+    "type": "heal"
+  }
+}

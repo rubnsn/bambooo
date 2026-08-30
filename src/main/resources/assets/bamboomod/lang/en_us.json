@@ -103,6 +103,7 @@
   "item.bamboomod.miniature": "Miniature",
   "block.bamboomod.paddy_field": "Paddy Field",
   "item.bamboomod.paddy_field_hoe": "Paddy Field Hoe",
+  "item.bamboomod.wish_wand": "Wish Wand",
   "item.bamboomod.bamboofood_mugimesi": "Meshi",
   "item.bamboomod.bamboofood_gyumesi": "Gyumeshi",
   "item.bamboomod.bamboofood_butamesi": "Butameshi",
@@ -229,5 +230,14 @@
   "block.bamboomod.brick_white_stairs": "Brick Stairs (White)",
   "block.bamboomod.brick_brown": "Brick (Brown)",
   "block.bamboomod.brick_brown_slab": "Brick Slab (Brown)",
-  "block.bamboomod.brick_brown_stairs": "Brick Stairs (Brown)"
+  "block.bamboomod.brick_brown_stairs": "Brick Stairs (Brown)",
+  "bamboomod.wish.title": "A tremendous fortune smiles upon you! What do you wish for?",
+  "bamboomod.wish.button": "Wish",
+  "bamboomod.wish.result.generic": "Your wish has been granted...",
+  "bamboomod.wish.fallback.water": "Lukewarm water bubbles up...",
+  "bamboomod.wish.fallback.pain": "You feel a slight pain...",
+  "bamboomod.wish.fallback.xp": "You feel your experience drain a little...",
+  "bamboomod.wish.fallback.iron": "Not bad, I guess.",
+  "bamboomod.wish.greed.line": "That... might be a bit too greedy, don't you think?",
+  "bamboomod.wish.result.overenchant": "A divine blessing... a power beyond limits dwells within!"
 }

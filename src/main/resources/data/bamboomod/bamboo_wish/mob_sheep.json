@@ -1,0 +1,1 @@
+{"id": "wish/mob_sheep",   "pattern": "羊|ひつじ|sheep",   "match": "regex",   "priority": false,   "weight": 1,   "message": "bamboomod.wish.result.generic",   "effect": {"type": "summon", "entity": "minecraft:sheep", "count": 1} }
