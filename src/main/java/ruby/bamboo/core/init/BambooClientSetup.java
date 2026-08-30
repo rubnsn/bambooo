@@ -204,6 +204,11 @@ public final class BambooClientSetup {
      */
     @SubscribeEvent
     public static void onRegisterBlockColors(RegisterColorHandlersEvent.Block event) {
+        // 竹鉢 — 染料色を側面に乗算（土面はtintなし）
+        event.register((state, level, pos, tintIndex) -> {
+            if (tintIndex != 0) return 0xFFFFFF;
+            try { return state.getValue(ruby.bamboo.block.BambooPotBlock.COLOR).color; } catch (Exception e) { return ruby.bamboo.block.BambooPotColor.BROWN.color; }
+        }, BambooBlocks.BAMBOO_POT.get());
         for (var broad : BambooBlocks.BROAD_LEAVES) {
             BroadLeaveBlock block = broad.get();
             int color = block.variant.color;
@@ -286,6 +291,11 @@ public final class BambooClientSetup {
      */
     @SubscribeEvent
     public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
+        // 竹鉢アイテム — 既定BROWNで tint
+        event.register((stack, tintIndex) -> {
+            if (tintIndex != 0) return 0xFFFFFF;
+            return ruby.bamboo.block.BambooPotColor.BROWN.color;
+        }, BambooBlocks.BAMBOO_POT.get().asItem());
         for (var indlight : BambooBlocks.INDLIGHTS) {
             IndLightBlock block = (IndLightBlock) indlight.get();
             int color = block.color.mapColor;

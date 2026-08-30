@@ -200,6 +200,7 @@
   "bamboomod.config.miniature.render.placeholder": "Placeholder mode",
   "bamboomod.config.miniature.render.lodShell": "Shell LOD on boundary",
   "block.bamboomod.cut_block": "Cut Block",
+  "block.bamboomod.bamboo_pot": "Planter",
   "block.bamboomod.spring_block": "Spring Block",
   "block.bamboomod.spring_water": "Hot Spring Water",
   "block.bamboomod.sakura_slab": "Sakura Slab",

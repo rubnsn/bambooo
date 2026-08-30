@@ -1,0 +1,23 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "bamboo_pot",
+  "pattern": [
+    "DDD",
+    "CCC"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:dirt"
+    },
+    "C": {
+      "item": "minecraft:brick"
+    }
+  },
+  "result": {
+    "item": "bamboomod:bamboo_pot"
+  },
+  "experience": 0.0,
+  "cookingtime": 100,
+  "fuelCost": 100
+}
