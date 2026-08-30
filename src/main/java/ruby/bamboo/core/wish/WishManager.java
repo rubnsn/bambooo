@@ -890,6 +890,7 @@ public final class WishManager {
 
     /**
      * アイテムを頭上にスポーンさせる内部処理。チャットは送らない。
+     * 道具類（TieredItem/Bow/Crossbow/Trident/FishingRod/Armor/Shield）は1個目のエンチャントを必ずオーバーエンチャント、2個目以降は低確率を維持。エンチャント本は対象外。
      * @return overenchant が発生したら true
      */
     private static boolean giveItemInternal(ServerPlayer player, Item item, int count, Boolean enchantedFlag, RandomSource random) {
@@ -899,8 +900,28 @@ public final class WishManager {
         if (enchanted && stack.isEnchantable()) {
             stack = EnchantmentHelper.enchantItem(random, stack, 30, true);
             int overChance = WishConfig.COMMON.overenchantChance.get();
-            if (overChance > 0 && random.nextInt(overChance) == 0) {
-                over = tryOverEnchant(stack, random);
+            // エンチャント本は対象外（EnchantedBookItemは isEnchantable==false なのでここには来ないが念のため）
+            boolean isToolCategory = isToolForGuaranteedOverenchant(item);
+            if (isToolCategory) {
+                // 道具類は1個必ず、それ以降は低確率
+                if (tryOverEnchant(stack, random)) {
+                    over = true;
+                    // 2個目のエンチャントがあれば低確率でさらにオーバー
+                    if (overChance > 0 && random.nextInt(overChance) == 0) {
+                        // 別エンチャントを試す（1個しかない場合はスキップ）
+                        if (EnchantmentHelper.getEnchantments(stack).size() > 1) {
+                            // 1個目は既にオーバー済みなので、2個目は別エンチャントを狙う
+                            // tryOverEnchantはランダムな1件を選ぶため、既にオーバーしたものと被る可能性はあるが低確率のため許容
+                            // より厳密に別を狙うなら tryOverEnchantDistinct を使う
+                            boolean second = tryOverEnchantDistinct(stack, random);
+                            if (second) over = true;
+                        }
+                    }
+                }
+            } else {
+                if (overChance > 0 && random.nextInt(overChance) == 0) {
+                    over = tryOverEnchant(stack, random);
+                }
             }
         }
         ServerLevel level = player.serverLevel();
@@ -913,6 +934,36 @@ public final class WishManager {
         level.addFreshEntity(entity);
         level.playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, 1.0F);
         return over;
+    }
+
+    private static boolean isToolForGuaranteedOverenchant(Item item) {
+        // エンチャント本は除外
+        if (item instanceof net.minecraft.world.item.EnchantedBookItem) return false;
+        return item instanceof net.minecraft.world.item.TieredItem
+                || item instanceof net.minecraft.world.item.BowItem
+                || item instanceof net.minecraft.world.item.CrossbowItem
+                || item instanceof net.minecraft.world.item.TridentItem
+                || item instanceof net.minecraft.world.item.FishingRodItem
+                || item instanceof net.minecraft.world.item.ArmorItem
+                || item instanceof net.minecraft.world.item.ShieldItem;
+    }
+
+    private static boolean tryOverEnchantDistinct(ItemStack stack, RandomSource random) {
+        java.util.Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(stack);
+        if (map.size() <= 1) return false;
+        // 既に最大+1 になっているエンチャントを除外して別を狙う（簡易: 最大レベルを超えているものは除外）
+        List<Enchantment> candidates = new ArrayList<>();
+        for (var e : map.entrySet()) {
+            Enchantment ench = e.getKey();
+            int lvl = e.getValue();
+            if (lvl <= ench.getMaxLevel()) {
+                candidates.add(ench);
+            }
+        }
+        if (candidates.isEmpty()) return false;
+        Enchantment ench = candidates.get(random.nextInt(candidates.size()));
+        stack.enchant(ench, ench.getMaxLevel() + 1);
+        return true;
     }
 
     private static void executeEffectInternal(ServerPlayer player, WishEffect eff, RandomSource random) {
@@ -1118,19 +1169,19 @@ public final class WishManager {
         if (mode == null) mode = "random";
         mode = mode.toLowerCase();
         if ("nothing".equals(mode)) {
+            placeWaterAtFeet(player);
             player.displayClientMessage(Component.translatable("bamboomod.wish.fallback.water").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
             return;
         }
         if ("iron".equals(mode)) {
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_ingot"));
-            if (item != null) {
-                giveItemWithAutoEnchant(player, item, 1, false, player.getRandom(), "bamboomod.wish.fallback.iron");
-            }
+            spawnFallingDamagedAnvil(player);
+            player.displayClientMessage(Component.translatable("bamboomod.wish.fallback.iron").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
             return;
         }
         // random
         int r = player.getRandom().nextInt(100);
         if (r < 50) {
+            placeWaterAtFeet(player);
             player.displayClientMessage(Component.translatable("bamboomod.wish.fallback.water").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
         } else if (r < 70) {
             player.hurt(player.damageSources().magic(), 2.0F);
@@ -1139,10 +1190,42 @@ public final class WishManager {
             player.giveExperienceLevels(-1);
             player.displayClientMessage(Component.translatable("bamboomod.wish.fallback.xp").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
         } else {
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_ingot"));
-            if (item != null) {
-                giveItemWithAutoEnchant(player, item, 1, false, player.getRandom(), "bamboomod.wish.fallback.iron");
+            spawnFallingDamagedAnvil(player);
+            player.displayClientMessage(Component.translatable("bamboomod.wish.fallback.iron").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+        }
+    }
+
+    private static void placeWaterAtFeet(ServerPlayer player) {
+        ServerLevel level = player.serverLevel();
+        var pos = player.blockPosition();
+        // 足元が置換可能なら水源を設置、埋まっている場合は1ブロック上に
+        if (!level.getBlockState(pos).canBeReplaced() && !level.getBlockState(pos).isAir()) {
+            pos = pos.above();
+        }
+        // 水中でなければ設置
+        if (level.getBlockState(pos).canBeReplaced() || level.getBlockState(pos).isAir()) {
+            level.setBlock(pos, net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(), 3);
+        } else {
+            // 置けない場合は頭上に水バケツ的に水流を
+            var above = player.blockPosition().above(2);
+            if (level.getBlockState(above).canBeReplaced()) {
+                level.setBlock(above, net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(), 3);
             }
         }
+    }
+
+    private static void spawnFallingDamagedAnvil(ServerPlayer player) {
+        ServerLevel level = player.serverLevel();
+        var pos = player.blockPosition().above(10);
+        // 上空10ブロックから壊れかけの金床を落下
+        var state = net.minecraft.world.level.block.Blocks.DAMAGED_ANVIL.defaultBlockState();
+        // 可能なら CHIPPED/DAMAGED のいずれかランダムで壊れかけ感を出す
+        if (player.getRandom().nextBoolean()) {
+            state = net.minecraft.world.level.block.Blocks.CHIPPED_ANVIL.defaultBlockState();
+        }
+        var falling = net.minecraft.world.entity.item.FallingBlockEntity.fall(level, pos, state);
+        falling.setHurtsEntities(2.0F, 40);
+        level.addFreshEntity(falling);
+        level.playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.ANVIL_PLACE, net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 0.8F);
     }
 }
