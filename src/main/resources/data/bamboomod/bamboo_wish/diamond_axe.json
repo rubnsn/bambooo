@@ -1,1 +1,0 @@
-{"id": "wish/diamond_axe",   "pattern": "ダイヤの斧|ダイヤのおの|diamond axe",   "match": "regex",   "priority": false,   "weight": 1,   "message": "bamboomod.wish.result.generic",   "effect": {"type": "give_item", "item": "minecraft:diamond_axe", "count": 1, "enchanted": true} }

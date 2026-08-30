@@ -1,6 +1,6 @@
 {
   "id": "wish/greed",
-  "pattern": "全部|全て|無限|たくさん|999|∞",
+  "pattern": "全部|全て|無限|たくさん|999|∞|願い|願いの杖",
   "match": "regex",
   "priority": true,
   "weight": 1,

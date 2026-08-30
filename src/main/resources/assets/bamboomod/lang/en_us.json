@@ -233,11 +233,22 @@
   "block.bamboomod.brick_brown_stairs": "Brick Stairs (Brown)",
   "bamboomod.wish.title": "A tremendous fortune smiles upon you! What do you wish for?",
   "bamboomod.wish.button": "Wish",
+  "bamboomod.wish.shout": "%s shouted joyfully, \"%s!\"",
   "bamboomod.wish.result.generic": "Your wish has been granted...",
+  "bamboomod.wish.result.item": "%s tumbled down at your feet.",
+  "bamboomod.wish.result.summon": "%s emerged from the shadows.",
+  "bamboomod.wish.result.xp": "A surge of experience flows into you...",
+  "bamboomod.wish.result.heal": "Warm light envelops you, healing your wounds...",
+  "bamboomod.wish.result.potion": "A mysterious power fills your body...",
+  "bamboomod.wish.result.teleport": "The world warps, and you find yourself elsewhere...",
+  "bamboomod.wish.result.weather.clear": "The clouds part, revealing a clear sky...",
+  "bamboomod.wish.result.weather.rain": "Rain clouds gather overhead...",
+  "bamboomod.wish.result.weather.thunder": "Thunderclouds rumble ominously...",
   "bamboomod.wish.fallback.water": "Lukewarm water bubbles up...",
   "bamboomod.wish.fallback.pain": "You feel a slight pain...",
   "bamboomod.wish.fallback.xp": "You feel your experience drain a little...",
   "bamboomod.wish.fallback.iron": "Not bad, I guess.",
   "bamboomod.wish.greed.line": "That... might be a bit too greedy, don't you think?",
-  "bamboomod.wish.result.overenchant": "A divine blessing... a power beyond limits dwells within!"
+  "bamboomod.wish.result.overenchant": "A divine blessing... a power beyond limits dwells within!",
+  "bamboomod.wish.result.death": "If that is what you wish for..."
 }

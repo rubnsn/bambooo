@@ -28,14 +28,24 @@ public class WishScreen extends Screen {
         int centerY = this.height / 2;
         this.editBox = new EditBox(this.font, centerX - 120, centerY - 10, 240, 20, Component.translatable("bamboomod.wish.title"));
         this.editBox.setMaxLength(30);
-        this.editBox.setFocused(true);
         this.editBox.setCanLoseFocus(false);
         this.addRenderableWidget(this.editBox);
         this.setInitialFocus(this.editBox);
+        this.editBox.setFocused(true);
+        this.setFocused(this.editBox);
 
         this.wishButton = Button.builder(Component.translatable("bamboomod.wish.button"), b -> this.sendWish())
                 .bounds(centerX - 50, centerY + 20, 100, 20).build();
         this.addRenderableWidget(this.wishButton);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.editBox != null && !this.editBox.isFocused()) {
+            this.editBox.setFocused(true);
+            this.setFocused(this.editBox);
+        }
     }
 
     private void sendWish() {

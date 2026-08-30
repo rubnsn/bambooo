@@ -233,11 +233,22 @@
   "block.bamboomod.brick_brown_stairs": "レンガ階段 (茶)",
   "bamboomod.wish.title": "とてつもない幸運が訪れた！何を望む？",
   "bamboomod.wish.button": "願う",
+  "bamboomod.wish.shout": "%s は歓喜して「%s！」と叫んだ。",
   "bamboomod.wish.result.generic": "願いが届いた…",
+  "bamboomod.wish.result.item": "%s が足元に転がり落ちてきた。",
+  "bamboomod.wish.result.summon": "%s が影から現れた。",
+  "bamboomod.wish.result.xp": "経験の輝きが体に流れ込んできた…",
+  "bamboomod.wish.result.heal": "温かな光に包まれ、傷が癒えた…",
+  "bamboomod.wish.result.potion": "不思議な力が体を満たした…",
+  "bamboomod.wish.result.teleport": "視界が歪み、気がつけば別の場所に立っていた…",
+  "bamboomod.wish.result.weather.clear": "雲が割れ、青空が広がった…",
+  "bamboomod.wish.result.weather.rain": "雨雲が立ち込めてきた…",
+  "bamboomod.wish.result.weather.thunder": "雷雲が轟き始めた…",
   "bamboomod.wish.fallback.water": "ぬるま湯が湧き出した…",
   "bamboomod.wish.fallback.pain": "体が少し痛む…",
   "bamboomod.wish.fallback.xp": "経験が少し失われた…",
   "bamboomod.wish.fallback.iron": "まあまあだ",
   "bamboomod.wish.greed.line": "それは…ちょっと行き過ぎなんじゃないかなあ",
-  "bamboomod.wish.result.overenchant": "神のご加護か…上限を超えた力が宿った！"
+  "bamboomod.wish.result.overenchant": "神のご加護か…上限を超えた力が宿った！",
+  "bamboomod.wish.result.death": "あなたがそれを望むなら…"
 }
