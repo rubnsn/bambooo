@@ -3,8 +3,10 @@ package ruby.bamboo.core.wish;
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -24,9 +26,17 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
 import ruby.bamboo.core.config.WishConfig;
+import ruby.bamboo.util.WishBiomeSearch;
 import ruby.bamboo.util.WishEntitySearch;
 import ruby.bamboo.util.WishItemSearch;
 import ruby.bamboo.util.WishNormalizer;
@@ -159,12 +169,24 @@ public final class WishManager {
             return;
         }
 
-        // 4.5 vague category random (「武器！」「アイテム！」など不正確な願いはカテゴリからランダム)
+        // 4.5 biome dynamic search (バイオーム名を含む願いはバイオーム探索→テレポート) - アイテム前置詞でない場合のみ
+        ResourceLocation biomeMatch = WishBiomeSearch.findBest(normalized, level);
+        if (biomeMatch != null) {
+            boolean ok = teleportToBiome(player, biomeMatch.toString(), random);
+            if (ok) {
+                player.displayClientMessage(Component.translatable("bamboomod.wish.result.biome").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            } else {
+                player.displayClientMessage(Component.translatable("bamboomod.wish.result.biome_notfound").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            }
+            return;
+        }
+
+        // 4.6 vague category random (「武器！」「アイテム！」など不正確な願いはカテゴリからランダム)
         if (handleCategoryRandom(player, normalized, random)) {
             return;
         }
 
-        // 4.6 loose random char match (完全マッチしなかったら正確性を捨ててランダムな1文字が一致したらその願いを叶える)
+        // 4.7 loose random char match (完全マッチしなかったら正確性を捨ててランダムな1文字が一致したらその願いを叶える)
         if (tryRandomCharWish(player, normalized, random)) {
             return;
         }
@@ -722,6 +744,10 @@ public final class WishManager {
         String firstSummonId = null;
         String firstWeatherKind = null;
         String firstEffectType = null;
+        String firstBiomeId = null;
+        boolean hasTreasure = false;
+        boolean hasRespawn = false;
+        String firstTreasureLoot = null;
         for (WishEffect eff : entry.effects) {
             if (firstEffectType == null) firstEffectType = eff.type;
             if ("punishment".equalsIgnoreCase(eff.type)) {
@@ -755,6 +781,17 @@ public final class WishManager {
                 String kind = eff.args.has("kind") ? eff.args.get("kind").getAsString() : "clear";
                 if (firstWeatherKind == null) firstWeatherKind = kind;
                 executeEffectInternal(player, eff, random);
+            } else if ("teleport_respawn".equalsIgnoreCase(eff.type)) {
+                hasRespawn = true;
+                executeEffectInternal(player, eff, random);
+            } else if ("teleport_biome".equalsIgnoreCase(eff.type)) {
+                String biomeStr = eff.args.has("biome") ? eff.args.get("biome").getAsString() : "";
+                if (firstBiomeId == null) firstBiomeId = biomeStr;
+                executeEffectInternal(player, eff, random);
+            } else if ("treasure_chest".equalsIgnoreCase(eff.type) || "loot_chest".equalsIgnoreCase(eff.type) || "treasure".equalsIgnoreCase(eff.type)) {
+                hasTreasure = true;
+                if (eff.args.has("loot")) firstTreasureLoot = eff.args.get("loot").getAsString();
+                executeEffectInternal(player, eff, random);
             } else {
                 executeEffectInternal(player, eff, random);
             }
@@ -765,6 +802,25 @@ public final class WishManager {
             player.displayClientMessage(Component.translatable("bamboomod.wish.greed.line").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
         } else if (hasOver) {
             player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
+        } else if (hasRespawn) {
+            // teleport_respawn already sent message internally (success with return message) - fallback if no internal message
+            if (entry.message != null && !entry.message.isEmpty()) {
+                player.displayClientMessage(Component.translatable(entry.message).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            } else {
+                player.displayClientMessage(Component.translatable("bamboomod.wish.result.return").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            }
+        } else if (hasTreasure) {
+            player.displayClientMessage(Component.translatable("bamboomod.wish.result.treasure").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+        } else if (firstBiomeId != null || "teleport_biome".equalsIgnoreCase(firstEffectType)) {
+            // biome message handled inside teleportBiomeInternal (success/fail). If we reach here without message, show generic
+            if (entry.message != null && !entry.message.isEmpty()) {
+                player.displayClientMessage(Component.translatable(entry.message).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            } else if (firstBiomeId != null) {
+                // already messaged inside; fallback to generic if not
+                player.displayClientMessage(Component.translatable("bamboomod.wish.result.biome").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            } else {
+                player.displayClientMessage(Component.translatable("bamboomod.wish.result.generic").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            }
         } else if (firstGiveItem != null) {
             ItemStack tmp = new ItemStack(firstGiveItem);
             Component name = tmp.getHoverName();
@@ -869,6 +925,26 @@ public final class WishManager {
                 case "kill" -> {
                     killInternal(player);
                     player.displayClientMessage(Component.translatable("bamboomod.wish.result.death").withStyle(ChatFormatting.DARK_RED, ChatFormatting.ITALIC), false);
+                }
+                case "teleport_respawn" -> {
+                    teleportToRespawn(player);
+                    player.displayClientMessage(Component.translatable("bamboomod.wish.result.return").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                }
+                case "teleport_biome" -> {
+                    String biomeStr = eff.args.has("biome") ? eff.args.get("biome").getAsString() : "";
+                    if (biomeStr.isEmpty() && eff.args.has("id")) biomeStr = eff.args.get("id").getAsString();
+                    boolean ok = teleportToBiome(player, biomeStr, random);
+                    if (ok) {
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.biome").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    } else {
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.biome_notfound").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    }
+                }
+                case "treasure_chest", "loot_chest", "treasure" -> {
+                    String loot = eff.args.has("loot") ? eff.args.get("loot").getAsString() : "";
+                    if (loot.isEmpty() && eff.args.has("table")) loot = eff.args.get("table").getAsString();
+                    spawnTreasureChest(player, loot, random);
+                    player.displayClientMessage(Component.translatable("bamboomod.wish.result.treasure").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
                 }
                 default -> LOGGER.warn("Unknown wish effect type {}", type);
             }
@@ -1006,6 +1082,24 @@ public final class WishManager {
                 case "kill" -> {
                     killInternal(player);
                 }
+                case "teleport_respawn" -> {
+                    teleportToRespawn(player);
+                }
+                case "teleport_biome" -> {
+                    String biomeStr = eff.args.has("biome") ? eff.args.get("biome").getAsString() : "";
+                    if (biomeStr.isEmpty() && eff.args.has("id")) biomeStr = eff.args.get("id").getAsString();
+                    boolean ok = teleportToBiome(player, biomeStr, random);
+                    if (!ok) {
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.biome_notfound").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    } else {
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.biome").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    }
+                }
+                case "treasure_chest", "loot_chest", "treasure" -> {
+                    String loot = eff.args.has("loot") ? eff.args.get("loot").getAsString() : "";
+                    if (loot.isEmpty() && eff.args.has("table")) loot = eff.args.get("table").getAsString();
+                    spawnTreasureChest(player, loot, random);
+                }
                 default -> LOGGER.warn("Unknown wish effect type {} (internal)", type);
             }
         } catch (Exception ex) {
@@ -1110,7 +1204,6 @@ public final class WishManager {
                 try {
                     tamable.tame(player);
                 } catch (Exception e) {
-                    // some versions require setOwnerUUID
                 }
                 tamable.setOwnerUUID(player.getUUID());
             }
@@ -1118,9 +1211,22 @@ public final class WishManager {
                 try {
                     horse.tameWithName(player);
                 } catch (Exception e) {
-                    // fall through: untamed horse is still a friend
                 }
                 horse.setOwnerUUID(player.getUUID());
+            }
+            if (entity instanceof ruby.bamboo.entity.companion.DolphinCompanionEntity dolphin) {
+                dolphin.setOwnerUUID(player.getUUID());
+                dolphin.setPersistenceRequired();
+            }
+            if (entity instanceof ruby.bamboo.entity.companion.LlamaCompanionEntity llama) {
+                llama.tameForPlayer(player);
+            } else if (entity instanceof net.minecraft.world.entity.animal.horse.Llama vanillaLlama) {
+                // vanilla llama summoned via old friend entries? make chested
+                try { vanillaLlama.setChest(true); } catch (Exception ignored) {}
+            }
+            // ensure persistence for all summoned friends
+            if (entity instanceof net.minecraft.world.entity.Mob mob) {
+                mob.setPersistenceRequired();
             }
             level.addFreshEntity(entity);
         }
@@ -1161,6 +1267,234 @@ public final class WishManager {
                 bolt.setVisualOnly(true);
                 level.addFreshEntity(bolt);
             }
+        }
+    }
+
+    private static void teleportToRespawn(ServerPlayer player) {
+        ServerLevel current = player.serverLevel();
+        BlockPos respawnPos = player.getRespawnPosition();
+        ResourceKey<Level> dim = player.getRespawnDimension();
+        float angle = player.getRespawnAngle();
+        boolean forced = player.isRespawnForced();
+        ServerLevel targetLevel = null;
+        Vec3 targetVec = null;
+        float targetYaw = angle;
+        if (respawnPos != null) {
+            targetLevel = player.server.getLevel(dim);
+            if (targetLevel == null) targetLevel = player.server.overworld();
+            // try to find safe respawn position (bed/anchor)
+            try {
+                var opt = net.minecraft.world.entity.player.Player.findRespawnPositionAndUseSpawnBlock(targetLevel, respawnPos, angle, forced, false);
+                if (opt.isPresent()) {
+                    Vec3 v = opt.get();
+                    targetVec = v;
+                } else {
+                    // fallback to respawnPos itself if not forced? use heightmap
+                    targetVec = new Vec3(respawnPos.getX() + 0.5, respawnPos.getY() + 0.1, respawnPos.getZ() + 0.5);
+                }
+            } catch (Exception ex) {
+                LOGGER.warn("Failed to find respawn position, fallback to raw pos", ex);
+                targetVec = new Vec3(respawnPos.getX() + 0.5, respawnPos.getY() + 0.1, respawnPos.getZ() + 0.5);
+            }
+        } else {
+            // no respawn: use world spawn of overworld
+            targetLevel = player.server.overworld();
+            BlockPos spawn = targetLevel.getSharedSpawnPos();
+            float spawnAngle = targetLevel.getSharedSpawnAngle();
+            targetYaw = spawnAngle;
+            // use shared spawn, find safe height
+            BlockPos top = targetLevel.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spawn);
+            // if top is at spawn itself with air, use it else offset
+            targetVec = new Vec3(top.getX() + 0.5, top.getY() + 0.1, top.getZ() + 0.5);
+            // if still not safe (void), fallback to spawn directly
+            if (targetVec.y < targetLevel.getMinBuildHeight()) {
+                targetVec = new Vec3(spawn.getX() + 0.5, spawn.getY() + 1, spawn.getZ() + 0.5);
+            }
+        }
+        if (targetLevel != null && targetVec != null) {
+            // ensure chunk is loaded? teleportTo will load
+            try {
+                // stop riding
+                player.stopRiding();
+                if (targetLevel == current) {
+                    player.teleportTo(targetVec.x, targetVec.y, targetVec.z);
+                    player.setYRot(targetYaw);
+                    player.setYHeadRot(targetYaw);
+                } else {
+                    var set = java.util.EnumSet.noneOf(net.minecraft.world.entity.RelativeMovement.class);
+                    player.teleportTo(targetLevel, targetVec.x, targetVec.y, targetVec.z, set, targetYaw, 0.0F);
+                }
+                current.playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
+            } catch (Exception ex) {
+                LOGGER.error("Failed to teleport to respawn", ex);
+            }
+        }
+    }
+
+    private static boolean teleportToBiome(ServerPlayer player, String biomeIdStr, RandomSource random) {
+        if (biomeIdStr == null || biomeIdStr.isEmpty()) {
+            // try dynamic search via WishBiomeSearch using raw input? fallback to not found
+            return false;
+        }
+        ResourceLocation rl;
+        try {
+            rl = new ResourceLocation(biomeIdStr);
+        } catch (Exception ex) {
+            LOGGER.warn("Invalid biome id {}", biomeIdStr);
+            return false;
+        }
+        ServerLevel level = player.serverLevel();
+        // validate biome exists
+        var biomeReg = level.registryAccess().registryOrThrow(Registries.BIOME);
+        ResourceKey<Biome> key = ResourceKey.create(Registries.BIOME, rl);
+        if (!biomeReg.containsKey(key)) {
+            LOGGER.warn("Unknown biome {}", rl);
+            return false;
+        }
+        // predicate for Holder<Biome>
+        java.util.function.Predicate<Holder<Biome>> predicate = holder -> holder.is(key);
+        // also support string matching via WishBiomeSearch normalization fallback
+        BlockPos center = player.blockPosition();
+        int radius = 6400;
+        int hStep = 32;
+        int vStep = 64;
+        try {
+            var pair = level.findClosestBiome3d(predicate, center, radius, hStep, vStep);
+            if (pair == null) {
+                return false;
+            }
+            BlockPos found = pair.getFirst();
+            // 必ず地上に出す: heightmap で地表を取得し、周辺で安全な陸地を探す
+            BlockPos dest = findSafeGround(level, found);
+            if (dest == null) {
+                // fallback: 元の found 付近の地表をそのまま使用
+                BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, found);
+                double y = surface.getY() + 1;
+                if (y < level.getMinBuildHeight() + 1) y = found.getY() + 1;
+                if (y > level.getMaxBuildHeight() - 2) y = level.getMaxBuildHeight() - 2;
+                dest = new BlockPos(surface.getX(), (int) y, surface.getZ());
+                int tries = 0;
+                while (tries < 5 && !level.getBlockState(dest).canBeReplaced() && !level.getBlockState(dest).isAir()) {
+                    dest = dest.above();
+                    tries++;
+                }
+            }
+            Vec3 vec = new Vec3(dest.getX() + 0.5, dest.getY(), dest.getZ() + 0.5);
+            player.stopRiding();
+            player.teleportTo(vec.x, vec.y, vec.z);
+            level.playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
+            return true;
+        } catch (Exception ex) {
+            LOGGER.error("Failed biome teleport for {}", rl, ex);
+            return false;
+        }
+    }
+
+    /**
+     * 指定座標周辺で必ず地上（固体ブロック上に空気2マス）の安全位置を探す。
+     * heightmap MOTION_BLOCKING_NO_LEAVES で地表を取得し、5x5 螺旋で探索。
+     * 水上バイオームでも陸地が見つからなければ水面直上を返す。
+     */
+    @org.jetbrains.annotations.Nullable
+    private static BlockPos findSafeGround(ServerLevel level, BlockPos center) {
+        // 陸地優先で探索
+        for (BlockPos pos : BlockPos.spiralAround(center, 2, net.minecraft.core.Direction.EAST, net.minecraft.core.Direction.SOUTH)) {
+            BlockPos groundTop = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos);
+            if (groundTop.getY() <= level.getMinBuildHeight()) continue;
+            BlockPos feet = groundTop.above();
+            var below = level.getBlockState(groundTop);
+            var feetState = level.getBlockState(feet);
+            var headState = level.getBlockState(feet.above());
+            boolean belowSolid = below.blocksMotion() && below.getFluidState().isEmpty();
+            if (!belowSolid) continue;
+            boolean feetAir = feetState.isAir() || feetState.canBeReplaced();
+            boolean headAir = headState.isAir() || headState.canBeReplaced();
+            if (feetAir && headAir) return feet;
+        }
+        // 陸地が見つからなければ水上も許容して再探索
+        for (BlockPos pos : BlockPos.spiralAround(center, 2, net.minecraft.core.Direction.EAST, net.minecraft.core.Direction.SOUTH)) {
+            BlockPos groundTop = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos);
+            if (groundTop.getY() <= level.getMinBuildHeight()) continue;
+            BlockPos feet = groundTop.above();
+            var feetState = level.getBlockState(feet);
+            var headState = level.getBlockState(feet.above());
+            if ((feetState.isAir() || feetState.canBeReplaced()) && (headState.isAir() || headState.canBeReplaced())) {
+                return feet;
+            }
+        }
+        return null;
+    }
+
+    // Overload for dynamic biome search via normalized query
+    private static boolean teleportToBiomeDynamic(ServerPlayer player, String normalizedQuery, RandomSource random) {
+        ResourceLocation found = WishBiomeSearch.findBest(normalizedQuery, player.serverLevel());
+        if (found == null) return false;
+        return teleportToBiome(player, found.toString(), random);
+    }
+
+    private static void spawnTreasureChest(ServerPlayer player, String lootTableStr, RandomSource random) {
+        ServerLevel level = player.serverLevel();
+        // choose loot table
+        String[] defaults = {
+                "minecraft:chests/abandoned_mineshaft",
+                "minecraft:chests/desert_pyramid",
+                "minecraft:chests/jungle_temple",
+                "minecraft:chests/simple_dungeon",
+                "minecraft:chests/nether_bridge",
+                "minecraft:chests/bastion_treasure",
+                "minecraft:chests/end_city_treasure",
+                "minecraft:chests/stronghold_corridor",
+                "minecraft:chests/woodland_mansion",
+                "minecraft:chests/shipwreck_treasure",
+                "minecraft:chests/buried_treasure",
+                "minecraft:chests/pillager_outpost",
+                "minecraft:chests/ruined_portal"
+        };
+        ResourceLocation lootRL;
+        if (lootTableStr != null && !lootTableStr.isEmpty()) {
+            try {
+                lootRL = new ResourceLocation(lootTableStr);
+            } catch (Exception ex) {
+                lootRL = new ResourceLocation(defaults[random.nextInt(defaults.length)]);
+            }
+        } else {
+            lootRL = new ResourceLocation(defaults[random.nextInt(defaults.length)]);
+        }
+        // find position in front of player
+        BlockPos origin = player.blockPosition();
+        var look = player.getLookAngle();
+        // try 2 blocks ahead
+        BlockPos target = BlockPos.containing(player.getX() + look.x * 2, player.getY(), player.getZ() + look.z * 2);
+        // if not replaceable, try above/below
+        for (int attempt = 0; attempt < 4; attempt++) {
+            BlockPos tryPos = switch (attempt) {
+                case 0 -> target;
+                case 1 -> target.above();
+                case 2 -> target.above(2);
+                case 3 -> origin.relative(player.getDirection(), 2).above();
+                default -> target;
+            };
+            if (level.getBlockState(tryPos).canBeReplaced() || level.getBlockState(tryPos).isAir()) {
+                target = tryPos;
+                break;
+            }
+            // also consider if target is still solid, try next attempt
+            if (attempt == 3 && !(level.getBlockState(tryPos).canBeReplaced() || level.getBlockState(tryPos).isAir())) {
+                // fallback to player pos above
+                target = origin.above();
+            }
+        }
+        // place chest facing opposite player
+        try {
+            var chestState = Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, player.getDirection().getOpposite());
+            level.setBlock(target, chestState, 3);
+            var be = level.getBlockEntity(target);
+            if (be instanceof RandomizableContainerBlockEntity rc) {
+                rc.setLootTable(lootRL, random.nextLong());
+            }
+            level.playSound(null, target, SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1.0F, 1.0F);
+        } catch (Exception ex) {
+            LOGGER.error("Failed to spawn treasure chest", ex);
         }
     }
 

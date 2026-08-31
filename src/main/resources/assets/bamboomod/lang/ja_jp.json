@@ -250,5 +250,11 @@
   "bamboomod.wish.fallback.iron": "まあまあだ",
   "bamboomod.wish.greed.line": "それは…ちょっと行き過ぎなんじゃないかなあ",
   "bamboomod.wish.result.overenchant": "神のご加護か…上限を超えた力が宿った！",
-  "bamboomod.wish.result.death": "あなたがそれを望むなら…"
+  "bamboomod.wish.result.death": "あなたがそれを望むなら…",
+  "bamboomod.wish.result.return": "帰る場所があるって良いわね！",
+  "bamboomod.wish.result.biome": "お望み通りに。",
+  "bamboomod.wish.result.biome_notfound": "近くには無いようね。",
+  "bamboomod.wish.result.treasure": "世界の何処かから拾ってきてあげたわよ。",
+  "entity.bamboomod.dolphin_companion": "イルカの仲間",
+  "entity.bamboomod.llama_companion": "ラマの仲間"
 }

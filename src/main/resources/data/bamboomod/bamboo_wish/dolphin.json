@@ -1,0 +1,13 @@
+{
+  "id": "wish/dolphin",
+  "pattern": "いるか|イルカ|dolphin",
+  "match": "regex",
+  "priority": false,
+  "weight": 1,
+  "message": "bamboomod.wish.result.generic",
+  "effect": {
+    "type": "summon",
+    "entity": "bamboomod:dolphin_companion",
+    "count": 1
+  }
+}

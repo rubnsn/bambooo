@@ -250,5 +250,11 @@
   "bamboomod.wish.fallback.iron": "Not bad, I guess.",
   "bamboomod.wish.greed.line": "That... might be a bit too greedy, don't you think?",
   "bamboomod.wish.result.overenchant": "A divine blessing... a power beyond limits dwells within!",
-  "bamboomod.wish.result.death": "If that is what you wish for..."
+  "bamboomod.wish.result.death": "If that is what you wish for...",
+  "bamboomod.wish.result.return": "It's nice to have a place to return to!",
+  "bamboomod.wish.result.biome": "As you wish.",
+  "bamboomod.wish.result.biome_notfound": "There seems to be nothing nearby.",
+  "bamboomod.wish.result.treasure": "I picked it up from somewhere in the world for you.",
+  "entity.bamboomod.dolphin_companion": "Dolphin Companion",
+  "entity.bamboomod.llama_companion": "Llama Companion"
 }
