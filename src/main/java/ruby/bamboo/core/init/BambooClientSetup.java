@@ -12,7 +12,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import ruby.bamboo.BambooMod;
-import ruby.bamboo.block.BroadLeaveBlock;
 import ruby.bamboo.block.IndLightBlock;
 import ruby.bamboo.block.SlideDoorBlock;
 import ruby.bamboo.item.BambooBowItem;
@@ -50,13 +49,14 @@ public final class BambooClientSetup {
             cutout(BambooBlocks.BAMBOO_PANE2.get());
             cutout(BambooBlocks.BAMBOO_PANE3.get());
             cutout(BambooBlocks.RANMA.get());
+            // sakura deco: すだれ/のれん -> cutout
+            cutout(BambooBlocks.BLIND.get());
+            cutout(BambooBlocks.NOREN_BLUE.get());
+            cutout(BambooBlocks.NOREN_PURPLE.get());
             // 狐火 -> cutout (cross モデル、透過テクスチャ。旧 BlockRenderLayer.CUTOUT 相当)
             cutout(BambooBlocks.KITSUNEBI.get());
             // 葉 -> cutout_mipped
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.SAKURA_LEAVES.get(), RenderType.cutoutMipped());
-            for (var broad : BambooBlocks.BROAD_LEAVES) {
-                ItemBlockRenderTypes.setRenderLayer(broad.get(), RenderType.cutoutMipped());
-            }
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.MAPLE_LEAVES.get(), RenderType.cutoutMipped());
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.GINKGO_LEAVES.get(), RenderType.cutoutMipped());
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.HINOKI_LEAVES.get(), RenderType.cutoutMipped());
@@ -70,9 +70,14 @@ public final class BambooClientSetup {
                     ItemBlockRenderTypes.setRenderLayer(b, RenderType.cutout());
                 }
             }
+            // 竹鉢 -> cutout
+            cutout(BambooBlocks.BAMBOO_POT.get());
 
             // 壁棚 -> cutout (薄板モデル)
             cutout(BambooBlocks.WALL_SHELF.get());
+
+            // 田んぼ -> 半ブロック(高さ8) + 水張り時は水色上面。water_stillテクスチャの半透明を正しく描画するため translucent
+            ItemBlockRenderTypes.setRenderLayer(BambooBlocks.PADDY_FIELD.get(), RenderType.translucent());
 
             // 石臼の BER 登録 (旧 TESR 相当)
             net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
@@ -120,10 +125,21 @@ public final class BambooClientSetup {
                     ruby.bamboo.client.renderer.CutBlockRenderer::new);
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.CUT_BLOCK.get(), RenderType.cutout());
 
+            // 竹鉢の BER 登録
+            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+                    BambooBlockEntities.BAMBOO_POT_BE.get(),
+                    ruby.bamboo.block.entity.BambooPotBlockRenderer::new);
+
             // 温泉水 — 半透明 (Phase B) — ブロックと流体両方をtranslucentに (バニラ水と同様)
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.SPRING_WATER.get(), RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(BambooMod.SPRING_WATER_SOURCE.get(), RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(BambooMod.SPRING_WATER_FLOWING.get(), RenderType.translucent());
+
+            // 葉カーペット — 薄い板 + sakuracarpet 系テクスチャは不透明なので cutout (透過部分なしでも安全)
+            cutout(BambooBlocks.SAKURA_CARPET.get());
+            cutout(BambooBlocks.HINOKI_CARPET.get());
+            cutout(BambooBlocks.MAPLE_CARPET.get());
+            cutout(BambooBlocks.GINKGO_CARPET.get());
             // 布団用椅子エンティティ (huton_chair) — 不可視レンダラ。未登録だと shouldRender で NPE
             net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.HUTON_CHAIR.get(),
                     ruby.bamboo.client.renderer.ChairRenderer::new);
@@ -149,6 +165,12 @@ public final class BambooClientSetup {
             // 手裏剣 — アイテム回転描画
             net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.SHURIKEN.get(),
                     ruby.bamboo.client.renderer.ShurikenRenderer::new);
+
+            // イルカ仲間 / ラマ仲間
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.DOLPHIN_COMPANION.get(),
+                    ruby.bamboo.client.renderer.DolphinCompanionRenderer::new);
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.LLAMA_COMPANION.get(),
+                    ruby.bamboo.client.renderer.LlamaCompanionRenderer::new);
 
             // 竹弓の引き絞りモデル (pull/pulling override)。バニラは Items.BOW にしか
             // 登録されないため、独自 BowItem 継承クラスには自前で登録が必要。
@@ -190,15 +212,19 @@ public final class BambooClientSetup {
      */
     @SubscribeEvent
     public static void onRegisterBlockColors(RegisterColorHandlersEvent.Block event) {
-        for (var broad : BambooBlocks.BROAD_LEAVES) {
-            BroadLeaveBlock block = broad.get();
-            int color = block.variant.color;
-            event.register((state, level, pos, tintIndex) -> color, block);
-        }
+        // 竹鉢 — 染料色を側面に乗算（土面はtintなし）
+        event.register((state, level, pos, tintIndex) -> {
+            if (tintIndex != 0) return 0xFFFFFF;
+            try { return state.getValue(ruby.bamboo.block.BambooPotBlock.COLOR).color; } catch (Exception e) { return ruby.bamboo.block.BambooPotColor.BROWN.color; }
+        }, BambooBlocks.BAMBOO_POT.get());
         // 新葉の tint (broadleaf.png を色乗算)
         event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR, BambooBlocks.MAPLE_LEAVES.get());
         event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR, BambooBlocks.GINKGO_LEAVES.get());
         event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR, BambooBlocks.HINOKI_LEAVES.get());
+        // 葉カーペット — 同じ broadleaf を葉と同じ色で tint (テクスチャ新規なし、流用)
+        event.register((state, level, pos, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR; }, BambooBlocks.MAPLE_CARPET.get());
+        event.register((state, level, pos, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR; }, BambooBlocks.GINKGO_CARPET.get());
+        event.register((state, level, pos, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR; }, BambooBlocks.HINOKI_CARPET.get());
 
         // 温泉水 — PARENT_DIR で源泉の COLOR を辿り、染料色は鮮やかに、DEFAULTのみtint乗算 + 3-4ブロック馴染み
         event.register((state, level, pos, tintIndex) -> {
@@ -272,19 +298,22 @@ public final class BambooClientSetup {
      */
     @SubscribeEvent
     public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
+        // 竹鉢アイテム — 既定BROWNで tint
+        event.register((stack, tintIndex) -> {
+            if (tintIndex != 0) return 0xFFFFFF;
+            return ruby.bamboo.block.BambooPotColor.BROWN.color;
+        }, BambooBlocks.BAMBOO_POT.get().asItem());
         for (var indlight : BambooBlocks.INDLIGHTS) {
             IndLightBlock block = (IndLightBlock) indlight.get();
             int color = block.color.mapColor;
             event.register((stack, tintIndex) -> color, new Item[] { block.asItem() });
         }
-        // 広葉のインベントリアイコンにも色乗算 (ブロックと同じバリアント色)
-        for (var broad : BambooBlocks.BROAD_LEAVES) {
-            BroadLeaveBlock block = broad.get();
-            int color = block.variant.color;
-            event.register((stack, tintIndex) -> color, new Item[] { block.asItem() });
-        }
+        // 新葉のインベントリアイコンにも色乗算
         event.register((stack, tintIndex) -> ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.MAPLE_LEAVES.get().asItem() });
         event.register((stack, tintIndex) -> ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.GINKGO_LEAVES.get().asItem() });
         event.register((stack, tintIndex) -> ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.HINOKI_LEAVES.get().asItem() });
+        event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.MAPLE_CARPET.get().asItem() });
+        event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.GINKGO_CARPET.get().asItem() });
+        event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.HINOKI_CARPET.get().asItem() });
     }
 }

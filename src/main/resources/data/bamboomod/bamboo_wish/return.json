@@ -1,0 +1,11 @@
+{
+  "id": "wish/return",
+  "pattern": "帰りたい|帰還|かえりたい|きかん|帰る|帰郷|もどりたい|return|home",
+  "match": "regex",
+  "priority": false,
+  "weight": 1,
+  "message": "bamboomod.wish.result.return",
+  "effect": {
+    "type": "teleport_respawn"
+  }
+}

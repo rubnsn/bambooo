@@ -17,7 +17,6 @@ import ruby.bamboo.block.BambooPaneBlock;
 import ruby.bamboo.block.BambooShootBlock;
 import ruby.bamboo.block.IndLightBlock;
 import ruby.bamboo.block.KitunebiBlock;
-import ruby.bamboo.block.BroadLeaveBlock;
 import ruby.bamboo.block.CampfireBlock;
 import ruby.bamboo.block.GinkgoLeaveBlock;
 import ruby.bamboo.block.GinkgoLogBlock;
@@ -30,6 +29,7 @@ import ruby.bamboo.block.MapleLeaveBlock;
 import ruby.bamboo.block.MapleLogBlock;
 import ruby.bamboo.block.MapleSaplingBlock;
 import ruby.bamboo.block.MillStoneBlock;
+import ruby.bamboo.block.PaddyFieldBlock;
 import ruby.bamboo.block.RicePlantBlock;
 import ruby.bamboo.block.SakuraLeaveBlock;
 import ruby.bamboo.block.SakuraLogBlock;
@@ -37,6 +37,8 @@ import ruby.bamboo.block.SakuraSaplingBlock;
 import ruby.bamboo.block.CutBlock;
 import ruby.bamboo.block.HutonBlock;
 import ruby.bamboo.block.MiniatureBlock;
+import ruby.bamboo.block.BlindBlock;
+import ruby.bamboo.block.NorenBlock;
 import ruby.bamboo.block.SlideDoorBlock;
 import ruby.bamboo.block.SpringBlock;
 import ruby.bamboo.block.SpringWaterBlock;
@@ -119,6 +121,12 @@ public final class BambooBlocks {
             () -> new RicePlantBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.PLANT).sound(SoundType.CROP)
                     .strength(0.0f).randomTicks().noCollission().instabreak()));
+
+    /** 田んぼ (旧 paddy_field / sakura PaddyField)。FarmlandBlock継承 + WATERLOGGED */
+    public static final RegistryObject<PaddyFieldBlock> PADDY_FIELD = register("paddy_field",
+            () -> new PaddyFieldBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DIRT).sound(SoundType.GRAVEL)
+                    .strength(0.6F).randomTicks()));
 
     /** 桜の苗木 (旧 sakura_sapling) */
     public static final RegistryObject<SakuraSaplingBlock> SAKURA_SAPLING = register("sakura_sapling",
@@ -259,33 +267,124 @@ public final class BambooBlocks {
     // ===== カットブロック — 単一ブロック + NBT CutState/YLevel/HLevel =====
     public static final RegistryObject<CutBlock> CUT_BLOCK = registerCutBlock();
 
+    // ===== 竹鉢 (sakura BambooPot 移植) =====
+    public static final RegistryObject<ruby.bamboo.block.BambooPotBlock> BAMBOO_POT = register("bamboo_pot",
+            ruby.bamboo.block.BambooPotBlock::new);
+
     // ===== 源泉・温泉水 =====
     public static final RegistryObject<SpringBlock> SPRING_BLOCK = register("spring_block", SpringBlock::new);
     public static final RegistryObject<SpringWaterBlock> SPRING_WATER = registerNoItem("spring_water",
             () -> new SpringWaterBlock(() -> BambooMod.SPRING_WATER_SOURCE.get(),
                     BlockBehaviour.Properties.copy(net.minecraft.world.level.block.Blocks.WATER).noLootTable().noOcclusion()));
-    // ===== 第6弾: 広葉樹の葉4種 (旧 broad_leave meta=0-3 を独立ブロック化) =====
 
-    /** 広葉 (緑/赤/黄/橙)。テクスチャ共通 broadleaf.png を BlockColor で色乗算 */
-    public static final java.util.List<RegistryObject<BroadLeaveBlock>> BROAD_LEAVES = registerBroadLeaves();
+    // ===== sakura無機能deco移植: 単独Block登録 21件 (EnumDecoration未拡張) =====
+    // sakura_slab (sakura 32): PlayerFacingSlab相当だが今回は SlabBlock で SakuraPlank 流用
+    public static final RegistryObject<SlabBlock> SAKURA_SLAB = register("sakura_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PINK).sound(SoundType.WOOD).strength(2.0F)));
 
-    private static java.util.List<RegistryObject<BroadLeaveBlock>> registerBroadLeaves() {
-        java.util.List<RegistryObject<BroadLeaveBlock>> result = new java.util.ArrayList<>();
-        for (BroadLeaveBlock.Variant variant : BroadLeaveBlock.Variant.values()) {
-            String name = "broad_leave_" + variant.name;
-            RegistryObject<BroadLeaveBlock> block = BambooMod.BLOCKS.register(name,
-                    () -> new BroadLeaveBlock(variant, BlockBehaviour.Properties.of()
-                            .mapColor(MapColor.PLANT).sound(SoundType.GRASS)
-                            .strength(0.2f).randomTicks().noOcclusion()
-                            .lightLevel(state -> 9)
-                            .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
-            BambooMod.ITEMS.register(name,
-                    () -> new BlockItem(block.get(), new Item.Properties()));
-            BambooItems.addCreative(block);
-            result.add(block);
-        }
-        return result;
-    }
+    // tatami_slab / tatami_tan_slab (sakura 81-83): TatamiBlock 流用 props + SlabBlock
+    public static final RegistryObject<SlabBlock> TATAMI_SLAB = register("tatami_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.SAND).sound(SoundType.GRASS).strength(0.5F)));
+    public static final RegistryObject<SlabBlock> TATAMI_TAN_SLAB = register("tatami_tan_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.GRASS).strength(0.5F)));
+
+    // straw 3件 (sakura 93): straw_block / slab / stairs - Decorate系流用 (新規straw)
+    public static final RegistryObject<Block> STRAW_BLOCK = register("straw_block",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_YELLOW).sound(SoundType.GRASS).strength(0.5F, 300F)));
+    public static final RegistryObject<SlabBlock> STRAW_SLAB = register("straw_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_YELLOW).sound(SoundType.GRASS).strength(0.5F, 300F)));
+    public static final RegistryObject<StairBlock> STRAW_STAIRS = register("straw_stairs",
+            () -> new StairBlock(STRAW_BLOCK.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.COLOR_YELLOW).sound(SoundType.GRASS).strength(0.5F, 300F)));
+
+    // checkered 9件 (sakura 94-96): 市松 各cube+slab+stairs
+    public static final RegistryObject<Block> CHECKERED_OAK = register("checkered_oak",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(1.0F, 3.0F)));
+    public static final RegistryObject<SlabBlock> CHECKERED_OAK_SLAB = register("checkered_oak_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(1.0F, 3.0F)));
+    public static final RegistryObject<StairBlock> CHECKERED_OAK_STAIRS = register("checkered_oak_stairs",
+            () -> new StairBlock(CHECKERED_OAK.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(1.0F, 3.0F)));
+
+    public static final RegistryObject<Block> CHECKERED_BIRCH = register("checkered_birch",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.SAND).sound(SoundType.WOOD).strength(1.0F, 3.0F)));
+    public static final RegistryObject<SlabBlock> CHECKERED_BIRCH_SLAB = register("checkered_birch_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.SAND).sound(SoundType.WOOD).strength(1.0F, 3.0F)));
+    public static final RegistryObject<StairBlock> CHECKERED_BIRCH_STAIRS = register("checkered_birch_stairs",
+            () -> new StairBlock(CHECKERED_BIRCH.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.SAND).sound(SoundType.WOOD).strength(1.0F, 3.0F)));
+
+    public static final RegistryObject<Block> CHECKERED_PINE = register("checkered_pine",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.WOOD).strength(1.0F, 3.0F)));
+    public static final RegistryObject<SlabBlock> CHECKERED_PINE_SLAB = register("checkered_pine_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.WOOD).strength(1.0F, 3.0F)));
+    public static final RegistryObject<StairBlock> CHECKERED_PINE_STAIRS = register("checkered_pine_stairs",
+            () -> new StairBlock(CHECKERED_PINE.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.WOOD).strength(1.0F, 3.0F)));
+
+    // blind 1件 (sakura 46): PaneBlock/cutout/collision空
+    public static final RegistryObject<BlindBlock> BLIND = register("blind", BlindBlock::new);
+
+    // noren 2件 (sakura 47-48): PaneBlock/cutout/doesNotBlockMovement
+    public static final RegistryObject<NorenBlock> NOREN_BLUE = register("noren_blue", NorenBlock::new);
+    public static final RegistryObject<NorenBlock> NOREN_PURPLE = register("noren_purple", NorenBlock::new);
+
+    // brick 3件 (sakura 51-53): cube + slab + stairs (v2: brick 3色にハーフ/階段追加)
+    public static final RegistryObject<Block> BRICK_ORANGE = register("brick_orange",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_ORANGE).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+    public static final RegistryObject<SlabBlock> BRICK_ORANGE_SLAB = register("brick_orange_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_ORANGE).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+    public static final RegistryObject<StairBlock> BRICK_ORANGE_STAIRS = register("brick_orange_stairs",
+            () -> new StairBlock(BRICK_ORANGE.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.TERRACOTTA_ORANGE).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+    public static final RegistryObject<Block> BRICK_WHITE = register("brick_white",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.QUARTZ).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+    public static final RegistryObject<SlabBlock> BRICK_WHITE_SLAB = register("brick_white_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.QUARTZ).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+    public static final RegistryObject<StairBlock> BRICK_WHITE_STAIRS = register("brick_white_stairs",
+            () -> new StairBlock(BRICK_WHITE.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.QUARTZ).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+    public static final RegistryObject<Block> BRICK_BROWN = register("brick_brown",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+    public static final RegistryObject<SlabBlock> BRICK_BROWN_SLAB = register("brick_brown_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+    public static final RegistryObject<StairBlock> BRICK_BROWN_STAIRS = register("brick_brown_stairs",
+            () -> new StairBlock(BRICK_BROWN.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
+
+    // ===== 葉カーペット 4種 (桜/ヒノキ/モミジ/イチョウ) — バニラカーペット同様 厚さ1/16 =====
+    public static final RegistryObject<ruby.bamboo.block.LeafCarpetBlock> SAKURA_CARPET = register("sakura_carpet",
+            () -> new ruby.bamboo.block.LeafCarpetBlock(MapColor.COLOR_PINK));
+    public static final RegistryObject<ruby.bamboo.block.LeafCarpetBlock> HINOKI_CARPET = register("hinoki_carpet",
+            () -> new ruby.bamboo.block.LeafCarpetBlock(MapColor.PLANT));
+    public static final RegistryObject<ruby.bamboo.block.LeafCarpetBlock> MAPLE_CARPET = register("maple_carpet",
+            () -> new ruby.bamboo.block.LeafCarpetBlock(MapColor.COLOR_RED));
+    public static final RegistryObject<ruby.bamboo.block.LeafCarpetBlock> GINKGO_CARPET = register("ginkgo_carpet",
+            () -> new ruby.bamboo.block.LeafCarpetBlock(MapColor.COLOR_YELLOW));
 
     private static java.util.List<RegistryObject<Block>> registerIndLights() {
         java.util.List<RegistryObject<Block>> result = new java.util.ArrayList<>();

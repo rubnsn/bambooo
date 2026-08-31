@@ -3,6 +3,7 @@ package ruby.bamboo.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -49,7 +50,10 @@ public class RicePlantBlock extends CropBlock {
 
     @Override
     protected boolean mayPlaceOn(BlockState state, BlockGetter level, BlockPos pos) {
-        return state.is(net.minecraft.world.level.block.Blocks.FARMLAND);
+        // 循環参照防止: state.canSustainPlant -> Block.canSustainPlant -> BushBlock.mayPlaceOn -> RicePlantBlock.mayPlaceOn のループを避ける
+        // 旧3条件目は canSustainPlant への委譲だったが、FARMLAND以外の土で無限再帰するため削除
+        return state.is(net.minecraft.world.level.block.Blocks.FARMLAND)
+                || state.getBlock() instanceof PaddyFieldBlock;
     }
 
     @Override

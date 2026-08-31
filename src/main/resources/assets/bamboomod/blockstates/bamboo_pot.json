@@ -1,0 +1,484 @@
+{
+  "variants": {
+    "color=white,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=white,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=white,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=white,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=white,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=white,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=white,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=white,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=orange,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=orange,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=orange,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=orange,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=orange,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=orange,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=orange,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=orange,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=magenta,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=magenta,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=magenta,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=magenta,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=magenta,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=magenta,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=magenta,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=magenta,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=light_blue,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=light_blue,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=light_blue,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=light_blue,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=light_blue,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=light_blue,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=light_blue,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=light_blue,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=yellow,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=yellow,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=yellow,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=yellow,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=yellow,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=yellow,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=yellow,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=yellow,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=lime,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=lime,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=lime,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=lime,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=lime,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=lime,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=lime,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=lime,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=pink,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=pink,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=pink,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=pink,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=pink,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=pink,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=pink,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=pink,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=gray,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=gray,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=gray,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=gray,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=gray,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=gray,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=gray,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=gray,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=light_gray,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=light_gray,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=light_gray,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=light_gray,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=light_gray,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=light_gray,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=light_gray,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=light_gray,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=cyan,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=cyan,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=cyan,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=cyan,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=cyan,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=cyan,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=cyan,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=cyan,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=purple,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=purple,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=purple,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=purple,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=purple,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=purple,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=purple,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=purple,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=blue,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=blue,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=blue,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=blue,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=blue,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=blue,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=blue,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=blue,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=brown,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=brown,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=brown,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=brown,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=brown,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=brown,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=brown,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=brown,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=green,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=green,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=green,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=green,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=green,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=green,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=green,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=green,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=red,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=red,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=red,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=red,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=red,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=red,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=red,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=red,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=black,facing=north,attached=false": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=black,facing=north,attached=true": {
+      "model": "bamboomod:block/bamboo_pot"
+    },
+    "color=black,facing=east,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=black,facing=east,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 90
+    },
+    "color=black,facing=south,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=black,facing=south,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 180
+    },
+    "color=black,facing=west,attached=false": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    },
+    "color=black,facing=west,attached=true": {
+      "model": "bamboomod:block/bamboo_pot",
+      "y": 270
+    }
+  }
+}

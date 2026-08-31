@@ -131,6 +131,9 @@ public class BambooMod {
         net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
                 net.minecraftforge.fml.config.ModConfig.Type.COMMON,
                 SpringConfig.COMMON_SPEC, "bamboomod-spring.toml");
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                net.minecraftforge.fml.config.ModConfig.Type.COMMON,
+                ruby.bamboo.core.config.WishConfig.COMMON_SPEC, "bamboomod-wish.toml");
 
         // 登録順: BLOCKS/ITEMS を先に接続してから各初期化クラスで register 呼び出し
         BLOCKS.register(modEventBus);

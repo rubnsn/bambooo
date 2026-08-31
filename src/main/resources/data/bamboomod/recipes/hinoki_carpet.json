@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "bamboomod:hinoki_leave"
+    }
+  },
+  "result": {
+    "item": "bamboomod:hinoki_carpet",
+    "count": 3
+  }
+}

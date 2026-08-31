@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "bamboomod:block/brick_white_slab"
+    },
+    "type=top": {
+      "model": "bamboomod:block/brick_white_slab_top"
+    },
+    "type=double": {
+      "model": "bamboomod:block/brick_white"
+    }
+  }
+}

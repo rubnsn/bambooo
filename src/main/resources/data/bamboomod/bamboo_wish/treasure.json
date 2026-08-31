@@ -1,0 +1,11 @@
+{
+  "id": "wish/treasure",
+  "pattern": "宝|たから|トレジャー|treasure",
+  "match": "regex",
+  "priority": false,
+  "weight": 1,
+  "message": "bamboomod.wish.result.treasure",
+  "effect": {
+    "type": "treasure_chest"
+  }
+}

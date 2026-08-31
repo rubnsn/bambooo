@@ -1,0 +1,24 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "checkered",
+  "pattern": [
+    "S#",
+    "#S"
+  ],
+  "key": {
+    "S": {
+      "item": "bamboomod:sakura_planks"
+    },
+    "#": {
+      "item": "minecraft:birch_planks"
+    }
+  },
+  "result": {
+    "item": "bamboomod:checkered_birch",
+    "count": 4
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

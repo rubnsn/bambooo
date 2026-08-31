@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "bamboomod:maple_leave"
+    }
+  },
+  "result": {
+    "item": "bamboomod:maple_carpet",
+    "count": 3
+  }
+}

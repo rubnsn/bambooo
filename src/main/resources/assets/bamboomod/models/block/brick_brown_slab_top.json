@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "bamboomod:block/brick_brown",
+    "top": "bamboomod:block/brick_brown",
+    "side": "bamboomod:block/brick_brown"
+  }
+}

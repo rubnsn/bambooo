@@ -17,7 +17,6 @@ import ruby.bamboo.block.GinkgoLeaveBlock;
 import ruby.bamboo.block.HinokiLeaveBlock;
 import ruby.bamboo.block.MapleLeaveBlock;
 import ruby.bamboo.block.SakuraLeaveBlock;
-import ruby.bamboo.block.BroadLeaveBlock;
 
 /**
  * 風エンティティ (旧 Wind の 1.20.1 移植)。
@@ -170,13 +169,6 @@ public class WindEntity extends Entity {
         } else if (state.getBlock() instanceof HinokiLeaveBlock) {
             color = HinokiLeaveBlock.PETAL_COLOR;
             petalType = ruby.bamboo.core.init.BambooParticles.PETAL_1.get(); // 旧Green petal_1
-        } else if (state.getBlock() instanceof BroadLeaveBlock broad) {
-            color = broad.variant.color;
-            petalType = switch (broad.variant.petal) {
-                case 2 -> ruby.bamboo.core.init.BambooParticles.PETAL_2.get();
-                case 3 -> ruby.bamboo.core.init.BambooParticles.PETAL_3.get();
-                default -> ruby.bamboo.core.init.BambooParticles.PETAL_1.get();
-            };
         } else {
             // バニラ葉/vine/DoublePlant は旧Green (0x3F9E55, petal_1) と同じ緑で統一
             // 旧 Wind は 0xFFFFFF だったが、指示により旧Greenに合わせる

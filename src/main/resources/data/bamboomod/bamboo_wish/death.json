@@ -1,0 +1,11 @@
+{
+  "id": "wish/death",
+  "pattern": "死|しにたい|death|kill me",
+  "match": "regex",
+  "priority": false,
+  "weight": 1,
+  "message": "bamboomod.wish.result.death",
+  "effect": {
+    "type": "kill"
+  }
+}

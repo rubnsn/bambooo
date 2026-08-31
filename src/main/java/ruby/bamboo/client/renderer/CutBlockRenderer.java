@@ -121,6 +121,20 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
         int colorSouth = getColorForDir(model, cutState, Direction.SOUTH, be);
         int colorWest = getColorForDir(model, cutState, Direction.WEST, be);
         int colorEast = getColorForDir(model, cutState, Direction.EAST, be);
+        // アンビエント適応: 面ごとの shade を tint に乗算 (Miniature BER と同様)
+        var level = be.getLevel();
+        float shadeDown = level != null ? level.getShade(Direction.DOWN, true) : 0.5f;
+        float shadeUp = level != null ? level.getShade(Direction.UP, true) : 1.0f;
+        float shadeNorth = level != null ? level.getShade(Direction.NORTH, true) : 0.8f;
+        float shadeSouth = level != null ? level.getShade(Direction.SOUTH, true) : 0.8f;
+        float shadeWest = level != null ? level.getShade(Direction.WEST, true) : 0.6f;
+        float shadeEast = level != null ? level.getShade(Direction.EAST, true) : 0.6f;
+        colorDown = applyShade(colorDown, shadeDown);
+        colorUp = applyShade(colorUp, shadeUp);
+        colorNorth = applyShade(colorNorth, shadeNorth);
+        colorSouth = applyShade(colorSouth, shadeSouth);
+        colorWest = applyShade(colorWest, shadeWest);
+        colorEast = applyShade(colorEast, shadeEast);
 
         RenderType rt = RenderType.cutout();
         try {
@@ -192,6 +206,20 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
         int colorSouth = getColorForDir(model, cutState, Direction.SOUTH, be);
         int colorWest = getColorForDir(model, cutState, Direction.WEST, be);
         int colorEast = getColorForDir(model, cutState, Direction.EAST, be);
+        // アンビエント適応: 面ごとの shade を tint に乗算 (Miniature BER と同様)
+        var level = be.getLevel();
+        float shadeDown = level != null ? level.getShade(Direction.DOWN, true) : 0.5f;
+        float shadeUp = level != null ? level.getShade(Direction.UP, true) : 1.0f;
+        float shadeNorth = level != null ? level.getShade(Direction.NORTH, true) : 0.8f;
+        float shadeSouth = level != null ? level.getShade(Direction.SOUTH, true) : 0.8f;
+        float shadeWest = level != null ? level.getShade(Direction.WEST, true) : 0.6f;
+        float shadeEast = level != null ? level.getShade(Direction.EAST, true) : 0.6f;
+        colorDown = applyShade(colorDown, shadeDown);
+        colorUp = applyShade(colorUp, shadeUp);
+        colorNorth = applyShade(colorNorth, shadeNorth);
+        colorSouth = applyShade(colorSouth, shadeSouth);
+        colorWest = applyShade(colorWest, shadeWest);
+        colorEast = applyShade(colorEast, shadeEast);
 
         RenderType rt = RenderType.cutout();
         try {
@@ -453,6 +481,24 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
         vc.vertex(mat, x2, y2, z2).color(r, g, b, 1f).uv(us[1], vs[1]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
         vc.vertex(mat, x3, y3, z3).color(r, g, b, 1f).uv(us[2], vs[2]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
         vc.vertex(mat, x4, y4, z4).color(r, g, b, 1f).uv(us[3], vs[3]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
+    }
+
+    private static int applyShade(int tint, float shade) {
+        if (shade >= 0.999f) return tint;
+        if (tint == -1) {
+            int v = (int) (255 * shade);
+            if (v < 0) v = 0;
+            if (v > 255) v = 255;
+            return (v << 16) | (v << 8) | v;
+        } else {
+            int r = (int) (((tint >> 16) & 0xFF) * shade);
+            int g = (int) (((tint >> 8) & 0xFF) * shade);
+            int b = (int) ((tint & 0xFF) * shade);
+            if (r < 0) r = 0; if (r > 255) r = 255;
+            if (g < 0) g = 0; if (g > 255) g = 255;
+            if (b < 0) b = 0; if (b > 255) b = 255;
+            return (r << 16) | (g << 8) | b;
+        }
     }
 
     private static float lerp(float a, float b, float t) {

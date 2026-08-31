@@ -1,0 +1,8 @@
+﻿{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "bamboomod:block/checkered_birch",
+    "top": "bamboomod:block/checkered_birch",
+    "side": "bamboomod:block/checkered_birch"
+  }
+}

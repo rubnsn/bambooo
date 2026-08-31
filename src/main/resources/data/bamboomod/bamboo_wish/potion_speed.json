@@ -1,0 +1,1 @@
+{"id": "wish/potion_speed",   "pattern": "速く走りたい|足が速く|はやく|speed",   "match": "regex",   "priority": false,   "weight": 1,   "message": "bamboomod.wish.result.generic",   "effect": {"type": "effect_potion", "effect": "minecraft:speed", "duration": 72000, "amplifier": 2} }
