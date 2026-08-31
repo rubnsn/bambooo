@@ -1,6 +1,6 @@
 {
   "id": "wish/death",
-  "pattern": "死|しにたい|死にたい|death|kill me",
+  "pattern": "死|しにたい|death|kill me",
   "match": "regex",
   "priority": false,
   "weight": 1,

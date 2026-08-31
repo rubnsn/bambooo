@@ -17,7 +17,6 @@ import ruby.bamboo.block.BambooPaneBlock;
 import ruby.bamboo.block.BambooShootBlock;
 import ruby.bamboo.block.IndLightBlock;
 import ruby.bamboo.block.KitunebiBlock;
-import ruby.bamboo.block.BroadLeaveBlock;
 import ruby.bamboo.block.CampfireBlock;
 import ruby.bamboo.block.GinkgoLeaveBlock;
 import ruby.bamboo.block.GinkgoLogBlock;
@@ -376,28 +375,16 @@ public final class BambooBlocks {
             () -> new StairBlock(BRICK_BROWN.get().defaultBlockState(),
                     BlockBehaviour.Properties.of()
                             .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
-    // ===== 第6弾: 広葉樹の葉4種 (旧 broad_leave meta=0-3 を独立ブロック化) =====
 
-    /** 広葉 (緑/赤/黄/橙)。テクスチャ共通 broadleaf.png を BlockColor で色乗算 */
-    public static final java.util.List<RegistryObject<BroadLeaveBlock>> BROAD_LEAVES = registerBroadLeaves();
-
-    private static java.util.List<RegistryObject<BroadLeaveBlock>> registerBroadLeaves() {
-        java.util.List<RegistryObject<BroadLeaveBlock>> result = new java.util.ArrayList<>();
-        for (BroadLeaveBlock.Variant variant : BroadLeaveBlock.Variant.values()) {
-            String name = "broad_leave_" + variant.name;
-            RegistryObject<BroadLeaveBlock> block = BambooMod.BLOCKS.register(name,
-                    () -> new BroadLeaveBlock(variant, BlockBehaviour.Properties.of()
-                            .mapColor(MapColor.PLANT).sound(SoundType.GRASS)
-                            .strength(0.2f).randomTicks().noOcclusion()
-                            .lightLevel(state -> 9)
-                            .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
-            BambooMod.ITEMS.register(name,
-                    () -> new BlockItem(block.get(), new Item.Properties()));
-            BambooItems.addCreative(block);
-            result.add(block);
-        }
-        return result;
-    }
+    // ===== 葉カーペット 4種 (桜/ヒノキ/モミジ/イチョウ) — バニラカーペット同様 厚さ1/16 =====
+    public static final RegistryObject<ruby.bamboo.block.LeafCarpetBlock> SAKURA_CARPET = register("sakura_carpet",
+            () -> new ruby.bamboo.block.LeafCarpetBlock(MapColor.COLOR_PINK));
+    public static final RegistryObject<ruby.bamboo.block.LeafCarpetBlock> HINOKI_CARPET = register("hinoki_carpet",
+            () -> new ruby.bamboo.block.LeafCarpetBlock(MapColor.PLANT));
+    public static final RegistryObject<ruby.bamboo.block.LeafCarpetBlock> MAPLE_CARPET = register("maple_carpet",
+            () -> new ruby.bamboo.block.LeafCarpetBlock(MapColor.COLOR_RED));
+    public static final RegistryObject<ruby.bamboo.block.LeafCarpetBlock> GINKGO_CARPET = register("ginkgo_carpet",
+            () -> new ruby.bamboo.block.LeafCarpetBlock(MapColor.COLOR_YELLOW));
 
     private static java.util.List<RegistryObject<Block>> registerIndLights() {
         java.util.List<RegistryObject<Block>> result = new java.util.ArrayList<>();

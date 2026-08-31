@@ -1,6 +1,6 @@
 {
   "id": "wish/friend",
-  "pattern": "友達|ともだち|仲間|なかま",
+  "pattern": "友達|ともだち|仲間|なかま|おおかみ|wolf",
   "match": "regex",
   "priority": false,
   "weight": 1,
