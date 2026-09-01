@@ -50,12 +50,14 @@ public class BambooRodItem extends BambooItem {
         // 餌チェックのみ（pendingは上書きで安全、GUIで封じられる）
         if (!level.isClientSide) {
             if (!FishingHandler.hasBait(player)) {
+                player.displayClientMessage(Component.translatable("message.bamboomod.fishing.no_bait").withStyle(net.minecraft.ChatFormatting.GRAY), true);
                 return InteractionResultHolder.fail(stack);
             }
             player.startUsingItem(hand);
             return InteractionResultHolder.consume(stack);
         } else {
             if (!FishingHandler.hasBait(player)) {
+                player.displayClientMessage(Component.translatable("message.bamboomod.fishing.no_bait").withStyle(net.minecraft.ChatFormatting.GRAY), true);
                 return InteractionResultHolder.fail(stack);
             }
             player.startUsingItem(hand);

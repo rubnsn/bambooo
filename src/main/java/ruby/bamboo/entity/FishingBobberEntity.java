@@ -144,7 +144,7 @@ public class FishingBobberEntity extends Entity {
 
     @Override
     public double getPassengersRidingOffset() {
-        return 0.35;
+        return -0.3;
     }
 
     @Override

@@ -281,6 +281,7 @@
   "message.bamboomod.fishing.cooldown": "The fish is watching cautiously...",
   "message.bamboomod.fishing.cancel_hint": "Right-click to retrieve",
   "message.bamboomod.fishing.not_water": "Cast onto water!",
+  "message.bamboomod.fishing.no_bait": "Need bait!",
   "tooltip.bamboomod.bamboo_rod.gauge_hint": "Right-click to show gauge, click again to cast",
   "screen.bamboomod.fishing_power_gauge": "Power Gauge",
   "screen.bamboomod.fishing_power_gauge.title": "Power Gauge",

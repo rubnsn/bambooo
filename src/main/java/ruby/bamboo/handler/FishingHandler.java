@@ -150,6 +150,7 @@ public class FishingHandler {
         // 餌チェック
         BaitInfo baitInfo = findBaitInfo(sp);
         if (baitInfo == null) {
+            sp.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.bamboomod.fishing.no_bait").withStyle(net.minecraft.ChatFormatting.GRAY), true);
             LOGGER.debug("Fishing cast without bait for {}", sp.getName().getString());
             return;
         }
