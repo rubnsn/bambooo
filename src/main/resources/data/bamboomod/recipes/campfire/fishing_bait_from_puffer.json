@@ -1,0 +1,17 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "fishing_bait",
+  "ingredients": [
+    {
+      "item": "minecraft:pufferfish"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:fishing_bait",
+    "count": 2
+  },
+  "experience": 0.1,
+  "cookingtime": 100,
+  "fuelCost": 50
+}

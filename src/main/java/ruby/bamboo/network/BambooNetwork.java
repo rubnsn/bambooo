@@ -44,5 +44,17 @@ public final class BambooNetwork {
                 WishRequestPacket::encode,
                 WishRequestPacket::decode,
                 WishRequestPacket::handle);
+        CHANNEL.registerMessage(nextId(), FishingCastResultPacket.class,
+                FishingCastResultPacket::encode,
+                FishingCastResultPacket::decode,
+                FishingCastResultPacket::handle);
+        CHANNEL.registerMessage(nextId(), FishingResultPacket.class,
+                FishingResultPacket::encode,
+                FishingResultPacket::decode,
+                FishingResultPacket::handle);
+        CHANNEL.registerMessage(nextId(), FishingCastRequestPacket.class,
+                FishingCastRequestPacket::encode,
+                FishingCastRequestPacket::decode,
+                FishingCastRequestPacket::handle);
     }
 }

@@ -172,6 +172,10 @@ public final class BambooClientSetup {
             net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.LLAMA_COMPANION.get(),
                     ruby.bamboo.client.renderer.LlamaCompanionRenderer::new);
 
+            // 釣りウキ
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.FISHING_BOBBER.get(),
+                    ruby.bamboo.client.renderer.FishingBobberRenderer::new);
+
             // 竹弓の引き絞りモデル (pull/pulling override)。バニラは Items.BOW にしか
             // 登録されないため、独自 BowItem 継承クラスには自前で登録が必要。
             registerBambooBowModelProperties();

@@ -105,6 +105,15 @@ public final class BambooEntities {
                     .updateInterval(1)
                     .build("llama_companion"));
 
+    /** 釣りウキ (bamboo_rod 専用。ロープで繋がる) */
+    public static final RegistryObject<EntityType<ruby.bamboo.entity.FishingBobberEntity>> FISHING_BOBBER = BambooMod.ENTITY_TYPES.register(
+            "fishing_bobber",
+            () -> EntityType.Builder.<ruby.bamboo.entity.FishingBobberEntity>of(ruby.bamboo.entity.FishingBobberEntity::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F)
+                    .clientTrackingRange(64)
+                    .updateInterval(2)
+                    .build("fishing_bobber"));
+
     private static <T extends AbstractArrow> RegistryObject<EntityType<T>> registerArrow(
             String name, EntityType.EntityFactory<T> factory) {
         return BambooMod.ENTITY_TYPES.register(name,

@@ -93,6 +93,28 @@ public final class BambooItems {
     public static final RegistryObject<ruby.bamboo.item.WishWandItem> WISH_WAND = register("wish_wand",
             () -> new ruby.bamboo.item.WishWandItem(new Item.Properties().durability(1)));
 
+    // ===== 釣り (Stardew Valley風) =====
+
+    /** 竹竿 */
+    public static final RegistryObject<ruby.bamboo.item.BambooRodItem> BAMBOO_ROD = register("bamboo_rod",
+            () -> new ruby.bamboo.item.BambooRodItem(new Item.Properties().durability(64)));
+
+    /** 釣りエサ (消耗品, バイトパワー6) */
+    public static final RegistryObject<ruby.bamboo.item.FishingBaitItem> FISHING_BAIT = register("fishing_bait",
+            () -> new ruby.bamboo.item.FishingBaitItem(new Item.Properties()));
+
+    /** ルアー (木製, バイトパワー2, 耐久32) */
+    public static final RegistryObject<ruby.bamboo.item.LureItem> LURE_WOOD = register("lure_wood",
+            () -> new ruby.bamboo.item.LureItem(new Item.Properties().durability(32), 2));
+
+    /** ルアー (鉄製, バイトパワー4, 耐久64) */
+    public static final RegistryObject<ruby.bamboo.item.LureItem> LURE_IRON = register("lure_iron",
+            () -> new ruby.bamboo.item.LureItem(new Item.Properties().durability(64), 4));
+
+    /** ルアー (ダイヤ製, バイトパワー6, 耐久128) */
+    public static final RegistryObject<ruby.bamboo.item.LureItem> LURE_DIAMOND = register("lure_diamond",
+            () -> new ruby.bamboo.item.LureItem(new Item.Properties().durability(128), 6));
+
     // ===== 弓矢 (旧 BambooBow + arrow 6種の 1.20.1 移植。アンチ矢はオミット) =====
 
     /** 竹弓 (旧 BambooBow)。耐久400 */
