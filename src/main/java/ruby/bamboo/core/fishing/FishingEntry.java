@@ -24,9 +24,6 @@ public class FishingEntry {
     public final Category category;
     public final int weight;
     public final int reqBitePower;
-    public final int minCm;
-    public final int midCm;
-    public final int maxCm;
     public final boolean nightOnly;
     public final int stamina;
     public final int power;
@@ -42,7 +39,6 @@ public class FishingEntry {
 
     public FishingEntry(ResourceLocation id, ResourceLocation itemId, Category category,
                         int weight, int reqBitePower,
-                        int minCm, int midCm, int maxCm,
                         boolean nightOnly,
                         int stamina, int power, MovePattern move,
                         String preferredBiomeTag, float preferredMultiplier) {
@@ -51,9 +47,6 @@ public class FishingEntry {
         this.category = category;
         this.weight = weight;
         this.reqBitePower = reqBitePower;
-        this.minCm = minCm;
-        this.midCm = midCm;
-        this.maxCm = maxCm;
         this.nightOnly = nightOnly;
         this.stamina = stamina;
         this.power = power;
@@ -68,21 +61,20 @@ public class FishingEntry {
 
     public static FishingEntry fish(ResourceLocation id, ResourceLocation itemId,
                                     int weight, int req,
-                                    int minCm, int midCm, int maxCm,
                                     boolean nightOnly,
                                     int stamina, int power, MovePattern move,
                                     String preferredTag, float mult) {
         return new FishingEntry(id, itemId, Category.FISH, weight, req,
-                minCm, midCm, maxCm, nightOnly, stamina, power, move, preferredTag, mult);
+                nightOnly, stamina, power, move, preferredTag, mult);
     }
 
     public static FishingEntry junk(ResourceLocation id, ResourceLocation itemId, int weight, int req) {
         return new FishingEntry(id, itemId, Category.JUNK, weight, req,
-                0, 0, 0, false, 8, 0, MovePattern.SMOOTH, null, 1f);
+                false, 8, 0, MovePattern.SMOOTH, null, 1f);
     }
 
     public static FishingEntry treasure(ResourceLocation id, ResourceLocation itemId, int weight, int req) {
         return new FishingEntry(id, itemId, Category.TREASURE, weight, req,
-                0, 0, 0, false, 10, 1, MovePattern.SMOOTH, null, 1f);
+                false, 10, 1, MovePattern.SMOOTH, null, 1f);
     }
 }

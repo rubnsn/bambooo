@@ -262,13 +262,12 @@ public class FishingMinigameScreen extends Screen {
                 if (item != null) {
                     ItemStack tmp = new ItemStack(item);
                     FishSize size = FishSize.fromIndex(pkt.sizeOrdinal);
-                    int cm = size.representativeCm(pkt.minCm, pkt.midCm, pkt.maxCm);
                     String sizeName = switch (size) {
-                        case MIN -> "ミニ";
-                        case NORMAL -> "ノーマル";
-                        case BIG -> "ビッグ";
+                        case BRONZE -> "ブロンズ";
+                        case SILVER -> "シルバー";
+                        case GOLD -> "ゴールド";
                     };
-                    Component msg = Component.translatable("message.bamboomod.fishing.success", tmp.getHoverName().getString(), sizeName, cm).withStyle(ChatFormatting.GOLD);
+                    Component msg = Component.translatable("message.bamboomod.fishing.success", tmp.getHoverName().getString(), sizeName).withStyle(ChatFormatting.GOLD);
                     mc.player.displayClientMessage(msg, false);
                 }
             }
@@ -370,12 +369,11 @@ public class FishingMinigameScreen extends Screen {
                 gfx.fill(progBarX, progBarY + progBarH - progFillH, progBarX + PROG_BAR_W, progBarY + progBarH, progColor);
                 if (pkt != null) {
                     FishSize size = FishSize.fromIndex(pkt.sizeOrdinal);
-                    int cm = size.representativeCm(pkt.minCm, pkt.midCm, pkt.maxCm);
-                    String sizeName = switch (size) { case MIN -> "ミニ"; case NORMAL -> "ノーマル"; case BIG -> "ビッグ"; };
+                    String sizeName = switch (size) { case BRONZE -> "ブロンズ"; case SILVER -> "シルバー"; case GOLD -> "ゴールド"; };
                     var item = ForgeRegistries.ITEMS.getValue(pkt.itemId);
                     if (item != null) {
                         ItemStack tmp = new ItemStack(item);
-                        String title = tmp.getHoverName().getString() + " [" + sizeName + " " + cm + "cm]";
+                        String title = tmp.getHoverName().getString() + " [" + sizeName + "]";
                         int tw = this.font.width(title);
                         gfx.drawString(this.font, title, (sw - tw) / 2, barY - 16, 0xFFFFFF, true);
                     }

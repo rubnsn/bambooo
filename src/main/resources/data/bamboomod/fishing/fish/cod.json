@@ -1,0 +1,13 @@
+{
+  "id": "bamboomod:cod",
+  "item": "minecraft:cod",
+  "category": "FISH",
+  "weight": 10,
+  "reqBitePower": 0,
+  "nightOnly": false,
+  "stamina": 12,
+  "power": 1,
+  "move": "SMOOTH",
+  "preferredBiomeTag": "is_ocean",
+  "preferredMultiplier": 1.8
+}

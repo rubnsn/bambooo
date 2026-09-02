@@ -25,16 +25,12 @@ public class FishingCastResultPacket {
     public final int distance;
     public final int waitMin;
     public final int waitMax;
-    public final int minCm;
-    public final int midCm;
-    public final int maxCm;
 
     public FishingCastResultPacket(ResourceLocation entryId, ResourceLocation itemId,
                                    int categoryOrdinal, int sizeOrdinal,
                                    int startProgress, int fishStamina, int fishPower,
                                    int movePatternOrdinal, int distance,
-                                   int waitMin, int waitMax,
-                                   int minCm, int midCm, int maxCm) {
+                                   int waitMin, int waitMax) {
         this.entryId = entryId;
         this.itemId = itemId;
         this.categoryOrdinal = categoryOrdinal;
@@ -46,9 +42,6 @@ public class FishingCastResultPacket {
         this.distance = distance;
         this.waitMin = waitMin;
         this.waitMax = waitMax;
-        this.minCm = minCm;
-        this.midCm = midCm;
-        this.maxCm = maxCm;
     }
 
     public static void encode(FishingCastResultPacket msg, FriendlyByteBuf buf) {
@@ -63,9 +56,6 @@ public class FishingCastResultPacket {
         buf.writeVarInt(msg.distance);
         buf.writeVarInt(msg.waitMin);
         buf.writeVarInt(msg.waitMax);
-        buf.writeVarInt(msg.minCm);
-        buf.writeVarInt(msg.midCm);
-        buf.writeVarInt(msg.maxCm);
     }
 
     public static FishingCastResultPacket decode(FriendlyByteBuf buf) {
@@ -80,10 +70,7 @@ public class FishingCastResultPacket {
         int dist = buf.readVarInt();
         int waitMin = buf.readVarInt();
         int waitMax = buf.readVarInt();
-        int minCm = buf.readVarInt();
-        int midCm = buf.readVarInt();
-        int maxCm = buf.readVarInt();
-        return new FishingCastResultPacket(entryId, itemId, cat, size, startP, stamina, power, move, dist, waitMin, waitMax, minCm, midCm, maxCm);
+        return new FishingCastResultPacket(entryId, itemId, cat, size, startP, stamina, power, move, dist, waitMin, waitMax);
     }
 
     public static void handle(FishingCastResultPacket msg, Supplier<NetworkEvent.Context> ctx) {

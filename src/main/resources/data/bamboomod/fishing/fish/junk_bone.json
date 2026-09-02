@@ -1,0 +1,10 @@
+{
+  "id": "bamboomod:junk_bone",
+  "item": "minecraft:bone",
+  "category": "JUNK",
+  "weight": 2,
+  "reqBitePower": 0,
+  "stamina": 8,
+  "power": 0,
+  "move": "SMOOTH"
+}

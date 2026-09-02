@@ -1,0 +1,13 @@
+{
+  "id": "bamboomod:pufferfish",
+  "item": "minecraft:pufferfish",
+  "category": "FISH",
+  "weight": 4,
+  "reqBitePower": 1,
+  "nightOnly": false,
+  "stamina": 10,
+  "power": 2,
+  "move": "SINKER",
+  "preferredBiomeTag": "is_ocean",
+  "preferredMultiplier": 1.2
+}

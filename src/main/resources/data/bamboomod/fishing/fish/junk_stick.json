@@ -1,0 +1,10 @@
+{
+  "id": "bamboomod:junk_stick",
+  "item": "minecraft:stick",
+  "category": "JUNK",
+  "weight": 3,
+  "reqBitePower": 0,
+  "stamina": 8,
+  "power": 0,
+  "move": "SMOOTH"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "bamboomod:tropical_fish",
+  "item": "minecraft:tropical_fish",
+  "category": "FISH",
+  "weight": 6,
+  "reqBitePower": 2,
+  "nightOnly": false,
+  "stamina": 10,
+  "power": 1,
+  "move": "DART",
+  "preferredMultiplier": 1.0
+}

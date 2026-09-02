@@ -44,14 +44,12 @@ public final class FishingManager {
 
     private static List<FishingEntry> buildDefaultEntries() {
         List<FishingEntry> list = new ArrayList<>();
-        // バニラ魚 4 種。cm は現実サイズを参考に代表値を設定。
-        // 旧 spec のリアルサイズ考慮、ミニ/ノーマル/ビッグで拡げる。
-        // stanza / power は竹竿 25/s に対してバランス調整 (stamina 8-14 が適正)
+        // バニラ魚 4 種。ランクは bronze/silver/gold で抽選 (cm廃止)。
+        // stamina / power は竹竿 25/s に対してバランス調整 (stamina 8-14 が適正)
         list.add(FishingEntry.fish(
                 new ResourceLocation("bamboomod:cod"),
                 new ResourceLocation("minecraft:cod"),
                 10, 0,
-                20, 35, 50,
                 false,
                 12, 1, FishingEntry.MovePattern.SMOOTH,
                 "is_ocean", 1.8f));
@@ -59,7 +57,6 @@ public final class FishingManager {
                 new ResourceLocation("bamboomod:salmon"),
                 new ResourceLocation("minecraft:salmon"),
                 10, 0,
-                25, 40, 60,
                 false,
                 14, 1, FishingEntry.MovePattern.SMOOTH,
                 "is_river", 1.8f));
@@ -68,7 +65,6 @@ public final class FishingManager {
                 new ResourceLocation("bamboomod:tropical_fish"),
                 new ResourceLocation("minecraft:tropical_fish"),
                 6, 2,
-                10, 20, 30,
                 false,
                 10, 1, FishingEntry.MovePattern.DART,
                 null, 1f));
@@ -76,7 +72,6 @@ public final class FishingManager {
                 new ResourceLocation("bamboomod:pufferfish"),
                 new ResourceLocation("minecraft:pufferfish"),
                 4, 1,
-                15, 25, 35,
                 false,
                 10, 2, FishingEntry.MovePattern.SINKER,
                 "is_ocean", 1.2f));
@@ -198,14 +193,14 @@ public final class FishingManager {
         // 4. ミニゲーム難度パラメータを決定
         int startProgress = computeStartProgress(distance);
         float sizeMult = switch (size) {
-            case MIN -> 0.85f;
-            case NORMAL -> 1.0f;
-            case BIG -> 1.5f;
+            case BRONZE -> 0.85f;
+            case SILVER -> 1.0f;
+            case GOLD -> 1.5f;
         };
         int stamina = Math.round(chosen.stamina * sizeMult);
-        // fish power: そのままカテゴリで移譲、ビッグなら +1
+        // fish power: そのままカテゴリで移譲、ゴールドなら +1
         int power = chosen.power;
-        if (size == FishSize.BIG) power += 1;
+        if (size == FishSize.GOLD) power += 1;
         // tropical のように暖かい海補正: tropical_fish は暖かい海以外で weight 半減相当をここでは既に factor 済みだが、
         // それでも選ばれた場合はそのまま返す
 
@@ -241,43 +236,43 @@ public final class FishingManager {
 
     private static FishSize rollSize(int bitePower, int req, RandomSource random) {
         int excess = bitePower - req;
-        float pMin = 0.35f, pNormal = 0.50f, pBig = 0.15f;
-        // excess 1 ごとに 10% を MIN -> BIG へ移動
+        float pBronze = 0.35f, pSilver = 0.50f, pGold = 0.15f;
+        // excess 1 ごとに 10% を BRONZE -> GOLD へ移動
         if (excess > 0) {
             for (int i = 0; i < excess && i < 4; i++) {
                 float shift = 0.10f;
-                // MIN から取れなければ NORMAL から取る
-                if (pMin >= shift) {
-                    pMin -= shift;
-                    pBig += shift;
-                } else if (pNormal >= shift) {
-                    pNormal -= shift;
-                    pBig += shift;
+                // BRONZE から取れなければ SILVER から取る
+                if (pBronze >= shift) {
+                    pBronze -= shift;
+                    pGold += shift;
+                } else if (pSilver >= shift) {
+                    pSilver -= shift;
+                    pGold += shift;
                 }
             }
         } else if (excess < 0) {
-            // 逆シフト: BIG -> MIN
+            // 逆シフト: GOLD -> BRONZE
             for (int i = 0; i < -excess && i < 4; i++) {
                 float shift = 0.08f;
-                if (pBig >= shift) {
-                    pBig -= shift;
-                    pMin += shift;
-                } else if (pNormal >= shift) {
-                    pNormal -= shift;
-                    pMin += shift;
+                if (pGold >= shift) {
+                    pGold -= shift;
+                    pBronze += shift;
+                } else if (pSilver >= shift) {
+                    pSilver -= shift;
+                    pBronze += shift;
                 }
             }
         }
         // clamp
-        pMin = Math.max(0.05f, pMin);
-        pBig = Math.max(0.05f, pBig);
+        pBronze = Math.max(0.05f, pBronze);
+        pGold = Math.max(0.05f, pGold);
         // normalize
-        float sum = pMin + pNormal + pBig;
-        pMin /= sum; pNormal /= sum; pBig /= sum;
+        float sum = pBronze + pSilver + pGold;
+        pBronze /= sum; pSilver /= sum; pGold /= sum;
         float r = random.nextFloat();
-        if (r < pMin) return FishSize.MIN;
-        if (r < pMin + pNormal) return FishSize.NORMAL;
-        return FishSize.BIG;
+        if (r < pBronze) return FishSize.BRONZE;
+        if (r < pBronze + pSilver) return FishSize.SILVER;
+        return FishSize.GOLD;
     }
 
     public static int computeStartProgress(int distance) {
@@ -286,7 +281,7 @@ public final class FishingManager {
     }
 
     /**
-     * 釣果の ItemStack を生成する。NBT としてサイズクラスを付与する。
+     * 釣果の ItemStack を生成する。NBT としてランクを付与する。
      */
     public static net.minecraft.world.item.ItemStack createCatchStack(RollResult result, RandomSource random) {
         ResourceLocation itemId = result.entry.itemId;
@@ -296,7 +291,7 @@ public final class FishingManager {
             return net.minecraft.world.item.ItemStack.EMPTY;
         }
         net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item);
-        // サイズクラス付与: FISH のみ、JUNK/TREASURE はタグ不要だが念のため付けるか？ 魚のみに絞る
+        // ランク付与: FISH のみ
         if (result.entry.category == FishingEntry.Category.FISH) {
             stack.getOrCreateTag().putString(FishSize.TAG_KEY, result.size.tagValue);
         }

@@ -1,0 +1,13 @@
+{
+  "id": "bamboomod:salmon",
+  "item": "minecraft:salmon",
+  "category": "FISH",
+  "weight": 10,
+  "reqBitePower": 0,
+  "nightOnly": false,
+  "stamina": 14,
+  "power": 1,
+  "move": "SMOOTH",
+  "preferredBiomeTag": "is_river",
+  "preferredMultiplier": 1.8
+}

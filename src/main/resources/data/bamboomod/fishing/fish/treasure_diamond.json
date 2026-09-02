@@ -1,0 +1,10 @@
+{
+  "id": "bamboomod:treasure_diamond",
+  "item": "minecraft:diamond",
+  "category": "TREASURE",
+  "weight": 1,
+  "reqBitePower": 3,
+  "stamina": 10,
+  "power": 1,
+  "move": "SMOOTH"
+}

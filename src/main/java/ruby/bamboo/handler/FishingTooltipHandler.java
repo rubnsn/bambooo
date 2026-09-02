@@ -15,8 +15,7 @@ import ruby.bamboo.core.fishing.FishingEntry;
 import ruby.bamboo.core.fishing.FishingManager;
 
 /**
- * 釣れた魚 (バニラ魚 with NBT) のツールチップへサイズ / cm を付与する。
- * 仕様書 §3: ツールチップは代表 cm 表示でスタック問題を回避。
+ * 釣れた魚 (バニラ魚 with NBT) のツールチップへランクを付与する。
  */
 @Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class FishingTooltipHandler {
@@ -41,22 +40,16 @@ public class FishingTooltipHandler {
             }
         }
         if (matched == null) {
-            // junk/treasure はサイズ表示不要だがタグが付いていた場合は表示
             event.getToolTip().add(Component.translatable("tooltip.bamboomod.fish_size." + size.tagValue)
                     .withStyle(ChatFormatting.GRAY));
             return;
         }
-        int cm = size.representativeCm(matched.minCm, matched.midCm, matched.maxCm);
         String sizeNameKey = "tooltip.bamboomod.fish_size." + size.tagValue;
         ChatFormatting color = switch (size) {
-            case MIN -> ChatFormatting.GRAY;
-            case NORMAL -> ChatFormatting.WHITE;
-            case BIG -> ChatFormatting.GOLD;
+            case BRONZE -> ChatFormatting.GRAY;
+            case SILVER -> ChatFormatting.WHITE;
+            case GOLD -> ChatFormatting.GOLD;
         };
-        event.getToolTip().add(Component.translatable(sizeNameKey)
-                .withStyle(color));
-        event.getToolTip().add(Component.translatable("tooltip.bamboomod.fish_cm", cm)
-                .withStyle(ChatFormatting.DARK_AQUA));
-        // Night-only 情報は表示しない
+        event.getToolTip().add(Component.translatable(sizeNameKey).withStyle(color));
     }
 }

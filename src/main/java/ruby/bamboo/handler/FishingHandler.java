@@ -206,8 +206,7 @@ public class FishingHandler {
                 pending.fishPower,
                 pending.movePattern.ordinal(),
                 distance,
-                waitMin, waitMax,
-                pending.entry.minCm, pending.entry.midCm, pending.entry.maxCm);
+                waitMin, waitMax);
         BambooNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> sp), pkt);
         level.playSound(null, sp.getX(), sp.getY(), sp.getZ(),
                 SoundEvents.FISHING_BOBBER_THROW, SoundSource.PLAYERS, 0.6F, 0.9F);
