@@ -101,11 +101,11 @@ public class FishingPowerGaugeScreen extends Screen {
         int hw = this.font.width(hint);
         gfx.drawString(this.font, hint, (sw - hw) / 2, barY + BAR_H + 10, 0xAAAAAA, true);
 
-        // 距離プレビュー
-        int dist = 4 + Math.round(gauge / 100f * 11);
-        String distStr = Component.translatable("message.bamboomod.fishing.distance", dist).getString();
-        int dw = this.font.width(distStr);
-        gfx.drawString(this.font, distStr, (sw - dw) / 2, barY + BAR_H + 22, 0xFFFFFF, true);
+        // パワープレビュー (%)
+        int power = Math.round(gauge);
+        String powerStr = Component.translatable("message.bamboomod.fishing.power", power).getString();
+        int dw = this.font.width(powerStr);
+        gfx.drawString(this.font, powerStr, (sw - dw) / 2, barY + BAR_H + 22, 0xFFFFFF, true);
 
         super.render(gfx, mouseX, mouseY, partialTick);
     }

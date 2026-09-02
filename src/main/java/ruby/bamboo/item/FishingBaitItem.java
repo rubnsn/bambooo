@@ -24,8 +24,6 @@ public class FishingBaitItem extends BambooItem {
 
     @Override
     public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.bamboomod.bait_power", BITE_POWER)
-                .withStyle(net.minecraft.ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.bamboomod.bait_consumable")
                 .withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
     }

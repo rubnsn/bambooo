@@ -273,6 +273,7 @@
   "tooltip.bamboomod.fish_size.gold": "Rank: Gold",
   "message.bamboomod.fishing.waiting": "Waiting for a bite...",
   "message.bamboomod.fishing.distance": "Distance: %s blocks",
+  "message.bamboomod.fishing.power": "Power: %s%%",
   "message.bamboomod.fishing.hint": "Hold RIGHT CLICK to raise, release to lower",
   "message.bamboomod.fishing.success": "Caught %s [%s]!",
   "message.bamboomod.fishing.fail": "The fish got away...",

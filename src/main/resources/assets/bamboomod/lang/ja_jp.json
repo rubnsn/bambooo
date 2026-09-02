@@ -273,6 +273,7 @@
   "tooltip.bamboomod.fish_size.gold": "ランク: ゴールド",
   "message.bamboomod.fishing.waiting": "魚が食いつくのを待っています...",
   "message.bamboomod.fishing.distance": "飛距離: %s ブロック",
+  "message.bamboomod.fishing.power": "パワー: %s%%",
   "message.bamboomod.fishing.hint": "右クリック押しっぱなしで上昇、離すと下降",
   "message.bamboomod.fishing.success": "%s [%s] を釣り上げた！",
   "message.bamboomod.fishing.fail": "魚に逃げられてしまった...",

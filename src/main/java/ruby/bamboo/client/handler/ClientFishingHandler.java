@@ -35,7 +35,6 @@ public class ClientFishingHandler {
         if (mc.screen != null) return;
         if (isFishing()) return;
         mc.setScreen(new FishingPowerGaugeScreen());
-        LOGGER.debug("Fishing power gauge opened");
     }
 
     public static void handleCastResult(FishingCastResultPacket pkt) {
@@ -44,7 +43,6 @@ public class ClientFishingHandler {
             // パワーゲージは既に閉じられている想定。ミニゲーム GUI を開く
             // 既存の他の Screen が開いていれば置換する (power gauge は既に閉じている)
             mc.setScreen(new FishingMinigameScreen(pkt));
-            LOGGER.debug("Fishing minigame screen opened: item={}, distance={}, startP={}", pkt.itemId, pkt.distance, pkt.startProgress);
         });
     }
 }

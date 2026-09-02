@@ -81,10 +81,6 @@ public class BambooRodItem extends BambooItem {
 
     @Override
     public void appendHoverText(ItemStack stack, Level level, java.util.List<Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.bamboomod.bamboo_rod.power", FishingHandler.ROD_POWER)
-                .withStyle(net.minecraft.ChatFormatting.GRAY));
-        tooltip.add(Component.translatable("tooltip.bamboomod.bamboo_rod.bite_bonus", 0)
-                .withStyle(net.minecraft.ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.bamboomod.bamboo_rod.gauge_hint")
                 .withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
     }

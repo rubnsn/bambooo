@@ -367,24 +367,9 @@ public class FishingMinigameScreen extends Screen {
                 int progFillH = Math.round((progress / 100f) * progBarH);
                 int progColor = progress > 70 ? 0xFF4FC3F7 : progress > 30 ? 0xFFFFEB3B : 0xFFF44336;
                 gfx.fill(progBarX, progBarY + progBarH - progFillH, progBarX + PROG_BAR_W, progBarY + progBarH, progColor);
-                if (pkt != null) {
-                    FishSize size = FishSize.fromIndex(pkt.sizeOrdinal);
-                    String sizeName = switch (size) { case BRONZE -> "ブロンズ"; case SILVER -> "シルバー"; case GOLD -> "ゴールド"; };
-                    var item = ForgeRegistries.ITEMS.getValue(pkt.itemId);
-                    if (item != null) {
-                        ItemStack tmp = new ItemStack(item);
-                        String title = tmp.getHoverName().getString() + " [" + sizeName + "]";
-                        int tw = this.font.width(title);
-                        gfx.drawString(this.font, title, (sw - tw) / 2, barY - 16, 0xFFFFFF, true);
-                    }
-                    String hint = Component.translatable("message.bamboomod.fishing.hint").getString();
-                    int hw = this.font.width(hint);
-                    gfx.drawString(this.font, hint, (sw - hw) / 2, barY + BAR_H + 8, 0xAAAAAA, true);
-                    String catStr = switch (pkt.categoryOrdinal) { case 1 -> "ゴミ"; case 2 -> "宝"; default -> ""; };
-                    if (!catStr.isEmpty()) {
-                        gfx.drawString(this.font, catStr, barX + BAR_W + 6, barY + 2, 0xFFCC99, true);
-                    }
-                }
+                String hint = Component.translatable("message.bamboomod.fishing.hint").getString();
+                int hw = this.font.width(hint);
+                gfx.drawString(this.font, hint, (sw - hw) / 2, barY + BAR_H + 8, 0xAAAAAA, true);
                 String pct = Math.round(progress) + "%";
                 int pw = this.font.width(pct);
                 gfx.drawString(this.font, pct, progBarX - pw / 2 + PROG_BAR_W / 2, progBarY + progBarH + 4, 0xFFFFFF, true);

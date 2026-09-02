@@ -140,7 +140,6 @@ public class FishingHandler {
             }
         }
         if (!hasRod) {
-            LOGGER.debug("Fishing cast without rod for {}", sp.getName().getString());
             return;
         }
         // 既存ウキが残っていれば回収して上書き（hasPendingは不要、ミニゲームGUIで封じられる＆上書きで安全）
@@ -151,7 +150,6 @@ public class FishingHandler {
         BaitInfo baitInfo = findBaitInfo(sp);
         if (baitInfo == null) {
             sp.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.bamboomod.fishing.no_bait").withStyle(net.minecraft.ChatFormatting.GRAY), true);
-            LOGGER.debug("Fishing cast without bait for {}", sp.getName().getString());
             return;
         }
         int baitPower = baitInfo.bitePower;
@@ -166,7 +164,6 @@ public class FishingHandler {
         if (bobPos == null) {
             sp.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.bamboomod.fishing.not_water").withStyle(net.minecraft.ChatFormatting.GRAY), true);
             level.playSound(null, sp.getX(), sp.getY(), sp.getZ(), SoundEvents.FISHING_BOBBER_SPLASH, SoundSource.PLAYERS, 0.4F, 0.8F);
-            LOGGER.debug("Fishing cast not water for {}", sp.getName().getString());
             return;
         }
 
@@ -210,9 +207,6 @@ public class FishingHandler {
         BambooNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> sp), pkt);
         level.playSound(null, sp.getX(), sp.getY(), sp.getZ(),
                 SoundEvents.FISHING_BOBBER_THROW, SoundSource.PLAYERS, 0.6F, 0.9F);
-
-        LOGGER.debug("Fishing cast: player={}, entry={}, size={}, distance={}, bitePower={}, wait {}/{} bob={}",
-                sp.getName().getString(), pending.entry.id, pending.size, distance, bitePower, waitMin, waitMax, bobPos);
     }
 
     private static Vec3 computeBobberPos(ServerPlayer sp, int distance) {
@@ -353,8 +347,6 @@ public class FishingHandler {
         }
         // pending 消化（ウキは帰還させるため即時除去せず、到達時にtickでdiscard）
         PENDING.remove(id);
-        LOGGER.debug("Fishing result: player={}, type={}, entry={}, distance={}",
-                player.getName().getString(), resultType, pending.entry.id, pending.distance);
     }
 
     private static void consumeBait(ServerPlayer player, FishingPending pending) {

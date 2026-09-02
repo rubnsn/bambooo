@@ -25,8 +25,6 @@ public class LureItem extends BambooItem {
 
     @Override
     public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.bamboomod.bait_power", bitePower)
-                .withStyle(net.minecraft.ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.bamboomod.bait_lure")
                 .withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
         if (stack.isDamageableItem()) {
