@@ -33,6 +33,9 @@ public final class SkillEffectEvents {
     private SkillEffectEvents() {
     }
 
+    /** 二刀流の遅延オフハンド振り (UUID→残tick)。 */
+    private static final java.util.Map<java.util.UUID, Integer> PENDING_SWING = new java.util.HashMap<>();
+
     // ===== 採掘3種 =====
 
     @SubscribeEvent
@@ -87,7 +90,8 @@ public final class SkillEffectEvents {
             int dualLv = SkillHelper.getLevel(player, SkillType.DUAL_WIELD);
             if (dualLv > 0) {
                 amount = amount + event.getAmount() * 0.05F * dualLv;
-                player.swing(net.minecraft.world.InteractionHand.OFF_HAND, true);
+                // 即時swingはクラのメイン振りと重なりガードで捨てられるため4tick遅延させる
+                PENDING_SWING.put(player.getUUID(), 4);
                 ItemStack off = player.getOffhandItem();
                 if (off.isDamageableItem() && player instanceof ServerPlayer sp) {
                     off.hurtAndBreak(1, sp, p -> p.broadcastBreakEvent(net.minecraft.world.InteractionHand.OFF_HAND));
@@ -221,5 +225,19 @@ public final class SkillEffectEvents {
         }
         Player player = event.player;
         SkillEffects.applyShield(player, player.isBlocking());
+        Integer left = PENDING_SWING.get(player.getUUID());
+        if (left != null) {
+            if (left <= 1) {
+                PENDING_SWING.remove(player.getUUID());
+                player.swing(net.minecraft.world.InteractionHand.OFF_HAND, true);
+            } else {
+                PENDING_SWING.put(player.getUUID(), left - 1);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        PENDING_SWING.remove(event.getEntity().getUUID());
     }
 }

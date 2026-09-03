@@ -1,10 +1,7 @@
 package ruby.bamboo.skill;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -18,7 +15,6 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.ShieldBlockEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.TradeWithVillagerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -49,6 +45,10 @@ public final class SkillXpEvents {
             return;
         }
         ItemStack held = player.getMainHandItem();
+        // 適正ツールでのみ付与 (草・葉などの不適物は除外)。isCorrectToolForDrops 準拠
+        if (!held.isCorrectToolForDrops(event.getState())) {
+            return;
+        }
         if (held.getItem() instanceof PickaxeItem) {
             SkillHelper.addXp(player, SkillType.PICKAXE, 1);
             if (event.getState().is(Tags.Blocks.ORES)) {
@@ -125,66 +125,66 @@ public final class SkillXpEvents {
         SkillHelper.addXp(player, SkillType.NEGOTIATION, amount);
     }
 
-    // ===== 速度・水泳 (移動距離積算) =====
+    // ===== 速度・水泳 (バニラ統計値の差分積算) =====
+    // walk/swim系カスタム統計のみを見るため、飛行・騎乗・ボートの混入なし。
+    // 基準値は Cap 保持 (ログアウト掃除不要・メモリリークなし)。
 
-    private static final Map<UUID, double[]> LAST_POS = new HashMap<>();
-    private static final Map<UUID, Double> MOVE_ACC = new HashMap<>();
-    private static final Map<UUID, Double> SWIM_ACC = new HashMap<>();
-
-    /** 速度: 50ブロックで1xp、水泳: 20ブロックで1xp。 */
-    private static final double SPEED_BLOCKS = 50.0D;
-    private static final double SWIM_BLOCKS = 20.0D;
+    /** 速度: 5000cm(50BL)で1xp、水泳: 2000cm(20BL)で1xp。 */
+    private static final long SPEED_CM = 5000L;
+    private static final long SWIM_CM = 2000L;
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) {
             return;
         }
-        Player player = event.player;
-        if (!(player instanceof ServerPlayer) || player.isPassenger() || player.getAbilities().flying) {
+        if (!(event.player instanceof ServerPlayer sp) || event.player.isPassenger()) {
             return;
         }
-        UUID id = player.getUUID();
-        double[] last = LAST_POS.get(id);
-        double x = player.getX();
-        double y = player.getY();
-        double z = player.getZ();
-        if (last == null) {
-            LAST_POS.put(id, new double[] { x, y, z });
-            return;
-        }
-        double dx = x - last[0];
-        double dy = y - last[1];
-        double dz = z - last[2];
-        last[0] = x;
-        last[1] = y;
-        last[2] = z;
-        double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        if (dist < 0.01D || dist > 10.0D) {
-            return;
-        }
-        if (player.isInWater()) {
-            double acc = SWIM_ACC.getOrDefault(id, 0.0D) + dist;
-            if (acc >= SWIM_BLOCKS) {
-                acc -= SWIM_BLOCKS;
-                SkillHelper.addXp(player, SkillType.SWIM, 1);
+        var stats = sp.getStats();
+        int walk = stats.getValue(Stats.CUSTOM.get(Stats.WALK_ONE_CM))
+                + stats.getValue(Stats.CUSTOM.get(Stats.SPRINT_ONE_CM))
+                + stats.getValue(Stats.CUSTOM.get(Stats.CROUCH_ONE_CM))
+                + stats.getValue(Stats.CUSTOM.get(Stats.WALK_ON_WATER_ONE_CM))
+                + stats.getValue(Stats.CUSTOM.get(Stats.WALK_UNDER_WATER_ONE_CM));
+        int swim = stats.getValue(Stats.CUSTOM.get(Stats.SWIM_ONE_CM));
+        SkillHelper.get(sp).ifPresent(s -> {
+            long dw = (long) walk - s.getWalkBase();
+            s.setWalkBase(walk);
+            if (dw > 0) {
+                if (!s.isAcquired(SkillType.SPEED) || s.isMaxed(SkillType.SPEED)) {
+                    s.setWalkAcc(0);
+                } else {
+                    long acc = s.getWalkAcc() + dw;
+                    while (acc >= SPEED_CM) {
+                        acc -= SPEED_CM;
+                        SkillHelper.addXp(sp, SkillType.SPEED, 1);
+                        if (s.isMaxed(SkillType.SPEED)) {
+                            acc = 0;
+                            break;
+                        }
+                    }
+                    s.setWalkAcc(acc);
+                }
             }
-            SWIM_ACC.put(id, acc);
-        } else {
-            double acc = MOVE_ACC.getOrDefault(id, 0.0D) + dist;
-            if (acc >= SPEED_BLOCKS) {
-                acc -= SPEED_BLOCKS;
-                SkillHelper.addXp(player, SkillType.SPEED, 1);
+            long dsw = (long) swim - s.getSwimBase();
+            s.setSwimBase(swim);
+            if (dsw > 0) {
+                if (!s.isAcquired(SkillType.SWIM) || s.isMaxed(SkillType.SWIM)) {
+                    s.setSwimAcc(0);
+                } else {
+                    long acc = s.getSwimAcc() + dsw;
+                    while (acc >= SWIM_CM) {
+                        acc -= SWIM_CM;
+                        SkillHelper.addXp(sp, SkillType.SWIM, 1);
+                        if (s.isMaxed(SkillType.SWIM)) {
+                            acc = 0;
+                            break;
+                        }
+                    }
+                    s.setSwimAcc(acc);
+                }
             }
-            MOVE_ACC.put(id, acc);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-        UUID id = event.getEntity().getUUID();
-        LAST_POS.remove(id);
-        MOVE_ACC.remove(id);
-        SWIM_ACC.remove(id);
+        });
     }
 }

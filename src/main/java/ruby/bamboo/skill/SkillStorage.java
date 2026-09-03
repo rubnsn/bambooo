@@ -20,6 +20,11 @@ public class SkillStorage implements INBTSerializable<CompoundTag> {
     private final Map<SkillType, Integer> level = new EnumMap<>(SkillType.class);
     private final Map<SkillType, Integer> xp = new EnumMap<>(SkillType.class);
     private final Map<SkillType, Integer> max = new EnumMap<>(SkillType.class);
+    /** 移動統計の前回値と積算 (cm)。Cap保持のためログアウト掃除不要。 */
+    private int walkBase;
+    private long walkAcc;
+    private int swimBase;
+    private long swimAcc;
 
     public SkillStorage() {
         for (SkillType t : SkillType.values()) {
@@ -88,6 +93,38 @@ public class SkillStorage implements INBTSerializable<CompoundTag> {
         return true;
     }
 
+    public int getWalkBase() {
+        return walkBase;
+    }
+
+    public void setWalkBase(int v) {
+        walkBase = v;
+    }
+
+    public long getWalkAcc() {
+        return walkAcc;
+    }
+
+    public void setWalkAcc(long v) {
+        walkAcc = Math.max(0, v);
+    }
+
+    public int getSwimBase() {
+        return swimBase;
+    }
+
+    public void setSwimBase(int v) {
+        swimBase = v;
+    }
+
+    public long getSwimAcc() {
+        return swimAcc;
+    }
+
+    public void setSwimAcc(long v) {
+        swimAcc = Math.max(0, v);
+    }
+
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
@@ -96,6 +133,10 @@ public class SkillStorage implements INBTSerializable<CompoundTag> {
             tag.putInt(t.getId() + KEY_XP_SUFFIX, getXp(t));
             tag.putInt(t.getId() + KEY_MAX_SUFFIX, getMaxLevel(t));
         }
+        tag.putInt("walk_base", walkBase);
+        tag.putLong("walk_acc", walkAcc);
+        tag.putInt("swim_base", swimBase);
+        tag.putLong("swim_acc", swimAcc);
         return tag;
     }
 
@@ -115,6 +156,18 @@ public class SkillStorage implements INBTSerializable<CompoundTag> {
                 int m = tag.getInt(maxKey);
                 max.put(t, m > 0 ? m : SkillType.DEFAULT_MAX_LEVEL);
             }
+        }
+        if (tag.contains("walk_base")) {
+            walkBase = tag.getInt("walk_base");
+        }
+        if (tag.contains("walk_acc")) {
+            walkAcc = Math.max(0, tag.getLong("walk_acc"));
+        }
+        if (tag.contains("swim_base")) {
+            swimBase = tag.getInt("swim_base");
+        }
+        if (tag.contains("swim_acc")) {
+            swimAcc = Math.max(0, tag.getLong("swim_acc"));
         }
     }
 }
