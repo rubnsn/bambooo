@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import ruby.bamboo.client.gui.StatusBookScreen;
 import ruby.bamboo.core.init.BambooCapabilities;
 
 /**
@@ -22,6 +23,16 @@ public final class ClientSkillHandler {
                 return;
             }
             mc.player.getCapability(BambooCapabilities.SKILL).ifPresent(s -> s.deserializeNBT(tag));
+        });
+    }
+
+    public static void openStatus() {
+        Minecraft mc = Minecraft.getInstance();
+        mc.execute(() -> {
+            if (mc.player == null) {
+                return;
+            }
+            mc.setScreen(new StatusBookScreen());
         });
     }
 }

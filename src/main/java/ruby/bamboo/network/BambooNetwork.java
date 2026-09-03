@@ -72,5 +72,9 @@ public final class BambooNetwork {
                 SkillReadCancelPacket::encode,
                 SkillReadCancelPacket::decode,
                 SkillReadCancelPacket::handle);
+        CHANNEL.registerMessage(nextId(), SkillStatusOpenPacket.class,
+                SkillStatusOpenPacket::encode,
+                SkillStatusOpenPacket::decode,
+                SkillStatusOpenPacket::handle);
     }
 }
