@@ -171,6 +171,10 @@ public final class BambooClientSetup {
             net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.SHURIKEN.get(),
                     ruby.bamboo.client.renderer.ShurikenRenderer::new);
 
+            // かんしゃく玉 — クロススプライト+転がり回転 (旧 RenderThrowable 相当)
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.FIRECRACKER.get(),
+                    ruby.bamboo.client.renderer.FirecrackerRenderer::new);
+
             // イルカ仲間 / ラマ仲間
             net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.DOLPHIN_COMPANION.get(),
                     ruby.bamboo.client.renderer.DolphinCompanionRenderer::new);

@@ -85,6 +85,24 @@ public final class BambooItems {
     public static final RegistryObject<ruby.bamboo.item.NinjaBraceletItem> NINJA_BRACELET = register("ninja_bracelet",
             () -> new ruby.bamboo.item.NinjaBraceletItem(new Item.Properties().durability(384)));
 
+    // ===== かんしゃく玉 (旧 ItemFirecracker meta0-2 → 独立アイテム化 + sticky追加) =====
+
+    /** かんしゃく玉(小)。導火線20tick、ブロック破壊なし */
+    public static final RegistryObject<ruby.bamboo.item.FirecrackerItem> FIRECRACKER_S = register("firecracker_s",
+            () -> new ruby.bamboo.item.FirecrackerItem(ruby.bamboo.item.FirecrackerItem.Type.S, new Item.Properties()));
+    /** かんしゃく玉(中)。導火線60tick、TNT相当 */
+    public static final RegistryObject<ruby.bamboo.item.FirecrackerItem> FIRECRACKER_M = register("firecracker_m",
+            () -> new ruby.bamboo.item.FirecrackerItem(ruby.bamboo.item.FirecrackerItem.Type.M, new Item.Properties()));
+    /** かんしゃく玉(大)。導火線60tick、耐爆性無視 */
+    public static final RegistryObject<ruby.bamboo.item.FirecrackerItem> FIRECRACKER_L = register("firecracker_l",
+            () -> new ruby.bamboo.item.FirecrackerItem(ruby.bamboo.item.FirecrackerItem.Type.L, new Item.Properties()));
+    /** 粘着かんしゃく玉(中)。Mに固着追加 (テクスチャ仮) */
+    public static final RegistryObject<ruby.bamboo.item.FirecrackerItem> FIRECRACKER_M_STICKY = register("firecracker_m_sticky",
+            () -> new ruby.bamboo.item.FirecrackerItem(ruby.bamboo.item.FirecrackerItem.Type.M_STICKY, new Item.Properties()));
+    /** 粘着かんしゃく玉(大)。Lに固着追加 (テクスチャ仮) */
+    public static final RegistryObject<ruby.bamboo.item.FirecrackerItem> FIRECRACKER_L_STICKY = register("firecracker_l_sticky",
+            () -> new ruby.bamboo.item.FirecrackerItem(ruby.bamboo.item.FirecrackerItem.Type.L_STICKY, new Item.Properties()));
+
     /** 田んぼクワ (sakura PaddyFieldHoe。DIAMOND相当、maxStack 1) */
     public static final RegistryObject<ruby.bamboo.item.PaddyFieldHoeItem> PADDY_FIELD_HOE = register("paddy_field_hoe",
             () -> new ruby.bamboo.item.PaddyFieldHoeItem(new Item.Properties()));

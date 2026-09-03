@@ -87,6 +87,18 @@ public final class BambooEntities {
                     .updateInterval(20)
                     .build("shuriken"));
 
+    /**
+     * かんしゃく玉 (旧 EntityFirecracker)。5種共通、見た目・挙動はItemStack/Typeで切替。
+     * 0.25x0.25、バウンド物理のため更新頻度は高め。
+     */
+    public static final RegistryObject<EntityType<ruby.bamboo.entity.FirecrackerEntity>> FIRECRACKER = BambooMod.ENTITY_TYPES.register(
+            "firecracker",
+            () -> EntityType.Builder.<ruby.bamboo.entity.FirecrackerEntity>of(ruby.bamboo.entity.FirecrackerEntity::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F)
+                    .clientTrackingRange(10)
+                    .updateInterval(2)
+                    .build("firecracker"));
+
     /** イルカ仲間 (RideableDolphin) - 蔵付き操作可能、水上ホーム制限、染料染色 */
     public static final RegistryObject<EntityType<DolphinCompanionEntity>> DOLPHIN_COMPANION = BambooMod.ENTITY_TYPES.register(
             "dolphin_companion",

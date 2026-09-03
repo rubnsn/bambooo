@@ -1,0 +1,25 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "firecracker",
+  "pattern": [
+    " P ",
+    "PGP",
+    " P "
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "G": {
+      "item": "minecraft:gunpowder"
+    }
+  },
+  "result": {
+    "item": "bamboomod:firecracker_s",
+    "count": 4
+  },
+  "experience": 0.1,
+  "cookingtime": 100,
+  "fuelCost": 100
+}
