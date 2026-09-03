@@ -107,6 +107,20 @@ public final class BambooItems {
     public static final RegistryObject<ruby.bamboo.item.PaddyFieldHoeItem> PADDY_FIELD_HOE = register("paddy_field_hoe",
             () -> new ruby.bamboo.item.PaddyFieldHoeItem(new Item.Properties()));
 
+    // ===== アクセサリ (インベントリ所持で発動。レシピ無し) =====
+
+    /** 磁石 (sakura ItemMagnet。周囲のアイテム・経験値を自動回収) */
+    public static final RegistryObject<ruby.bamboo.item.ItemMagnetItem> ITEM_MAGNET = register("item_magnet",
+            () -> new ruby.bamboo.item.ItemMagnetItem(new Item.Properties().stacksTo(1)));
+
+    /** 鉤爪 (sakura ClimbingClaw。任意の壁を足場相当で登攀) */
+    public static final RegistryObject<ruby.bamboo.item.ClimbingClawItem> CLIMBING_CLAW = register("climbing_claw",
+            () -> new ruby.bamboo.item.ClimbingClawItem(new Item.Properties().stacksTo(1)));
+
+    /** ウォーターウォーカー (sakura WaterWalker。登録名の typo water_warker を修正。水上歩行) */
+    public static final RegistryObject<ruby.bamboo.item.WaterWalkerItem> WATER_WALKER = register("water_walker",
+            () -> new ruby.bamboo.item.WaterWalkerItem(new Item.Properties().stacksTo(1)));
+
     /** 願いワンド (デバッグ用。右クリックで願い発動、耐久1) */
     public static final RegistryObject<ruby.bamboo.item.WishWandItem> WISH_WAND = register("wish_wand",
             () -> new ruby.bamboo.item.WishWandItem(new Item.Properties().durability(1)));
