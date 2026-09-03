@@ -1,0 +1,12 @@
+{
+  "id": "wish/monster_egg",
+  "pattern": "モンスターエッグ|スポーンエッグ|spawn egg|monster egg",
+  "match": "regex",
+  "priority": false,
+  "weight": 1,
+  "message": "bamboomod.wish.result.egg",
+  "effect": {
+    "type": "give_random_egg",
+    "count": 10
+  }
+}

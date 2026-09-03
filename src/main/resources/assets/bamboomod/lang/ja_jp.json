@@ -261,6 +261,8 @@
   "bamboomod.wish.result.biome": "お望み通りに。",
   "bamboomod.wish.result.biome_notfound": "近くには無いようね。",
   "bamboomod.wish.result.treasure": "世界の何処かから拾ってきてあげたわよ。",
+  "bamboomod.wish.result.spawner": "回収できないから考えて設置することね。",
+  "bamboomod.wish.result.egg": "特売品よ。どこで買ったかはヒミツ。",
   "entity.bamboomod.dolphin_companion": "イルカの仲間",
   "entity.bamboomod.llama_companion": "ラマの仲間",
   "item.bamboomod.bamboo_rod": "竹竿",

@@ -5,6 +5,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -747,6 +749,8 @@ public final class WishManager {
         String firstBiomeId = null;
         boolean hasTreasure = false;
         boolean hasRespawn = false;
+        boolean hasSpawner = false;
+        boolean hasRandomEgg = false;
         String firstTreasureLoot = null;
         for (WishEffect eff : entry.effects) {
             if (firstEffectType == null) firstEffectType = eff.type;
@@ -792,6 +796,13 @@ public final class WishManager {
                 hasTreasure = true;
                 if (eff.args.has("loot")) firstTreasureLoot = eff.args.get("loot").getAsString();
                 executeEffectInternal(player, eff, random);
+            } else if ("give_spawner".equalsIgnoreCase(eff.type)) {
+                // モンスタースポナー1個。中身はランダムで指定不可、空は出ない。回収不可(バニラ仕様)。
+                hasSpawner = giveSpawnerInternal(player, random);
+            } else if ("give_random_egg".equalsIgnoreCase(eff.type) || "give_spawn_egg".equalsIgnoreCase(eff.type)) {
+                // スポーンエッグをランダム1種×count個(既定10)。種類の指定不可。
+                int eggCount = eff.args.has("count") ? eff.args.get("count").getAsInt() : 10;
+                hasRandomEgg = giveRandomEggInternal(player, eggCount, random);
             } else {
                 executeEffectInternal(player, eff, random);
             }
@@ -811,6 +822,18 @@ public final class WishManager {
             }
         } else if (hasTreasure) {
             player.displayClientMessage(Component.translatable("bamboomod.wish.result.treasure").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+        } else if (hasSpawner) {
+            if (entry.message != null && !entry.message.isEmpty()) {
+                player.displayClientMessage(Component.translatable(entry.message).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            } else {
+                player.displayClientMessage(Component.translatable("bamboomod.wish.result.spawner").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            }
+        } else if (hasRandomEgg) {
+            if (entry.message != null && !entry.message.isEmpty()) {
+                player.displayClientMessage(Component.translatable(entry.message).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            } else {
+                player.displayClientMessage(Component.translatable("bamboomod.wish.result.egg").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            }
         } else if (firstBiomeId != null || "teleport_biome".equalsIgnoreCase(firstEffectType)) {
             // biome message handled inside teleportBiomeInternal (success/fail). If we reach here without message, show generic
             if (entry.message != null && !entry.message.isEmpty()) {
@@ -945,6 +968,21 @@ public final class WishManager {
                     if (loot.isEmpty() && eff.args.has("table")) loot = eff.args.get("table").getAsString();
                     spawnTreasureChest(player, loot, random);
                     player.displayClientMessage(Component.translatable("bamboomod.wish.result.treasure").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                }
+                case "give_spawner" -> {
+                    if (giveSpawnerInternal(player, random)) {
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.spawner").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    } else {
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.generic").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    }
+                }
+                case "give_random_egg", "give_spawn_egg" -> {
+                    int eggCount = eff.args.has("count") ? eff.args.get("count").getAsInt() : 10;
+                    if (giveRandomEggInternal(player, eggCount, random)) {
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.egg").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    } else {
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.generic").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    }
                 }
                 default -> LOGGER.warn("Unknown wish effect type {}", type);
             }
@@ -1099,6 +1137,11 @@ public final class WishManager {
                     String loot = eff.args.has("loot") ? eff.args.get("loot").getAsString() : "";
                     if (loot.isEmpty() && eff.args.has("table")) loot = eff.args.get("table").getAsString();
                     spawnTreasureChest(player, loot, random);
+                }
+                case "give_spawner" -> giveSpawnerInternal(player, random);
+                case "give_random_egg", "give_spawn_egg" -> {
+                    int eggCount = eff.args.has("count") ? eff.args.get("count").getAsInt() : 10;
+                    giveRandomEggInternal(player, eggCount, random);
                 }
                 default -> LOGGER.warn("Unknown wish effect type {} (internal)", type);
             }
@@ -1430,6 +1473,104 @@ public final class WishManager {
         ResourceLocation found = WishBiomeSearch.findBest(normalizedQuery, player.serverLevel());
         if (found == null) return false;
         return teleportToBiome(player, found.toString(), random);
+    }
+
+    /**
+     * スポーンエッグを持つ全エンティティの (type, egg) ペアを収集する。
+     * スポナー・ランダムエッグ両方の抽選母集団。卵がある=スポナーに設定可能な生きたMobのため、空スポナーにならない。
+     */
+    private static List<EggPick> collectEggPicks() {
+        List<EggPick> out = new ArrayList<>();
+        for (EntityType<?> type : ForgeRegistries.ENTITY_TYPES) {
+            if (type == null) continue;
+            try {
+                net.minecraft.world.item.SpawnEggItem egg = net.minecraftforge.common.ForgeSpawnEggItem.fromEntityType(type);
+                if (egg != null) {
+                    out.add(new EggPick(type, egg));
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return out;
+    }
+
+    private static final class EggPick {
+        final EntityType<?> type;
+        final Item egg;
+
+        EggPick(EntityType<?> type, Item egg) {
+            this.type = type;
+            this.egg = egg;
+        }
+    }
+
+    /**
+     * モンスタースポナーを1個だけ頭上に落とす。中身はランダムで指定不可、空は出ない。
+     * 設置後はバニラ仕様で回収できない。
+     * @return 成功したら true
+     */
+    private static boolean giveSpawnerInternal(ServerPlayer player, RandomSource random) {
+        List<EggPick> picks = collectEggPicks();
+        if (picks.isEmpty()) {
+            LOGGER.warn("No spawn eggs registered, cannot grant spawner");
+            return false;
+        }
+        EggPick pick = picks.get(random.nextInt(picks.size()));
+        ResourceLocation key = ForgeRegistries.ENTITY_TYPES.getKey(pick.type);
+        if (key == null) return false;
+        ItemStack stack = new ItemStack(Blocks.SPAWNER, 1);
+        CompoundTag entityTag = new CompoundTag();
+        entityTag.putString("id", key.toString());
+        CompoundTag spawnData = new CompoundTag();
+        spawnData.put("entity", entityTag);
+        CompoundTag potEntity = new CompoundTag();
+        potEntity.putString("id", key.toString());
+        CompoundTag potData = new CompoundTag();
+        potData.put("entity", potEntity);
+        CompoundTag potential = new CompoundTag();
+        potential.put("data", potData);
+        potential.putInt("weight", 1);
+        ListTag potentials = new ListTag();
+        potentials.add(potential);
+        CompoundTag beTag = new CompoundTag();
+        beTag.put("SpawnData", spawnData);
+        beTag.put("SpawnPotentials", potentials);
+        beTag.putShort("SpawnCount", (short) 4);
+        beTag.putShort("SpawnRange", (short) 4);
+        beTag.putShort("Delay", (short) 20);
+        beTag.putShort("MinSpawnDelay", (short) 200);
+        beTag.putShort("MaxSpawnDelay", (short) 800);
+        beTag.putShort("MaxNearbyEntities", (short) 6);
+        beTag.putShort("RequiredPlayerRange", (short) 16);
+        stack.addTagElement("BlockEntityTag", beTag);
+        dropStackOverhead(player, stack);
+        return true;
+    }
+
+    /**
+     * スポーンエッグをランダム1種×count個で頭上に落とす。種類の指定不可。
+     * @return 成功したら true
+     */
+    private static boolean giveRandomEggInternal(ServerPlayer player, int count, RandomSource random) {
+        List<EggPick> picks = collectEggPicks();
+        if (picks.isEmpty()) {
+            LOGGER.warn("No spawn eggs registered, cannot grant random egg");
+            return false;
+        }
+        EggPick pick = picks.get(random.nextInt(picks.size()));
+        int c = Mth.clamp(count <= 0 ? 10 : count, 1, 64);
+        dropStackOverhead(player, new ItemStack(pick.egg, c));
+        return true;
+    }
+
+    /** アイテムスタックを頭上10ブロックに落とす(エンチャント無し・チャット無し)。 */
+    private static void dropStackOverhead(ServerPlayer player, ItemStack stack) {
+        ServerLevel level = player.serverLevel();
+        ItemEntity entity = new ItemEntity(level, player.getX(), player.getY() + 10, player.getZ(), stack);
+        entity.setDeltaMovement(0, 0, 0);
+        entity.setPickUpDelay(10);
+        level.addFreshEntity(entity);
+        level.playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, 1.0F);
     }
 
     private static void spawnTreasureChest(ServerPlayer player, String lootTableStr, RandomSource random) {

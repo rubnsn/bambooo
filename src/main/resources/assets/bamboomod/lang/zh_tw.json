@@ -261,6 +261,8 @@
   "bamboomod.wish.result.biome": "如你所願。",
   "bamboomod.wish.result.biome_notfound": "附近似乎沒有呢。",
   "bamboomod.wish.result.treasure": "從世界的某處為你撿來了哦。",
+  "bamboomod.wish.result.spawner": "無法回收，放置前可要想清楚哦。",
+  "bamboomod.wish.result.egg": "特價品哦。至於從哪兒弄來的可是秘密。",
   "entity.bamboomod.dolphin_companion": "海豚夥伴",
   "entity.bamboomod.llama_companion": "羊駝夥伴",
   "block.bamboomod.windmill": "風車",

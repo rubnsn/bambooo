@@ -261,6 +261,8 @@
   "bamboomod.wish.result.biome": "As you wish.",
   "bamboomod.wish.result.biome_notfound": "There seems to be nothing nearby.",
   "bamboomod.wish.result.treasure": "I picked it up from somewhere in the world for you.",
+  "bamboomod.wish.result.spawner": "It can't be recovered, so think carefully about where you place it.",
+  "bamboomod.wish.result.egg": "A special bargain. Where I got it is a secret.",
   "entity.bamboomod.dolphin_companion": "Dolphin Companion",
   "entity.bamboomod.llama_companion": "Llama Companion",
   "item.bamboomod.bamboo_rod": "Bamboo Rod",
