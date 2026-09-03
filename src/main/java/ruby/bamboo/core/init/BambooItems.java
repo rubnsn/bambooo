@@ -184,6 +184,25 @@ public final class BambooItems {
         return List.copyOf(list);
     }
 
+    // ===== スキル本 13種 + ステータス本 (feat-skill) =====
+
+    /** ステータス本 (初スキル取得時に配布 + 常時クラフト可) */
+    public static final RegistryObject<ruby.bamboo.item.StatusBookItem> STATUS_BOOK = register("status_book",
+            () -> new ruby.bamboo.item.StatusBookItem(new Item.Properties().stacksTo(1)));
+
+    /** スキル本 13種 (耐久5)。登録順 = SkillType 順 */
+    public static final List<RegistryObject<ruby.bamboo.item.SkillBookItem>> SKILL_BOOKS = createSkillBooks();
+
+    private static List<RegistryObject<ruby.bamboo.item.SkillBookItem>> createSkillBooks() {
+        List<RegistryObject<ruby.bamboo.item.SkillBookItem>> list = new ArrayList<>();
+        for (ruby.bamboo.skill.SkillType type : ruby.bamboo.skill.SkillType.values()) {
+            RegistryObject<ruby.bamboo.item.SkillBookItem> ro = register("skill_book_" + type.getId(),
+                    () -> new ruby.bamboo.item.SkillBookItem(type, new Item.Properties().durability(5)));
+            list.add(ro);
+        }
+        return List.copyOf(list);
+    }
+
     private static <I extends Item> RegistryObject<I> register(String name, Supplier<? extends I> factory) {
         RegistryObject<I> item = BambooMod.ITEMS.register(name, factory);
         CREATIVE_ITEMS.add(() -> item.get().getDefaultInstance());
