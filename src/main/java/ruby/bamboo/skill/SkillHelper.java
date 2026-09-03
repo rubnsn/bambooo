@@ -47,6 +47,29 @@ public final class SkillHelper {
         return leveled[0];
     }
 
+    /** xp 加算 (小数、0.01精度)。上昇時はメッセージ + 同期。 */
+    public static boolean addXpDouble(Player player, SkillType type, double amount) {
+        boolean[] leveled = { false };
+        get(player).ifPresent(s -> {
+            if (s.addXpDouble(type, amount)) {
+                leveled[0] = true;
+            }
+        });
+        if (leveled[0]) {
+            if (!player.level().isClientSide) {
+                player.displayClientMessage(
+                        net.minecraft.network.chat.Component.translatable("message.bamboomod.skill.levelup",
+                                net.minecraft.network.chat.Component.translatable(
+                                        "skill.bamboomod." + type.getId() + ".name"),
+                                getLevel(player, type)),
+                        false);
+            }
+            SkillEffects.applyPersistent(player);
+            sync(player);
+        }
+        return leveled[0];
+    }
+
     public static void sync(Player player) {
         if (!(player instanceof ServerPlayer sp)) {
             return;

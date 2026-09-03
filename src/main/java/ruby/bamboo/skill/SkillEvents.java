@@ -74,7 +74,9 @@ public final class SkillEvents {
                     SkillHelper.get(sp).ifPresent(s -> {
                         for (SkillType t : SkillType.values()) {
                             sb.append(t.getId()).append(" Lv").append(s.getLevel(t))
-                                    .append(" ").append(s.getXp(t)).append("/").append(s.getNext(t)).append(" ");
+                                    .append(" ").append(String.format("%.2f", s.getXp(t) / 100.0D)).append("/")
+                                    .append(s.getNext(t))
+                                    .append(" G").append(s.getGrowth(t)).append(" ");
                         }
                     });
                     ctx.getSource().sendSuccess(() -> Component.literal(sb.toString()), false);

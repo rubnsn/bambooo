@@ -30,7 +30,7 @@ public class StatusBookScreen extends Screen {
     /** 概要用: 取得済み優先 + 未取得は末尾 (マスク表示)。 */
     private final List<Row> overview = new ArrayList<>();
 
-    private record Row(SkillType type, int lv, int xp, int next, int max) {
+    private record Row(SkillType type, int lv, int xp, int next, int max, int growth) {
     }
 
     public StatusBookScreen() {
@@ -40,7 +40,7 @@ public class StatusBookScreen extends Screen {
             mc.player.getCapability(BambooCapabilities.SKILL).ifPresent(s -> {
                 for (SkillType t : SkillType.values()) {
                     int lv = s.getLevel(t);
-                    Row r = new Row(t, lv, s.getXp(t), s.getNext(t), s.getMaxLevel(t));
+                    Row r = new Row(t, lv, s.getXpWhole(t), s.getNext(t), s.getMaxLevel(t), s.getGrowth(t));
                     rows.add(r);
                     if (lv > 0) {
                         unlocked.add(r);
@@ -131,7 +131,7 @@ public class StatusBookScreen extends Screen {
             drawCenter(gfx, name, y, 0xFFE8C872);
             y += 16;
             String lvLine = r.lv() > 0
-                    ? "Lv" + r.lv() + " / MAX" + r.max()
+                    ? "Lv" + r.lv() + " / MAX" + r.max() + " （成長率:" + r.growth() + "）"
                     : Component.translatable("screen.bamboomod.status.locked").getString();
             drawCenter(gfx, lvLine, y, 0xFFFFFFFF);
             y += 16;

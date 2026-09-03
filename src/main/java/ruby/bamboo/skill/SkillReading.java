@@ -141,7 +141,7 @@ public final class SkillReading {
         SkillHelper.get(sp).ifPresent(st -> {
             lv[0] = st.getLevel(s.type());
             if (lv[0] > 0) {
-                prob[0] = 0.05D + 0.95D * Math.min(1.0D, (double) st.getXp(s.type()) / Math.max(1, st.getNext(s.type())));
+                prob[0] = 0.05D + 0.95D * st.getProgress(s.type());
             }
             for (SkillType t : SkillType.values()) {
                 if (st.isAcquired(t)) {

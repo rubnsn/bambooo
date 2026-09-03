@@ -1,25 +1,36 @@
 package ruby.bamboo.skill;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.ShieldBlockEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraftforge.event.entity.player.TradeWithVillagerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ruby.bamboo.BambooMod;
+import ruby.bamboo.crafting.cooking.CookingManager;
 
 /**
  * 使用ベース xp 付与 (feat-spec-skill §2)。
@@ -186,5 +197,84 @@ public final class SkillXpEvents {
                 }
             }
         });
+    }
+
+    // ===== 成長率回復1: 料理を食べる =====
+    // 食材の種類数だけ、解放済み全スキルの成長率を回復 (上限300はsetGrowthでクランプ)。
+
+    @SubscribeEvent
+    public static void onFoodEaten(LivingEntityUseItemEvent.Finish event) {
+        if (!(event.getEntity() instanceof ServerPlayer sp)) {
+            return;
+        }
+        ItemStack eaten = event.getItem();
+        if (eaten.getFoodProperties(sp) == null) {
+            return;
+        }
+        int kinds = countIngredientKinds(sp.serverLevel(), eaten);
+        if (kinds <= 0) {
+            return;
+        }
+        boolean[] changed = { false };
+        SkillHelper.get(sp).ifPresent(s -> {
+            for (SkillType t : SkillType.values()) {
+                if (s.isAcquired(t) && s.getGrowth(t) < SkillStorage.GROWTH_MAX) {
+                    s.setGrowth(t, s.getGrowth(t) + kinds);
+                    changed[0] = true;
+                }
+            }
+        });
+        if (changed[0]) {
+            SkillHelper.sync(sp);
+        }
+    }
+
+    // ===== 成長率回復2: 睡眠 =====
+    // 起床時に+25。ただし100が上限 (99→100、100以上は不変)。布団の睡眠も対象。
+
+    @SubscribeEvent
+    public static void onWakeUp(PlayerWakeUpEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer sp)) {
+            return;
+        }
+        boolean[] changed = { false };
+        SkillHelper.get(sp).ifPresent(s -> {
+            for (SkillType t : SkillType.values()) {
+                int g = s.getGrowth(t);
+                if (s.isAcquired(t) && g < SkillStorage.GROWTH_START) {
+                    s.setGrowth(t, Math.min(SkillStorage.GROWTH_START, g + 25));
+                    changed[0] = true;
+                }
+            }
+        });
+        if (changed[0]) {
+            SkillHelper.sync(sp);
+        }
+    }
+
+    /** 料理の食材種類数。囲炉裏・作業台レシピの最大値、なければ1 (素材自体)。 */
+    private static int countIngredientKinds(net.minecraft.server.level.ServerLevel level, ItemStack food) {
+        int best = CookingManager.countDistinctIngredients(food);
+        var access = level.registryAccess();
+        for (Recipe<?> r : level.getRecipeManager().getRecipes()) {
+            if (r.getType() != RecipeType.CRAFTING) {
+                continue;
+            }
+            if (!ItemStack.isSameItem(r.getResultItem(access), food)) {
+                continue;
+            }
+            Set<Item> kinds = new HashSet<>();
+            for (Ingredient ing : r.getIngredients()) {
+                if (ing.isEmpty()) {
+                    continue;
+                }
+                ItemStack[] opts = ing.getItems();
+                if (opts.length > 0 && !opts[0].isEmpty()) {
+                    kinds.add(opts[0].getItem());
+                }
+            }
+            best = Math.max(best, kinds.size());
+        }
+        return Math.max(1, best);
     }
 }

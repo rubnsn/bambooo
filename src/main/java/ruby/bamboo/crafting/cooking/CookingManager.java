@@ -86,4 +86,25 @@ public final class CookingManager {
     public static List<CookingRecipe> getRecipes() {
         return RECIPES;
     }
+
+    /**
+     * 指定アイテムを出力するレシピの材料の種類数 (最大値)。なければ0。
+     * スキル成長率の料理回復用。
+     */
+    public static int countDistinctIngredients(ItemStack output) {
+        int best = 0;
+        for (CookingRecipe r : RECIPES) {
+            if (!ItemStack.isSameItem(r.output(), output)) {
+                continue;
+            }
+            java.util.Set<net.minecraft.world.item.Item> kinds = new java.util.HashSet<>();
+            for (ItemStack ing : r.ingredients()) {
+                if (!ing.isEmpty()) {
+                    kinds.add(ing.getItem());
+                }
+            }
+            best = Math.max(best, kinds.size());
+        }
+        return best;
+    }
 }
