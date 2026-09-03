@@ -296,5 +296,18 @@
   "item.bamboomod.skill_book_shooting": "射擊書",
   "item.bamboomod.skill_book_anatomy": "解剖書",
   "item.bamboomod.skill_book_negotiation": "交涉書",
-  "item.bamboomod.status_book": "狀態書"
+  "item.bamboomod.status_book": "狀態書",
+  "skill.bamboomod.pickaxe.name": "鶴嘴",
+  "skill.bamboomod.axe.name": "斧",
+  "skill.bamboomod.shovel.name": "鏟",
+  "skill.bamboomod.speed.name": "疾行",
+  "skill.bamboomod.luck.name": "幸運",
+  "skill.bamboomod.fishing.name": "釣魚",
+  "skill.bamboomod.swim.name": "游泳",
+  "skill.bamboomod.dual_wield.name": "雙刀",
+  "skill.bamboomod.shield.name": "盾",
+  "skill.bamboomod.sword.name": "劍術",
+  "skill.bamboomod.shooting.name": "射擊",
+  "skill.bamboomod.anatomy.name": "解剖",
+  "skill.bamboomod.negotiation.name": "交涉"
 }

@@ -19,7 +19,7 @@ public class ReadingScreen extends Screen {
     private int ticks = 0;
 
     public ReadingScreen(String skillId) {
-        super(Component.translatable("item.bamboomod.skill_book_" + skillId));
+        super(Component.translatable("skill.bamboomod." + skillId + ".name"));
         this.skillId = skillId;
     }
 

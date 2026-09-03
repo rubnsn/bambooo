@@ -157,7 +157,7 @@ public final class SkillReading {
                 stack.shrink(1);
             }
             sp.displayClientMessage(Component.translatable("message.bamboomod.skill.levelup",
-                    Component.translatable("item.bamboomod.skill_book_" + s.type().getId()),
+                    Component.translatable("skill.bamboomod." + s.type().getId() + ".name"),
                     SkillHelper.getLevel(sp, s.type())), false);
             sp.serverLevel().playSound(null, sp.getX(), sp.getY(), sp.getZ(),
                     SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.8F, 1.0F);

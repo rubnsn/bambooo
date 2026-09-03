@@ -35,7 +35,9 @@ public final class SkillHelper {
         if (leveled[0]) {
             if (!player.level().isClientSide) {
                 player.displayClientMessage(
-                        net.minecraft.network.chat.Component.translatable("message.bamboomod.skill.levelup", type.getId(),
+                        net.minecraft.network.chat.Component.translatable("message.bamboomod.skill.levelup",
+                                net.minecraft.network.chat.Component.translatable(
+                                        "skill.bamboomod." + type.getId() + ".name"),
                                 getLevel(player, type)),
                         false);
             }
