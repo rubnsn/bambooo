@@ -56,5 +56,9 @@ public final class BambooNetwork {
                 FishingCastRequestPacket::encode,
                 FishingCastRequestPacket::decode,
                 FishingCastRequestPacket::handle);
+        CHANNEL.registerMessage(nextId(), SkillSyncPacket.class,
+                SkillSyncPacket::encode,
+                SkillSyncPacket::decode,
+                SkillSyncPacket::handle);
     }
 }
