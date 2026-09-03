@@ -17,6 +17,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.ShieldBlockEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.TradeWithVillagerEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ruby.bamboo.BambooMod;
@@ -94,6 +95,43 @@ public final class SkillEffectEvents {
             }
         }
         event.setAmount(amount);
+    }
+
+    // ===== 運 (鉱石のおまけ: BreakEvent + ドロッププレビュー方式) =====
+    // GlobalLootModifier だと新規 DeferredRegister が必要になるため、
+    // 破壊確定時に getDrops でプレビューし、確率で1スタック複写を追加する。
+    // プレビューと実ドロップは別RNGのため内容がずれる場合がある (仕様)。
+
+    @SubscribeEvent
+    public static void onLuckBreak(BlockEvent.BreakEvent event) {
+        if (event.isCanceled() || event.getPlayer() == null) {
+            return;
+        }
+        Player player = event.getPlayer();
+        if (player.level().isClientSide || !(player instanceof ServerPlayer sp) || player.isCreative()) {
+            return;
+        }
+        if (!(player.getMainHandItem().getItem() instanceof PickaxeItem)) {
+            return;
+        }
+        if (!event.getState().is(net.minecraftforge.common.Tags.Blocks.ORES)) {
+            return;
+        }
+        int lv = SkillHelper.getLevel(player, SkillType.LUCK);
+        if (lv <= 0 || sp.getRandom().nextFloat() >= 0.02F * lv) {
+            return;
+        }
+        net.minecraft.server.level.ServerLevel level = sp.serverLevel();
+        var be = level.getBlockEntity(event.getPos());
+        java.util.List<ItemStack> preview = net.minecraft.world.level.block.Block.getDrops(
+                event.getState(), level, event.getPos(), be, player, player.getMainHandItem());
+        if (preview.isEmpty()) {
+            return;
+        }
+        ItemStack bonus = preview.get(sp.getRandom().nextInt(preview.size())).copy();
+        if (!bonus.isEmpty()) {
+            net.minecraft.world.level.block.Block.popResource(level, event.getPos(), bonus);
+        }
     }
 
     // ===== 水泳 (呼吸) =====
