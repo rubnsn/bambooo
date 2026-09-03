@@ -130,6 +130,11 @@ public final class BambooClientSetup {
                     BambooBlockEntities.BAMBOO_POT_BE.get(),
                     ruby.bamboo.block.entity.BambooPotBlockRenderer::new);
 
+            // 風車・水車の BER 登録 (旧 Entity描画相当。1ブロック超え描画のためBE側INFINITE+offScreen)
+            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+                    BambooBlockEntities.MILL_BE.get(),
+                    ruby.bamboo.block.entity.MillBlockRenderer::new);
+
             // 温泉水 — 半透明 (Phase B) — ブロックと流体両方をtranslucentに (バニラ水と同様)
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.SPRING_WATER.get(), RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(BambooMod.SPRING_WATER_SOURCE.get(), RenderType.translucent());

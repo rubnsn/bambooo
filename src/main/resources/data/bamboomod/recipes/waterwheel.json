@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "YXY",
+    "X#X",
+    "YXY"
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:/stick"
+    },
+    "X": {
+      "item": "bamboomod:bamboo"
+    },
+    "Y": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "result": {
+    "item": "bamboomod:waterwheel",
+    "count": 1
+  }
+}

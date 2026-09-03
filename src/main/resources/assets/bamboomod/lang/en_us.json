@@ -286,5 +286,8 @@
   "screen.bamboomod.fishing_power_gauge": "Power Gauge",
   "screen.bamboomod.fishing_power_gauge.title": "Power Gauge",
   "screen.bamboomod.fishing_power_gauge.hint": "Right-click to confirm",
-  "screen.bamboomod.fishing_minigame": "Fishing"
+  "screen.bamboomod.fishing_minigame": "Fishing",
+  "block.bamboomod.windmill": "Windmill",
+  "block.bamboomod.windmill_cloth": "Windmill (Cloth)",
+  "block.bamboomod.waterwheel": "Waterwheel"
 }

@@ -29,6 +29,7 @@ import ruby.bamboo.block.MapleLeaveBlock;
 import ruby.bamboo.block.MapleLogBlock;
 import ruby.bamboo.block.MapleSaplingBlock;
 import ruby.bamboo.block.MillStoneBlock;
+import ruby.bamboo.block.MillBlock;
 import ruby.bamboo.block.PaddyFieldBlock;
 import ruby.bamboo.block.RicePlantBlock;
 import ruby.bamboo.block.SakuraLeaveBlock;
@@ -276,6 +277,20 @@ public final class BambooBlocks {
     public static final RegistryObject<SpringWaterBlock> SPRING_WATER = registerNoItem("spring_water",
             () -> new SpringWaterBlock(() -> BambooMod.SPRING_WATER_SOURCE.get(),
                     BlockBehaviour.Properties.copy(net.minecraft.world.level.block.Blocks.WATER).noLootTable().noOcclusion()));
+
+    // ===== 風車・水車 (旧 EntityWindmill/EntityWaterwheel の Block+BE 移植。無機能装飾) =====
+
+    /** 風車 (通常)。textures/entity/windmill.png */
+    public static final RegistryObject<MillBlock> WINDMILL = register("windmill",
+            () -> new MillBlock(MillBlock.Type.WINDMILL));
+
+    /** 風車 (布張り)。textures/entity/windmill_cloth.png */
+    public static final RegistryObject<MillBlock> WINDMILL_CLOTH = register("windmill_cloth",
+            () -> new MillBlock(MillBlock.Type.WINDMILL_CLOTH));
+
+    /** 水車。水に浸かると回転。textures/entity/waterwheel.png */
+    public static final RegistryObject<MillBlock> WATERWHEEL = register("waterwheel",
+            () -> new MillBlock(MillBlock.Type.WATERWHEEL));
 
     // ===== sakura無機能deco移植: 単独Block登録 21件 (EnumDecoration未拡張) =====
     // sakura_slab (sakura 32): PlayerFacingSlab相当だが今回は SlabBlock で SakuraPlank 流用

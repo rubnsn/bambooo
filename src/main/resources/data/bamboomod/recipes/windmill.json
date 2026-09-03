@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "YXY",
+    "XYX",
+    "YXY"
+  ],
+  "key": {
+    "X": {
+      "item": "bamboomod:bamboo"
+    },
+    "Y": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "item": "bamboomod:windmill",
+    "count": 1
+  }
+}

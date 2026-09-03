@@ -286,5 +286,8 @@
   "screen.bamboomod.fishing_power_gauge": "パワーゲージ",
   "screen.bamboomod.fishing_power_gauge.title": "パワーゲージ",
   "screen.bamboomod.fishing_power_gauge.hint": "右クリックで決定",
-  "screen.bamboomod.fishing_minigame": "釣り"
+  "screen.bamboomod.fishing_minigame": "釣り",
+  "block.bamboomod.windmill": "風車",
+  "block.bamboomod.windmill_cloth": "風車(布張り)",
+  "block.bamboomod.waterwheel": "水車"
 }

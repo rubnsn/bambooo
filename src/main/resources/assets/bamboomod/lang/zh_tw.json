@@ -256,5 +256,8 @@
   "bamboomod.wish.result.biome_notfound": "附近似乎沒有呢。",
   "bamboomod.wish.result.treasure": "從世界的某處為你撿來了哦。",
   "entity.bamboomod.dolphin_companion": "海豚夥伴",
-  "entity.bamboomod.llama_companion": "羊駝夥伴"
+  "entity.bamboomod.llama_companion": "羊駝夥伴",
+  "block.bamboomod.windmill": "風車",
+  "block.bamboomod.windmill_cloth": "風車(帆)",
+  "block.bamboomod.waterwheel": "水車"
 }
