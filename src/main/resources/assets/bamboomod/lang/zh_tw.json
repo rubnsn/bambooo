@@ -270,5 +270,6 @@
   "entity.bamboomod.llama_companion": "羊駝夥伴",
   "block.bamboomod.windmill": "風車",
   "block.bamboomod.windmill_cloth": "風車(帆)",
-  "block.bamboomod.waterwheel": "水車"
+  "block.bamboomod.waterwheel": "水車",
+  "message.bamboomod.skill.levelup": "你的%s技能提升到了Lv%s！"
 }

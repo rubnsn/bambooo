@@ -282,6 +282,7 @@
   "tooltip.bamboomod.fish_size.bronze": "ランク: ブロンズ",
   "tooltip.bamboomod.fish_size.silver": "ランク: シルバー",
   "tooltip.bamboomod.fish_size.gold": "ランク: ゴールド",
+  "message.bamboomod.skill.levelup": "%sのレベルが上昇した！(Lv%s)",
   "message.bamboomod.fishing.waiting": "魚が食いつくのを待っています...",
   "message.bamboomod.fishing.distance": "飛距離: %s ブロック",
   "message.bamboomod.fishing.power": "パワー: %s%%",

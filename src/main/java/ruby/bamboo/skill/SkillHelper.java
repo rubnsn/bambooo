@@ -39,6 +39,7 @@ public final class SkillHelper {
                                 getLevel(player, type)),
                         false);
             }
+            SkillEffects.applyPersistent(player);
             sync(player);
         }
         return leveled[0];

@@ -155,7 +155,9 @@ public class FishingHandler {
         int baitPower = baitInfo.bitePower;
         int moonBonus = FishingBiteHelper.getMoonBonus(level);
         int rainBonus = FishingBiteHelper.getRainBonus(level);
-        int bitePower = baitPower + moonBonus + rainBonus; // 竿加算 0
+        // 釣りスキル: バイト微強化 (+1/3Lv)。高品質魚は強化前提のバランス
+        int fishLv = ruby.bamboo.skill.SkillHelper.getLevel(sp, ruby.bamboo.skill.SkillType.FISHING);
+        int bitePower = baitPower + moonBonus + rainBonus + fishLv / 3;
 
         distance = Math.max(4, Math.min(15, distance));
 
@@ -191,14 +193,16 @@ public class FishingHandler {
         BOBBERS.put(sp.getUUID(), bob);
 
         // S2C 送信
-        int waitMin = 40 + sp.getRandom().nextInt(30); // 2-3.5秒後のバイト
+        // 釣りスキル: 開始進行度 +1/Lv (ロッド補助)、待ち -2tick/Lv (下限20)
+        int startP = result.startProgress + fishLv;
+        int waitMin = Math.max(20, 40 + sp.getRandom().nextInt(30) - 2 * fishLv);
         int waitMax = waitMin + 40 + sp.getRandom().nextInt(30);
         FishingCastResultPacket pkt = new FishingCastResultPacket(
                 pending.entry.id,
                 pending.entry.itemId,
                 pending.entry.category.ordinal(),
                 pending.size.ordinal(),
-                pending.startProgress,
+                startP,
                 pending.fishStamina,
                 pending.fishPower,
                 pending.movePattern.ordinal(),
@@ -302,6 +306,7 @@ public class FishingHandler {
         // ウキ再利用: 失敗/キャンセルはウキのみ、成功はItemEntityを引っ掛けて帰還
         FishingBobberEntity bob = BOBBERS.get(id);
         if (resultType == 0) {
+            ruby.bamboo.skill.SkillHelper.addXp(player, ruby.bamboo.skill.SkillType.FISHING, 1);
             ServerLevel level = player.serverLevel();
             ItemStack catchStack = FishingManager.createCatchStack(
                     new FishingManager.RollResult(pending.entry, pending.size, pending.startProgress,

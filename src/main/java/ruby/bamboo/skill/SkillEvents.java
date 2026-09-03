@@ -37,6 +37,7 @@ public final class SkillEvents {
     @SubscribeEvent
     public static void onLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer sp) {
+            SkillEffects.applyPersistent(sp);
             SkillHelper.syncTo(sp);
         }
     }
@@ -44,6 +45,7 @@ public final class SkillEvents {
     @SubscribeEvent
     public static void onChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer sp) {
+            SkillEffects.applyPersistent(sp);
             SkillHelper.syncTo(sp);
         }
     }
@@ -51,6 +53,7 @@ public final class SkillEvents {
     @SubscribeEvent
     public static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer sp) {
+            SkillEffects.applyPersistent(sp);
             SkillHelper.syncTo(sp);
         }
     }

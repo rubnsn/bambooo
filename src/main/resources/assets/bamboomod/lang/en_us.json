@@ -282,6 +282,7 @@
   "tooltip.bamboomod.fish_size.bronze": "Rank: Bronze",
   "tooltip.bamboomod.fish_size.silver": "Rank: Silver",
   "tooltip.bamboomod.fish_size.gold": "Rank: Gold",
+  "message.bamboomod.skill.levelup": "Your %s skill rose to Lv%s!",
   "message.bamboomod.fishing.waiting": "Waiting for a bite...",
   "message.bamboomod.fishing.distance": "Distance: %s blocks",
   "message.bamboomod.fishing.power": "Power: %s%%",
