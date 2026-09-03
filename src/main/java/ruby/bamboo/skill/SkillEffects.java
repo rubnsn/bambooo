@@ -21,7 +21,7 @@ import ruby.bamboo.BambooMod;
  */
 public final class SkillEffects {
 
-    public static final UUID SPEED_UUID = UUID.fromString("3d7f0e1a-7b2c-4a1b-8000-0000005350444c");
+    public static final UUID SPEED_UUID = UUID.fromString("3d7f0e1a-7b2c-4a1b-8000-000000535044");
     public static final UUID SWIM_UUID = UUID.fromString("7a21f4c9-1d3e-4c2a-9b5e-5357494d3031");
     public static final UUID SHIELD_UUID = UUID.fromString("9c44aa07-5b11-4d8e-8f2a-534849454c44");
 
