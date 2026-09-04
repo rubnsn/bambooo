@@ -1,6 +1,6 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
+  "type": "bamboomod:campfire",
+  "category": "blocks",
   "pattern": [
     "YXY",
     "X#X",
@@ -8,7 +8,7 @@
   ],
   "key": {
     "#": {
-      "item": "minecraft:/stick"
+      "item": "minecraft:stick"
     },
     "X": {
       "item": "bamboomod:bamboo"
@@ -18,7 +18,9 @@
     }
   },
   "result": {
-    "item": "bamboomod:waterwheel",
-    "count": 1
-  }
+    "item": "bamboomod:waterwheel"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
 }
