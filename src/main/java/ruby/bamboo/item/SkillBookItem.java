@@ -27,6 +27,22 @@ public class SkillBookItem extends Item {
         return skill;
     }
 
+    /** 耐久があってもエンチャント不可 (金床・テーブルとも)。 */
+    @Override
+    public boolean isEnchantable(ItemStack stack) {
+        return false;
+    }
+
+    @Override
+    public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
+        return false;
+    }
+
+    @Override
+    public boolean canApplyAtEnchantingTable(ItemStack stack, net.minecraft.world.item.enchantment.Enchantment enchantment) {
+        return false;
+    }
+
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);

@@ -803,6 +803,14 @@ public final class WishManager {
                 // スポーンエッグをランダム1種×count個(既定10)。種類の指定不可。
                 int eggCount = eff.args.has("count") ? eff.args.get("count").getAsInt() : 10;
                 hasRandomEgg = giveRandomEggInternal(player, eggCount, random);
+            } else if ("give_skill_book".equalsIgnoreCase(eff.type)) {
+                // スキル本13種からランダム1冊。
+                Item skillBook = randomSkillBook(random);
+                if (skillBook != null) {
+                    if (firstGiveItem == null) firstGiveItem = skillBook;
+                    boolean over = giveItemInternal(player, skillBook, 1, null, random);
+                    if (over) hasOver = true;
+                }
             } else {
                 executeEffectInternal(player, eff, random);
             }
@@ -981,6 +989,14 @@ public final class WishManager {
                     if (giveRandomEggInternal(player, eggCount, random)) {
                         player.displayClientMessage(Component.translatable("bamboomod.wish.result.egg").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
                     } else {
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.generic").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);                    }
+                }
+                case "give_skill_book" -> {
+                    Item skillBook = randomSkillBook(random);
+                    if (skillBook != null) {
+                        giveItemWithAutoEnchant(player, skillBook, 1, null, random, null);
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", new ItemStack(skillBook).getHoverName()).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    } else {
                         player.displayClientMessage(Component.translatable("bamboomod.wish.result.generic").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
                     }
                 }
@@ -1142,6 +1158,12 @@ public final class WishManager {
                 case "give_random_egg", "give_spawn_egg" -> {
                     int eggCount = eff.args.has("count") ? eff.args.get("count").getAsInt() : 10;
                     giveRandomEggInternal(player, eggCount, random);
+                }
+                case "give_skill_book" -> {
+                    Item skillBook = randomSkillBook(random);
+                    if (skillBook != null) {
+                        giveItemInternal(player, skillBook, 1, null, random);
+                    }
                 }
                 default -> LOGGER.warn("Unknown wish effect type {} (internal)", type);
             }
@@ -1561,6 +1583,16 @@ public final class WishManager {
         int c = Mth.clamp(count <= 0 ? 10 : count, 1, 64);
         dropStackOverhead(player, new ItemStack(pick.egg, c));
         return true;
+    }
+
+    /** スキル本13種からランダム1種。なければ null。 */
+    @javax.annotation.Nullable
+    private static Item randomSkillBook(RandomSource random) {
+        var books = ruby.bamboo.core.init.BambooItems.SKILL_BOOKS;
+        if (books.isEmpty()) {
+            return null;
+        }
+        return books.get(random.nextInt(books.size())).get();
     }
 
     /** アイテムスタックを頭上10ブロックに落とす(エンチャント無し・チャット無し)。 */

@@ -23,7 +23,6 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.ShieldBlockEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraftforge.event.entity.player.TradeWithVillagerEvent;
 import net.minecraftforge.event.level.BlockEvent;
@@ -254,6 +253,14 @@ public final class SkillXpEvents {
 
     /** 料理の食材種類数。囲炉裏・作業台レシピの最大値、なければ1 (素材自体)。 */
     private static int countIngredientKinds(net.minecraft.server.level.ServerLevel level, ItemStack food) {
+        // 潜在回復1: 特殊回復食 (レシピの異種数に代えて固定値)
+        if (food.is(net.minecraft.world.item.Items.GOLDEN_APPLE)
+                || food.is(net.minecraft.world.item.Items.ENCHANTED_GOLDEN_APPLE)) {
+            return 8;
+        }
+        if (food.is(net.minecraft.world.item.Items.GOLDEN_CARROT)) {
+            return 5;
+        }
         int best = CookingManager.countDistinctIngredients(food);
         var access = level.registryAccess();
         for (Recipe<?> r : level.getRecipeManager().getRecipes()) {
