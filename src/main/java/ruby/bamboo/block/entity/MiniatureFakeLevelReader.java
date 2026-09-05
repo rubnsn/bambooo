@@ -97,6 +97,24 @@ public class MiniatureFakeLevelReader implements LevelReader {
         return outerLevel.getLightEngine();
     }
 
+    /**
+     * 光サンプリング位置の補正 (黒化対策)。
+     * <p>
+     * {@code tesselateBlock} は内外とも {@code LevelRenderer.getLightColor} →
+     * {@code getBrightness} で光を取るが、セル座標 (0..size-1) のまま外の
+     * ライトエンジンを引くと原点付近 (地下相当) の暗い値になり全面真っ黒になる。
+     * ジオラマ全体は実際に照らされている {@code bePos} 直上の光で一様に照らし、
+     * 方向別 shade と AO の自己遮蔽 (セル形状由来) はそのまま活かす。
+     */
+    @Override
+    public int getBrightness(net.minecraft.world.level.LightLayer lightType, BlockPos pos) {
+        try {
+            return outerLevel.getBrightness(lightType, bePos.above());
+        } catch (Exception e) {
+            return 15;
+        }
+    }
+
     @Override
     public int getBlockTint(BlockPos pos, net.minecraft.world.level.ColorResolver resolver) {
         if (be.isInRange(pos.getX(), pos.getY(), pos.getZ())) {

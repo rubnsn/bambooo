@@ -1,12 +1,21 @@
 {
     // F5 (Mc - Client 等) の事前準備。NeoGradle に prepareRun*Compile は無いため自前定義。
     // classes = compileJava + processResources(展開済みtoml生成)、writeMinecraftClasspath* = -DlegacyClassPath.file の実体。
+    // Mc - Server のみ -PisolatedServer (build/isolated-server/ 出力でクライアントと同時起動可。build.gradle 参照)。
     "version": "2.0.0",
     "tasks": [
         {
             "label": "prepareMcRun",
             "type": "shell",
             "command": "./gradlew classes writeMinecraftClasspathClient writeMinecraftClasspathData writeMinecraftClasspathGameTestServer writeMinecraftClasspathJunit writeMinecraftClasspathServer",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "prepareMcServerIso",
+            "type": "shell",
+            "command": "./gradlew -PisolatedServer classes writeMinecraftClasspathServer",
             "options": {
                 "cwd": "${workspaceFolder}"
             }

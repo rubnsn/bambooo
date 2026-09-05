@@ -19,6 +19,13 @@ base {
     archivesName = mod_id
 }
 
+// サーバー同時起動用: runServer 系は通常 build/ とは別出力 (build/isolated-server/) を使う。
+// クライアント (F5 Mc-Client / CLI runClient, 通常 build/) とのファイルロック競合を避ける。WD (run/server) は共有のまま。
+// -PisolatedServer を付けても同じ (F5 Mc-Server の事前タスク用)。通常タスクへの影響なし。
+if (project.hasProperty('isolatedServer') || gradle.startParameter.taskNames.any { it == 'runServer' || it.endsWith(':runServer') }) {
+    project.layout.buildDirectory.set(project.layout.projectDirectory.dir('build/isolated-server'))
+}
+
 // Mojang ships Java 21 to end users in 1.21.1, so mods should target Java 21.
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
