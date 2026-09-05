@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.core.init.BambooBlocks;
 import ruby.bamboo.crafting.cooking.BambooCampfireRecipe;
@@ -24,13 +25,15 @@ import ruby.bamboo.crafting.cooking.BambooCampfireRecipe;
 /**
  * JEI カテゴリ: 囲炉裏 (campfire) 。
  * 3x3 shapeless + fuelCost / cookingTime / experience を表示。
+ * <p>
+ * JEI 19 (1.21): レシピは {@link RecipeHolder} で渡される。
  */
 @SuppressWarnings("removal")
-public class CampfireCategory implements IRecipeCategory<BambooCampfireRecipe> {
+public class CampfireCategory implements IRecipeCategory<RecipeHolder<BambooCampfireRecipe>> {
 
     @SuppressWarnings("removal")
-    public static final RecipeType<BambooCampfireRecipe> TYPE =
-            new RecipeType<>(new ResourceLocation(BambooMod.MODID, "campfire"), BambooCampfireRecipe.class);
+    public static final RecipeType<RecipeHolder<BambooCampfireRecipe>> TYPE =
+            RecipeType.createRecipeHolderType(ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "campfire"));
 
     public static final int WIDTH = 116;
     public static final int HEIGHT = 62;
@@ -48,7 +51,7 @@ public class CampfireCategory implements IRecipeCategory<BambooCampfireRecipe> {
     }
 
     @Override
-    public RecipeType<BambooCampfireRecipe> getRecipeType() {
+    public RecipeType<RecipeHolder<BambooCampfireRecipe>> getRecipeType() {
         return TYPE;
     }
 
@@ -69,8 +72,8 @@ public class CampfireCategory implements IRecipeCategory<BambooCampfireRecipe> {
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, BambooCampfireRecipe recipe, IFocusGroup focuses) {
-        // 3x3 入力 (左上 3,3 を原点に 18px 間隔)
+    public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<BambooCampfireRecipe> holder, IFocusGroup focuses) {
+        BambooCampfireRecipe recipe = holder.value();
         if (recipe.isShaped()) {
             int w = recipe.getWidth();
             int h = recipe.getHeight();
@@ -99,7 +102,8 @@ public class CampfireCategory implements IRecipeCategory<BambooCampfireRecipe> {
 
     @Override
     @SuppressWarnings("removal")
-    public void draw(BambooCampfireRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void draw(RecipeHolder<BambooCampfireRecipe> holder, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+        BambooCampfireRecipe recipe = holder.value();
         // 矢印 (crafting grid -> result)
         try {
             guiHelper.getRecipeArrow().draw(guiGraphics, 61, 19);
@@ -120,7 +124,8 @@ public class CampfireCategory implements IRecipeCategory<BambooCampfireRecipe> {
     }
 
     @Override
-    public void getTooltip(ITooltipBuilder tooltip, BambooCampfireRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+    public void getTooltip(ITooltipBuilder tooltip, RecipeHolder<BambooCampfireRecipe> holder, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+        BambooCampfireRecipe recipe = holder.value();
         // 矢印ホバーで shapeless のみ表示 (定型は表示しない)
         if (!recipe.isShaped() && 61 <= mouseX && mouseX < 85 && 19 <= mouseY && mouseY < 36) {
             tooltip.add(Component.translatable("jei.tooltip.shapeless.recipe"));

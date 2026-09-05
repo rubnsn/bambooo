@@ -1,0 +1,27 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "",
+  "pattern": [
+    "XXX",
+    "XPX",
+    "XYX"
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:stick"
+    },
+    "Y": {
+      "item": "minecraft:torch"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    }
+  },
+  "result": {
+    "id": "bamboomod:andon"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

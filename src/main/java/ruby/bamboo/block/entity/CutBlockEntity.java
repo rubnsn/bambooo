@@ -2,12 +2,16 @@ package ruby.bamboo.block.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -18,7 +22,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.registries.ForgeRegistries;
 import ruby.bamboo.core.init.BambooBlockEntities;
 
 /**
@@ -1098,27 +1101,27 @@ public class CutBlockEntity extends BlockEntity {
     // ===== NBT =====
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
         writeSyncData(tag);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         readSyncData(tag);
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
         writeSyncData(tag);
         return tag;
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        super.handleUpdateTag(tag);
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        super.handleUpdateTag(tag, registries);
         if (tag == null) {
             this.entries.clear();
             this.cutState = Blocks.AIR.defaultBlockState();
@@ -1137,11 +1140,11 @@ public class CutBlockEntity extends BlockEntity {
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
         CompoundTag tag = new CompoundTag();
         writeSyncData(tag);
-        return ClientboundBlockEntityDataPacket.create(this, be -> tag);
+        return ClientboundBlockEntityDataPacket.create(this, (be, registries) -> tag);
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
         CompoundTag tag = pkt.getTag();
         if (tag == null) {
             this.entries.clear();
@@ -1274,7 +1277,7 @@ public class CutBlockEntity extends BlockEntity {
         if (id == null) {
             return Blocks.AIR.defaultBlockState();
         }
-        Block block = ForgeRegistries.BLOCKS.getValue(id);
+        Block block = BuiltInRegistries.BLOCK.get(id);
         if (block == null) {
             return Blocks.AIR.defaultBlockState();
         }
@@ -1297,16 +1300,16 @@ public class CutBlockEntity extends BlockEntity {
     }
 
     /**
-     * ItemStackから CutState/X/Y/ZLevel を読み取るヘルパー
+     * ItemStackから CutState/X/Y/ZLevel を読み取るヘルパー (CustomData コンポーネント経由)
      */
     public static CutBlockData readFromStack(net.minecraft.world.item.ItemStack stack) {
         if (stack == null || stack.isEmpty()) {
             return new CutBlockData(Blocks.AIR.defaultBlockState(), (byte) 0, (byte) 0, (byte) 0);
         }
-        CompoundTag tag = stack.getTag();
-        if (tag == null) {
+        if (!stack.has(DataComponents.CUSTOM_DATA)) {
             return new CutBlockData(Blocks.AIR.defaultBlockState(), (byte) 0, (byte) 0, (byte) 0);
         }
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         CompoundTag bet = tag.contains("BlockEntityTag", Tag.TAG_COMPOUND) ? tag.getCompound("BlockEntityTag") : tag;
         // Entriesがある場合は先頭エントリを代表として返す (表示用)。複数復元は readEntriesFromStack を使う
         if (bet.contains(TAG_ENTRIES, Tag.TAG_LIST)) {
@@ -1353,13 +1356,13 @@ public class CutBlockEntity extends BlockEntity {
     }
 
     /**
-     * ItemStackから Entries リストを読み取る (複数復元用)。空なら空リスト。
+     * ItemStackから Entries リストを読み取る (複数復元用)。空なら空リスト (CustomData コンポーネント経由)。
      */
     public static java.util.List<CutEntry> readEntriesFromStack(net.minecraft.world.item.ItemStack stack) {
         java.util.List<CutEntry> result = new java.util.ArrayList<>();
         if (stack == null || stack.isEmpty()) return result;
-        CompoundTag tag = stack.getTag();
-        if (tag == null) return result;
+        if (!stack.has(DataComponents.CUSTOM_DATA)) return result;
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         CompoundTag bet = tag.contains("BlockEntityTag", Tag.TAG_COMPOUND) ? tag.getCompound("BlockEntityTag") : tag;
         if (!bet.contains(TAG_ENTRIES, Tag.TAG_LIST)) return result;
         net.minecraft.nbt.ListTag list = bet.getList(TAG_ENTRIES, Tag.TAG_COMPOUND);

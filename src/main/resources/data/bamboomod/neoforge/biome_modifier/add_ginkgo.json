@@ -1,0 +1,21 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      {
+        "type": "neoforge:or",
+        "values": [
+          "#minecraft:is_forest",
+          "#c:is_mountain"
+        ]
+      },
+      "#c:is_cold"
+    ]
+  },
+  "features": [
+    "bamboomod:ginkgo_placed",
+    "bamboomod:ginkgo_big_placed"
+  ],
+  "step": "vegetal_decoration"
+}

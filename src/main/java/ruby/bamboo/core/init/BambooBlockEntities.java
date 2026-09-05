@@ -1,7 +1,7 @@
 package ruby.bamboo.core.init;
 
+import java.util.function.Supplier;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.registries.RegistryObject;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.entity.BambooPotBlockEntity;
 import ruby.bamboo.block.entity.CampfireBlockEntity;
@@ -20,27 +20,27 @@ import ruby.bamboo.block.entity.WallShelfBlockEntity;
  */
 public final class BambooBlockEntities {
 
-    public static final RegistryObject<BlockEntityType<JPChestBlockEntity>> JP_CHEST_BE = BambooMod.BLOCK_ENTITIES
+    public static final Supplier<BlockEntityType<JPChestBlockEntity>> JP_CHEST_BE = BambooMod.BLOCK_ENTITIES
             .register(
                     "jp_chest",
                     () -> BlockEntityType.Builder.of(JPChestBlockEntity::new, BambooBlocks.JP_CHEST.get()).build(null));
 
     /** 石臼 (旧 TileMillStone) */
-    public static final RegistryObject<BlockEntityType<MillStoneBlockEntity>> MILL_STONE_BE = BambooMod.BLOCK_ENTITIES
+    public static final Supplier<BlockEntityType<MillStoneBlockEntity>> MILL_STONE_BE = BambooMod.BLOCK_ENTITIES
             .register(
                     "mill_stone",
                     () -> BlockEntityType.Builder.of(MillStoneBlockEntity::new, BambooBlocks.MILLSTONE.get())
                             .build(null));
 
     /** 囲炉裏 (旧 TileCampfire) */
-    public static final RegistryObject<BlockEntityType<CampfireBlockEntity>> CAMPFIRE_BE = BambooMod.BLOCK_ENTITIES
+    public static final Supplier<BlockEntityType<CampfireBlockEntity>> CAMPFIRE_BE = BambooMod.BLOCK_ENTITIES
             .register(
                     "campfire",
                     () -> BlockEntityType.Builder.of(CampfireBlockEntity::new, BambooBlocks.CAMPFIRE.get())
                             .build(null));
 
     /** 引き戸 (sakura-master SlideDoor) */
-    public static final RegistryObject<BlockEntityType<SlideDoorBlockEntity>> SLIDE_DOOR_BE = BambooMod.BLOCK_ENTITIES
+    public static final Supplier<BlockEntityType<SlideDoorBlockEntity>> SLIDE_DOOR_BE = BambooMod.BLOCK_ENTITIES
             .register(
                     "slide_door",
                     () -> BlockEntityType.Builder.of(SlideDoorBlockEntity::new,
@@ -50,28 +50,28 @@ public final class BambooBlockEntities {
                             .build(null));
 
     /** 壁棚 (sakura-master WallShelf) */
-    public static final RegistryObject<BlockEntityType<WallShelfBlockEntity>> WALL_SHELF_BE = BambooMod.BLOCK_ENTITIES
+    public static final Supplier<BlockEntityType<WallShelfBlockEntity>> WALL_SHELF_BE = BambooMod.BLOCK_ENTITIES
             .register(
                     "wall_shelf",
                     () -> BlockEntityType.Builder.of(WallShelfBlockEntity::new, BambooBlocks.WALL_SHELF.get())
                             .build(null));
 
     /** ミニチュア (箱庭) — Phase A データ層 */
-    public static final RegistryObject<BlockEntityType<MiniatureBlockEntity>> MINIATURE_BE = BambooMod.BLOCK_ENTITIES
+    public static final Supplier<BlockEntityType<MiniatureBlockEntity>> MINIATURE_BE = BambooMod.BLOCK_ENTITIES
             .register(
                     "miniature",
                     () -> BlockEntityType.Builder.of(MiniatureBlockEntity::new, BambooBlocks.MINIATURE.get())
                             .build(null));
 
     /** カットブロック */
-    public static final RegistryObject<BlockEntityType<CutBlockEntity>> CUT_BLOCK_BE = BambooMod.BLOCK_ENTITIES
+    public static final Supplier<BlockEntityType<CutBlockEntity>> CUT_BLOCK_BE = BambooMod.BLOCK_ENTITIES
             .register(
                     "cut_block",
                     () -> BlockEntityType.Builder.of(CutBlockEntity::new, BambooBlocks.CUT_BLOCK.get())
                             .build(null));
 
     /** 竹鉢 (sakura BambooPot) */
-    public static final RegistryObject<BlockEntityType<BambooPotBlockEntity>> BAMBOO_POT_BE = BambooMod.BLOCK_ENTITIES
+    public static final Supplier<BlockEntityType<BambooPotBlockEntity>> BAMBOO_POT_BE = BambooMod.BLOCK_ENTITIES
             .register("bamboo_pot", () -> BlockEntityType.Builder.of(BambooPotBlockEntity::new, BambooBlocks.BAMBOO_POT.get()).build(null));
 
     /**

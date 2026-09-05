@@ -82,7 +82,7 @@ public enum BambooFoods {
     public FoodProperties foodProperties() {
         return new FoodProperties.Builder()
                 .nutrition(hunger)
-                .saturationMod(saturationMod)
+                .saturationModifier(saturationMod)
                 .build();
     }
 }

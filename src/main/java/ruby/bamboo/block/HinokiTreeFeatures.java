@@ -19,6 +19,6 @@ public final class HinokiTreeFeatures {
 
     private static ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> create(String name) {
         return ResourceKey.create(Registries.CONFIGURED_FEATURE,
-                new ResourceLocation(BambooMod.MODID, name));
+                ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, name));
     }
 }

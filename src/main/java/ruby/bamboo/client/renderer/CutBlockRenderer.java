@@ -16,7 +16,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import ruby.bamboo.block.entity.CutBlockEntity;
@@ -160,22 +160,22 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
         Matrix4f mat = pose.pose();
         Matrix3f normal = pose.normal();
 
-        drawQuad(vc, mat, normal, spriteDown, colorDown,
+        drawQuad(vc, pose, spriteDown, colorDown,
                 minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ,
                 0, -1, 0, packedLight, packedOverlay);
-        drawQuad(vc, mat, normal, spriteUp, colorUp,
+        drawQuad(vc, pose, spriteUp, colorUp,
                 minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, minX, maxY, minZ,
                 0, 1, 0, packedLight, packedOverlay);
-        drawQuad(vc, mat, normal, spriteNorth, colorNorth,
+        drawQuad(vc, pose, spriteNorth, colorNorth,
                 maxX, minY, minZ, minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ,
                 0, 0, -1, packedLight, packedOverlay);
-        drawQuad(vc, mat, normal, spriteSouth, colorSouth,
+        drawQuad(vc, pose, spriteSouth, colorSouth,
                 minX, minY, maxZ, maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ,
                 0, 0, 1, packedLight, packedOverlay);
-        drawQuad(vc, mat, normal, spriteWest, colorWest,
+        drawQuad(vc, pose, spriteWest, colorWest,
                 minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ,
                 -1, 0, 0, packedLight, packedOverlay);
-        drawQuad(vc, mat, normal, spriteEast, colorEast,
+        drawQuad(vc, pose, spriteEast, colorEast,
                 maxX, minY, maxZ, maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ,
                 1, 0, 0, packedLight, packedOverlay);
     }
@@ -247,27 +247,27 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
 
         // 内部隣接面カリング: 相手が不透明かつ自身を覆うならスキップ
         if (!shouldCull(be, entry, Direction.DOWN))
-            drawQuad(vc, mat, normal, spriteDown, colorDown,
+            drawQuad(vc, pose, spriteDown, colorDown,
                     minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ,
                     0, -1, 0, packedLight, packedOverlay);
         if (!shouldCull(be, entry, Direction.UP))
-            drawQuad(vc, mat, normal, spriteUp, colorUp,
+            drawQuad(vc, pose, spriteUp, colorUp,
                     minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, minX, maxY, minZ,
                     0, 1, 0, packedLight, packedOverlay);
         if (!shouldCull(be, entry, Direction.NORTH))
-            drawQuad(vc, mat, normal, spriteNorth, colorNorth,
+            drawQuad(vc, pose, spriteNorth, colorNorth,
                     maxX, minY, minZ, minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ,
                     0, 0, -1, packedLight, packedOverlay);
         if (!shouldCull(be, entry, Direction.SOUTH))
-            drawQuad(vc, mat, normal, spriteSouth, colorSouth,
+            drawQuad(vc, pose, spriteSouth, colorSouth,
                     minX, minY, maxZ, maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ,
                     0, 0, 1, packedLight, packedOverlay);
         if (!shouldCull(be, entry, Direction.WEST))
-            drawQuad(vc, mat, normal, spriteWest, colorWest,
+            drawQuad(vc, pose, spriteWest, colorWest,
                     minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ,
                     -1, 0, 0, packedLight, packedOverlay);
         if (!shouldCull(be, entry, Direction.EAST))
-            drawQuad(vc, mat, normal, spriteEast, colorEast,
+            drawQuad(vc, pose, spriteEast, colorEast,
                     maxX, minY, maxZ, maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ,
                     1, 0, 0, packedLight, packedOverlay);
     }
@@ -430,7 +430,7 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
         }
     }
 
-    private void drawQuad(VertexConsumer vc, Matrix4f mat, Matrix3f normal, TextureAtlasSprite sprite, int tintColor,
+    private void drawQuad(VertexConsumer vc, com.mojang.blaze3d.vertex.PoseStack.Pose pose, TextureAtlasSprite sprite, int tintColor,
             float x1, float y1, float z1,
             float x2, float y2, float z2,
             float x3, float y3, float z3,
@@ -477,10 +477,10 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
             g = ((tintColor >> 8) & 0xFF) / 255f;
             b = (tintColor & 0xFF) / 255f;
         }
-        vc.vertex(mat, x1, y1, z1).color(r, g, b, 1f).uv(us[0], vs[0]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x2, y2, z2).color(r, g, b, 1f).uv(us[1], vs[1]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x3, y3, z3).color(r, g, b, 1f).uv(us[2], vs[2]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x4, y4, z4).color(r, g, b, 1f).uv(us[3], vs[3]).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
+        vc.addVertex(pose, x1, y1, z1).setColor(r, g, b, 1f).setUv(us[0], vs[0]).setOverlay(packedOverlay).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x2, y2, z2).setColor(r, g, b, 1f).setUv(us[1], vs[1]).setOverlay(packedOverlay).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x3, y3, z3).setColor(r, g, b, 1f).setUv(us[2], vs[2]).setOverlay(packedOverlay).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x4, y4, z4).setColor(r, g, b, 1f).setUv(us[3], vs[3]).setOverlay(packedOverlay).setLight(packedLight).setNormal(pose, nx, ny, nz);
     }
 
     private static int applyShade(int tint, float shade) {

@@ -2,9 +2,9 @@ package ruby.bamboo.core.init;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.ForgeFlowingFluid;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.fluids.BaseFlowingFluid;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import ruby.bamboo.BambooMod;
 import java.util.function.Consumer;
 
@@ -17,8 +17,8 @@ public final class SpringFluids {
 
     private SpringFluids() {}
 
-    public static ForgeFlowingFluid.Properties props() {
-        return new ForgeFlowingFluid.Properties(
+    public static BaseFlowingFluid.Properties props() {
+        return new BaseFlowingFluid.Properties(
                 () -> BambooMod.HOT_SPRING_TYPE.get(),
                 () -> BambooMod.SPRING_WATER_SOURCE.get(),
                 () -> BambooMod.SPRING_WATER_FLOWING.get())
@@ -53,12 +53,12 @@ public final class SpringFluids {
                 consumer.accept(new IClientFluidTypeExtensions() {
                     @Override
                     public ResourceLocation getStillTexture() {
-                        return new ResourceLocation("block/water_still");
+                        return ResourceLocation.withDefaultNamespace("block/water_still");
                     }
 
                     @Override
                     public ResourceLocation getFlowingTexture() {
-                        return new ResourceLocation("block/water_flow");
+                        return ResourceLocation.withDefaultNamespace("block/water_flow");
                     }
 
                     @Override

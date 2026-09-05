@@ -1,0 +1,24 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "",
+  "pattern": [
+    "XXY",
+    "X Y",
+    "YYY"
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:iron_ingot"
+    },
+    "Y": {
+      "tag": "c:leather"
+    }
+  },
+  "result": {
+    "id": "bamboomod:ninja_bracelet"
+  },
+  "experience": 0.5,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

@@ -48,7 +48,7 @@ public final class KatanaDropManager {
     public static void addDrop(EntityType<?> type, String... tablePaths) {
         List<ResourceLocation> list = DROP_TABLES.computeIfAbsent(type, k -> new ArrayList<>());
         for (String path : tablePaths) {
-            ResourceLocation id = new ResourceLocation("bamboomod", "entities/katana/" + path);
+            ResourceLocation id = ResourceLocation.fromNamespaceAndPath("bamboomod", "entities/katana/" + path);
             if (!list.contains(id)) {
                 list.add(id);
             }
@@ -73,7 +73,7 @@ public final class KatanaDropManager {
             return null;
         }
         ResourceLocation tableId = candidates.get(rand.nextInt(candidates.size()));
-        var table = level.getServer().getLootData().getLootTable(tableId);
+        var table = level.getServer().reloadableRegistries().getLootTable(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, tableId));
         var builder = new net.minecraft.world.level.storage.loot.LootParams.Builder(level)
                 .withParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.THIS_ENTITY, killed)
                 .withParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.ORIGIN,

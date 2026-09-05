@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "food",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "bamboomod:bamboofood_mugimesi"
+    }
+  },
+  "result": {
+    "count": 2,
+    "id": "bamboomod:bamboofood_mochi"
+  }
+}

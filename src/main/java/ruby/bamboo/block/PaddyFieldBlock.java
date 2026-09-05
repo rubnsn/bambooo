@@ -11,6 +11,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -22,8 +23,6 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.IPlantable;
-import net.minecraftforge.common.PlantType;
 import ruby.bamboo.core.init.BambooBlocks;
 
 /**
@@ -182,13 +181,11 @@ public class PaddyFieldBlock extends FarmBlock implements SimpleWaterloggedBlock
         BlockState upperState = level.getBlockState(upperPos);
         net.minecraft.world.level.block.Block upperBlock = upperState.getBlock();
         if (!waterlogged) {
-            if (upperBlock instanceof IPlantable plantable) {
-                PlantType type = plantable.getPlantType(level, upperPos);
-                // とりあえずハードコード: RICE_PLANT以外でCropのみ加速 (sakuraコメント準拠)
-                if (type == PlantType.CROP && upperBlock != BambooBlocks.RICE_PLANT.get()) {
-                    if (random.nextFloat() < 0.75F) {
-                        accelerateUpper(upperState, level, upperPos, random);
-                    }
+            // 1.21: IPlantable/PlantType は削除。汎用Cropは CropBlock 継承で判定
+            // とりあえずハードコード: RICE_PLANT以外でCropのみ加速 (sakuraコメント準拠)
+            if (upperBlock instanceof CropBlock && upperBlock != BambooBlocks.RICE_PLANT.get()) {
+                if (random.nextFloat() < 0.75F) {
+                    accelerateUpper(upperState, level, upperPos, random);
                 }
             }
         } else {
@@ -204,7 +201,7 @@ public class PaddyFieldBlock extends FarmBlock implements SimpleWaterloggedBlock
         // sakuraは upperState.tick(...) を呼んでいたが、1.20では作物はrandomTickで成長するため両方対応
         var block = upperState.getBlock();
         if (upperState.isRandomlyTicking()) {
-            block.randomTick(upperState, level, upperPos, random);
+            upperState.randomTick(level, upperPos, random);
         } else {
             // fallback: tick (FarmBlock由来のtick等)
             upperState.tick(level, upperPos, random);
@@ -257,12 +254,19 @@ public class PaddyFieldBlock extends FarmBlock implements SimpleWaterloggedBlock
                 return true;
             }
         }
-        return net.minecraftforge.common.FarmlandWaterManager.hasBlockWaterTicket(level, pos);
+        return net.neoforged.neoforge.common.FarmlandWaterManager.hasBlockWaterTicket(level, pos);
     }
 
+    /**
+     * 1.21: 旧 {@code canSustainPlant(..., IPlantable)} (boolean) は削除され、
+     * NeoForge の TriState 形式 ({@code IBlockExtension}) に置換された。
+     * 作物 (CropBlock) のみ許可し、それ以外は不許可 (旧 {@code type == CROP} と同等)。
+     */
     @Override
-    public boolean canSustainPlant(BlockState state, BlockGetter world, BlockPos pos, Direction facing, IPlantable plantable) {
-        PlantType type = plantable.getPlantType(world, pos.relative(facing));
-        return type == PlantType.CROP;
+    public net.neoforged.neoforge.common.util.TriState canSustainPlant(BlockState state, BlockGetter world,
+            BlockPos pos, Direction facing, BlockState plant) {
+        return plant.getBlock() instanceof CropBlock
+                ? net.neoforged.neoforge.common.util.TriState.TRUE
+                : net.neoforged.neoforge.common.util.TriState.FALSE;
     }
 }

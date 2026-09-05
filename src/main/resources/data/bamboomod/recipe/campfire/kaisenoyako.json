@@ -1,0 +1,19 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "food",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "minecraft:cooked_cod"
+    },
+    {
+      "item": "bamboomod:rawrice"
+    }
+  ],
+  "result": {
+    "id": "bamboomod:bamboofood_kaisenoyako"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

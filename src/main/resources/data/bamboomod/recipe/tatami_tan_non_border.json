@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "bamboomod:tatami_tan"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "bamboomod:tatami_tan_non_border"
+  }
+}

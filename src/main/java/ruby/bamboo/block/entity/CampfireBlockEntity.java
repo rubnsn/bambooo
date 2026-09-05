@@ -2,6 +2,7 @@ package ruby.bamboo.block.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -16,11 +17,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.CampfireBlock;
 import ruby.bamboo.core.init.BambooBlockEntities;
@@ -81,7 +77,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     private int meatroll;
     private BakeType nowBakeType = BakeType.NONE;
 
-    private final LazyOptional<IItemHandlerModifiable>[] itemHandlers = SidedInvWrapper.create(this, Direction.values());
+    // ホッパー連携は NeoForge BlockCapability へ移行 (BambooCapabilities.registerCaps で登録)。
 
     public CampfireBlockEntity(BlockPos pos, BlockState state) {
         super(BambooBlockEntities.CAMPFIRE_BE.get(), pos, state);
@@ -118,7 +114,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     private void updateFuel() {
         ItemStack fuelStack = items.get(SLOT_FUEL);
         if (!fuelStack.isEmpty()) {
-            int burnTime = net.minecraftforge.common.ForgeHooks.getBurnTime(fuelStack, null);
+            int burnTime = fuelStack.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING);
             if (burnTime > 0 && fuel + burnTime <= MAX_FUEL) {
                 fuel += burnTime;
                 fuelStack.shrink(1);
@@ -143,7 +139,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
                     startCooking();
                 } else if (result.isEmpty()) {
                     startCooking();
-                } else if (ItemStack.isSameItemSameTags(nowCookingResult, result)
+                } else if (ItemStack.isSameItemSameComponents(nowCookingResult, result)
                         && result.getCount() + nowCookingResult.getCount() <= result.getMaxStackSize()) {
                     startCooking();
                 }
@@ -165,12 +161,12 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
             if (--cookTime <= 0) {
                 // 完成: レシピ再検索して結果と一致すれば材料消費+結果追加
                 BambooCampfireRecipe nowEntry = findRecipe();
-                if (nowEntry != null && ItemStack.isSameItemSameTags(nowEntry.getResultItem(level.registryAccess()), nowCookingResult)) {
+                if (nowEntry != null && ItemStack.isSameItemSameComponents(nowEntry.getResultItem(level.registryAccess()), nowCookingResult)) {
                     ItemStack result = items.get(SLOT_RESULT);
                     if (result.isEmpty()) {
                         materialConsumption(nowEntry);
                         items.set(SLOT_RESULT, nowCookingResult.copy());
-                    } else if (ItemStack.isSameItemSameTags(nowCookingResult, result)
+                    } else if (ItemStack.isSameItemSameComponents(nowCookingResult, result)
                             && result.getCount() + nowCookingResult.getCount() <= result.getMaxStackSize()) {
                         materialConsumption(nowEntry);
                         result.grow(nowCookingResult.getCount());
@@ -239,27 +235,27 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
 
     private BambooCampfireRecipe findRecipe() {
         if (level == null) return null;
-        // 0-8 をSimpleContainerで検索 (9サイズ。 fuel/result は含めない)
-        net.minecraft.world.SimpleContainer inv = new net.minecraft.world.SimpleContainer(9);
-        for (int i = 0; i < 9; i++) inv.setItem(i, items.get(i).copy());
-        var campfire = level.getRecipeManager().getRecipeFor(BambooMod.CAMPFIRE_RECIPE_TYPE.get(), inv, level);
+        // 0-8 を CraftingInput(3x3)で検索 (fuel/result は含めない)
+        java.util.List<ItemStack> inputs = new java.util.ArrayList<>(9);
+        for (int i = 0; i < 9; i++) inputs.add(items.get(i).copy());
+        var campfire = level.getRecipeManager().getRecipeFor(BambooMod.CAMPFIRE_RECIPE_TYPE.get(),
+                net.minecraft.world.item.crafting.CraftingInput.of(3, 3, inputs), level);
         if (campfire.isPresent()) {
-            return campfire.orElse(null);
+            return campfire.get().value();
         }
         // バニラ精錬フォールバック (素材1個時のみ) — canCooking/updateBurn 共通。cookingTime/experienceはバニラ準拠、fuelCostは囲炉裏固定200
         if (countNonEmpty() == 1) {
             ItemStack single = getSingleStack();
             if (single != null) {
                 var smelting = level.getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING,
-                        new net.minecraft.world.SimpleContainer(single), level);
+                        new net.minecraft.world.item.crafting.SingleRecipeInput(single), level);
                 if (smelting.isPresent()) {
-                    var recipe = smelting.get();
+                    var recipe = smelting.get().value();
                     ItemStack res = recipe.getResultItem(level.registryAccess());
                     if (!res.isEmpty()) {
                         NonNullList<net.minecraft.world.item.crafting.Ingredient> ing = NonNullList.create();
                         ing.add(net.minecraft.world.item.crafting.Ingredient.of(single));
                         return new BambooCampfireRecipe(
-                                new net.minecraft.resources.ResourceLocation("bamboomod", "smelting_" + recipe.getId().getPath()),
                                 "", BambooCampfireRecipe.Category.MISC, ing, res.copy(), recipe.getExperience(), recipe.getCookingTime(), 200);
                     }
                 }
@@ -288,7 +284,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     /** 素材変更検知 (旧 chkMtrix 相当。値比較に修正) */
     private boolean chkMatrix() {
         for (int i = 0; i < 9; i++) {
-            if (!ItemStack.isSameItemSameTags(copyMatrix[i], items.get(i))) {
+            if (!ItemStack.isSameItemSameComponents(copyMatrix[i], items.get(i))) {
                 return false;
             }
         }
@@ -374,7 +370,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
             return false;
         }
         if (index == SLOT_FUEL) {
-            return net.minecraftforge.common.ForgeHooks.getBurnTime(stack, null) > 0;
+            return stack.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING) > 0;
         }
         return true;
     }
@@ -470,22 +466,22 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     // ===== NBT =====
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
         tag.putInt("fuel", fuel);
         tag.putInt("cookTime", cookTime);
         tag.putInt("maxCookTime", maxCookTime);
         if (!nowCookingResult.isEmpty()) {
-            tag.put("nowItem", nowCookingResult.save(new CompoundTag()));
+            tag.put("nowItem", nowCookingResult.saveOptional(registries));
         }
-        net.minecraft.world.ContainerHelper.saveAllItems(tag, items);
+        net.minecraft.world.ContainerHelper.saveAllItems(tag, items, registries);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         this.items = NonNullList.withSize(11, ItemStack.EMPTY);
-        net.minecraft.world.ContainerHelper.loadAllItems(tag, this.items);
+        net.minecraft.world.ContainerHelper.loadAllItems(tag, this.items, registries);
         if (tag.contains("fuel")) {
             this.fuel = tag.getInt("fuel");
         }
@@ -496,22 +492,22 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
             this.maxCookTime = tag.getInt("maxCookTime");
         }
         if (tag.contains("nowItem")) {
-            this.nowCookingResult = ItemStack.of(tag.getCompound("nowItem"));
+            this.nowCookingResult = ItemStack.parseOptional(registries, tag.getCompound("nowItem"));
         }
     }
 
     // ===== クライアント同期 (BakeType 用) =====
 
     @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
         writeSyncData(tag);
         return tag;
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        super.handleUpdateTag(tag);
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        super.handleUpdateTag(tag, registries);
         readSyncData(tag);
     }
 
@@ -519,12 +515,12 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
         CompoundTag tag = new CompoundTag();
         writeSyncData(tag);
-        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this, be -> tag);
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this, (be, registries) -> tag);
     }
 
     @Override
     public void onDataPacket(net.minecraft.network.Connection net,
-            net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket pkt) {
+            net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
         readSyncData(pkt.getTag());
     }
 
@@ -550,23 +546,9 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
         }
     }
 
-    // ===== Capability (ホッパー/パイプ連携) =====
-
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-        if (cap == ForgeCapabilities.ITEM_HANDLER && side != null) {
-            return itemHandlers[side.ordinal()].cast();
-        }
-        return super.getCapability(cap, side);
-    }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        for (LazyOptional<IItemHandlerModifiable> handler : itemHandlers) {
-            handler.invalidate();
-        }
-    }
+    // ===== Capability (ホッパー/パイプ連携: NeoForge BlockCapability へ移行) =====
+    // 旧 getCapability/invalidateCaps (ForgeCapabilities/LazyOptional) は削除。
+    // 登録は BambooCapabilities.registerCaps (RegisterCapabilitiesEvent) で行う。
 
     /** 破壊時に中身を散布 (CampfireBlock.onRemove から呼ばれる) */
     public void dropContents(Level level, BlockPos pos) {

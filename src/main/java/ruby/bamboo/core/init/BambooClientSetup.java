@@ -4,12 +4,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.renderer.RenderType;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.IndLightBlock;
@@ -22,7 +23,7 @@ import ruby.bamboo.item.BambooBowItem;
  * 旧 1.10.2 版の setRenderLayer / BlockRenderLayer 相当。
  * 植物(crossモデル)系は cutout、葉は cutout_mipped を指定する。
  */
-@Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = BambooMod.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class BambooClientSetup {
 
     private BambooClientSetup() {
@@ -85,8 +86,7 @@ public final class BambooClientSetup {
                     ruby.bamboo.block.entity.MillStoneBlockRenderer::new);
 
             // 石臼 GUI の Screen 登録 (未登録だと「Failed to create screen」でGUIが開かない)
-            net.minecraft.client.gui.screens.MenuScreens.register(BambooMenus.MILL_STONE.get(),
-                    ruby.bamboo.gui.MillStoneScreen::new);
+
 
             // 囲炉裏の BER 登録 (旧 TESR 相当)
             net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
@@ -94,12 +94,10 @@ public final class BambooClientSetup {
                     ruby.bamboo.block.entity.CampfireBlockRenderer::new);
 
             // 囲炉裏 GUI の Screen 登録
-            net.minecraft.client.gui.screens.MenuScreens.register(BambooMenus.CAMPFIRE.get(),
-                    ruby.bamboo.gui.CampfireScreen::new);
+
 
             // 袋 GUI の Screen 登録
-            net.minecraft.client.gui.screens.MenuScreens.register(BambooMenus.SACK.get(),
-                    ruby.bamboo.gui.SackScreen::new);
+
 
             // 壁棚の BER 登録 (sakura-master WallShelfItemRender 相当)
             net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
@@ -179,12 +177,23 @@ public final class BambooClientSetup {
     }
 
     /**
+     * GUI Screen 登録 (1.21: MenuScreens.register は削除。RegisterMenuScreensEvent で行う)
+     */
+    @SubscribeEvent
+    public static void onRegisterMenuScreens(
+            net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
+        event.register(BambooMenus.MILL_STONE.get(), ruby.bamboo.gui.MillStoneScreen::new);
+        event.register(BambooMenus.CAMPFIRE.get(), ruby.bamboo.gui.CampfireScreen::new);
+        event.register(BambooMenus.SACK.get(), ruby.bamboo.gui.SackScreen::new);
+    }
+
+    /**
      * 竹弓の pull / pulling アイテムモデルプロパティを登録 (旧 getBowModel 相当)。
      * バニラ弓と同じ閾値 (pull 0.65 / 0.9) でモデル override が発火する。
      */
     private static void registerBambooBowModelProperties() {
-        net.minecraft.resources.ResourceLocation pulling = new net.minecraft.resources.ResourceLocation("minecraft", "pulling");
-        net.minecraft.resources.ResourceLocation pull = new net.minecraft.resources.ResourceLocation("minecraft", "pull");
+        net.minecraft.resources.ResourceLocation pulling = ResourceLocation.fromNamespaceAndPath("minecraft", "pulling");
+        net.minecraft.resources.ResourceLocation pull = ResourceLocation.fromNamespaceAndPath("minecraft", "pull");
         net.minecraft.client.renderer.item.ItemProperties.register(BambooItems.BAMBOO_BOW.get(),
                 pulling, (stack, level, entity, seed) -> {
                     return entity != null && entity.isUsingItem() ? 1.0F : 0.0F;
@@ -197,7 +206,7 @@ public final class BambooClientSetup {
                     if (!entity.isUsingItem()) {
                         return 0.0F;
                     }
-                    int charge = stack.getUseDuration() - entity.getUseItemRemainingTicks();
+                    int charge = stack.getUseDuration(entity) - entity.getUseItemRemainingTicks();
                     return net.minecraft.util.Mth.clamp(charge / 20.0F, 0.0F, 1.0F);
                 });
     }
@@ -280,7 +289,7 @@ public final class BambooClientSetup {
      */
     @SubscribeEvent
     public static void onRegisterParticleProviders(
-            net.minecraftforge.client.event.RegisterParticleProvidersEvent event) {
+            net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(BambooParticles.PETAL_1.get(),
                 ruby.bamboo.client.particle.PetalParticle.Provider::new);
         event.registerSpriteSet(BambooParticles.PETAL_2.get(),

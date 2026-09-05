@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.SaplingBlock;
-import net.minecraft.world.level.block.grower.AbstractTreeGrower;
+import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -22,13 +22,10 @@ import ruby.bamboo.core.init.BambooBlocks;
  */
 public class MapleSaplingBlock extends SaplingBlock {
 
-    public static final AbstractTreeGrower MAPLE_TREE = new AbstractTreeGrower() {
-        @Override
-        protected net.minecraft.resources.ResourceKey<ConfiguredFeature<?, ?>> getConfiguredFeature(
-                RandomSource rand, boolean hasFlowers) {
-            return rand.nextInt(10) == 0 ? MapleTreeFeatures.MAPLE_BIG : MapleTreeFeatures.MAPLE;
-        }
-    };
+    public static final TreeGrower MAPLE_TREE = new TreeGrower("maple", 0.1F,
+            java.util.Optional.empty(), java.util.Optional.empty(),
+            java.util.Optional.of(MapleTreeFeatures.MAPLE), java.util.Optional.of(MapleTreeFeatures.MAPLE_BIG),
+            java.util.Optional.empty(), java.util.Optional.empty());
 
     public MapleSaplingBlock(BlockBehaviour.Properties props) {
         super(MAPLE_TREE, props);

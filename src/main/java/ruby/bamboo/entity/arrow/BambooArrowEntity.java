@@ -19,6 +19,8 @@ public class BambooArrowEntity extends AbstractArrow {
 
     /** 残り追従本数 */
     private int barrage;
+    /** Punch相当のノックバック量 (1.21: AbstractArrowのknockback廃止のため自前保持) */
+    private int knockback;
     /** 追従矢の初速 (発射時の power を引き継ぐ) */
     private double followPower = 1.0D;
 
@@ -27,7 +29,7 @@ public class BambooArrowEntity extends AbstractArrow {
     }
 
     public BambooArrowEntity(EntityType<? extends BambooArrowEntity> type, LivingEntity shooter, Level level) {
-        super(type, shooter, level);
+        super(type, shooter, level, new ItemStack(BambooItems.BAMBOO_ARROW.get()), null);
     }
 
     public BambooArrowEntity(Level level, LivingEntity shooter) {
@@ -60,7 +62,7 @@ public class BambooArrowEntity extends AbstractArrow {
             follow.setCritArrow(this.isCritArrow());
             follow.setBaseDamage(this.getBaseDamage() * 0.7D);
             follow.setKnockback(this.getKnockback());
-            follow.setSecondsOnFire(this.isOnFire() ? 100 : 0);
+            follow.setRemainingFireTicks(this.isOnFire() ? 100 : 0);
             follow.pickup = Pickup.ALLOWED;
             follow.setNoGravity(this.isNoGravity());
             follow.setBarrage(0, this.followPower);
@@ -80,6 +82,27 @@ public class BambooArrowEntity extends AbstractArrow {
     protected void doPostHurtEffects(LivingEntity target) {
         super.doPostHurtEffects(target);
         target.invulnerableTime = 0;
+        if (this.knockback > 0) {
+            double d0 = Math.max(0.0, 1.0 - target.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE));
+            net.minecraft.world.phys.Vec3 vec3 = this.getDeltaMovement().multiply(1.0, 0.0, 1.0).normalize()
+                    .scale(this.knockback * 0.6 * d0);
+            if (vec3.lengthSqr() > 0.0) {
+                target.push(vec3.x, 0.1, vec3.z);
+            }
+        }
+    }
+
+    public int getKnockback() {
+        return this.knockback;
+    }
+
+    public void setKnockback(int knockback) {
+        this.knockback = knockback;
+    }
+
+    @Override
+    protected ItemStack getDefaultPickupItem() {
+        return new ItemStack(BambooItems.BAMBOO_ARROW.get());
     }
 
     @Override

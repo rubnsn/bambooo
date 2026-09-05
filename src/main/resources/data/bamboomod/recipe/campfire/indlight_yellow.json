@@ -1,0 +1,25 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "",
+  "pattern": [
+    "XXX",
+    "XYX",
+    "XXX"
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:yellow_stained_glass"
+    },
+    "Y": {
+      "item": "minecraft:glowstone_dust"
+    }
+  },
+  "result": {
+    "count": 12,
+    "id": "bamboomod:indlight_yellow"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

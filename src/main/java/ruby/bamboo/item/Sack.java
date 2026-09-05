@@ -3,7 +3,9 @@ package ruby.bamboo.item;
 import java.util.List;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -15,9 +17,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import ruby.bamboo.gui.SackMenu;
 
 /**
@@ -47,12 +50,20 @@ public class Sack extends Item {
         super(properties.stacksTo(1));
     }
 
-    // ===== NBT ヘルパー =====
+    // ===== NBT ヘルパー (1.21.1: DataComponents.CUSTOM_DATA 経由) =====
 
-    /** 内容物タグを取得 (無ければ empty。getTagElement は null を返す事があるため null 安全化) */
+    /** ルートタグのコピーを取得 (CustomData が無ければ empty) */
+    private static CompoundTag rootTag(ItemStack stack) {
+        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+    }
+
+    /** 内容物タグを取得 (無ければ empty。返値はデタッチされたコピーのため読取専用) */
     private static CompoundTag getContentTag(ItemStack stack) {
-        CompoundTag tag = stack.getTagElement(TAG_CONTENT);
-        return tag == null ? new CompoundTag() : tag;
+        CompoundTag root = rootTag(stack);
+        if (!root.contains(TAG_CONTENT, Tag.TAG_COMPOUND)) {
+            return new CompoundTag();
+        }
+        return root.getCompound(TAG_CONTENT);
     }
 
     /** 内容物があるか */
@@ -91,37 +102,34 @@ public class Sack extends Item {
 
     /** 内容物アイテムを設定 (BlockItem のみ。呼び出し側で isStorage 判定済み前提) */
     public static void setContent(ItemStack sackStack, Item contentItem) {
-        CompoundTag tag = stackTag(sackStack);
+        CompoundTag root = rootTag(sackStack);
         CompoundTag content = new CompoundTag();
         content.putString("id", net.minecraft.core.registries.BuiltInRegistries.ITEM
                 .getKey(contentItem).toString());
         content.putInt("count", 0);
-        tag.put(TAG_CONTENT, content);
+        root.put(TAG_CONTENT, content);
+        sackStack.set(DataComponents.CUSTOM_DATA, CustomData.of(root));
     }
 
     /** 収容数を設定 (0 になったら内容タグごと消す) */
     public static void setCount(ItemStack sackStack, int count) {
-        CompoundTag tag = getContentTag(sackStack);
-        if (tag.isEmpty()) {
+        CompoundTag root = rootTag(sackStack);
+        if (!root.contains(TAG_CONTENT, Tag.TAG_COMPOUND)) {
             return;
         }
         if (count <= 0) {
-            sackStack.removeTagKey(TAG_CONTENT);
-            if (sackStack.getTag() != null && sackStack.getTag().isEmpty()) {
-                sackStack.setTag(null);
+            root.remove(TAG_CONTENT);
+            if (root.isEmpty()) {
+                sackStack.remove(DataComponents.CUSTOM_DATA);
+            } else {
+                sackStack.set(DataComponents.CUSTOM_DATA, CustomData.of(root));
             }
         } else {
-            tag.putInt("count", Math.min(count, CAPACITY));
+            CompoundTag content = root.getCompound(TAG_CONTENT).copy();
+            content.putInt("count", Math.min(count, CAPACITY));
+            root.put(TAG_CONTENT, content);
+            sackStack.set(DataComponents.CUSTOM_DATA, CustomData.of(root));
         }
-    }
-
-    private static CompoundTag stackTag(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
-        if (tag == null) {
-            tag = new CompoundTag();
-            stack.setTag(tag);
-        }
-        return tag;
     }
 
     private static Item findItem(String id) {
@@ -156,7 +164,7 @@ public class Sack extends Item {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         if (hasContent(stack)) {
             tooltip.add(Component.translatable("tooltip.bamboomod.sack.count", getCount(stack), CAPACITY)
                     .withStyle(ChatFormatting.GRAY));

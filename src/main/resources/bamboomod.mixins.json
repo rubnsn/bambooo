@@ -2,7 +2,7 @@
   "required": true,
   "package": "ruby.bamboo.mixin",
   "refmap": "bamboomod.refmap.json",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "mixins": [
     "level.LevelMixin"
   ],

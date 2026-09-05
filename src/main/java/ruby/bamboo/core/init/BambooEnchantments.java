@@ -1,65 +1,56 @@
 package ruby.bamboo.core.init;
 
-import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.EnchantedBookItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
-import net.minecraftforge.registries.RegistryObject;
 import ruby.bamboo.BambooMod;
-import ruby.bamboo.enchant.CriticalThrow;
-import ruby.bamboo.enchant.DoubleThrow;
-import ruby.bamboo.enchant.EconomyBracelet;
-import ruby.bamboo.enchant.FlameThrow;
-import ruby.bamboo.enchant.InfinityThrow;
-import ruby.bamboo.enchant.Pickpocket;
-import ruby.bamboo.enchant.PoisonThrow;
-import ruby.bamboo.enchant.PowerThrow;
-import ruby.bamboo.enchant.QuickThrow;
-import ruby.bamboo.enchant.SnipeThrow;
-import ruby.bamboo.enchant.TripleThrow;
-import ruby.bamboo.enchant.UnbreakingBracelet;
-import ruby.bamboo.item.BraceletEnchantmentCategory;
 
 /**
- * 腕輪エンチャント12種登録 (HiganEnchant 13種の 1.20.1 移植、flash_jump は腕輪所持能力へ移行)。
+ * 腕輪エンチャント12種 (HiganEnchant 13種の移植。flash_jump は腕輪所持能力へ移行し対象外)。
+ * <p>
+ * 1.21 では Enchantment は datapack レジストリ化したため、コード登録
+ * ({@code DeferredRegister<Enchantment>} / {@code Enchantment(Rarity, EnchantmentCategory, EquipmentSlot...)}
+ * / {@code EnchantmentCategory.create} / 旧形 {@code EnchantmentInstance(Enchantment, int)}) は使えない。
+ * 実体は {@code data/bamboomod/enchantment/*.json} 12種が SSOT であり、本クラスは
+ * {@link ResourceKey} 定数 + クリエタブ用エンチャ本追加 + 呼び出し側共通ヘルパーのみを持つ。
+ * <p>
+ * 旧 {@code enchant/} 配下のサブクラス (EnchantmentBase + 12種) は他ファイルから参照が無かったため削除済み。
+ * 旧 {@code getFullname} の {@code "_ex"} 表示カスタムは 1.21 では再現不可のため廃止
+ * (lang の {@code _ex} エントリは harmless のため残置)。
  */
 public final class BambooEnchantments {
 
-    // BambooMod.ENCHANTMENTS が SSOT。旧 wt では独自 DeferredRegister を作成していたが
-    // bus 未登録でエンチャントが無登録になるため SSOT へエイリアスする。
-    public static final net.minecraftforge.registries.DeferredRegister<Enchantment> ENCHANTMENTS = BambooMod.ENCHANTMENTS;
+    public static final ResourceKey<Enchantment> QUICK_THROW = key("quick_throw");
+    public static final ResourceKey<Enchantment> POWER_THROW = key("power_throw");
+    public static final ResourceKey<Enchantment> CRITICAL_THROW = key("critical_throw");
+    public static final ResourceKey<Enchantment> POISON_THROW = key("poison_throw");
+    public static final ResourceKey<Enchantment> SNIPE_THROW = key("snipe_throw");
+    public static final ResourceKey<Enchantment> ECONOMY_BRACELET = key("economy_bracelet");
+    public static final ResourceKey<Enchantment> UNBREAKING_BRACELET = key("unbreaking_bracelet");
+    public static final ResourceKey<Enchantment> PICKPOCKET = key("pickpocket");
+    public static final ResourceKey<Enchantment> DOUBLE_THROW = key("double_throw");
+    public static final ResourceKey<Enchantment> TRIPLE_THROW = key("triple_throw");
+    public static final ResourceKey<Enchantment> FLAME_THROW = key("flame_throw");
+    public static final ResourceKey<Enchantment> INFINITY_THROW = key("infinity_throw");
 
-    public static final RegistryObject<Enchantment> QUICK_THROW = register("quick_throw",
-            () -> new QuickThrow(Enchantment.Rarity.COMMON, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
-    public static final RegistryObject<Enchantment> POWER_THROW = register("power_throw",
-            () -> new PowerThrow(Enchantment.Rarity.COMMON, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
-    public static final RegistryObject<Enchantment> CRITICAL_THROW = register("critical_throw",
-            () -> new CriticalThrow(Enchantment.Rarity.COMMON, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
-    public static final RegistryObject<Enchantment> POISON_THROW = register("poison_throw",
-            () -> new PoisonThrow(Enchantment.Rarity.COMMON, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
-    public static final RegistryObject<Enchantment> SNIPE_THROW = register("snipe_throw",
-            () -> new SnipeThrow(Enchantment.Rarity.COMMON, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
-    public static final RegistryObject<Enchantment> ECONOMY_BRACELET = register("economy_bracelet",
-            () -> new EconomyBracelet(Enchantment.Rarity.UNCOMMON, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
-    public static final RegistryObject<Enchantment> UNBREAKING_BRACELET = register("unbreaking_bracelet",
-            () -> new UnbreakingBracelet(Enchantment.Rarity.UNCOMMON, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
-    public static final RegistryObject<Enchantment> PICKPOCKET = register("pickpocket",
-            () -> new Pickpocket(Enchantment.Rarity.UNCOMMON, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
-    public static final RegistryObject<Enchantment> DOUBLE_THROW = register("double_throw",
-            () -> new DoubleThrow(Enchantment.Rarity.RARE, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
-    public static final RegistryObject<Enchantment> TRIPLE_THROW = register("triple_throw",
-            () -> new TripleThrow(Enchantment.Rarity.RARE, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
-    public static final RegistryObject<Enchantment> FLAME_THROW = register("flame_throw",
-            () -> new FlameThrow(Enchantment.Rarity.RARE, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
-    public static final RegistryObject<Enchantment> INFINITY_THROW = register("infinity_throw",
-            () -> new InfinityThrow(Enchantment.Rarity.RARE, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
+    private static ResourceKey<Enchantment> key(String name) {
+        return ResourceKey.create(Registries.ENCHANTMENT,
+                ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, name));
+    }
 
-    private static RegistryObject<Enchantment> register(String name, java.util.function.Supplier<? extends Enchantment> sup) {
-        return ENCHANTMENTS.register(name, sup);
+    private BambooEnchantments() {
     }
 
     public static void init() {
-        // クリエタブへエンチャ本を追加（最大レベルのみ、調整用。バニラの StoredEnchantments NBT流用）
+        // クリエタブへエンチャ本を追加（最大レベルのみ、調整用）。
+        // Holder 解決には RegistryAccess が要るため、タブ描画時まで遅延させる Supplier で登録する。
         addBook(QUICK_THROW);
         addBook(POWER_THROW);
         addBook(CRITICAL_THROW);
@@ -74,8 +65,43 @@ public final class BambooEnchantments {
         addBook(INFINITY_THROW);
     }
 
-    private static void addBook(RegistryObject<Enchantment> ro) {
-        ruby.bamboo.core.init.BambooItems.addCreativeStack(
-                () -> EnchantedBookItem.createForEnchantment(new EnchantmentInstance(ro.get(), ro.get().getMaxLevel())));
+    private static void addBook(ResourceKey<Enchantment> key) {
+        BambooItems.addCreativeStack(() -> createBook(key));
+    }
+
+    /**
+     * タブ描画時に実行される遅延解決。サーバ不在時 (マルチプレイのクライアント等) は
+     * Holder が取れないため {@link ItemStack#EMPTY} を返し、BambooMod 側で skip させる。
+     */
+    private static ItemStack createBook(ResourceKey<Enchantment> key) {
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) {
+            return ItemStack.EMPTY;
+        }
+        Holder<Enchantment> holder = server.registryAccess()
+                .lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key);
+        return EnchantedBookItem.createForEnchantment(new EnchantmentInstance(holder, holder.value().getMaxLevel()));
+    }
+
+    /**
+     * 共通ヘルパー: 指定エンチャントのレベルを ItemStack から取得する。
+     * <p>
+     * 呼び出し例 (NinjaBraceletItem 等):
+     * <pre>{@code
+     * int lv = BambooEnchantments.getLevel(level.registryAccess(), BambooEnchantments.POWER_THROW, stack);
+     * }</pre>
+     * 呼び出し例 (ServerLevel を持つイベントハンドラ):
+     * <pre>{@code
+     * int lv = BambooEnchantments.getLevel(serverLevel.registryAccess(), BambooEnchantments.PICKPOCKET, stack);
+     * }</pre>
+     *
+     * @param provider {@code level.registryAccess()} 等 (HolderLookup.Provider)
+     * @param key      BambooEnchantments の ResourceKey 定数12種のいずれか
+     * @param stack    調べる ItemStack
+     * @return エンチャントレベル (無ければ 0)。key 未登録時は例外 (mod 内包 datapack 由来のため通常起きない)
+     */
+    public static int getLevel(HolderLookup.Provider provider, ResourceKey<Enchantment> key, ItemStack stack) {
+        Holder<Enchantment> holder = provider.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key);
+        return EnchantmentHelper.getItemEnchantmentLevel(holder, stack);
     }
 }

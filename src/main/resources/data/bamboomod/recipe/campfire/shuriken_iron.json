@@ -1,0 +1,22 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "",
+  "pattern": [
+    " S ",
+    "S S",
+    " S "
+  ],
+  "key": {
+    "S": {
+      "tag": "c:ingots/iron"
+    }
+  },
+  "result": {
+    "count": 16,
+    "id": "bamboomod:shuriken_iron"
+  },
+  "experience": 0.5,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

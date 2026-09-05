@@ -1,0 +1,24 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "equipment",
+  "group": "",
+  "pattern": [
+    " BS",
+    "B S",
+    " BS"
+  ],
+  "key": {
+    "B": {
+      "tag": "c:bamboo"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
+  },
+  "result": {
+    "id": "bamboomod:bamboobow"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

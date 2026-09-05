@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "XX"
+  ],
+  "key": {
+    "X": {
+      "item": "bamboomod:tatami_non_border"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "bamboomod:tatami"
+  }
+}

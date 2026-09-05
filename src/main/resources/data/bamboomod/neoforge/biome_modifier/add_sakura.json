@@ -1,0 +1,22 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#minecraft:is_forest",
+      {
+        "type": "neoforge:not",
+        "value": "#c:is_cold"
+      },
+      {
+        "type": "neoforge:not",
+        "value": "#c:is_snowy"
+      }
+    ]
+  },
+  "features": [
+    "bamboomod:sakura_placed",
+    "bamboomod:sakura_big_placed"
+  ],
+  "step": "vegetal_decoration"
+}

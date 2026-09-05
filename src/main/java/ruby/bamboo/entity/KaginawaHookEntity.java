@@ -131,13 +131,13 @@ public class KaginawaHookEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData() {
-        this.entityData.define(DATA_ANCHORED, false);
-        this.entityData.define(DATA_ROPE_LENGTH, 12.0F);
-        this.entityData.define(DATA_ANCHOR_X, 0.0F);
-        this.entityData.define(DATA_ANCHOR_Y, 0.0F);
-        this.entityData.define(DATA_ANCHOR_Z, 0.0F);
-        this.entityData.define(DATA_OWNER_ID, -1);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(DATA_ANCHORED, false);
+        builder.define(DATA_ROPE_LENGTH, 12.0F);
+        builder.define(DATA_ANCHOR_X, 0.0F);
+        builder.define(DATA_ANCHOR_Y, 0.0F);
+        builder.define(DATA_ANCHOR_Z, 0.0F);
+        builder.define(DATA_OWNER_ID, -1);
     }
 
     public boolean isAnchored() {
@@ -533,13 +533,13 @@ public class KaginawaHookEntity extends Entity {
     }
 
     @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket() {
-        return super.getAddEntityPacket();
+    public Packet<ClientGamePacketListener> getAddEntityPacket(net.minecraft.server.level.ServerEntity entity) {
+        return super.getAddEntityPacket(entity);
     }
 
     @Override
-    public void onRemovedFromWorld() {
-        super.onRemovedFromWorld();
+    public void onRemovedFromLevel() {
+        super.onRemovedFromLevel();
         if (!level().isClientSide) {
             KaginawaStateManager.removeHook(this);
         }

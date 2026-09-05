@@ -1,0 +1,24 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "",
+  "pattern": [
+    "XYX",
+    "XYX"
+  ],
+  "key": {
+    "X": {
+      "item": "bamboomod:bamboo"
+    },
+    "Y": {
+      "item": "bamboomod:bamboo_pane"
+    }
+  },
+  "result": {
+    "count": 8,
+    "id": "bamboomod:bamboo_pane2"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

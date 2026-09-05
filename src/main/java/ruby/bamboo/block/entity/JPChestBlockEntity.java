@@ -2,6 +2,7 @@ package ruby.bamboo.block.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -13,11 +14,6 @@ import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.wrapper.InvWrapper;
 
 /**
  * 和風チェストの BlockEntity (旧 TileJPChest)。
@@ -25,7 +21,7 @@ import net.minecraftforge.items.wrapper.InvWrapper;
  * 54 スロット (9x6)、スタック上限はバニラ通り 64。
  * 旧版はバニラ ContainerChest を使用しており、GUI もバニラ {@link ChestMenu#sixRows} を流用するため
  * 独自 MenuType/Screen は不要。
- * ホッパー連携用に Forge ITEM_HANDLER capability (InvWrapper) を公開する。
+ * ホッパー連携は NeoForge BlockCapability へ移行 (BambooCapabilities.registerCaps で InvWrapper を登録)。
  */
 public class JPChestBlockEntity extends BaseContainerBlockEntity {
 
@@ -34,13 +30,21 @@ public class JPChestBlockEntity extends BaseContainerBlockEntity {
 
     private NonNullList<ItemStack> items = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
 
-    private final LazyOptional<IItemHandler> itemHandler = LazyOptional.of(() -> new InvWrapper(this));
-
     public JPChestBlockEntity(BlockPos pos, BlockState state) {
         super(ruby.bamboo.core.init.BambooBlockEntities.JP_CHEST_BE.get(), pos, state);
     }
 
     // ===== Container 実装 =====
+
+    @Override
+    protected NonNullList<ItemStack> getItems() {
+        return this.items;
+    }
+
+    @Override
+    protected void setItems(NonNullList<ItemStack> items) {
+        this.items = items;
+    }
 
     @Override
     public int getContainerSize() {
@@ -109,31 +113,19 @@ public class JPChestBlockEntity extends BaseContainerBlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        ContainerHelper.saveAllItems(tag, this.items);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ContainerHelper.saveAllItems(tag, this.items, registries);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         this.items = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(tag, this.items);
+        ContainerHelper.loadAllItems(tag, this.items, registries);
     }
 
-    // ===== Forge ITEM_HANDLER capability (ホッパー/パイプ連携用) =====
-
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-        if (cap == ForgeCapabilities.ITEM_HANDLER) {
-            return this.itemHandler.cast();
-        }
-        return super.getCapability(cap, side);
-    }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        this.itemHandler.invalidate();
-    }
+    // ===== NeoForge ITEM_HANDLER capability (ホッパー/パイプ連携用) =====
+    // 旧 getCapability/invalidateCaps (ForgeCapabilities/LazyOptional) は削除。
+    // 登録は BambooCapabilities.registerCaps (RegisterCapabilitiesEvent) で行う。
 }

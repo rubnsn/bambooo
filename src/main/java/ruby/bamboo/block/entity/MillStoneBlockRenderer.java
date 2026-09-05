@@ -32,7 +32,7 @@ import ruby.bamboo.BambooMod;
  */
 public class MillStoneBlockRenderer implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<MillStoneBlockEntity> {
 
-    public static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID, "textures/entity/millstone.png");
+    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/entity/millstone.png");
 
     /** 下半分 (回転する石車)。旧 bottm: texOffs(0,25), addBox(-8,0,-8,16,8,16), mirror */
     private static final ModelPart BOTTOM = bake(

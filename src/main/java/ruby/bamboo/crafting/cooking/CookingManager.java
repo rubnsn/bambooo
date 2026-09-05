@@ -64,9 +64,10 @@ public final class CookingManager {
 
         // 素材1個だけ → バニラ精錬レシピ
         if (itemCount == 1 && single != null) {
-            var smelting = level.getRecipeManager().getRecipeFor(RecipeType.SMELTING, new net.minecraft.world.SimpleContainer(single), level);
+            var smelting = level.getRecipeManager().getRecipeFor(RecipeType.SMELTING,
+                    new net.minecraft.world.item.crafting.SingleRecipeInput(single), level);
             if (smelting.isPresent()) {
-                ItemStack result = smelting.get().getResultItem(level.registryAccess());
+                ItemStack result = smelting.get().value().getResultItem(level.registryAccess());
                 if (!result.isEmpty()) {
                     return new CookingRecipe(result.copy(), new ItemStack[] { single }, 200, 200);
                 }

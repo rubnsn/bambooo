@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "XXX"
+  ],
+  "key": {
+    "X": {
+      "item": "bamboomod:namako"
+    }
+  },
+  "result": {
+    "count": 6,
+    "id": "bamboomod:namako_slab"
+  }
+}

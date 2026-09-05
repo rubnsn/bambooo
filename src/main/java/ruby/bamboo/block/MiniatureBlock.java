@@ -4,16 +4,18 @@ import java.util.List;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -70,6 +72,14 @@ import ruby.bamboo.core.init.BambooBlocks;
  * アイテム/ブロック初期表示は旧仕様通り item/miniature.png を使用 (sakura item/generated)。
  */
 public class MiniatureBlock extends BaseEntityBlock {
+
+    public static final com.mojang.serialization.MapCodec<MiniatureBlock> CODEC =
+            com.mojang.serialization.MapCodec.unit(MiniatureBlock::new);
+
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
 
     public static final DirectionProperty FACING = DirectionalBlock.FACING;
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
@@ -132,8 +142,9 @@ public class MiniatureBlock extends BaseEntityBlock {
         // BlockEntityTag の有無で ENABLED 判定 (setPlacedBy で最終確定)
         boolean hasCells = false;
         ItemStack stack = context.getItemInHand();
-        if (stack.hasTag() && stack.getTag().contains(BLOCK_ENTITY_TAG)) {
-            CompoundTag bet = stack.getTag().getCompound(BLOCK_ENTITY_TAG);
+        CompoundTag placedTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (placedTag.contains(BLOCK_ENTITY_TAG)) {
+            CompoundTag bet = placedTag.getCompound(BLOCK_ENTITY_TAG);
             if (bet.contains(MiniatureBlockEntity.TAG_CELLS) && bet.getList(MiniatureBlockEntity.TAG_CELLS, 10).size() > 0) {
                 hasCells = true;
             }
@@ -156,8 +167,9 @@ public class MiniatureBlock extends BaseEntityBlock {
             int size = MiniatureBlockEntity.getSizeFromStack(stack);
             be.setSize(size);
             // Cells 復元 (BlockEntityTag)
-            if (stack.hasTag() && stack.getTag().contains(BLOCK_ENTITY_TAG)) {
-                CompoundTag bet = stack.getTag().getCompound(BLOCK_ENTITY_TAG);
+            CompoundTag stackTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+            if (stackTag.contains(BLOCK_ENTITY_TAG)) {
+                CompoundTag bet = stackTag.getCompound(BLOCK_ENTITY_TAG);
                 // Size は既に適用済みだが、Cells を含む完全な bet を読み込む
                 // setSizeでクリアされているため、bet の Cells を上書きする
                 be.readSyncData(bet);
@@ -287,25 +299,23 @@ public class MiniatureBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!(level.getBlockEntity(pos) instanceof MiniatureBlockEntity be)) {
-            super.playerWillDestroy(level, pos, state, player);
-            return;
+            return super.playerWillDestroy(level, pos, state, player);
         }
         if (be.isEmpty()) {
             // 空なら通常の外枠破壊 (ドロップは BlockEntityTag 無し)
-            super.playerWillDestroy(level, pos, state, player);
-            return;
+            return super.playerWillDestroy(level, pos, state, player);
         }
         // 中身ありは外枠を絶対に壊さない (BreakEvent でキャンセル)。ここでは内部をバニラ準拠で破壊。
         if (level.isClientSide) {
             // クライアントではサーバ同期に任せる (外枠の予測削除を抑止)
-            return;
+            return state;
         }
         BlockHitResult hit = getHitForPlayer(player, level, pos);
         if (hit == null || !hit.getBlockPos().equals(pos)) {
             // ヒット不明なら内部破壊せず外枠も壊さない (BreakEvent でキャンセルされる)
-            return;
+            return state;
         }
         BlockPos targetPos = calcHitPos(pos, hit.getLocation(), hit.getDirection().getOpposite(), be.getSize());
         BlockState inner = be.getCell(targetPos);
@@ -315,13 +325,14 @@ public class MiniatureBlock extends BaseEntityBlock {
                 targetPos = hitPos;
                 inner = be.getCell(targetPos);
             } else {
-                return;
+                return state;
             }
         }
         boolean isCreative = player.isCreative();
         // サバイバルならバニラ準拠のドロップ＆ツール耐久消費、クリエならドロップなし。
         breakInnerForAttack(be, targetPos, level, pos, player, !isCreative);
         // 外枠の playerWillDestroy(setBlock AIR) は呼ばない。BreakEvent で外枠破壊はキャンセルされる。
+        return state;
     }
 
     private BlockHitResult getHitForPlayer(Player player, Level level, BlockPos pos) {
@@ -410,7 +421,7 @@ public class MiniatureBlock extends BaseEntityBlock {
             // ツール耐久 (バニラ準拠: 正しいツールでなくても消耗するものは消耗)
             if (!player.isCreative() && !held.isEmpty() && held.isDamageableItem()) {
                 try {
-                    held.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(net.minecraft.world.InteractionHand.MAIN_HAND));
+                    held.hurtAndBreak(1, player, net.minecraft.world.entity.EquipmentSlot.MAINHAND);
                 } catch (Exception e) {}
             }
             // サウンド/パーティクル — ミニチュア内では通常パーティクル(2001)はサイズに対して大きすぎるため抑止。
@@ -492,9 +503,10 @@ public class MiniatureBlock extends BaseEntityBlock {
                 CompoundTag bet = new CompoundTag();
                 mini.writeSyncData(bet);
                 // Size はトップにも書く (クリエタブ互換)
-                CompoundTag tag = stack.getOrCreateTag();
+                CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
                 tag.putInt(MiniatureBlockEntity.TAG_SIZE, mini.getSize());
                 tag.put(BLOCK_ENTITY_TAG, bet);
+                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
                 if (list.isEmpty()) {
                     list.add(stack);
                 }
@@ -504,9 +516,10 @@ public class MiniatureBlock extends BaseEntityBlock {
                 if (!list.isEmpty()) {
                     ItemStack stack = list.get(0);
                     if (be instanceof MiniatureBlockEntity mini2) {
-                        CompoundTag tag = stack.getOrCreateTag();
+                        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
                         if (!tag.contains(MiniatureBlockEntity.TAG_SIZE)) {
                             tag.putInt(MiniatureBlockEntity.TAG_SIZE, mini2.getSize());
+                            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
                         }
                     }
                 }
@@ -517,13 +530,14 @@ public class MiniatureBlock extends BaseEntityBlock {
             ItemStack stack = new ItemStack(this);
             BlockEntity be2 = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
             if (be2 instanceof MiniatureBlockEntity mini) {
-                CompoundTag tag = stack.getOrCreateTag();
+                CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
                 tag.putInt(MiniatureBlockEntity.TAG_SIZE, mini.getSize());
                 if (!mini.isEmpty()) {
                     CompoundTag bet = new CompoundTag();
                     mini.writeSyncData(bet);
                     tag.put(BLOCK_ENTITY_TAG, bet);
                 }
+                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
             }
             list.add(stack);
         }
@@ -531,17 +545,18 @@ public class MiniatureBlock extends BaseEntityBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
         // ピックブロック: ミニチュア自身を返す (中身保持)。内部セルを指していればそのブロックを返す仕様もあるが、簡易ではミニチュアを返す。
         ItemStack stack = new ItemStack(this);
         if (level.getBlockEntity(pos) instanceof MiniatureBlockEntity be) {
-            CompoundTag tag = stack.getOrCreateTag();
+            CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
             tag.putInt(MiniatureBlockEntity.TAG_SIZE, be.getSize());
             if (!be.isEmpty()) {
                 CompoundTag bet = new CompoundTag();
                 be.writeSyncData(bet);
                 tag.put(BLOCK_ENTITY_TAG, bet);
             }
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
         }
         return stack;
     }
@@ -549,25 +564,26 @@ public class MiniatureBlock extends BaseEntityBlock {
     // ===== Interaction =====
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public net.minecraft.world.ItemInteractionResult useItemOn(net.minecraft.world.item.ItemStack useStack, BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hit) {
         if (level.isClientSide) {
-            return InteractionResult.SUCCESS;
+            return ItemInteractionResult.SUCCESS;
         }
         if (!(level.getBlockEntity(pos) instanceof MiniatureBlockEntity be)) {
-            return InteractionResult.PASS;
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         ItemStack held = player.getItemInHand(hand);
         // 0) クワ右クリックで本体回収 (唯一の回収手段。中身ありでは外枠は絶対に壊れないため)
         // 空でも回収可。クリエは消費なし。
         if (!held.isEmpty() && held.getItem() instanceof net.minecraft.world.item.HoeItem) {
             ItemStack stack = new ItemStack(this);
-            net.minecraft.nbt.CompoundTag tag = stack.getOrCreateTag();
+            CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
             tag.putInt(MiniatureBlockEntity.TAG_SIZE, be.getSize());
             if (!be.isEmpty()) {
                 net.minecraft.nbt.CompoundTag bet = new net.minecraft.nbt.CompoundTag();
                 be.writeSyncData(bet);
                 tag.put(BLOCK_ENTITY_TAG, bet);
             }
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
             // クリエ以外は手持ちを減らさない (クワは消耗しない)
             if (!player.addItem(stack)) {
                 Block.popResource(level, pos, stack);
@@ -579,7 +595,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                 ALLOW_HOE_REMOVAL.set(false);
             }
             level.playSound(null, pos, net.minecraft.sounds.SoundEvents.ITEM_PICKUP, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
-            return InteractionResult.SUCCESS;
+            return ItemInteractionResult.SUCCESS;
         }
         int size = be.getSize();
 
@@ -590,11 +606,12 @@ public class MiniatureBlock extends BaseEntityBlock {
         if (!held.isEmpty() && held.is(BambooBlocks.MINIATURE.get().asItem())) {
             if (!be.isEmpty()) {
                 ItemStack copy = new ItemStack(BambooBlocks.MINIATURE.get());
-                CompoundTag tag = copy.getOrCreateTag();
+                CompoundTag tag = copy.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
                 tag.putInt(MiniatureBlockEntity.TAG_SIZE, be.getSize());
                 CompoundTag bet = new CompoundTag();
                 be.writeSyncData(bet);
                 tag.put(BLOCK_ENTITY_TAG, bet);
+                copy.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
                 // スプリット: クリエ以外は1個消費してコピーをドロップ
                 if (!player.getAbilities().instabuild) {
                     held.shrink(1);
@@ -604,7 +621,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                     player.drop(copy, false);
                 }
             }
-            return InteractionResult.SUCCESS;
+            return ItemInteractionResult.SUCCESS;
         }
 
         // 2) インタラクショントグル (非TEかつ許可リスト) — 設置/除去より優先
@@ -656,7 +673,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                 be.rebuildShapeCache();
                 level.sendBlockUpdated(pos, state, state, 3);
                 // ドア等の開閉音はバニラの DoorBlock.use が level.playSound するため、ここでは省略
-                return InteractionResult.SUCCESS;
+                return ItemInteractionResult.SUCCESS;
             }
         }
 
@@ -671,7 +688,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                     }
                     be.rebuildShapeCache();
                     level.sendBlockUpdated(pos, state, state, 3);
-                    return InteractionResult.SUCCESS;
+                    return ItemInteractionResult.SUCCESS;
                 }
                 // 成長しなかった場合はスルーして通常処理へ (PASS)
             }
@@ -686,7 +703,7 @@ public class MiniatureBlock extends BaseEntityBlock {
         //  - 掬う: FluidState.isEmpty() で判定し該当セルを AIR へ、waterlogged は false へ。
         // で完結する。アニメ/height は Renderer 側で LiquidBlockRenderer 相当に計算するためここでは触らない。
         if (!held.isEmpty() && held.getItem() instanceof BucketItem bucketItem) {
-            Fluid fluid = bucketItem.getFluid();
+            Fluid fluid = bucketItem.content;
             boolean isEmpty = fluid == Fluids.EMPTY;
             BlockState tgtState = be.getCell(targetPos);
             BlockState hitState = be.isInRange(hitPos.getX(), hitPos.getY(), hitPos.getZ()) ? be.getCell(hitPos) : null;
@@ -717,7 +734,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                         level.sendBlockUpdated(pos, state, state, 3);
                         level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_FILL, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
                         handleBucketExchange(player, hand, held, new ItemStack(Items.WATER_BUCKET));
-                        return InteractionResult.SUCCESS;
+                        return ItemInteractionResult.SUCCESS;
                     }
                     FluidState fs = pickupState.getFluidState();
                     if (!fs.isEmpty() || pickupState.is(Blocks.WATER) || pickupState.is(Blocks.LAVA)) {
@@ -735,7 +752,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                         be.rebuildShapeCache();
                         level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_FILL, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
                         handleBucketExchange(player, hand, held, new ItemStack(isLava ? Items.LAVA_BUCKET : Items.WATER_BUCKET));
-                        return InteractionResult.SUCCESS;
+                        return ItemInteractionResult.SUCCESS;
                     }
                 }
             } else {
@@ -749,7 +766,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                         level.sendBlockUpdated(pos, state, state, 3);
                         level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
                         handleBucketExchange(player, hand, held, new ItemStack(Items.BUCKET));
-                        return InteractionResult.SUCCESS;
+                        return ItemInteractionResult.SUCCESS;
                     }
                     if (hitState != null && hitState.hasProperty(BlockStateProperties.WATERLOGGED) && !hitState.getValue(BlockStateProperties.WATERLOGGED)) {
                         be.setCell(hitPos, hitState.setValue(BlockStateProperties.WATERLOGGED, true));
@@ -758,7 +775,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                         level.sendBlockUpdated(pos, state, state, 3);
                         level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
                         handleBucketExchange(player, hand, held, new ItemStack(Items.BUCKET));
-                        return InteractionResult.SUCCESS;
+                        return ItemInteractionResult.SUCCESS;
                     }
                 }
                 BlockPos placePos = null;
@@ -784,10 +801,10 @@ public class MiniatureBlock extends BaseEntityBlock {
                     }
                     level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
                     handleBucketExchange(player, hand, held, new ItemStack(Items.BUCKET));
-                    return InteractionResult.SUCCESS;
+                    return ItemInteractionResult.SUCCESS;
                 }
                 // 空セル無し & waterlogged 不可 → 失敗
-                return InteractionResult.FAIL;
+                return ItemInteractionResult.FAIL;
             }
         }
 
@@ -823,7 +840,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                 if (!MiniatureWhitelist.canPlace(toPlace)) {
                     // 面解決前の default が許可される場合の救済: default も不可なら FAIL
                     if (!MiniatureWhitelist.canPlace(block.defaultBlockState())) {
-                        return InteractionResult.FAIL;
+                        return ItemInteractionResult.FAIL;
                     } else {
                         // whitelist側では FACING違いは同一ブロック扱いで許可されるため、toPlace を通す
                     }
@@ -844,10 +861,10 @@ public class MiniatureBlock extends BaseEntityBlock {
                         } else if (!toPlace.canSurvive(fake, placePos)) {
                             BlockState fixed = findValidPlacementState(block, toPlace, fake, placePos, preferred);
                             if (fixed != null) toPlace = fixed;
-                            else return InteractionResult.FAIL;
+                            else return ItemInteractionResult.FAIL;
                         }
                         // 壁付けが見つからず床も不可なら FAIL は上記で処理、見つかった場合はそのまま
-                        if (!toPlace.canSurvive(fake, placePos)) return InteractionResult.FAIL;
+                        if (!toPlace.canSurvive(fake, placePos)) return ItemInteractionResult.FAIL;
                     } else {
                         if (!toPlace.canSurvive(fake, placePos)) {
                             BlockState fixed = findValidPlacementState(block, toPlace, fake, placePos, preferred);
@@ -858,7 +875,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                                 if (wallFixed != null) {
                                     toPlace = wallFixed;
                                 } else {
-                                    return InteractionResult.FAIL;
+                                    return ItemInteractionResult.FAIL;
                                 }
                             }
                         }
@@ -871,7 +888,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                         BlockPos upperPos = placePos.above();
                         if (!be.isInRange(upperPos.getX(), upperPos.getY(), upperPos.getZ())
                                 || !be.getCell(upperPos).isAir()) {
-                            return InteractionResult.FAIL;
+                            return ItemInteractionResult.FAIL;
                         }
                         BlockState upperState = toPlace.setValue(BlockStateProperties.DOUBLE_BLOCK_HALF,
                                 DoubleBlockHalf.UPPER);
@@ -882,7 +899,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                         boolean upperOk = canSurviveInside(upperState, upperPos, be, level, pos);
                         if (!upperOk) {
                             be.setCell(placePos, prevLower);
-                            return InteractionResult.FAIL;
+                            return ItemInteractionResult.FAIL;
                         }
                         // 上段を配置 (下段は既に置かれている)
                         if (be.setCell(upperPos, upperState)) {
@@ -898,14 +915,14 @@ public class MiniatureBlock extends BaseEntityBlock {
                             } else {
                                 level.sendBlockUpdated(pos, state, state, 3);
                             }
-                            return InteractionResult.SUCCESS;
+                            return ItemInteractionResult.SUCCESS;
                         } else {
                             be.setCell(placePos, prevLower);
-                            return InteractionResult.FAIL;
+                            return ItemInteractionResult.FAIL;
                         }
                     } else {
                         // UPPER 単体が要求された場合は LOWER へ正規化して再試行 (通常は LOWER のみが getStateForPlacement で返る)
-                        return InteractionResult.FAIL;
+                        return ItemInteractionResult.FAIL;
                     }
                 }
                 if (toPlace.hasProperty(BlockStateProperties.BED_PART)) {
@@ -941,11 +958,11 @@ public class MiniatureBlock extends BaseEntityBlock {
                         BlockPos headPos = placePos.relative(bedFacing);
                         if (!be.isInRange(headPos.getX(), headPos.getY(), headPos.getZ())
                                 || !be.getCell(headPos).isAir()) {
-                            return InteractionResult.FAIL;
+                            return ItemInteractionResult.FAIL;
                         }
                         BlockState headState = toPlace.setValue(BlockStateProperties.BED_PART, BedPart.HEAD);
                         if (!canSurviveInside(headState, headPos, be, level, pos)) {
-                            return InteractionResult.FAIL;
+                            return ItemInteractionResult.FAIL;
                         }
                         if (be.setCell(placePos, toPlace) && be.setCell(headPos, headState)) {
                             updateInnerConnections(placePos, be, level, pos);
@@ -960,9 +977,9 @@ public class MiniatureBlock extends BaseEntityBlock {
                             } else {
                                 level.sendBlockUpdated(pos, state, state, 3);
                             }
-                            return InteractionResult.SUCCESS;
+                            return ItemInteractionResult.SUCCESS;
                         }
-                        return InteractionResult.FAIL;
+                        return ItemInteractionResult.FAIL;
                     }
                 }
                 // 通常単一ブロック
@@ -978,15 +995,15 @@ public class MiniatureBlock extends BaseEntityBlock {
                     } else {
                         level.sendBlockUpdated(pos, state, state, 3);
                     }
-                    return InteractionResult.SUCCESS;
+                    return ItemInteractionResult.SUCCESS;
                 }
             }
-            return InteractionResult.FAIL;
+            return ItemInteractionResult.FAIL;
         }
 
         // 右クリック素手での内部破壊は廃止 — 左クリック (attack) で行う
         // 何もしないで PASS を返すことで、左クリック側の破壊に委譲する
-        return InteractionResult.PASS;
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     // 依存ブロックの落下・吸着チェック (ドア/松明/レッドストーン等の canSurvive)

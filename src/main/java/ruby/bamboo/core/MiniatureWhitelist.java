@@ -54,7 +54,7 @@ public final class MiniatureWhitelist {
         String id = block.toString(); // 簡易、登録名ではないが後で置換
         // lever, button, door, trapdoor, fence_gate 等
         // 名前ベースの簡易判定 (後でタグ #minecraft:doors 等に置換予定)
-        String name = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(block).toString();
+        String name = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).toString();
         if (name.contains("lever") || name.contains("button") || name.contains("door")
                 || name.contains("trapdoor") || name.contains("fence_gate")) {
             return true;

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "X  ",
+    "XX ",
+    "XXX"
+  ],
+  "key": {
+    "X": {
+      "item": "bamboomod:coak"
+    }
+  },
+  "result": {
+    "count": 4,
+    "id": "bamboomod:coak_stairs"
+  }
+}

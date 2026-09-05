@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -132,12 +133,12 @@ public class BambooPotBlockEntity extends BlockEntity {
     // ===== NBT =====
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
         ListTag list = new ListTag();
         for (PlantEntry e : plants) {
             CompoundTag ct = new CompoundTag();
-            ct.put("Item", e.stack.save(new CompoundTag()));
+            ct.put("Item", e.stack.saveOptional(registries));
             ct.putFloat("OffsetX", e.offsetX);
             ct.putFloat("OffsetZ", e.offsetZ);
             ct.putFloat("Scale", e.scale);
@@ -149,14 +150,14 @@ public class BambooPotBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         plants.clear();
         if (tag.contains("Plants", Tag.TAG_LIST)) {
             ListTag list = tag.getList("Plants", Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 CompoundTag ct = list.getCompound(i);
-                ItemStack stack = ItemStack.of(ct.getCompound("Item"));
+                ItemStack stack = ItemStack.parseOptional(registries, ct.getCompound("Item"));
                 float ox = ct.getFloat("OffsetX");
                 float oz = ct.getFloat("OffsetZ");
                 float scale = ct.contains("Scale") ? ct.getFloat("Scale") : 0.35f;
@@ -170,7 +171,7 @@ public class BambooPotBlockEntity extends BlockEntity {
             // 互換: 旧は NonNullList 1件を ContainerHelper.saveAllItems で保存
             try {
                 net.minecraft.core.NonNullList<ItemStack> old = net.minecraft.core.NonNullList.withSize(1, ItemStack.EMPTY);
-                net.minecraft.world.ContainerHelper.loadAllItems(tag, old);
+                net.minecraft.world.ContainerHelper.loadAllItems(tag, old, registries);
                 if (!old.get(0).isEmpty()) {
                     plants.add(new PlantEntry(old.get(0), 0f, 0f, 0.35f, false));
                 }
@@ -181,12 +182,12 @@ public class BambooPotBlockEntity extends BlockEntity {
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
         ListTag list = new ListTag();
         for (PlantEntry e : plants) {
             CompoundTag ct = new CompoundTag();
-            ct.put("Item", e.stack.save(new CompoundTag()));
+            ct.put("Item", e.stack.saveOptional(registries));
             ct.putFloat("OffsetX", e.offsetX);
             ct.putFloat("OffsetZ", e.offsetZ);
             ct.putFloat("Scale", e.scale);
@@ -198,14 +199,14 @@ public class BambooPotBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        super.handleUpdateTag(tag);
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        super.handleUpdateTag(tag, registries);
         plants.clear();
         if (tag.contains("Plants", Tag.TAG_LIST)) {
             ListTag list = tag.getList("Plants", Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 CompoundTag ct = list.getCompound(i);
-                ItemStack stack = ItemStack.of(ct.getCompound("Item"));
+                ItemStack stack = ItemStack.parseOptional(registries, ct.getCompound("Item"));
                 float ox = ct.getFloat("OffsetX");
                 float oz = ct.getFloat("OffsetZ");
                 float scale = ct.contains("Scale") ? ct.getFloat("Scale") : 0.35f;
@@ -217,30 +218,35 @@ public class BambooPotBlockEntity extends BlockEntity {
 
     @Override
     public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
-        CompoundTag tag = new CompoundTag();
-        ListTag list = new ListTag();
-        for (PlantEntry e : plants) {
-            CompoundTag ct = new CompoundTag();
-            ct.put("Item", e.stack.save(new CompoundTag()));
-            ct.putFloat("OffsetX", e.offsetX);
-            ct.putFloat("OffsetZ", e.offsetZ);
-            ct.putFloat("Scale", e.scale);
-            ct.putBoolean("IsGrid", e.isGrid);
-            list.add(ct);
-        }
-        tag.put("Plants", list);
-        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this, be -> tag);
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this,
+                (be, registries) -> {
+                    CompoundTag tag = new CompoundTag();
+                    if (be instanceof BambooPotBlockEntity pot) {
+                        ListTag list = new ListTag();
+                        for (PlantEntry e : pot.plants) {
+                            CompoundTag ct = new CompoundTag();
+                            ct.put("Item", e.stack.saveOptional(registries));
+                            ct.putFloat("OffsetX", e.offsetX);
+                            ct.putFloat("OffsetZ", e.offsetZ);
+                            ct.putFloat("Scale", e.scale);
+                            ct.putBoolean("IsGrid", e.isGrid);
+                            list.add(ct);
+                        }
+                        tag.put("Plants", list);
+                    }
+                    return tag;
+                });
     }
 
     @Override
-    public void onDataPacket(net.minecraft.network.Connection connection, net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket pkt) {
+    public void onDataPacket(net.minecraft.network.Connection connection, net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
         CompoundTag tag = pkt.getTag();
         plants.clear();
         if (tag.contains("Plants", Tag.TAG_LIST)) {
             ListTag list = tag.getList("Plants", Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 CompoundTag ct = list.getCompound(i);
-                ItemStack stack = ItemStack.of(ct.getCompound("Item"));
+                ItemStack stack = ItemStack.parseOptional(registries, ct.getCompound("Item"));
                 float ox = ct.getFloat("OffsetX");
                 float oz = ct.getFloat("OffsetZ");
                 float scale = ct.contains("Scale") ? ct.getFloat("Scale") : 0.35f;
@@ -250,11 +256,8 @@ public class BambooPotBlockEntity extends BlockEntity {
         }
     }
 
-    // ホッパー無効: capabilityを公開しない
-    @Override
-    public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> cap, net.minecraft.core.Direction side) {
-        return super.getCapability(cap, side);
-    }
+    // ホッパー無効: capabilityを公開しない (旧 Forge getCapability 委譲オーバーライドは削除。
+    // ホッパー連携が必要になった場合は BambooCapabilities.registerCaps へ追加すること)。
 
     public void dropAllContents(net.minecraft.world.level.Level lvl, BlockPos p) {
         for (PlantEntry e : plants) {

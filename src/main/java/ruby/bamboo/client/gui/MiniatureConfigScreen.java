@@ -6,8 +6,8 @@ import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import ruby.bamboo.core.config.MiniatureConfig;
 
 /**
@@ -166,7 +166,7 @@ public class MiniatureConfigScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partial) {
-        this.renderBackground(g);
+        this.renderBackground(g, mouseX, mouseY, partial);
         g.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
         g.drawCenteredString(this.font, Component.translatable("bamboomod.config.miniature.desc"), this.width / 2, 27, 0xA0A0A0);
         super.render(g, mouseX, mouseY, partial);

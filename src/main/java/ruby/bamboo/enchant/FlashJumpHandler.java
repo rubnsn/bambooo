@@ -2,9 +2,9 @@ package ruby.bamboo.enchant;
 
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.item.NinjaBraceletItem;
 
@@ -17,16 +17,15 @@ import ruby.bamboo.item.NinjaBraceletItem;
  * が `input.jumping` の rising edge を検出し {@link ruby.bamboo.network.FlashJumpPacket}
  * でサーバへ通知。サーバはパケットで受信した forward/strafe を用いて実行する。
  */
-@Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = BambooMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class FlashJumpHandler {
 
     private static final String TAG_FLASHED = "bamboomod:flash_used";
     private static final String TAG_AIR_TICKS = "bamboomod:flash_air_ticks";
 
     @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-        Player player = event.player;
+    public static void onPlayerTick(PlayerTickEvent.Post event) {
+        Player player = event.getEntity();
         if (player.level().isClientSide) return; // クライアントは FlashJumpClientHandler で処理
         if (player.isSpectator() || player.isCreative() && player.getAbilities().flying) return;
 

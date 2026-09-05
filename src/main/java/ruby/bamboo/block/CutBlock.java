@@ -4,9 +4,11 @@ import java.util.List;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -42,6 +44,14 @@ import ruby.bamboo.core.init.BambooBlockEntities;
  * 回転はバニラ依存（水平のみ）: Block.rotate/mirror + CutBlockEntity#setBlockState でBoundsも回転。
  */
 public class CutBlock extends BaseEntityBlock {
+
+    public static final com.mojang.serialization.MapCodec<CutBlock> CODEC =
+            com.mojang.serialization.MapCodec.unit(CutBlock::new);
+
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final String BLOCK_ENTITY_TAG = "BlockEntityTag";
@@ -82,8 +92,8 @@ public class CutBlock extends BaseEntityBlock {
             java.util.List<CutBlockEntity.CutEntry> entries = CutBlockEntity.readEntriesFromStack(stack);
             if (!entries.isEmpty()) {
                 // 複数Entriesを持つhoe回収品はそのまま復元
-                CompoundTag tag = stack.getTag();
-                if (tag != null && tag.contains(BLOCK_ENTITY_TAG, net.minecraft.nbt.Tag.TAG_COMPOUND)) {
+                CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+                if (tag.contains(BLOCK_ENTITY_TAG, net.minecraft.nbt.Tag.TAG_COMPOUND)) {
                     CompoundTag bet = tag.getCompound(BLOCK_ENTITY_TAG);
                     be.readSyncData(bet);
                     be.invalidateShapeCache();
@@ -237,8 +247,9 @@ public class CutBlock extends BaseEntityBlock {
                 }
                 CompoundTag bet = new CompoundTag();
                 cut.writeSyncData(bet);
-                CompoundTag tag = stack.getOrCreateTag();
+                CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
                 tag.put(BLOCK_ENTITY_TAG, bet);
+                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
                 if (list.isEmpty()) {
                     list.add(stack);
                 }
@@ -259,7 +270,7 @@ public class CutBlock extends BaseEntityBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
         if (level.getBlockEntity(pos) instanceof CutBlockEntity be) {
             if (!be.isEmpty() && !be.getEntries().isEmpty()) {
                 // サーバセーフ: 先頭エントリを同等のcut_blockとして返す。BoundsではなくCutState+X/Y/ZLevelでスタック可能に
@@ -276,8 +287,9 @@ public class CutBlock extends BaseEntityBlock {
                 ItemStack stack = new ItemStack(this);
                 CompoundTag bet = new CompoundTag();
                 be.writeSyncData(bet);
-                CompoundTag tag = stack.getOrCreateTag();
+                CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
                 tag.put(BLOCK_ENTITY_TAG, bet);
+                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
                 return stack;
             }
         }
@@ -382,19 +394,17 @@ public class CutBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, net.minecraft.world.entity.player.Player player) {
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, net.minecraft.world.entity.player.Player player) {
         if (!(level.getBlockEntity(pos) instanceof CutBlockEntity be)) {
-            super.playerWillDestroy(level, pos, state, player);
-            return;
+            return super.playerWillDestroy(level, pos, state, player);
         }
         if (be.isEmpty()) {
-            super.playerWillDestroy(level, pos, state, player);
-            return;
+            return super.playerWillDestroy(level, pos, state, player);
         }
         // 中身ありは外枠を壊さず、内部破壊は BreakEvent に一本化 (二重ドロップ防止)
         // クライアントでは予測削除を抑止するため何もしない
-        if (level.isClientSide) return;
-        return;
+        if (level.isClientSide) return state;
+        return state;
     }
 
     public net.minecraft.world.phys.BlockHitResult getHitForPlayer(net.minecraft.world.entity.player.Player player, Level level, BlockPos pos) {
@@ -490,7 +500,7 @@ public class CutBlock extends BaseEntityBlock {
             try { player.awardStat(net.minecraft.stats.Stats.BLOCK_MINED.get(this)); } catch (Exception e) {}
             ItemStack held = player.getMainHandItem();
             if (!player.isCreative() && !held.isEmpty() && held.isDamageableItem()) {
-                try { held.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(net.minecraft.world.InteractionHand.MAIN_HAND)); } catch (Exception e) {}
+                try { held.hurtAndBreak(1, player, net.minecraft.world.entity.EquipmentSlot.MAINHAND); } catch (Exception e) {}
             }
             try { player.causeFoodExhaustion(0.005f); } catch (Exception e) {}
         }
@@ -516,14 +526,13 @@ public class CutBlock extends BaseEntityBlock {
     }
 
     @Override
-    public net.minecraft.world.InteractionResult use(BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player,
-            net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hit) {
+    public net.minecraft.world.ItemInteractionResult useItemOn(net.minecraft.world.item.ItemStack useStack, BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hit) {
         if (level.getBlockEntity(pos) instanceof CutBlockEntity be) {
             ItemStack held = player.getItemInHand(hand);
             if (!held.isEmpty() && held.getItem() instanceof net.minecraft.world.item.HoeItem) {
-                if (level.isClientSide) return net.minecraft.world.InteractionResult.SUCCESS;
+                if (level.isClientSide) return net.minecraft.world.ItemInteractionResult.SUCCESS;
                 ItemStack stack = new ItemStack(this);
-                CompoundTag tag = stack.getOrCreateTag();
+                CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
                 if (!be.isEmpty()) {
                     if (!be.getEntries().isEmpty()) {
                         CompoundTag bet = new CompoundTag();
@@ -535,6 +544,7 @@ public class CutBlock extends BaseEntityBlock {
                         tag.put(BLOCK_ENTITY_TAG, bet);
                     }
                 }
+                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
                 if (!player.addItem(stack)) {
                     Block.popResource(level, pos, stack);
                 }
@@ -545,7 +555,7 @@ public class CutBlock extends BaseEntityBlock {
                     ALLOW_CUT_REMOVAL.set(false);
                 }
                 level.playSound(null, pos, net.minecraft.sounds.SoundEvents.ITEM_PICKUP, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
-                return net.minecraft.world.InteractionResult.SUCCESS;
+                return net.minecraft.world.ItemInteractionResult.SUCCESS;
             }
             // 手持ちがカットブロックなら設置を優先 (内部GUIより先)
             if (!held.isEmpty() && held.is(ruby.bamboo.core.init.BambooBlocks.CUT_BLOCK.get().asItem())) {
@@ -555,46 +565,48 @@ public class CutBlock extends BaseEntityBlock {
                     if (!data.state().isAir()) {
                         int[] cand = CutBlockEntity.getInsideCandidate(be, pos, hit.getLocation(), hit.getDirection(), tier);
                         if (cand != null) {
-                            if (level.isClientSide) return net.minecraft.world.InteractionResult.SUCCESS;
+                            if (level.isClientSide) return net.minecraft.world.ItemInteractionResult.SUCCESS;
                             be.addEntry(data.state(), cand);
                             if (!player.getAbilities().instabuild) held.shrink(1);
                             level.sendBlockUpdated(pos, state, state, 3);
                             level.playSound(null, pos, state.getSoundType(level, pos, player).getPlaceSound(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
-                            return net.minecraft.world.InteractionResult.SUCCESS;
+                            return net.minecraft.world.ItemInteractionResult.SUCCESS;
                         }
                     }
                 }
                 // 手持ちがカットブロックの場合は GUI を開かず設置試行のみで終了
-                return net.minecraft.world.InteractionResult.PASS;
+                return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
             }
             // スニーク中は GUI を開かずバニラ設置に譲る
             if (player.isShiftKeyDown()) {
-                return net.minecraft.world.InteractionResult.PASS;
+                return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
             }
             // 内部ブロックの GUI 委譲 (TEなしのみ)
             CutBlockEntity.CutEntry entry = findHitEntry(be, pos, hit);
             BlockState inner = entry != null ? entry.state : be.getCutState();
-            if (inner == null || inner.isAir()) return net.minecraft.world.InteractionResult.PASS;
-            if (inner.hasBlockEntity()) return net.minecraft.world.InteractionResult.PASS;
+            if (inner == null || inner.isAir()) return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            if (inner.hasBlockEntity()) return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
             // MenuProvider があれば開く (作業台等) — stillValid が cut_block を参照するようにラップ
             var provider = getMenuProviderForCutBlock(level, pos, inner, entry != null ? entry.bounds : null);
             if (provider != null) {
                 if (!level.isClientSide) {
                     player.openMenu(provider);
                 }
-                return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
+                return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide);
             }
             // フォールバック: 内部ブロックの use に委譲 (Grindstone/Stonecutter/Loom 等)
             try {
-                net.minecraft.world.InteractionResult res = inner.use(level, player, hand, hit);
+                net.minecraft.world.InteractionResult res = inner.useWithoutItem(level, player, hit);
                 if (res != net.minecraft.world.InteractionResult.PASS) {
-                    return res;
+                    return res.consumesAction()
+                            ? net.minecraft.world.ItemInteractionResult.CONSUME
+                            : net.minecraft.world.ItemInteractionResult.SUCCESS;
                 }
             } catch (Exception e) {
                 // 委譲先で例外が出ても無視して PASS
             }
         }
-        return net.minecraft.world.InteractionResult.PASS;
+        return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override

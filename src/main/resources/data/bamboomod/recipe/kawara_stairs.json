@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "X  ",
+    "XX ",
+    "XXX"
+  ],
+  "key": {
+    "X": {
+      "item": "bamboomod:kawara"
+    }
+  },
+  "result": {
+    "count": 4,
+    "id": "bamboomod:kawara_stairs"
+  }
+}

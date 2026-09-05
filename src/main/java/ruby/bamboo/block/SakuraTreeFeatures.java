@@ -10,7 +10,7 @@ import ruby.bamboo.BambooMod;
  * <p>
  * 旧 GenSakuraTree / GenSakuraBigTree (1.10.2 WorldGenAbstractTree) の移植。
  * <p>
- * 1.20.1の {@code AbstractTreeGrower#getConfiguredFeature} は
+ * 1.20.1の {@code TreeGrower#getConfiguredFeature} は
  * {@link ResourceKey} を返す設計のため、実体は動的レジストリ
  * (data/bamboomod/worldgen/configured_feature/) の JSON で定義する。
  * <ul>
@@ -30,6 +30,6 @@ public final class SakuraTreeFeatures {
 
     private static ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> create(String name) {
         return ResourceKey.create(Registries.CONFIGURED_FEATURE,
-                new ResourceLocation(BambooMod.MODID, name));
+                ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, name));
     }
 }

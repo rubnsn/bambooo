@@ -74,7 +74,7 @@ public class RicePlantBlock extends CropBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
         // 旧 getPickBlock: 常に種を返す (中クリック対策)
         return new ItemStack(BambooItems.RICE_SEED.get());
     }

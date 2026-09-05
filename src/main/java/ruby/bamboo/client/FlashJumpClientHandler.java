@@ -3,13 +3,13 @@ package ruby.bamboo.client;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.enchant.FlashJumpHandler;
-import ruby.bamboo.network.BambooNetwork;
+import net.neoforged.neoforge.network.PacketDistributor;
 import ruby.bamboo.network.FlashJumpPacket;
 
 /**
@@ -17,7 +17,7 @@ import ruby.bamboo.network.FlashJumpPacket;
  * `input.jumping` の rising edge を検出し、WASD方向をパケットでサーバへ送信。
  * クライアントでは即時予測で push し、サーバはパケットで確定する。
  */
-@Mod.EventBusSubscriber(modid = BambooMod.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = BambooMod.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
 public class FlashJumpClientHandler {
 
     private static final String TAG_FLASHED = "bamboomod:flash_used";
@@ -25,9 +25,8 @@ public class FlashJumpClientHandler {
     private static final String TAG_WAS_JUMPING = "bamboomod:was_jumping_client";
 
     @SubscribeEvent
-    public static void onClientPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-        Player player = event.player;
+    public static void onClientPlayerTick(PlayerTickEvent.Post event) {
+        Player player = event.getEntity();
         if (!player.level().isClientSide) return;
         if (!(player instanceof LocalPlayer localPlayer)) return;
         if (player.isSpectator() || player.isCreative() && player.getAbilities().flying) return;
@@ -61,7 +60,7 @@ public class FlashJumpClientHandler {
         // クライアント予測で即時 push
         doClientFlashJump(player, forward, strafe);
         // サーバへ通知
-        BambooNetwork.CHANNEL.sendToServer(new FlashJumpPacket(forward, strafe));
+        PacketDistributor.sendToServer(new FlashJumpPacket(forward, strafe));
     }
 
     private static void doClientFlashJump(Player player, float forward, float strafe) {

@@ -1,13 +1,19 @@
 package ruby.bamboo.crafting;
 
 import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
@@ -33,23 +39,20 @@ import ruby.bamboo.core.init.BambooItems;
  */
 public class CutBlockRecipe implements CraftingRecipe {
 
-    private final ResourceLocation id;
-
-    public CutBlockRecipe(ResourceLocation id) {
-        this.id = id;
+    public CutBlockRecipe() {
     }
 
     @Override
-    public boolean matches(CraftingContainer container, Level level) {
-        int width = container.getWidth();
-        int height = container.getHeight();
+    public boolean matches(CraftingInput input, Level level) {
+        int width = input.width();
+        int height = input.height();
         if (width <= 0) width = 3;
         if (height <= 0) height = 3;
         int nonEmptyCount = 0;
         int[] indices = new int[2];
         ItemStack[] stacks = new ItemStack[2];
-        for (int i = 0; i < container.getContainerSize(); i++) {
-            ItemStack s = container.getItem(i);
+        for (int i = 0; i < input.size(); i++) {
+            ItemStack s = input.getItem(i);
             if (!s.isEmpty()) {
                 if (nonEmptyCount >= 2) return false;
                 indices[nonEmptyCount] = i;
@@ -79,15 +82,15 @@ public class CutBlockRecipe implements CraftingRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingContainer container, RegistryAccess registryAccess) {
-        int width = container.getWidth();
+    public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+        int width = input.width();
         if (width <= 0) width = 3;
 
         ItemStack bStack = ItemStack.EMPTY;
         ItemStack kStack = ItemStack.EMPTY;
         int bIndex = -1, kIndex = -1;
-        for (int i = 0; i < container.getContainerSize(); i++) {
-            ItemStack s = container.getItem(i);
+        for (int i = 0; i < input.size(); i++) {
+            ItemStack s = input.getItem(i);
             if (s.isEmpty()) continue;
             if (isKatana(s)) {
                 kStack = s;
@@ -146,10 +149,10 @@ public class CutBlockRecipe implements CraftingRecipe {
     }
 
     @Override
-    public NonNullList<ItemStack> getRemainingItems(CraftingContainer container) {
-        NonNullList<ItemStack> remaining = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
-        for (int i = 0; i < container.getContainerSize(); i++) {
-            ItemStack s = container.getItem(i);
+    public NonNullList<ItemStack> getRemainingItems(CraftingInput input) {
+        NonNullList<ItemStack> remaining = NonNullList.withSize(input.size(), ItemStack.EMPTY);
+        for (int i = 0; i < input.size(); i++) {
+            ItemStack s = input.getItem(i);
             if (!s.isEmpty() && isKatana(s)) {
                 remaining.set(i, s.copy());
             }
@@ -163,13 +166,8 @@ public class CutBlockRecipe implements CraftingRecipe {
     }
 
     @Override
-    public ItemStack getResultItem(RegistryAccess registryAccess) {
+    public ItemStack getResultItem(HolderLookup.Provider registries) {
         return ItemStack.EMPTY;
-    }
-
-    @Override
-    public ResourceLocation getId() {
-        return id;
     }
 
     @Override
@@ -205,7 +203,7 @@ public class CutBlockRecipe implements CraftingRecipe {
             if (stack.is(BambooItems.COMMON_KATANA.get())) return true;
         } catch (Exception e) {
         }
-        String key = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
+        String key = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
         return key.equals("bamboomod:commonkatana");
     }
 
@@ -215,7 +213,7 @@ public class CutBlockRecipe implements CraftingRecipe {
             if (stack.is(BambooBlocks.CUT_BLOCK.get().asItem())) return true;
         } catch (Exception e) {
         }
-        String key = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
+        String key = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
         return key.equals("bamboomod:cut_block");
     }
 
@@ -243,8 +241,9 @@ public class CutBlockRecipe implements CraftingRecipe {
         bet.putByte(CutBlockEntity.TAG_X_LEVEL, xLevel);
         bet.putByte(CutBlockEntity.TAG_Y_LEVEL, yLevel);
         bet.putByte(CutBlockEntity.TAG_Z_LEVEL, zLevel);
-        CompoundTag tag = stack.getOrCreateTag();
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         tag.put("BlockEntityTag", bet);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
         return stack;
     }
 
@@ -255,18 +254,17 @@ public class CutBlockRecipe implements CraftingRecipe {
     }
 
     public static class Serializer implements RecipeSerializer<CutBlockRecipe> {
+        public static final MapCodec<CutBlockRecipe> CODEC = MapCodec.unit(CutBlockRecipe::new);
+        public static final StreamCodec<RegistryFriendlyByteBuf, CutBlockRecipe> STREAM_CODEC = StreamCodec.unit(new CutBlockRecipe());
+
         @Override
-        public CutBlockRecipe fromJson(ResourceLocation id, JsonObject json) {
-            return new CutBlockRecipe(id);
+        public MapCodec<CutBlockRecipe> codec() {
+            return CODEC;
         }
 
         @Override
-        public CutBlockRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buf) {
-            return new CutBlockRecipe(id);
-        }
-
-        @Override
-        public void toNetwork(FriendlyByteBuf buf, CutBlockRecipe recipe) {
+        public StreamCodec<RegistryFriendlyByteBuf, CutBlockRecipe> streamCodec() {
+            return STREAM_CODEC;
         }
     }
 }

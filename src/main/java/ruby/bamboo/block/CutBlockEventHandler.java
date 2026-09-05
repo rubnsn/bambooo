@@ -4,9 +4,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.entity.CutBlockEntity;
 
@@ -14,7 +14,7 @@ import ruby.bamboo.block.entity.CutBlockEntity;
  * カットブロック外枠の誤破壊を汎用的に抑止する Forge イベントフック。
  * MiniatureEventHandler と同型。BreakEventで外枠をキャンセルし内部のみを破壊する。
  */
-@Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = BambooMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class CutBlockEventHandler {
 
     @SubscribeEvent

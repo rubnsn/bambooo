@@ -6,7 +6,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -29,7 +29,7 @@ public final class WishEntitySearch {
         List<EntityType<?>> exact = new ArrayList<>();
         List<TypeWithName> partials = new ArrayList<>();
 
-        for (EntityType<?> type : ForgeRegistries.ENTITY_TYPES) {
+        for (EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
             if (!isSummonableCandidate(type)) {
                 continue;
             }
@@ -95,7 +95,7 @@ public final class WishEntitySearch {
     }
 
     private static int namespacePriority(EntityType<?> type) {
-        ResourceLocation rl = ForgeRegistries.ENTITY_TYPES.getKey(type);
+        ResourceLocation rl = BuiltInRegistries.ENTITY_TYPE.getKey(type);
         if (rl == null) return 2;
         String ns = rl.getNamespace();
         if ("minecraft".equals(ns)) return 0;
@@ -104,12 +104,12 @@ public final class WishEntitySearch {
     }
 
     private static int registryNameLength(EntityType<?> type) {
-        ResourceLocation rl = ForgeRegistries.ENTITY_TYPES.getKey(type);
+        ResourceLocation rl = BuiltInRegistries.ENTITY_TYPE.getKey(type);
         return rl == null ? Integer.MAX_VALUE : rl.getPath().length();
     }
 
     private static String registryName(EntityType<?> type) {
-        ResourceLocation rl = ForgeRegistries.ENTITY_TYPES.getKey(type);
+        ResourceLocation rl = BuiltInRegistries.ENTITY_TYPE.getKey(type);
         return rl == null ? "" : rl.toString();
     }
 

@@ -15,17 +15,20 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.core.init.BambooItems;
 
 /**
  * JEI カテゴリ: カットブロック (作業台)。
  * JEIのバニラ作業台タブに加え、専用タブでも表示して確実に見つかるようにする。
+ * <p>
+ * JEI 19 (1.21): レシピは {@link RecipeHolder} で渡される。
  */
-public class CutBlockCategory implements IRecipeCategory<CraftingRecipe> {
+public class CutBlockCategory implements IRecipeCategory<RecipeHolder<CraftingRecipe>> {
 
-    public static final RecipeType<CraftingRecipe> TYPE =
-            new RecipeType<>(new ResourceLocation(BambooMod.MODID, "cut_block"), CraftingRecipe.class);
+    public static final RecipeType<RecipeHolder<CraftingRecipe>> TYPE =
+            RecipeType.createRecipeHolderType(ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "cut_block"));
 
     public static final int WIDTH = 120;
     public static final int HEIGHT = 54;
@@ -43,7 +46,7 @@ public class CutBlockCategory implements IRecipeCategory<CraftingRecipe> {
     }
 
     @Override
-    public RecipeType<CraftingRecipe> getRecipeType() {
+    public RecipeType<RecipeHolder<CraftingRecipe>> getRecipeType() {
         return TYPE;
     }
 
@@ -63,7 +66,8 @@ public class CutBlockCategory implements IRecipeCategory<CraftingRecipe> {
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, CraftingRecipe recipe, IFocusGroup focuses) {
+    public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<CraftingRecipe> holder, IFocusGroup focuses) {
+        CraftingRecipe recipe = holder.value();
         // 入力2つを並べて表示 (左側)
         var ingredients = recipe.getIngredients();
         for (int i = 0; i < ingredients.size() && i < 2; i++) {
@@ -88,7 +92,7 @@ public class CutBlockCategory implements IRecipeCategory<CraftingRecipe> {
     }
 
     @Override
-    public void draw(CraftingRecipe recipe, IRecipeSlotsView view, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void draw(RecipeHolder<CraftingRecipe> holder, IRecipeSlotsView view, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         try {
             guiHelper.getRecipeArrow().draw(guiGraphics, 48, 18);
         } catch (Exception e) {}

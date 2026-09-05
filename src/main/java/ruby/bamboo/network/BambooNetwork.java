@@ -1,48 +1,27 @@
 package ruby.bamboo.network;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
-import ruby.bamboo.BambooMod;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /**
- * ネットワークチャンネル (1.20.1 Forge 47.4.10)。
- * 鈎縄の入力同期に使用。
+ * ネットワーク登録 (1.21.1 NeoForge CustomPacketPayload方式)。
+ * client→server: 鈎縄入力・閃跳・願い送信 / server→client: 願い画面開け。
  */
 public final class BambooNetwork {
 
     private static final String PROTOCOL_VERSION = "1";
-    public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
-            .named(new ResourceLocation(BambooMod.MODID, "main"))
-            .networkProtocolVersion(() -> PROTOCOL_VERSION)
-            .clientAcceptedVersions(s -> true)
-            .serverAcceptedVersions(s -> true)
-            .simpleChannel();
-
-    private static int packetId = 0;
-    private static int nextId() {
-        return packetId++;
-    }
 
     private BambooNetwork() {
     }
 
-    public static void register() {
-        CHANNEL.registerMessage(nextId(), KaginawaInputPacket.class,
-                KaginawaInputPacket::encode,
-                KaginawaInputPacket::decode,
-                KaginawaInputPacket::handle);
-        CHANNEL.registerMessage(nextId(), FlashJumpPacket.class,
-                FlashJumpPacket::encode,
-                FlashJumpPacket::decode,
-                FlashJumpPacket::handle);
-        CHANNEL.registerMessage(nextId(), WishOpenPacket.class,
-                WishOpenPacket::encode,
-                WishOpenPacket::decode,
-                WishOpenPacket::handle);
-        CHANNEL.registerMessage(nextId(), WishRequestPacket.class,
-                WishRequestPacket::encode,
-                WishRequestPacket::decode,
-                WishRequestPacket::handle);
+    public static void register(IEventBus modBus) {
+        modBus.addListener((RegisterPayloadHandlersEvent event) -> {
+            PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
+            registrar.playToServer(KaginawaInputPacket.TYPE, KaginawaInputPacket.STREAM_CODEC, KaginawaInputPacket::handle);
+            registrar.playToServer(FlashJumpPacket.TYPE, FlashJumpPacket.STREAM_CODEC, FlashJumpPacket::handle);
+            registrar.playToServer(WishRequestPacket.TYPE, WishRequestPacket.STREAM_CODEC, WishRequestPacket::handle);
+            registrar.playToClient(WishOpenPacket.TYPE, WishOpenPacket.STREAM_CODEC, WishOpenPacket::handle);
+        });
     }
 }

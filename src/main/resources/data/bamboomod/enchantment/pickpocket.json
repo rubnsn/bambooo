@@ -1,0 +1,21 @@
+{
+  "description": {
+    "translate": "enchantment.bamboomod.pickpocket"
+  },
+  "supported_items": "bamboomod:ninja_bracelet",
+  "weight": 5,
+  "max_level": 5,
+  "min_cost": {
+    "base": 10,
+    "per_level_above_first": 15
+  },
+  "max_cost": {
+    "base": 25,
+    "per_level_above_first": 15
+  },
+  "anvil_cost": 1,
+  "slots": [
+    "mainhand"
+  ],
+  "effects": {}
+}

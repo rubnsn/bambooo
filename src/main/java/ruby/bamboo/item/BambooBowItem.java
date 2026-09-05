@@ -4,20 +4,25 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.ForgeEventFactory;
+import net.neoforged.neoforge.event.EventHooks;
 import ruby.bamboo.core.init.BambooItems;
 import ruby.bamboo.entity.arrow.BambooArrowEntity;
 import ruby.bamboo.entity.arrow.TorchArrowEntity;
@@ -61,8 +66,11 @@ public class BambooBowItem extends BowItem {
 
     /** 選択中スロット取得 (旧 getArrowSlot 相当) */
     public byte getArrowSlot(ItemStack bow) {
-        CompoundTag tag = bow.getTag();
-        if (tag == null || !tag.contains(TAG_AMMO)) {
+        if (!bow.has(DataComponents.CUSTOM_DATA)) {
+            return 0;
+        }
+        CompoundTag tag = bow.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (!tag.contains(TAG_AMMO, Tag.TAG_COMPOUND)) {
             return 0;
         }
         return tag.getCompound(TAG_AMMO).getByte(AMMO_SLOT);
@@ -70,7 +78,11 @@ public class BambooBowItem extends BowItem {
 
     /** 選択中スロット設定 (V キーパケット側から呼ばれる) */
     public void setArrowSlot(ItemStack bow, byte slot) {
-        bow.getOrCreateTagElement(TAG_AMMO).putByte(AMMO_SLOT, slot);
+        CompoundTag tag = bow.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        CompoundTag ammo = tag.contains(TAG_AMMO, Tag.TAG_COMPOUND) ? tag.getCompound(TAG_AMMO).copy() : new CompoundTag();
+        ammo.putByte(AMMO_SLOT, slot);
+        tag.put(TAG_AMMO, ammo);
+        bow.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
 
     /** 選択中の矢スタックを取得 (無ければ null)。スロットが範囲外なら丸め */
@@ -121,8 +133,8 @@ public class BambooBowItem extends BowItem {
             return;
         }
 
-        int charge = this.getUseDuration(bow) - timeLeft;
-        charge = ForgeEventFactory.onArrowLoose(bow, level, player, charge, true);
+        int charge = this.getUseDuration(bow, player) - timeLeft;
+        charge = EventHooks.onArrowLoose(bow, level, player, charge, true);
         if (charge < 0) {
             return;
         }
@@ -131,7 +143,8 @@ public class BambooBowItem extends BowItem {
         if (!(power < 0.1F)) {
             if (!level.isClientSide) {
                 fireArrow(level, player, bow, arrowStack, arrowItem, power, charge);
-                bow.hurtAndBreak(1, shooter, e -> e.broadcastBreakEvent(shooter.getUsedItemHand()));
+                bow.hurtAndBreak(1, shooter,
+                        shooter.getUsedItemHand() == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
             }
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
                     SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F,
@@ -143,12 +156,12 @@ public class BambooBowItem extends BowItem {
     private void fireArrow(Level level, Player player, ItemStack bow, ItemStack arrowStack,
             ArrowBase arrowItem, float power, int chargeFrame) {
         boolean noResource = player.getAbilities().instabuild
-                || EnchantmentHelper.getItemEnchantmentLevel(Enchantments.INFINITY_ARROWS, bow) > 0;
+                || vanillaLevel(level, Enchantments.INFINITY, bow) > 0;
         float velocity = power * 2.0F;
 
         AbstractArrow arrow = createTypedArrow(level, player, arrowStack, velocity);
 
-        applyEnchantments(arrow, bow);
+        applyEnchantments(level, arrow, bow);
 
         // 竹矢: barrage 設定
         if (arrow instanceof BambooArrowEntity bambooArrow) {
@@ -164,7 +177,7 @@ public class BambooBowItem extends BowItem {
         } else if (arrow instanceof TorchArrowEntity) {
             // 松明矢: 10% 自然着火 (旧 world.rand.nextFloat() < 0.1)
             if (level.getRandom().nextFloat() < 0.1F) {
-                arrow.setSecondsOnFire(100);
+                arrow.setRemainingFireTicks(100);
             }
         }
 
@@ -187,8 +200,15 @@ public class BambooBowItem extends BowItem {
         return ((ArrowBase) arrowStack.getItem()).createArrowForBow(level, player, velocity);
     }
 
-    private void applyEnchantments(AbstractArrow arrow, ItemStack bow) {
-        int powerLvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, bow);
+    /** バニラエンチャントのレベル取得 (1.21: Holder 解決が必要) */
+    private static int vanillaLevel(Level level, net.minecraft.resources.ResourceKey<Enchantment> key, ItemStack stack) {
+        var holder = level.registryAccess()
+                .lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(key);
+        return EnchantmentHelper.getItemEnchantmentLevel(holder, stack);
+    }
+
+    private void applyEnchantments(Level level, AbstractArrow arrow, ItemStack bow) {
+        int powerLvl = vanillaLevel(level, Enchantments.POWER, bow);
         if (powerLvl > 0) {
             double base = arrow.getBaseDamage();
             // 竹矢は旧式 (+j×0.15)、その他は (+j×0.5+0.5)
@@ -198,12 +218,20 @@ public class BambooBowItem extends BowItem {
                 arrow.setBaseDamage(base + powerLvl * 0.5D + 0.5D);
             }
         }
-        int punchLvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PUNCH_ARROWS, bow);
+        int punchLvl = vanillaLevel(level, Enchantments.PUNCH, bow);
         if (punchLvl > 0) {
-            arrow.setKnockback(punchLvl);
+            if (arrow instanceof ruby.bamboo.entity.arrow.BambooArrowEntity bamboo) {
+                bamboo.setKnockback(punchLvl);
+            } else if (arrow instanceof ruby.bamboo.entity.arrow.TorchArrowEntity torch) {
+                torch.setKnockback(punchLvl);
+            } else if (arrow instanceof ruby.bamboo.entity.arrow.LightArrowEntity light) {
+                light.setKnockback(punchLvl);
+            } else if (arrow instanceof ruby.bamboo.entity.arrow.ExplodeArrowEntity explode) {
+                explode.setKnockback(punchLvl);
+            }
         }
-        if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, bow) > 0) {
-            arrow.setSecondsOnFire(100);
+        if (vanillaLevel(level, Enchantments.FLAME, bow) > 0) {
+            arrow.setRemainingFireTicks(100);
         }
     }
 

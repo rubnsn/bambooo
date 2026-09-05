@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.joml.Vector3f;
 import ruby.bamboo.api.ILightColor;
+import ruby.bamboo.capability.ColoredLightStorage;
 import ruby.bamboo.core.init.BambooCapabilities;
 
 import java.util.List;
@@ -96,10 +97,9 @@ public final class ColoredLightUtil {
     }
 
     private static void ensureChunkScanned(LevelChunk chunk, Level lvl) {
-        var opt = chunk.getCapability(BambooCapabilities.COLORED_LIGHT);
-        if (!opt.isPresent()) return;
-        var storage = opt.orElse(null);
-        if (storage == null || storage.isScanned()) return;
+        if (!chunk.hasData(BambooCapabilities.COLORED_LIGHT.get())) return;
+        ColoredLightStorage storage = chunk.getData(BambooCapabilities.COLORED_LIGHT.get());
+        if (storage.isScanned()) return;
         synchronized (storage) {
             if (storage.isScanned()) return;
             storage.setScanned(true);
@@ -150,21 +150,18 @@ public final class ColoredLightUtil {
         // B-2: tintCache参照 (shadedPosの属するchunkのcache) — RenderChunkRegion でも Level 経由で引く
         if (lvlForCache != null && lvlForCache.hasChunkAt(shadedPos)) {
             LevelChunk chunkCache = lvlForCache.getChunkAt(shadedPos);
-            var optCache = chunkCache.getCapability(BambooCapabilities.COLORED_LIGHT);
-            if (optCache.isPresent()) {
-                var storageCache = optCache.orElse(null);
-                if (storageCache != null) {
-                    Long2IntMap tintCache = storageCache.getTintCache();
-                    long key = shadedPos.asLong();
-                    synchronized (tintCache) {
-                        if (tintCache.containsKey(key)) {
-                            int cached = tintCache.get(key);
-                            if (cached == 0xFFFFFF) return new Vector3f(1f, 1f, 1f);
-                            float cr = ((cached >> 16) & 0xFF) / 255f;
-                            float cg = ((cached >> 8) & 0xFF) / 255f;
-                            float cb = (cached & 0xFF) / 255f;
-                            return new Vector3f(cr, cg, cb);
-                        }
+            if (chunkCache.hasData(BambooCapabilities.COLORED_LIGHT.get())) {
+                ColoredLightStorage storageCache = chunkCache.getData(BambooCapabilities.COLORED_LIGHT.get());
+                Long2IntMap tintCache = storageCache.getTintCache();
+                long key = shadedPos.asLong();
+                synchronized (tintCache) {
+                    if (tintCache.containsKey(key)) {
+                        int cached = tintCache.get(key);
+                        if (cached == 0xFFFFFF) return new Vector3f(1f, 1f, 1f);
+                        float cr = ((cached >> 16) & 0xFF) / 255f;
+                        float cg = ((cached >> 8) & 0xFF) / 255f;
+                        float cb = (cached & 0xFF) / 255f;
+                        return new Vector3f(cr, cg, cb);
                     }
                 }
             }
@@ -195,14 +192,10 @@ public final class ColoredLightUtil {
                         continue;
                     }
                     LevelChunk chunk = lvl.getChunk(cx, cz);
-                    var opt = chunk.getCapability(BambooCapabilities.COLORED_LIGHT);
-                    if (!opt.isPresent()) {
+                    if (!chunk.hasData(BambooCapabilities.COLORED_LIGHT.get())) {
                         continue;
                     }
-                    var storage = opt.orElse(null);
-                    if (storage == null) {
-                        continue;
-                    }
+                    ColoredLightStorage storage = chunk.getData(BambooCapabilities.COLORED_LIGHT.get());
                     Object2IntMap<Long> map = storage.getMap();
                     if (map == null || map.isEmpty()) {
                         continue;
@@ -244,13 +237,10 @@ public final class ColoredLightUtil {
         if (colors.isEmpty()) {
             if (lvlForCache != null && lvlForCache.hasChunkAt(shadedPos)) {
                 LevelChunk chunkPut = lvlForCache.getChunkAt(shadedPos);
-                var optPut = chunkPut.getCapability(BambooCapabilities.COLORED_LIGHT);
-                if (optPut.isPresent()) {
-                    var storagePut = optPut.orElse(null);
-                    if (storagePut != null) {
-                        synchronized (storagePut.getTintCache()) {
-                            storagePut.getTintCache().put(shadedPos.asLong(), 0xFFFFFF);
-                        }
+                if (chunkPut.hasData(BambooCapabilities.COLORED_LIGHT.get())) {
+                    ColoredLightStorage storagePut = chunkPut.getData(BambooCapabilities.COLORED_LIGHT.get());
+                    synchronized (storagePut.getTintCache()) {
+                        storagePut.getTintCache().put(shadedPos.asLong(), 0xFFFFFF);
                     }
                 }
             }
@@ -284,13 +274,10 @@ public final class ColoredLightUtil {
         // キャッシュ保存 (RenderChunkRegion でも Level 経由で保存)
         if (lvlForCache != null && lvlForCache.hasChunkAt(shadedPos)) {
             LevelChunk chunkPut = lvlForCache.getChunkAt(shadedPos);
-            var optPut = chunkPut.getCapability(BambooCapabilities.COLORED_LIGHT);
-            if (optPut.isPresent()) {
-                var storagePut = optPut.orElse(null);
-                if (storagePut != null) {
-                    synchronized (storagePut.getTintCache()) {
-                        storagePut.getTintCache().put(shadedPos.asLong(), blended & 0xFFFFFF);
-                    }
+            if (chunkPut.hasData(BambooCapabilities.COLORED_LIGHT.get())) {
+                ColoredLightStorage storagePut = chunkPut.getData(BambooCapabilities.COLORED_LIGHT.get());
+                synchronized (storagePut.getTintCache()) {
+                    storagePut.getTintCache().put(shadedPos.asLong(), blended & 0xFFFFFF);
                 }
             }
         }

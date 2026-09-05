@@ -19,7 +19,7 @@ import ruby.bamboo.entity.ShurikenEntity;
  */
 public class ShurikenRenderer extends EntityRenderer<ShurikenEntity> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID, "textures/entity/shuriken.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/entity/shuriken.png");
     private final ItemRenderer itemRenderer;
 
     public ShurikenRenderer(EntityRendererProvider.Context ctx) {

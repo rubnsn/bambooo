@@ -1,17 +1,17 @@
 package ruby.bamboo.client;
 
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.ConfigScreenHandler;
-import net.minecraftforge.fml.ModLoadingContext;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import ruby.bamboo.client.gui.MiniatureConfigScreen;
 
 /**
  * クライアント専用の ConfigScreen 登録ヘルパー。
  * <p>
  * {@link ruby.bamboo.BambooMod} から直接 {@code Screen} を参照すると、
- * DEDICATED_SERVER で RuntimeDistCleaner が {@code net/minecraft/client/gui/screens/Screen}
- * のロードを検出してクラッシュするため、分離して {@code DistExecutor} 経由で呼び出す。
+ * DEDICATED_SERVER でクライアントクラスのロードを検出してクラッシュするため、
+ * BambooMod 側の dist 分岐内からのみ呼び出す (DistExecutor は 1.21 で削除)。
  */
 @OnlyIn(Dist.CLIENT)
 public final class ClientConfigRegistration {
@@ -19,9 +19,8 @@ public final class ClientConfigRegistration {
     private ClientConfigRegistration() {
     }
 
-    public static void register() {
-        ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
-                () -> new ConfigScreenHandler.ConfigScreenFactory(
-                        (mc, screen) -> new MiniatureConfigScreen(screen)));
+    public static void register(ModContainer modContainer) {
+        modContainer.registerExtensionPoint(IConfigScreenFactory.class,
+                (mc, screen) -> new MiniatureConfigScreen(screen));
     }
 }

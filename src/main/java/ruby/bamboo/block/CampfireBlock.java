@@ -35,6 +35,14 @@ import ruby.bamboo.core.init.BambooBlockEntities;
  */
 public class CampfireBlock extends BaseEntityBlock {
 
+    public static final com.mojang.serialization.MapCodec<CampfireBlock> CODEC =
+            com.mojang.serialization.MapCodec.unit(CampfireBlock::new);
+
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
+
     /** 向き (旧 FACING の水平4方向簡略化)。BER回転用 */
     public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.Plane.HORIZONTAL);
 
@@ -65,8 +73,7 @@ public class CampfireBlock extends BaseEntityBlock {
     // ===== GUI オープン (旧 onBlockActivated 相当) =====
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
-            BlockHitResult hit) {
+    public net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.phys.BlockHitResult hit) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }

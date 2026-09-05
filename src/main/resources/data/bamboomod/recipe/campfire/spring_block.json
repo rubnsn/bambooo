@@ -1,0 +1,28 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "",
+  "pattern": [
+    "SSS",
+    "SWS",
+    "SLS"
+  ],
+  "key": {
+    "S": {
+      "tag": "c:cobblestone"
+    },
+    "W": {
+      "item": "minecraft:water_bucket"
+    },
+    "L": {
+      "item": "minecraft:lava_bucket"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "bamboomod:spring_block"
+  },
+  "experience": 0.5,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

@@ -6,7 +6,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -42,6 +42,14 @@ import ruby.bamboo.block.entity.BambooPotBlockEntity;
  * 鉢本体はモデルで固定描画、植物は BER で自由16本（シフト時はグリッド補助）。
  */
 public class BambooPotBlock extends BaseEntityBlock {
+
+    public static final com.mojang.serialization.MapCodec<BambooPotBlock> CODEC =
+            com.mojang.serialization.MapCodec.unit(BambooPotBlock::new);
+
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
 
     // ===== 調整用定数 =====
     /** 自由配置の基準スケール (花は1.5倍大きく、サボテンは小さく) */
@@ -146,9 +154,9 @@ public class BambooPotBlock extends BaseEntityBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public net.minecraft.world.ItemInteractionResult useItemOn(net.minecraft.world.item.ItemStack useStack, BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hit) {
         if (!(level.getBlockEntity(pos) instanceof BambooPotBlockEntity pot)) {
-            return InteractionResult.PASS;
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         ItemStack handStack = player.getItemInHand(hand);
         // 染料で色変更（どの面からでも可能、後方互換なし）
@@ -156,15 +164,15 @@ public class BambooPotBlock extends BaseEntityBlock {
             DyeColor dye = dyeItem.getDyeColor();
             BambooPotColor col = BambooPotColor.fromDye(dye);
             if (col != null && state.getValue(COLOR) != col) {
-                if (level.isClientSide) return InteractionResult.sidedSuccess(true);
+                if (level.isClientSide) return ItemInteractionResult.sidedSuccess(true);
                 level.setBlock(pos, state.setValue(COLOR, col), 3);
                 if (!player.isCreative()) handStack.shrink(1);
-                return InteractionResult.sidedSuccess(false);
+                return ItemInteractionResult.sidedSuccess(false);
             }
-            return InteractionResult.FAIL;
+            return ItemInteractionResult.FAIL;
         }
         boolean isShift = player.isShiftKeyDown();
-        if (hit.getDirection() != Direction.UP) return InteractionResult.PASS;
+        if (hit.getDirection() != Direction.UP) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         double hitX = Mth.clamp(hit.getLocation().x - pos.getX(), 0.0, 1.0);
         double hitZ = Mth.clamp(hit.getLocation().z - pos.getZ(), 0.0, 1.0);
         Direction facing = state.getValue(FACING);
@@ -177,10 +185,10 @@ public class BambooPotBlock extends BaseEntityBlock {
 
         // 植物を植える
         if (!handStack.isEmpty() && isValidPlant(handStack)) {
-            if (pot.getPlantCount() >= BambooPotBlockEntity.MAX_PLANTS) return InteractionResult.FAIL;
+            if (pot.getPlantCount() >= BambooPotBlockEntity.MAX_PLANTS) return ItemInteractionResult.FAIL;
             boolean useGrid = isShift;
             if (useGrid) {
-                if (pot.getGridCount() >= BambooPotBlockEntity.MAX_GRID) return InteractionResult.FAIL;
+                if (pot.getGridCount() >= BambooPotBlockEntity.MAX_GRID) return ItemInteractionResult.FAIL;
                 // シフトは土面中央線(Z=0)に寄せ、長軸Xは2ドット(0.125)単位でフリー
                 float rawLX = localHit[0];
                 float offsetLX = Mth.clamp(Math.round(rawLX * 8f) / 8f, -0.375f, 0.375f);
@@ -188,14 +196,14 @@ public class BambooPotBlock extends BaseEntityBlock {
                 boolean isCactus = handStack.is(Items.CACTUS);
                 float scale = isCactus ? GRID_SCALE_CACTUS : GRID_SCALE;
                 if (!level.isClientSide) scale += (level.random.nextFloat() - 0.5f) * 0.02f;
-                if (level.isClientSide) return InteractionResult.sidedSuccess(true);
+                if (level.isClientSide) return ItemInteractionResult.sidedSuccess(true);
                 boolean ok = pot.addPlant(handStack, offsetLX, offsetLZ, scale, true);
                 if (ok) {
                     if (!player.isCreative()) handStack.shrink(1);
                     updateAttached(level, pos, state);
-                    return InteractionResult.sidedSuccess(false);
+                    return ItemInteractionResult.sidedSuccess(false);
                 }
-                return InteractionResult.FAIL;
+                return ItemInteractionResult.FAIL;
             } else {
                 float offsetLX = Mth.clamp(localHit[0], -0.40f, 0.40f);
                 float offsetLZ = Mth.clamp(localHit[1], -0.18f, 0.18f);
@@ -203,20 +211,20 @@ public class BambooPotBlock extends BaseEntityBlock {
                 float base = isCactus ? FREE_SCALE_CACTUS : FREE_SCALE_BASE;
                 float scale = base + (level.random.nextFloat() - 0.5f) * FREE_SCALE_VARIATION;
                 scale = Mth.clamp(scale, isCactus ? 0.28f : 0.55f, isCactus ? 0.32f : 0.65f);
-                if (level.isClientSide) return InteractionResult.sidedSuccess(true);
+                if (level.isClientSide) return ItemInteractionResult.sidedSuccess(true);
                 boolean ok = pot.addPlant(handStack, offsetLX, offsetLZ, scale, false);
                 if (ok) {
                     if (!player.isCreative()) handStack.shrink(1);
                     updateAttached(level, pos, state);
-                    return InteractionResult.sidedSuccess(false);
+                    return ItemInteractionResult.sidedSuccess(false);
                 }
-                return InteractionResult.FAIL;
+                return ItemInteractionResult.FAIL;
             }
         }
 
         // 空手で植物を取り出す（最も近い植物）— ローカル座標で距離比較
         if (handStack.isEmpty() && pot.getPlantCount() > 0) {
-            if (level.isClientSide) return InteractionResult.sidedSuccess(true);
+            if (level.isClientSide) return ItemInteractionResult.sidedSuccess(true);
             // worldToLocal済みのlocalHitで最も近いローカル植物を探す
             float targetLX = localHit[0];
             float targetLZ = localHit[1];
@@ -246,9 +254,9 @@ public class BambooPotBlock extends BaseEntityBlock {
                 }
                 updateAttached(level, pos, state);
             }
-            return InteractionResult.sidedSuccess(false);
+            return ItemInteractionResult.sidedSuccess(false);
         }
-        return InteractionResult.PASS;
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     private void updateAttached(Level level, BlockPos pos, BlockState old) {

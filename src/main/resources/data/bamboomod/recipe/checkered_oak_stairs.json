@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "checkered_stairs",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "bamboomod:checkered_oak"
+    }
+  },
+  "result": {
+    "count": 4,
+    "id": "bamboomod:checkered_oak_stairs"
+  }
+}

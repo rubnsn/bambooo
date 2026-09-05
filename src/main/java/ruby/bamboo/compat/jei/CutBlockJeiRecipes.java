@@ -5,7 +5,6 @@ import java.util.List;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
@@ -14,7 +13,6 @@ import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.entity.CutBlockEntity;
 import ruby.bamboo.core.init.BambooBlocks;
 import ruby.bamboo.core.init.BambooItems;
@@ -48,7 +46,6 @@ public final class CutBlockJeiRecipes {
             String matName = names[i];
             // 1) FULL -> HALF x2 (8x16x16)
             list.add(makeShapeless(
-                    new ResourceLocation(BambooMod.MODID, "jei_cut_" + matName + "_to_half"),
                     baseState, (byte)1, (byte)0, (byte)0, 2,
                     mat));
             // 2) HALF -> EIGHT x4 (8x8x8) : HALFは canonical 8x16x16
@@ -58,17 +55,15 @@ public final class CutBlockJeiRecipes {
             // 入力HALFの見た目を出す: 別レシピとして HALF ブロックを素材とする
             // ここでは2段階目の入力を HALF cut_block とする
             list.add(makeHalfToEight(
-                    new ResourceLocation(BambooMod.MODID, "jei_cut_" + matName + "_half_to_eight"),
                     baseState));
             // 3) EIGHT -> QUARTER x4 (4x4x4)
             list.add(makeEightToQuarter(
-                    new ResourceLocation(BambooMod.MODID, "jei_cut_" + matName + "_eight_to_quarter"),
                     baseState));
         }
         return list;
     }
 
-    private static ShapelessRecipe makeShapeless(ResourceLocation id, BlockState baseState, byte xl, byte yl, byte zl, int count, Block material) {
+    private static ShapelessRecipe makeShapeless(BlockState baseState, byte xl, byte yl, byte zl, int count, Block material) {
         ItemStack result = CutBlockRecipe.createCutBlockStack(baseState, xl, yl, zl);
         result.setCount(count);
         ItemStack matStack = new ItemStack(material);
@@ -77,12 +72,12 @@ public final class CutBlockJeiRecipes {
         ings.add(Ingredient.of(matStack));
         ings.add(Ingredient.of(katana));
         // 刀は消費されないことを JEI 上で示すため、ShapelessRecipe を継承して getRemainingItems を上書き
-        return new ShapelessRecipe(id, "", CraftingBookCategory.MISC, result, ings) {
+        return new ShapelessRecipe("", CraftingBookCategory.MISC, result, ings) {
             @Override
-            public NonNullList<ItemStack> getRemainingItems(net.minecraft.world.inventory.CraftingContainer container) {
-                NonNullList<ItemStack> rem = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
-                for (int i = 0; i < container.getContainerSize(); i++) {
-                    ItemStack s = container.getItem(i);
+            public NonNullList<ItemStack> getRemainingItems(net.minecraft.world.item.crafting.CraftingInput input) {
+                NonNullList<ItemStack> rem = NonNullList.withSize(input.size(), ItemStack.EMPTY);
+                for (int i = 0; i < input.size(); i++) {
+                    ItemStack s = input.getItem(i);
                     if (!s.isEmpty() && s.is(BambooItems.COMMON_KATANA.get())) {
                         rem.set(i, s.copy());
                     }
@@ -94,7 +89,7 @@ public final class CutBlockJeiRecipes {
         };
     }
 
-    private static ShapelessRecipe makeHalfToEight(ResourceLocation id, BlockState baseState) {
+    private static ShapelessRecipe makeHalfToEight(BlockState baseState) {
         // 入力: HALF (8x16x16) + 刀 → 出力: EIGHT(8x8x8)x4
         // 正しいNBT付きでないと透明になるため、Ingredient は NBT付き half を使用
         ItemStack half = CutBlockRecipe.createCutBlockStack(baseState, (byte)1, (byte)0, (byte)0);
@@ -105,12 +100,12 @@ public final class CutBlockJeiRecipes {
         NonNullList<Ingredient> ings = NonNullList.create();
         ings.add(Ingredient.of(half));
         ings.add(Ingredient.of(katana));
-        return new ShapelessRecipe(id, "", CraftingBookCategory.MISC, result, ings) {
+        return new ShapelessRecipe("", CraftingBookCategory.MISC, result, ings) {
             @Override
-            public NonNullList<ItemStack> getRemainingItems(net.minecraft.world.inventory.CraftingContainer container) {
-                NonNullList<ItemStack> rem = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
-                for (int i = 0; i < container.getContainerSize(); i++) {
-                    ItemStack s = container.getItem(i);
+            public NonNullList<ItemStack> getRemainingItems(net.minecraft.world.item.crafting.CraftingInput input) {
+                NonNullList<ItemStack> rem = NonNullList.withSize(input.size(), ItemStack.EMPTY);
+                for (int i = 0; i < input.size(); i++) {
+                    ItemStack s = input.getItem(i);
                     if (!s.isEmpty() && s.is(BambooItems.COMMON_KATANA.get())) {
                         rem.set(i, s.copy());
                     }
@@ -122,7 +117,7 @@ public final class CutBlockJeiRecipes {
         };
     }
 
-    private static ShapelessRecipe makeEightToQuarter(ResourceLocation id, BlockState baseState) {
+    private static ShapelessRecipe makeEightToQuarter(BlockState baseState) {
         ItemStack eight = CutBlockRecipe.createCutBlockStack(baseState, (byte)1, (byte)1, (byte)1);
         eight.setCount(1);
         ItemStack katana = new ItemStack(BambooItems.COMMON_KATANA.get());
@@ -131,12 +126,12 @@ public final class CutBlockJeiRecipes {
         NonNullList<Ingredient> ings = NonNullList.create();
         ings.add(Ingredient.of(eight));
         ings.add(Ingredient.of(katana));
-        return new ShapelessRecipe(id, "", CraftingBookCategory.MISC, result, ings) {
+        return new ShapelessRecipe("", CraftingBookCategory.MISC, result, ings) {
             @Override
-            public NonNullList<ItemStack> getRemainingItems(net.minecraft.world.inventory.CraftingContainer container) {
-                NonNullList<ItemStack> rem = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
-                for (int i = 0; i < container.getContainerSize(); i++) {
-                    ItemStack s = container.getItem(i);
+            public NonNullList<ItemStack> getRemainingItems(net.minecraft.world.item.crafting.CraftingInput input) {
+                NonNullList<ItemStack> rem = NonNullList.withSize(input.size(), ItemStack.EMPTY);
+                for (int i = 0; i < input.size(); i++) {
+                    ItemStack s = input.getItem(i);
                     if (!s.isEmpty() && s.is(BambooItems.COMMON_KATANA.get())) {
                         rem.set(i, s.copy());
                     }

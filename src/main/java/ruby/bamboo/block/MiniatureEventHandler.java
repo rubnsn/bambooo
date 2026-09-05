@@ -5,10 +5,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.entity.MiniatureBlockEntity;
 
@@ -21,7 +21,7 @@ import ruby.bamboo.block.entity.MiniatureBlockEntity;
  * サーバ側での外枠破壊を確実にキャンセルし、汎用的に内部セルのみに破壊を限定する。
  * ンレッドストーン全オミットに伴い power 伝播の副作用も抑止。
  */
-@Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = BambooMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class MiniatureEventHandler {
 
     // BreakSpeed は Block#getDestroyProgress で汎用的に処理するため、Forge 側では触らない。

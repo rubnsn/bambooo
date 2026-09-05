@@ -1,0 +1,25 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "",
+  "pattern": [
+    "XYX",
+    "XXX",
+    "XYX"
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:stick"
+    },
+    "Y": {
+      "item": "minecraft:paper"
+    }
+  },
+  "result": {
+    "count": 2,
+    "id": "bamboomod:shoji_tategumi"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

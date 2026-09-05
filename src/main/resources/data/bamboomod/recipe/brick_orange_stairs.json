@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "bamboomod:brick_orange"
+    }
+  },
+  "result": {
+    "count": 4,
+    "id": "bamboomod:brick_orange_stairs"
+  }
+}

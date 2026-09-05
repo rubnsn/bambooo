@@ -1,0 +1,25 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "",
+  "pattern": [
+    "XYX",
+    "X X",
+    "XYX"
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:stick"
+    },
+    "Y": {
+      "item": "minecraft:glass_pane"
+    }
+  },
+  "result": {
+    "count": 2,
+    "id": "bamboomod:glassdoor"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

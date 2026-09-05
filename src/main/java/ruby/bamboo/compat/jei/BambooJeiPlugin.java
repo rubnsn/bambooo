@@ -28,7 +28,7 @@ import ruby.bamboo.gui.MillStoneScreen;
 @SuppressWarnings("removal")
 public class BambooJeiPlugin implements IModPlugin {
 
-    private static final ResourceLocation UID = new ResourceLocation(BambooMod.MODID, "jei_plugin");
+    private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "jei_plugin");
 
     @Override
     public ResourceLocation getPluginUid() {
@@ -37,17 +37,38 @@ public class BambooJeiPlugin implements IModPlugin {
 
     @Override
     public void registerItemSubtypes(mezz.jei.api.registration.ISubtypeRegistration registration) {
-        // cut_block / miniature は NBT で区別されるため、JEI の重複警告を解消し正しく表示するために NBT をサブタイプとして扱う
+        // cut_block / miniature / sack は CustomData Components で区別されるため、
+        // JEI の重複警告を解消し正しく表示するために Components をサブタイプとして扱う (JEI 19 形式)
         try {
-            registration.useNbtForSubtypes(BambooBlocks.CUT_BLOCK.get().asItem());
+            registration.registerSubtypeInterpreter(BambooBlocks.CUT_BLOCK.get().asItem(), new ComponentSubtype());
         } catch (Exception e) {}
         try {
-            registration.useNbtForSubtypes(BambooBlocks.MINIATURE.get().asItem());
+            registration.registerSubtypeInterpreter(BambooBlocks.MINIATURE.get().asItem(), new ComponentSubtype());
         } catch (Exception e) {}
         try {
-            // 袋やカットブロックの NBT バリアントを持つアイテムも念のため
-            registration.useNbtForSubtypes(BambooItems.SACK.get());
+            registration.registerSubtypeInterpreter(BambooItems.SACK.get(), new ComponentSubtype());
         } catch (Exception e) {}
+    }
+
+    /** CustomData Components の内容をサブタイプ識別子にする (旧 useNbtForSubtypes 相当) */
+    private static final class ComponentSubtype implements mezz.jei.api.ingredients.subtypes.ISubtypeInterpreter<ItemStack> {
+        @Override
+        public Object getSubtypeData(ItemStack stack,
+                mezz.jei.api.ingredients.subtypes.UidContext context) {
+            var custom = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                    net.minecraft.world.item.component.CustomData.EMPTY);
+            if (custom.isEmpty()) return null;
+            return custom.copyTag().toString();
+        }
+
+        @Override
+        @SuppressWarnings("removal")
+        @Deprecated
+        public String getLegacyStringSubtypeInfo(ItemStack stack,
+                mezz.jei.api.ingredients.subtypes.UidContext context) {
+            Object data = getSubtypeData(stack, context);
+            return data == null ? "" : data.toString();
+        }
     }
 
     @Override
@@ -63,11 +84,18 @@ public class BambooJeiPlugin implements IModPlugin {
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         var minecraft = Minecraft.getInstance();
-        // JEI専用カットブロックレシピ (レベル未依存で生成可能)
-        List<net.minecraft.world.item.crafting.CraftingRecipe> cutJei = List.of();
+        // JEI専用カットブロックレシピ (レベル未依存で生成可能。JEI 19 は RecipeHolder で渡す)
+        List<net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.CraftingRecipe>> cutJei = List.of();
         try {
-            cutJei = CutBlockJeiRecipes.createJeiRecipes();
-            BambooMod.LOGGER.info("CutBlock JEI dummy recipes generated: {}", cutJei.size());
+            List<net.minecraft.world.item.crafting.CraftingRecipe> dummies = CutBlockJeiRecipes.createJeiRecipes();
+            BambooMod.LOGGER.info("CutBlock JEI dummy recipes generated: {}", dummies.size());
+            java.util.List<net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.CraftingRecipe>> holders = new java.util.ArrayList<>();
+            int idx = 0;
+            for (var dummy : dummies) {
+                holders.add(new net.minecraft.world.item.crafting.RecipeHolder<>(
+                        ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "jei_cut_dummy_" + (idx++)), dummy));
+            }
+            cutJei = List.copyOf(holders);
         } catch (Exception e) {
             BambooMod.LOGGER.warn("Failed to generate CutBlock JEI recipes", e);
         }

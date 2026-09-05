@@ -29,7 +29,7 @@ public record CookingRecipe(ItemStack output, ItemStack[] ingredients, int fuelC
             }
             boolean matched = false;
             for (int i = 0; i < ingredients.length; i++) {
-                if (!used[i] && ItemStack.isSameItemSameTags(slot, ingredients[i])) {
+                if (!used[i] && ItemStack.isSameItemSameComponents(slot, ingredients[i])) {
                     used[i] = true;
                     matched = true;
                     break;

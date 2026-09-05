@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import ruby.bamboo.block.entity.MiniatureBlockEntity;
@@ -208,21 +208,21 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
         Matrix4f mat = pose.pose();
         Matrix3f normal = pose.normal();
         float r = 0.6f, g = 0.8f, b = 1.0f, a = 1.0f;
-        line(vc, mat, normal, 0, 0, 0, 1, 0, 0, r, g, b, a);
-        line(vc, mat, normal, 1, 0, 0, 1, 0, 1, r, g, b, a);
-        line(vc, mat, normal, 1, 0, 1, 0, 0, 1, r, g, b, a);
-        line(vc, mat, normal, 0, 0, 1, 0, 0, 0, r, g, b, a);
-        line(vc, mat, normal, 0, 1, 0, 1, 1, 0, r, g, b, a);
-        line(vc, mat, normal, 1, 1, 0, 1, 1, 1, r, g, b, a);
-        line(vc, mat, normal, 1, 1, 1, 0, 1, 1, r, g, b, a);
-        line(vc, mat, normal, 0, 1, 1, 0, 1, 0, r, g, b, a);
-        line(vc, mat, normal, 0, 0, 0, 0, 1, 0, r, g, b, a);
-        line(vc, mat, normal, 1, 0, 0, 1, 1, 0, r, g, b, a);
-        line(vc, mat, normal, 1, 0, 1, 1, 1, 1, r, g, b, a);
-        line(vc, mat, normal, 0, 0, 1, 0, 1, 1, r, g, b, a);
+        line(vc, pose, 0, 0, 0, 1, 0, 0, r, g, b, a);
+        line(vc, pose, 1, 0, 0, 1, 0, 1, r, g, b, a);
+        line(vc, pose, 1, 0, 1, 0, 0, 1, r, g, b, a);
+        line(vc, pose, 0, 0, 1, 0, 0, 0, r, g, b, a);
+        line(vc, pose, 0, 1, 0, 1, 1, 0, r, g, b, a);
+        line(vc, pose, 1, 1, 0, 1, 1, 1, r, g, b, a);
+        line(vc, pose, 1, 1, 1, 0, 1, 1, r, g, b, a);
+        line(vc, pose, 0, 1, 1, 0, 1, 0, r, g, b, a);
+        line(vc, pose, 0, 0, 0, 0, 1, 0, r, g, b, a);
+        line(vc, pose, 1, 0, 0, 1, 1, 0, r, g, b, a);
+        line(vc, pose, 1, 0, 1, 1, 1, 1, r, g, b, a);
+        line(vc, pose, 0, 0, 1, 0, 1, 1, r, g, b, a);
     }
 
-    private void line(VertexConsumer vc, Matrix4f mat, Matrix3f normal,
+    private void line(VertexConsumer vc, com.mojang.blaze3d.vertex.PoseStack.Pose pose,
                       float x1, float y1, float z1, float x2, float y2, float z2,
                       float r, float g, float b, float a) {
         float nx = x2 - x1;
@@ -234,8 +234,8 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
             ny /= len;
             nz /= len;
         }
-        vc.vertex(mat, x1, y1, z1).color(r, g, b, a).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x2, y2, z2).color(r, g, b, a).normal(normal, nx, ny, nz).endVertex();
+        vc.addVertex(pose, x1, y1, z1).setColor(r, g, b, a).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x2, y2, z2).setColor(r, g, b, a).setNormal(pose, nx, ny, nz);
     }
 
     private void renderTranslucentPlaceholder(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
@@ -245,15 +245,15 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
         Matrix3f norm = pose.normal();
         float r = 0.85f, g = 0.9f, b = 1.0f, alpha = 0.25f;
         int colR = (int) (r * 255), colG = (int) (g * 255), colB = (int) (b * 255), colA = (int) (alpha * 255);
-        quad(vc, mat, norm, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, -1, 0, colR, colG, colB, colA, packedLight, packedOverlay);
-        quad(vc, mat, norm, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, colR, colG, colB, colA, packedLight, packedOverlay);
-        quad(vc, mat, norm, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, -1, colR, colG, colB, colA, packedLight, packedOverlay);
-        quad(vc, mat, norm, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, colR, colG, colB, colA, packedLight, packedOverlay);
-        quad(vc, mat, norm, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, -1, 0, 0, colR, colG, colB, colA, packedLight, packedOverlay);
-        quad(vc, mat, norm, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, colR, colG, colB, colA, packedLight, packedOverlay);
+        quad(vc, pose, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, -1, 0, colR, colG, colB, colA, packedLight, packedOverlay);
+        quad(vc, pose, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, colR, colG, colB, colA, packedLight, packedOverlay);
+        quad(vc, pose, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, -1, colR, colG, colB, colA, packedLight, packedOverlay);
+        quad(vc, pose, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, colR, colG, colB, colA, packedLight, packedOverlay);
+        quad(vc, pose, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, -1, 0, 0, colR, colG, colB, colA, packedLight, packedOverlay);
+        quad(vc, pose, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, colR, colG, colB, colA, packedLight, packedOverlay);
     }
 
-    private void quad(VertexConsumer vc, Matrix4f mat, Matrix3f normal,
+    private void quad(VertexConsumer vc, com.mojang.blaze3d.vertex.PoseStack.Pose pose,
                       float x1, float y1, float z1,
                       float x2, float y2, float z2,
                       float x3, float y3, float z3,
@@ -261,10 +261,10 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
                       float nx, float ny, float nz,
                       int r, int g, int b, int a,
                       int packedLight, int packedOverlay) {
-        vc.vertex(mat, x1, y1, z1).color(r, g, b, a).uv(0, 0).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x2, y2, z2).color(r, g, b, a).uv(1, 0).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x3, y3, z3).color(r, g, b, a).uv(1, 1).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x4, y4, z4).color(r, g, b, a).uv(0, 1).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
+        vc.addVertex(pose, x1, y1, z1).setColor(r, g, b, a).setUv(0, 0).setOverlay(packedOverlay).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x2, y2, z2).setColor(r, g, b, a).setUv(1, 0).setOverlay(packedOverlay).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x3, y3, z3).setColor(r, g, b, a).setUv(1, 1).setOverlay(packedOverlay).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x4, y4, z4).setColor(r, g, b, a).setUv(0, 1).setOverlay(packedOverlay).setLight(packedLight).setNormal(pose, nx, ny, nz);
     }
 
     // ===== 流体描画 — LiquidBlockRenderer 相当を PoseStack スケールで再実装 =====
@@ -277,14 +277,19 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
         net.minecraft.world.level.material.Fluid fluid = fluidState.getType();
         net.minecraft.client.renderer.texture.TextureAtlasSprite[] sprites;
         try {
-            sprites = net.minecraftforge.client.ForgeHooksClient.getFluidSprites(getter, cellPos, fluidState);
+            var fluidExt = net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions.of(fluidState);
+            var blockAtlas = net.minecraft.client.Minecraft.getInstance()
+                    .getTextureAtlas(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS);
+            sprites = new net.minecraft.client.renderer.texture.TextureAtlasSprite[] {
+                    blockAtlas.apply(fluidExt.getStillTexture()),
+                    blockAtlas.apply(fluidExt.getFlowingTexture()) };
         } catch (Exception e) {
             return;
         }
         if (sprites == null || sprites.length < 2 || sprites[0] == null) return;
         int tint;
         try {
-            tint = net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions.of(fluidState).getTintColor(fluidState, getter, cellPos);
+            tint = net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions.of(fluidState).getTintColor(fluidState, getter, cellPos);
         } catch (Exception e) {
             tint = 0xFFFFFFFF;
         }
@@ -409,14 +414,14 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
             net.minecraft.client.renderer.texture.TextureAtlasSprite topSprite;
             if (flow.x == 0.0D && flow.z == 0.0D) {
                 topSprite = spriteStill;
-                u0 = topSprite.getU(0.0D);
-                v0 = topSprite.getV(0.0D);
-                u1 = topSprite.getU(16.0D);
-                v1 = topSprite.getV(0.0D);
-                u2 = topSprite.getU(16.0D);
-                v2 = topSprite.getV(16.0D);
-                u3 = topSprite.getU(0.0D);
-                v3 = topSprite.getV(16.0D);
+                u0 = topSprite.getU((float)(0.0D));
+                v0 = topSprite.getV((float)(0.0D));
+                u1 = topSprite.getU((float)(16.0D));
+                v1 = topSprite.getV((float)(0.0D));
+                u2 = topSprite.getU((float)(16.0D));
+                v2 = topSprite.getV((float)(16.0D));
+                u3 = topSprite.getU((float)(0.0D));
+                v3 = topSprite.getV((float)(16.0D));
                 // uvShrink を考慮 (vanilla lerp)
                 float shrink = topSprite.uvShrinkRatio();
                 float cu = (u0 + u1 + u2 + u3) / 4.0F;
@@ -434,14 +439,14 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
                 float angle = (float)net.minecraft.util.Mth.atan2(flow.z, flow.x) - ((float)Math.PI / 2F);
                 float s = net.minecraft.util.Mth.sin(angle) * 0.25F;
                 float c = net.minecraft.util.Mth.cos(angle) * 0.25F;
-                u0 = topSprite.getU(8.0 + (-c - s) * 16.0);
-                v0 = topSprite.getV(8.0 + (-c + s) * 16.0);
-                u1 = topSprite.getU(8.0 + (-c + s) * 16.0);
-                v1 = topSprite.getV(8.0 + (c + s) * 16.0);
-                u2 = topSprite.getU(8.0 + (c + s) * 16.0);
-                v2 = topSprite.getV(8.0 + (c - s) * 16.0);
-                u3 = topSprite.getU(8.0 + (c - s) * 16.0);
-                v3 = topSprite.getV(8.0 + (-c - s) * 16.0);
+                u0 = topSprite.getU((float)(8.0 + (-c - s) * 16.0));
+                v0 = topSprite.getV((float)(8.0 + (-c + s) * 16.0));
+                u1 = topSprite.getU((float)(8.0 + (-c + s) * 16.0));
+                v1 = topSprite.getV((float)(8.0 + (c + s) * 16.0));
+                u2 = topSprite.getU((float)(8.0 + (c + s) * 16.0));
+                v2 = topSprite.getV((float)(8.0 + (c - s) * 16.0));
+                u3 = topSprite.getU((float)(8.0 + (c - s) * 16.0));
+                v3 = topSprite.getV((float)(8.0 + (-c - s) * 16.0));
                 float shrink = topSprite.uvShrinkRatio();
                 float cu = (u0 + u1 + u2 + u3) / 4.0F;
                 float cv = (v0 + v1 + v2 + v3) / 4.0F;
@@ -458,16 +463,16 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
             float gUp = shadeUp * gf;
             float bUp = shadeUp * bf;
             // 0,0 -> 0,1 -> 1,1 ->1,0 の順 (vanilla と同じ winding)
-            vc.vertex(mat, 0, rh00, 0).color(rUp, gUp, bUp, alpha).uv(u0, v0).overlayCoords(packedOverlay).uv2(light).normal(norm, 0, 1, 0).endVertex();
-            vc.vertex(mat, 0, rh01, 1).color(rUp, gUp, bUp, alpha).uv(u3, v3).overlayCoords(packedOverlay).uv2(light).normal(norm, 0, 1, 0).endVertex();
-            vc.vertex(mat, 1, rh11, 1).color(rUp, gUp, bUp, alpha).uv(u2, v2).overlayCoords(packedOverlay).uv2(light).normal(norm, 0, 1, 0).endVertex();
-            vc.vertex(mat, 1, rh10, 0).color(rUp, gUp, bUp, alpha).uv(u1, v1).overlayCoords(packedOverlay).uv2(light).normal(norm, 0, 1, 0).endVertex();
+            vc.addVertex(pose, 0, rh00, 0).setColor(rUp, gUp, bUp, alpha).setUv(u0, v0).setOverlay(packedOverlay).setLight(light).setNormal(pose, 0, 1, 0);
+            vc.addVertex(pose, 0, rh01, 1).setColor(rUp, gUp, bUp, alpha).setUv(u3, v3).setOverlay(packedOverlay).setLight(light).setNormal(pose, 0, 1, 0);
+            vc.addVertex(pose, 1, rh11, 1).setColor(rUp, gUp, bUp, alpha).setUv(u2, v2).setOverlay(packedOverlay).setLight(light).setNormal(pose, 0, 1, 0);
+            vc.addVertex(pose, 1, rh10, 0).setColor(rUp, gUp, bUp, alpha).setUv(u1, v1).setOverlay(packedOverlay).setLight(light).setNormal(pose, 0, 1, 0);
             // 裏面 (shouldRenderBackwardUpFace) — 水面の裏を見せるため vanilla では両面描画
             if (fluidState.shouldRenderBackwardUpFace(getter, cellPos.above())) {
-                vc.vertex(mat, 0, rh00, 0).color(rUp, gUp, bUp, alpha).uv(u0, v0).overlayCoords(packedOverlay).uv2(light).normal(norm, 0, 1, 0).endVertex();
-                vc.vertex(mat, 1, rh10, 0).color(rUp, gUp, bUp, alpha).uv(u1, v1).overlayCoords(packedOverlay).uv2(light).normal(norm, 0, 1, 0).endVertex();
-                vc.vertex(mat, 1, rh11, 1).color(rUp, gUp, bUp, alpha).uv(u2, v2).overlayCoords(packedOverlay).uv2(light).normal(norm, 0, 1, 0).endVertex();
-                vc.vertex(mat, 0, rh01, 1).color(rUp, gUp, bUp, alpha).uv(u3, v3).overlayCoords(packedOverlay).uv2(light).normal(norm, 0, 1, 0).endVertex();
+                vc.addVertex(pose, 0, rh00, 0).setColor(rUp, gUp, bUp, alpha).setUv(u0, v0).setOverlay(packedOverlay).setLight(light).setNormal(pose, 0, 1, 0);
+                vc.addVertex(pose, 1, rh10, 0).setColor(rUp, gUp, bUp, alpha).setUv(u1, v1).setOverlay(packedOverlay).setLight(light).setNormal(pose, 0, 1, 0);
+                vc.addVertex(pose, 1, rh11, 1).setColor(rUp, gUp, bUp, alpha).setUv(u2, v2).setOverlay(packedOverlay).setLight(light).setNormal(pose, 0, 1, 0);
+                vc.addVertex(pose, 0, rh01, 1).setColor(rUp, gUp, bUp, alpha).setUv(u3, v3).setOverlay(packedOverlay).setLight(light).setNormal(pose, 0, 1, 0);
             }
         }
         if (renderDown) {
@@ -480,10 +485,10 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
             float v1 = spriteStill.getV1();
             // vanilla down は y=0.001
             float y = 0.001F;
-            vc.vertex(mat, 0, y, 1).color(rDown, gDown, bDown, alpha).uv(u0, v1).overlayCoords(packedOverlay).uv2(light).normal(norm, 0, -1, 0).endVertex();
-            vc.vertex(mat, 0, y, 0).color(rDown, gDown, bDown, alpha).uv(u0, v0).overlayCoords(packedOverlay).uv2(light).normal(norm, 0, -1, 0).endVertex();
-            vc.vertex(mat, 1, y, 0).color(rDown, gDown, bDown, alpha).uv(u1, v0).overlayCoords(packedOverlay).uv2(light).normal(norm, 0, -1, 0).endVertex();
-            vc.vertex(mat, 1, y, 1).color(rDown, gDown, bDown, alpha).uv(u1, v1).overlayCoords(packedOverlay).uv2(light).normal(norm, 0, -1, 0).endVertex();
+            vc.addVertex(pose, 0, y, 1).setColor(rDown, gDown, bDown, alpha).setUv(u0, v1).setOverlay(packedOverlay).setLight(light).setNormal(pose, 0, -1, 0);
+            vc.addVertex(pose, 0, y, 0).setColor(rDown, gDown, bDown, alpha).setUv(u0, v0).setOverlay(packedOverlay).setLight(light).setNormal(pose, 0, -1, 0);
+            vc.addVertex(pose, 1, y, 0).setColor(rDown, gDown, bDown, alpha).setUv(u1, v0).setOverlay(packedOverlay).setLight(light).setNormal(pose, 0, -1, 0);
+            vc.addVertex(pose, 1, y, 1).setColor(rDown, gDown, bDown, alpha).setUv(u1, v1).setOverlay(packedOverlay).setLight(light).setNormal(pose, 0, -1, 0);
         }
         // 側面: 高さに応じた UV 縦伸縮 + overlay 対応
         for (Direction dir : Direction.Plane.HORIZONTAL) {
@@ -508,11 +513,11 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
             if (spriteOverlay != null && neighborSt.shouldDisplayFluidOverlay(getter, cellPos.relative(dir), fluidState)) {
                 sideSprite = spriteOverlay;
             }
-            float u0 = sideSprite.getU(0);
-            float u1 = sideSprite.getU(8.0);
-            float v0 = sideSprite.getV((1.0F - ha) * 8.0);
-            float v1 = sideSprite.getV((1.0F - hb) * 8.0);
-            float v2 = sideSprite.getV(8.0);
+            float u0 = sideSprite.getU((float)(0));
+            float u1 = sideSprite.getU((float)(8.0));
+            float v0 = sideSprite.getV((float)((1.0F - ha) * 8.0));
+            float v1 = sideSprite.getV((float)((1.0F - hb) * 8.0));
+            float v2 = sideSprite.getV((float)(8.0));
             float rr = shadeH * rf;
             float gg = shadeH * gf;
             float bb = shadeH * bf;
@@ -520,16 +525,16 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
             float ny = 0;
             float nz = dir.getStepZ();
             // 前面
-            vc.vertex(mat, (float)x0, ha, (float)z0).color(rr, gg, bb, alpha).uv(u0, v0).overlayCoords(packedOverlay).uv2(light).normal(norm, nx, ny, nz).endVertex();
-            vc.vertex(mat, (float)x1, hb, (float)z1).color(rr, gg, bb, alpha).uv(u1, v1).overlayCoords(packedOverlay).uv2(light).normal(norm, nx, ny, nz).endVertex();
-            vc.vertex(mat, (float)x1, 0.001F, (float)z1).color(rr, gg, bb, alpha).uv(u1, v2).overlayCoords(packedOverlay).uv2(light).normal(norm, nx, ny, nz).endVertex();
-            vc.vertex(mat, (float)x0, 0.001F, (float)z0).color(rr, gg, bb, alpha).uv(u0, v2).overlayCoords(packedOverlay).uv2(light).normal(norm, nx, ny, nz).endVertex();
+            vc.addVertex(pose, (float)x0, ha, (float)z0).setColor(rr, gg, bb, alpha).setUv(u0, v0).setOverlay(packedOverlay).setLight(light).setNormal(pose, nx, ny, nz);
+            vc.addVertex(pose, (float)x1, hb, (float)z1).setColor(rr, gg, bb, alpha).setUv(u1, v1).setOverlay(packedOverlay).setLight(light).setNormal(pose, nx, ny, nz);
+            vc.addVertex(pose, (float)x1, 0.001F, (float)z1).setColor(rr, gg, bb, alpha).setUv(u1, v2).setOverlay(packedOverlay).setLight(light).setNormal(pose, nx, ny, nz);
+            vc.addVertex(pose, (float)x0, 0.001F, (float)z0).setColor(rr, gg, bb, alpha).setUv(u0, v2).setOverlay(packedOverlay).setLight(light).setNormal(pose, nx, ny, nz);
             // 裏面は overlay 以外は両面 (vanilla と同様に裏も描画して透け対策)
             if (sideSprite != spriteOverlay) {
-                vc.vertex(mat, (float)x0, 0.001F, (float)z0).color(rr, gg, bb, alpha).uv(u0, v2).overlayCoords(packedOverlay).uv2(light).normal(norm, nx, ny, nz).endVertex();
-                vc.vertex(mat, (float)x1, 0.001F, (float)z1).color(rr, gg, bb, alpha).uv(u1, v2).overlayCoords(packedOverlay).uv2(light).normal(norm, nx, ny, nz).endVertex();
-                vc.vertex(mat, (float)x1, hb, (float)z1).color(rr, gg, bb, alpha).uv(u1, v1).overlayCoords(packedOverlay).uv2(light).normal(norm, nx, ny, nz).endVertex();
-                vc.vertex(mat, (float)x0, ha, (float)z0).color(rr, gg, bb, alpha).uv(u0, v0).overlayCoords(packedOverlay).uv2(light).normal(norm, nx, ny, nz).endVertex();
+                vc.addVertex(pose, (float)x0, 0.001F, (float)z0).setColor(rr, gg, bb, alpha).setUv(u0, v2).setOverlay(packedOverlay).setLight(light).setNormal(pose, nx, ny, nz);
+                vc.addVertex(pose, (float)x1, 0.001F, (float)z1).setColor(rr, gg, bb, alpha).setUv(u1, v2).setOverlay(packedOverlay).setLight(light).setNormal(pose, nx, ny, nz);
+                vc.addVertex(pose, (float)x1, hb, (float)z1).setColor(rr, gg, bb, alpha).setUv(u1, v1).setOverlay(packedOverlay).setLight(light).setNormal(pose, nx, ny, nz);
+                vc.addVertex(pose, (float)x0, ha, (float)z0).setColor(rr, gg, bb, alpha).setUv(u0, v0).setOverlay(packedOverlay).setLight(light).setNormal(pose, nx, ny, nz);
             }
         }
     }
@@ -596,7 +601,7 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
         return !isFaceOccludedBySelf(getter, pos, blockState, dir) && !fluidState.getType().isSame(neighborFluid.getType());
     }
 
-    private void fluidQuad(VertexConsumer vc, Matrix4f mat, Matrix3f normal,
+    private void fluidQuad(VertexConsumer vc, com.mojang.blaze3d.vertex.PoseStack.Pose pose,
                            float x1, float y1, float z1,
                            float x2, float y2, float z2,
                            float x3, float y3, float z3,
@@ -605,10 +610,10 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
                            int r, int g, int b, int a,
                            int packedLight, int packedOverlay,
                            float u0, float v0, float u1, float v1) {
-        vc.vertex(mat, x1, y1, z1).color(r, g, b, a).uv(u0, v0).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x2, y2, z2).color(r, g, b, a).uv(u1, v0).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x3, y3, z3).color(r, g, b, a).uv(u1, v1).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x4, y4, z4).color(r, g, b, a).uv(u0, v1).overlayCoords(packedOverlay).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
+        vc.addVertex(pose, x1, y1, z1).setColor(r, g, b, a).setUv(u0, v0).setOverlay(packedOverlay).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x2, y2, z2).setColor(r, g, b, a).setUv(u1, v0).setOverlay(packedOverlay).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x3, y3, z3).setColor(r, g, b, a).setUv(u1, v1).setOverlay(packedOverlay).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x4, y4, z4).setColor(r, g, b, a).setUv(u0, v1).setOverlay(packedOverlay).setLight(packedLight).setNormal(pose, nx, ny, nz);
     }
 
     @Override

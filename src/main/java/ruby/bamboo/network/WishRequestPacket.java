@@ -1,17 +1,25 @@
 package ruby.bamboo.network;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.handler.WishEventHandler;
-
-import java.util.function.Supplier;
 
 /**
  * C→S 願い送信パケット。最大30文字。
  */
-public class WishRequestPacket {
+public class WishRequestPacket implements CustomPacketPayload {
+
+    public static final CustomPacketPayload.Type<WishRequestPacket> TYPE =
+            new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("bamboomod", "wish_request"));
+
+    /** 既存 encode/decode をそのまま使う codec (シリアライズ内容は 1.20.1 と同一)。 */
+    public static final StreamCodec<FriendlyByteBuf, WishRequestPacket> STREAM_CODEC =
+            StreamCodec.of((buf, msg) -> encode(msg, buf), WishRequestPacket::decode);
 
     private final String wish;
 
@@ -32,10 +40,9 @@ public class WishRequestPacket {
         return new WishRequestPacket(s);
     }
 
-    public static void handle(WishRequestPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ServerPlayer player = ctx.get().getSender();
-            if (player == null) {
+    public static void handle(WishRequestPacket msg, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            if (!(ctx.player() instanceof ServerPlayer player)) {
                 return;
             }
             if (!WishEventHandler.validateAndConsumePending(player)) {
@@ -54,6 +61,10 @@ public class WishRequestPacket {
             BambooMod.LOGGER.info("Wish received from {}: '{}'", player.getName().getString(), raw);
             ruby.bamboo.core.wish.WishManager.resolveAndExecute(player, raw);
         });
-        ctx.get().setPacketHandled(true);
+    }
+
+    @Override
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

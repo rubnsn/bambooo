@@ -2,15 +2,17 @@ package ruby.bamboo.handler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.SpringBlock;
 import ruby.bamboo.block.SpringColor;
@@ -23,7 +25,7 @@ import java.util.*;
  * 64tick(3秒)ごとにワールド時間のビット演算で判定し、近い色3色を同一グループとして5種の良性効果、
  * 2色混合で希少効果、3色以上混合で poison、無色(DEFAULT)はHP回復。
  */
-@Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = BambooMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class SpringSoakHandler {
 
     private SpringSoakHandler() {}
@@ -34,9 +36,9 @@ public final class SpringSoakHandler {
     // G2 yellow : YELLOW, LIME, GREEN            -> DIG_SPEED (haste)
     // G3 blue   : LIGHT_BLUE, CYAN, BLUE         -> WATER_BREATHING
     // G4 purple : MAGENTA, PURPLE, PINK          -> NIGHT_VISION
-    private static final Map<SpringColor, MobEffect> GROUP_EFFECT = new EnumMap<>(SpringColor.class);
+    private static final Map<SpringColor, Holder<MobEffect>> GROUP_EFFECT = new EnumMap<>(SpringColor.class);
     private static final Map<SpringColor, Integer> COLOR_GROUP = new EnumMap<>(SpringColor.class);
-    private static final List<MobEffect> RARE_EFFECTS = List.of(
+    private static final List<Holder<MobEffect>> RARE_EFFECTS = List.of(
             MobEffects.REGENERATION,
             MobEffects.HEALTH_BOOST,
             MobEffects.ABSORPTION,
@@ -61,7 +63,7 @@ public final class SpringSoakHandler {
         // DEFAULT / VANILLA / BLACK はグループ外（heal）
     }
 
-    private static void putGroup(SpringColor[] colors, int gid, MobEffect eff) {
+    private static void putGroup(SpringColor[] colors, int gid, Holder<MobEffect> eff) {
         for (SpringColor c : colors) {
             GROUP_EFFECT.put(c, eff);
             COLOR_GROUP.put(c, gid);
@@ -69,8 +71,8 @@ public final class SpringSoakHandler {
     }
 
     @SubscribeEvent
-    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
-        LivingEntity entity = event.getEntity();
+    public static void onLivingTick(EntityTickEvent.Post event) {
+        if (!(event.getEntity() instanceof LivingEntity entity)) return;
         Level level = entity.level();
         if (level.isClientSide) return;
         // 64tickごとに判定（ビット演算で剰余より軽量）
@@ -150,7 +152,7 @@ public final class SpringSoakHandler {
             SpringColor rep = null;
             for (SpringColor c : distinct) if (c != SpringColor.DEFAULT) { rep = c; break; }
             if (rep == null) { heal(entity); return; }
-            MobEffect eff = GROUP_EFFECT.get(rep);
+            Holder<MobEffect> eff = GROUP_EFFECT.get(rep);
             if (eff != null) apply(entity, eff);
             else heal(entity);
             return;
@@ -162,7 +164,7 @@ public final class SpringSoakHandler {
             for (int g : groups) hash = hash * 31 + g;
             if (hasDefault) hash = hash * 31 + 99;
             int idx = Math.abs(hash) % RARE_EFFECTS.size();
-            MobEffect rare = RARE_EFFECTS.get(idx);
+            Holder<MobEffect> rare = RARE_EFFECTS.get(idx);
             apply(entity, rare);
             return;
         }
@@ -219,11 +221,11 @@ public final class SpringSoakHandler {
         }
     }
 
-    private static void apply(LivingEntity e, MobEffect eff) {
+    private static void apply(LivingEntity e, Holder<MobEffect> eff) {
         apply(e, eff, 6000, 0);
     }
 
-    private static void apply(LivingEntity e, MobEffect eff, int duration, int amp) {
+    private static void apply(LivingEntity e, Holder<MobEffect> eff, int duration, int amp) {
         // 既に同効果がより長く残っていれば更新しない（チラつき防止）
         var existing = e.getEffect(eff);
         if (existing != null && existing.getDuration() > 100) return;

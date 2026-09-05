@@ -25,8 +25,8 @@ import ruby.bamboo.entity.KaginawaHookEntity;
  */
 public class KaginawaHookRenderer extends EntityRenderer<KaginawaHookEntity> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID, "textures/entity/kaginawa_hook.png");
-    private static final ResourceLocation BEAM_TEXTURE = new ResourceLocation("minecraft", "textures/misc/white.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/entity/kaginawa_hook.png");
+    private static final ResourceLocation BEAM_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/misc/white.png");
     // 灰色 0xC8B898
     private static final int ROPE_R = 0xCC;
     private static final int ROPE_G = 0xCC;
@@ -112,30 +112,30 @@ public class KaginawaHookRenderer extends EntityRenderer<KaginawaHookEntity> {
         // 頂点: (-s, -s, -s) .. (s, s, s)
         // 面ごとに法線とUV
         // 下面 normal 0,-1,0
-        addQuad(vc, mat, normal, -s, -s, -s, s, -s, -s, s, -s, s, -s, -s, s, 0, -1, 0, packedLight);
+        addQuad(vc, pose, -s, -s, -s, s, -s, -s, s, -s, s, -s, -s, s, 0, -1, 0, packedLight);
         // 上面 0,1,0
-        addQuad(vc, mat, normal, -s, s, -s, -s, s, s, s, s, s, s, s, -s, 0, 1, 0, packedLight);
+        addQuad(vc, pose, -s, s, -s, -s, s, s, s, s, s, s, s, -s, 0, 1, 0, packedLight);
         // 北 0,0,-1
-        addQuad(vc, mat, normal, -s, -s, -s, -s, s, -s, s, s, -s, s, -s, -s, 0, 0, -1, packedLight);
+        addQuad(vc, pose, -s, -s, -s, -s, s, -s, s, s, -s, s, -s, -s, 0, 0, -1, packedLight);
         // 南 0,0,1
-        addQuad(vc, mat, normal, -s, -s, s, s, -s, s, s, s, s, -s, s, s, 0, 0, 1, packedLight);
+        addQuad(vc, pose, -s, -s, s, s, -s, s, s, s, s, -s, s, s, 0, 0, 1, packedLight);
         // 西 -1,0,0
-        addQuad(vc, mat, normal, -s, -s, -s, -s, -s, s, -s, s, s, -s, s, -s, -1, 0, 0, packedLight);
+        addQuad(vc, pose, -s, -s, -s, -s, -s, s, -s, s, s, -s, s, -s, -1, 0, 0, packedLight);
         // 東 1,0,0
-        addQuad(vc, mat, normal, s, -s, -s, s, s, -s, s, s, s, s, -s, s, 1, 0, 0, packedLight);
+        addQuad(vc, pose, s, -s, -s, s, s, -s, s, s, s, s, -s, s, 1, 0, 0, packedLight);
     }
 
-    private void addQuad(VertexConsumer vc, Matrix4f mat, Matrix3f normal,
+    private void addQuad(VertexConsumer vc, com.mojang.blaze3d.vertex.PoseStack.Pose pose,
                          float x1, float y1, float z1,
                          float x2, float y2, float z2,
                          float x3, float y3, float z3,
                          float x4, float y4, float z4,
                          float nx, float ny, float nz,
                          int packedLight) {
-        vc.vertex(mat, x1, y1, z1).color(255, 255, 255, 255).uv(0, 0).overlayCoords(0).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x2, y2, z2).color(255, 255, 255, 255).uv(1, 0).overlayCoords(0).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x3, y3, z3).color(255, 255, 255, 255).uv(1, 1).overlayCoords(0).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
-        vc.vertex(mat, x4, y4, z4).color(255, 255, 255, 255).uv(0, 1).overlayCoords(0).uv2(packedLight).normal(normal, nx, ny, nz).endVertex();
+        vc.addVertex(pose, x1, y1, z1).setColor(255, 255, 255, 255).setUv(0, 0).setOverlay(0).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x2, y2, z2).setColor(255, 255, 255, 255).setUv(1, 0).setOverlay(0).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x3, y3, z3).setColor(255, 255, 255, 255).setUv(1, 1).setOverlay(0).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, x4, y4, z4).setColor(255, 255, 255, 255).setUv(0, 1).setOverlay(0).setLight(packedLight).setNormal(pose, nx, ny, nz);
     }
 
     private void renderRope(Vec3 start, Vec3 end, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
@@ -197,9 +197,9 @@ public class KaginawaHookRenderer extends EntityRenderer<KaginawaHookEntity> {
         float nz = (float) camDir.z;
 
         // 単一quad帯: 2三角形 (4頂点)
-        vc.vertex(mat, (float) p1.x, (float) p1.y, (float) p1.z).color(ROPE_R, ROPE_G, ROPE_B, ROPE_A).uv(0, 0).overlayCoords(0).uv2(packedLight).normal(norm, nx, ny, nz).endVertex();
-        vc.vertex(mat, (float) p2.x, (float) p2.y, (float) p2.z).color(ROPE_R, ROPE_G, ROPE_B, ROPE_A).uv(1, 0).overlayCoords(0).uv2(packedLight).normal(norm, nx, ny, nz).endVertex();
-        vc.vertex(mat, (float) p3.x, (float) p3.y, (float) p3.z).color(ROPE_R, ROPE_G, ROPE_B, ROPE_A).uv(1, 1).overlayCoords(0).uv2(packedLight).normal(norm, nx, ny, nz).endVertex();
-        vc.vertex(mat, (float) p4.x, (float) p4.y, (float) p4.z).color(ROPE_R, ROPE_G, ROPE_B, ROPE_A).uv(0, 1).overlayCoords(0).uv2(packedLight).normal(norm, nx, ny, nz).endVertex();
+        vc.addVertex(pose, (float) p1.x, (float) p1.y, (float) p1.z).setColor(ROPE_R, ROPE_G, ROPE_B, ROPE_A).setUv(0, 0).setOverlay(0).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, (float) p2.x, (float) p2.y, (float) p2.z).setColor(ROPE_R, ROPE_G, ROPE_B, ROPE_A).setUv(1, 0).setOverlay(0).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, (float) p3.x, (float) p3.y, (float) p3.z).setColor(ROPE_R, ROPE_G, ROPE_B, ROPE_A).setUv(1, 1).setOverlay(0).setLight(packedLight).setNormal(pose, nx, ny, nz);
+        vc.addVertex(pose, (float) p4.x, (float) p4.y, (float) p4.z).setColor(ROPE_R, ROPE_G, ROPE_B, ROPE_A).setUv(0, 1).setOverlay(0).setLight(packedLight).setNormal(pose, nx, ny, nz);
     }
 }

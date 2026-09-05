@@ -1,39 +1,39 @@
 package ruby.bamboo.core.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
  * ミニチュア用の Config — パーティクル数など独自ルールを定義。
  * <p>
  * QA要望: 周囲のミニチュア内部で発生可能なパーティクル数を独自に制限したい。
- * Client側で有効。ForgeConfigSpec で定義し、bamboomod-miniature.toml に保存される。
+ * Client側で有効。ModConfigSpec で定義し、bamboomod-miniature.toml に保存される。
  */
 public class MiniatureConfig {
 
-    public static final ForgeConfigSpec CLIENT_SPEC;
+    public static final ModConfigSpec CLIENT_SPEC;
     public static final Client CLIENT;
 
     static {
-        ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder b = new ModConfigSpec.Builder();
         CLIENT = new Client(b);
         CLIENT_SPEC = b.build();
     }
 
     public static class Client {
-        public final ForgeConfigSpec.BooleanValue particleEnabled;
-        public final ForgeConfigSpec.IntValue particlesPerMiniaturePerTick;
-        public final ForgeConfigSpec.IntValue maxParticlesPerClientTick;
-        public final ForgeConfigSpec.DoubleValue particleSpawnChance;
-        public final ForgeConfigSpec.DoubleValue particleDistance;
-        public final ForgeConfigSpec.IntValue particleTickInterval;
+        public final ModConfigSpec.BooleanValue particleEnabled;
+        public final ModConfigSpec.IntValue particlesPerMiniaturePerTick;
+        public final ModConfigSpec.IntValue maxParticlesPerClientTick;
+        public final ModConfigSpec.DoubleValue particleSpawnChance;
+        public final ModConfigSpec.DoubleValue particleDistance;
+        public final ModConfigSpec.IntValue particleTickInterval;
         // Render budget (face culling + internal cell limit)
-        public final ForgeConfigSpec.IntValue maxCellsPerFrame;
-        public final ForgeConfigSpec.DoubleValue maxRenderDistance;
-        public final ForgeConfigSpec.EnumValue<PlaceholderMode> placeholderMode;
-        public final ForgeConfigSpec.BooleanValue lodBoundaryShell;
-        public final ForgeConfigSpec.IntValue sortInterval;
+        public final ModConfigSpec.IntValue maxCellsPerFrame;
+        public final ModConfigSpec.DoubleValue maxRenderDistance;
+        public final ModConfigSpec.EnumValue<PlaceholderMode> placeholderMode;
+        public final ModConfigSpec.BooleanValue lodBoundaryShell;
+        public final ModConfigSpec.IntValue sortInterval;
 
-        public Client(ForgeConfigSpec.Builder b) {
+        public Client(ModConfigSpec.Builder b) {
             b.push("miniature");
             b.push("particle");
             particleEnabled = b

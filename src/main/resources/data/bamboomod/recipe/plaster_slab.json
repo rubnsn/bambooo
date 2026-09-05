@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "XXX"
+  ],
+  "key": {
+    "X": {
+      "item": "bamboomod:plaster"
+    }
+  },
+  "result": {
+    "count": 6,
+    "id": "bamboomod:plaster_slab"
+  }
+}

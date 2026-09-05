@@ -1,0 +1,21 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "combat",
+  "group": "",
+  "pattern": [
+    "B",
+    "B"
+  ],
+  "key": {
+    "B": {
+      "tag": "c:bamboo"
+    }
+  },
+  "result": {
+    "count": 8,
+    "id": "bamboomod:bambooarrow"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

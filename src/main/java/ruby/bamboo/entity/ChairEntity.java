@@ -3,6 +3,8 @@ package ruby.bamboo.entity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
@@ -42,7 +44,7 @@ public class ChairEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData() {
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
     }
 
     @Override
@@ -54,8 +56,8 @@ public class ChairEntity extends Entity {
     }
 
     @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket() {
-        return super.getAddEntityPacket();
+    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity entity) {
+        return super.getAddEntityPacket(entity);
     }
 
     @Override
@@ -63,19 +65,8 @@ public class ChairEntity extends Entity {
         return this.getPassengers().isEmpty();
     }
 
-    @Override
-    public double getPassengersRidingOffset() {
-        return 0.0D;
-    }
-
-    /**
-     * 座った際の視点オフセット用。椅子自体は Y-1.3 に配置されるため、
-     * 乗車時のプレイヤー位置は実質ブロック上面付近に来る。
-     */
-    @Override
-    public boolean shouldRiderSit() {
-        return true;
-    }
+    // 1.21: getPassengersRidingOffset / shouldRiderSit は削除 (乗車位置は attachment point 既定)。
+    // 椅子自体は Y-1.3 に配置されるため、乗車時のプレイヤー位置は実質ブロック上面付近に来る。
 
     public interface IChairUpdate {
         void apply(Level worldIn, Entity entity);

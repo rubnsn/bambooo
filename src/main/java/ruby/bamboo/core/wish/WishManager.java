@@ -5,6 +5,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -33,7 +34,7 @@ import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.slf4j.Logger;
 import ruby.bamboo.core.config.WishConfig;
 import ruby.bamboo.util.WishBiomeSearch;
@@ -473,8 +474,8 @@ public final class WishManager {
             "bamboomod:commonkatana", "bamboomod:bamboobow", "minecraft:wooden_axe", "minecraft:iron_axe", "minecraft:diamond_axe"
         };
         String pick = weapons[random.nextInt(weapons.length)];
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(pick));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_sword"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(pick));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:iron_sword"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) {
             player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
@@ -493,8 +494,8 @@ public final class WishManager {
             "minecraft:iron_boots", "minecraft:diamond_boots"
         };
         String pick = armors[random.nextInt(armors.length)];
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(pick));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_chestplate"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(pick));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:iron_chestplate"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) {
             player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
@@ -514,8 +515,8 @@ public final class WishManager {
             "bamboomod:paddy_field_hoe"
         };
         String pick = tools[random.nextInt(tools.length)];
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(pick));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_pickaxe"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(pick));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:iron_pickaxe"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) {
             player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
@@ -529,8 +530,8 @@ public final class WishManager {
     private static void giveRandomSword(ServerPlayer player, RandomSource random) {
         String[] list = {"minecraft:wooden_sword","minecraft:stone_sword","minecraft:iron_sword","minecraft:diamond_sword","minecraft:netherite_sword","minecraft:golden_sword","bamboomod:commonkatana"};
         String pick = list[random.nextInt(list.length)];
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(pick));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_sword"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(pick));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:iron_sword"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
         else { ItemStack tmp=new ItemStack(item); Component name=tmp.getHoverName(); player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false); }
@@ -539,8 +540,8 @@ public final class WishManager {
     private static void giveRandomAxe(ServerPlayer player, RandomSource random) {
         String[] list = {"minecraft:wooden_axe","minecraft:stone_axe","minecraft:iron_axe","minecraft:diamond_axe","minecraft:netherite_axe","minecraft:golden_axe"};
         String pick = list[random.nextInt(list.length)];
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(pick));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_axe"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(pick));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:iron_axe"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
         else { ItemStack tmp=new ItemStack(item); Component name=tmp.getHoverName(); player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false); }
@@ -549,8 +550,8 @@ public final class WishManager {
     private static void giveRandomPickaxe(ServerPlayer player, RandomSource random) {
         String[] list = {"minecraft:wooden_pickaxe","minecraft:stone_pickaxe","minecraft:iron_pickaxe","minecraft:diamond_pickaxe","minecraft:netherite_pickaxe","minecraft:golden_pickaxe"};
         String pick = list[random.nextInt(list.length)];
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(pick));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_pickaxe"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(pick));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:iron_pickaxe"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
         else { ItemStack tmp=new ItemStack(item); Component name=tmp.getHoverName(); player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false); }
@@ -559,8 +560,8 @@ public final class WishManager {
     private static void giveRandomShovel(ServerPlayer player, RandomSource random) {
         String[] list = {"minecraft:wooden_shovel","minecraft:stone_shovel","minecraft:iron_shovel","minecraft:diamond_shovel","minecraft:netherite_shovel","minecraft:golden_shovel"};
         String pick = list[random.nextInt(list.length)];
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(pick));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_shovel"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(pick));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:iron_shovel"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
         else { ItemStack tmp=new ItemStack(item); Component name=tmp.getHoverName(); player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false); }
@@ -569,8 +570,8 @@ public final class WishManager {
     private static void giveRandomHoe(ServerPlayer player, RandomSource random) {
         String[] list = {"minecraft:wooden_hoe","minecraft:stone_hoe","minecraft:iron_hoe","minecraft:diamond_hoe","minecraft:netherite_hoe","minecraft:golden_hoe","bamboomod:paddy_field_hoe"};
         String pick = list[random.nextInt(list.length)];
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(pick));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_hoe"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(pick));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:iron_hoe"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
         else { ItemStack tmp=new ItemStack(item); Component name=tmp.getHoverName(); player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false); }
@@ -579,32 +580,32 @@ public final class WishManager {
     private static void giveRandomBow(ServerPlayer player, RandomSource random) {
         String[] list = {"minecraft:bow","bamboomod:bamboobow"};
         String pick = list[random.nextInt(list.length)];
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(pick));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:bow"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(pick));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:bow"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
         else { ItemStack tmp=new ItemStack(item); Component name=tmp.getHoverName(); player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false); }
     }
 
     private static void giveRandomCrossbow(ServerPlayer player, RandomSource random) {
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:crossbow"));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:bow"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:crossbow"));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:bow"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
         else { ItemStack tmp=new ItemStack(item); Component name=tmp.getHoverName(); player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false); }
     }
 
     private static void giveRandomTrident(ServerPlayer player, RandomSource random) {
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:trident"));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_sword"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:trident"));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:iron_sword"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
         else { ItemStack tmp=new ItemStack(item); Component name=tmp.getHoverName(); player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false); }
     }
 
     private static void giveRandomFishingRod(ServerPlayer player, RandomSource random) {
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:fishing_rod"));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:stick"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:fishing_rod"));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:stick"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
         else { ItemStack tmp=new ItemStack(item); Component name=tmp.getHoverName(); player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false); }
@@ -613,8 +614,8 @@ public final class WishManager {
     private static void giveRandomHelmet(ServerPlayer player, RandomSource random) {
         String[] list = {"minecraft:leather_helmet","minecraft:chainmail_helmet","minecraft:iron_helmet","minecraft:diamond_helmet","minecraft:netherite_helmet","minecraft:golden_helmet","minecraft:turtle_helmet"};
         String pick = list[random.nextInt(list.length)];
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(pick));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_helmet"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(pick));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:iron_helmet"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
         else { ItemStack tmp=new ItemStack(item); Component name=tmp.getHoverName(); player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false); }
@@ -623,8 +624,8 @@ public final class WishManager {
     private static void giveRandomChestplate(ServerPlayer player, RandomSource random) {
         String[] list = {"minecraft:leather_chestplate","minecraft:chainmail_chestplate","minecraft:iron_chestplate","minecraft:diamond_chestplate","minecraft:netherite_chestplate","minecraft:golden_chestplate","minecraft:elytra"};
         String pick = list[random.nextInt(list.length)];
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(pick));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_chestplate"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(pick));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:iron_chestplate"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
         else { ItemStack tmp=new ItemStack(item); Component name=tmp.getHoverName(); player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false); }
@@ -633,8 +634,8 @@ public final class WishManager {
     private static void giveRandomLeggings(ServerPlayer player, RandomSource random) {
         String[] list = {"minecraft:leather_leggings","minecraft:chainmail_leggings","minecraft:iron_leggings","minecraft:diamond_leggings","minecraft:netherite_leggings","minecraft:golden_leggings"};
         String pick = list[random.nextInt(list.length)];
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(pick));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_leggings"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(pick));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:iron_leggings"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
         else { ItemStack tmp=new ItemStack(item); Component name=tmp.getHoverName(); player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false); }
@@ -643,30 +644,32 @@ public final class WishManager {
     private static void giveRandomBoots(ServerPlayer player, RandomSource random) {
         String[] list = {"minecraft:leather_boots","minecraft:chainmail_boots","minecraft:iron_boots","minecraft:diamond_boots","minecraft:netherite_boots","minecraft:golden_boots"};
         String pick = list[random.nextInt(list.length)];
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(pick));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_boots"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(pick));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:iron_boots"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
         else { ItemStack tmp=new ItemStack(item); Component name=tmp.getHoverName(); player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false); }
     }
 
     private static void giveRandomShield(ServerPlayer player, RandomSource random) {
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:shield"));
-        if (item == null) item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:iron_ingot"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:shield"));
+        if (item == null) item = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:iron_ingot"));
         boolean over = giveItemInternal(player, item, 1, null, random);
         if (over) player.displayClientMessage(Component.translatable("bamboomod.wish.result.overenchant").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.ITALIC), false);
         else { ItemStack tmp=new ItemStack(item); Component name=tmp.getHoverName(); player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false); }
     }
 
     private static void giveRandomEnchantedBook(ServerPlayer player, RandomSource random) {
-        // ランダムなエンチャントを1つ選び、エンチャント本として付与
-        var enchantments = ForgeRegistries.ENCHANTMENTS.getValues().stream().filter(e -> e != null && e.isDiscoverable() && !e.isCurse()).toList();
+        // ランダムなエンチャントを1つ選び、エンチャント本として付与 (呪いは除外)
+        var enchLookup = player.serverLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        java.util.List<Holder.Reference<Enchantment>> enchantments = enchLookup.listElements()
+                .filter(h -> !h.is(EnchantmentTags.CURSE)).toList();
         ItemStack book = new ItemStack(net.minecraft.world.item.Items.ENCHANTED_BOOK);
         if (!enchantments.isEmpty()) {
-            var ench = enchantments.get(random.nextInt(enchantments.size()));
-            int lvl = 1 + random.nextInt(ench.getMaxLevel());
+            var holder = enchantments.get(random.nextInt(enchantments.size()));
+            int lvl = 1 + random.nextInt(holder.value().getMaxLevel());
             // EnchantedBookItem は EnchantmentInstance を使う
-            net.minecraft.world.item.EnchantedBookItem.addEnchantment(book, new net.minecraft.world.item.enchantment.EnchantmentInstance(ench, lvl));
+            book.enchant(holder, lvl);
         }
         // 頭上にスポーン
         ServerLevel level = player.serverLevel();
@@ -686,7 +689,7 @@ public final class WishManager {
     private static void giveRandomFood(ServerPlayer player, RandomSource random) {
         // 優先は bamboomod の竹食料、なければバニラ
         List<Item> candidates = new ArrayList<>();
-        for (Item it : ForgeRegistries.ITEMS) {
+        for (Item it : BuiltInRegistries.ITEM) {
             ItemStack s = new ItemStack(it);
             if (s.isEmpty()) continue;
             if (s.getFoodProperties(null) != null) {
@@ -697,7 +700,7 @@ public final class WishManager {
         if (!candidates.isEmpty()) {
             pick = candidates.get(random.nextInt(candidates.size()));
         } else {
-            pick = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:cooked_beef"));
+            pick = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:cooked_beef"));
         }
         boolean over = giveItemInternal(player, pick, 3 + random.nextInt(3), false, random);
         // food は overenchant しないが、一応分岐
@@ -712,7 +715,7 @@ public final class WishManager {
 
     private static void giveRandomItem(ServerPlayer player, RandomSource random) {
         List<Item> all = new ArrayList<>();
-        for (Item it : ForgeRegistries.ITEMS) {
+        for (Item it : BuiltInRegistries.ITEM) {
             ItemStack s = new ItemStack(it);
             if (s.isEmpty()) continue;
             // AIR etc除外、stackが空でないもの
@@ -722,7 +725,7 @@ public final class WishManager {
         if (!all.isEmpty()) {
             pick = all.get(random.nextInt(all.size()));
         } else {
-            pick = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft:stone"));
+            pick = BuiltInRegistries.ITEM.get(ResourceLocation.parse("minecraft:stone"));
         }
         boolean over = giveItemInternal(player, pick, 1, null, random);
         if (over) {
@@ -764,8 +767,8 @@ public final class WishManager {
                 int count = eff.args.has("count") ? eff.args.get("count").getAsInt() : 1;
                 Boolean enchanted = null;
                 if (eff.args.has("enchanted")) enchanted = eff.args.get("enchanted").getAsBoolean();
-                ResourceLocation rl = new ResourceLocation(itemStr);
-                Item item = ForgeRegistries.ITEMS.getValue(rl);
+                ResourceLocation rl = ResourceLocation.parse(itemStr);
+                Item item = BuiltInRegistries.ITEM.get(rl);
                 if (item == null) {
                     LOGGER.warn("Unknown item {}", itemStr);
                     continue;
@@ -852,8 +855,8 @@ public final class WishManager {
 
     private static Component getEntityDisplayName(String entityId) {
         try {
-            ResourceLocation rl = new ResourceLocation(entityId);
-            var type = ForgeRegistries.ENTITY_TYPES.getValue(rl);
+            ResourceLocation rl = ResourceLocation.parse(entityId);
+            var type = BuiltInRegistries.ENTITY_TYPE.get(rl);
             if (type != null) {
                 return type.getDescription();
             }
@@ -872,8 +875,8 @@ public final class WishManager {
                     int count = eff.args.has("count") ? eff.args.get("count").getAsInt() : 1;
                     Boolean enchanted = null;
                     if (eff.args.has("enchanted")) enchanted = eff.args.get("enchanted").getAsBoolean();
-                    ResourceLocation rl = new ResourceLocation(itemStr);
-                    Item item = ForgeRegistries.ITEMS.getValue(rl);
+                    ResourceLocation rl = ResourceLocation.parse(itemStr);
+                    Item item = BuiltInRegistries.ITEM.get(rl);
                     if (item == null) {
                         LOGGER.warn("Unknown item {}", itemStr);
                         break;
@@ -889,10 +892,10 @@ public final class WishManager {
                     String effectStr = eff.args.has("effect") ? eff.args.get("effect").getAsString() : "";
                     int duration = eff.args.has("duration") ? eff.args.get("duration").getAsInt() : 200;
                     int amp = eff.args.has("amplifier") ? eff.args.get("amplifier").getAsInt() : 0;
-                    ResourceLocation rl = new ResourceLocation(effectStr);
-                    MobEffect me = ForgeRegistries.MOB_EFFECTS.getValue(rl);
-                    if (me != null) {
-                        player.addEffect(new MobEffectInstance(me, duration, amp));
+                    ResourceLocation rl = ResourceLocation.parse(effectStr);
+                    var holder = BuiltInRegistries.MOB_EFFECT.getHolder(rl);
+                    if (holder.isPresent()) {
+                        player.addEffect(new MobEffectInstance(holder.get(), duration, amp));
                     }
                     player.displayClientMessage(Component.translatable("bamboomod.wish.result.generic").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
                 }
@@ -974,7 +977,9 @@ public final class WishManager {
         boolean enchanted = enchantedFlag != null ? enchantedFlag : stack.getMaxDamage() > 0;
         boolean over = false;
         if (enchanted && stack.isEnchantable()) {
-            stack = EnchantmentHelper.enchantItem(random, stack, 30, true);
+            var enchLookup = player.serverLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+            stack = EnchantmentHelper.enchantItem(random, stack, 30,
+                    enchLookup.listElements().map(h -> (Holder<Enchantment>) h));
             int overChance = WishConfig.COMMON.overenchantChance.get();
             // エンチャント本は対象外（EnchantedBookItemは isEnchantable==false なのでここには来ないが念のため）
             boolean isToolCategory = isToolForGuaranteedOverenchant(item);
@@ -985,7 +990,7 @@ public final class WishManager {
                     // 2個目のエンチャントがあれば低確率でさらにオーバー
                     if (overChance > 0 && random.nextInt(overChance) == 0) {
                         // 別エンチャントを試す（1個しかない場合はスキップ）
-                        if (EnchantmentHelper.getEnchantments(stack).size() > 1) {
+                        if (stack.getEnchantments().size() > 1) {
                             // 1個目は既にオーバー済みなので、2個目は別エンチャントを狙う
                             // tryOverEnchantはランダムな1件を選ぶため、既にオーバーしたものと被る可能性はあるが低確率のため許容
                             // より厳密に別を狙うなら tryOverEnchantDistinct を使う
@@ -1025,20 +1030,19 @@ public final class WishManager {
     }
 
     private static boolean tryOverEnchantDistinct(ItemStack stack, RandomSource random) {
-        java.util.Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(stack);
-        if (map.size() <= 1) return false;
+        var enchantments = stack.getEnchantments();
+        if (enchantments.size() <= 1) return false;
         // 既に最大+1 になっているエンチャントを除外して別を狙う（簡易: 最大レベルを超えているものは除外）
-        List<Enchantment> candidates = new ArrayList<>();
-        for (var e : map.entrySet()) {
-            Enchantment ench = e.getKey();
-            int lvl = e.getValue();
-            if (lvl <= ench.getMaxLevel()) {
-                candidates.add(ench);
+        List<Holder<Enchantment>> candidates = new ArrayList<>();
+        for (var holder : enchantments.keySet()) {
+            int lvl = enchantments.getLevel(holder);
+            if (lvl <= holder.value().getMaxLevel()) {
+                candidates.add(holder);
             }
         }
         if (candidates.isEmpty()) return false;
-        Enchantment ench = candidates.get(random.nextInt(candidates.size()));
-        stack.enchant(ench, ench.getMaxLevel() + 1);
+        Holder<Enchantment> holder = candidates.get(random.nextInt(candidates.size()));
+        stack.enchant(holder, holder.value().getMaxLevel() + 1);
         return true;
     }
 
@@ -1055,10 +1059,10 @@ public final class WishManager {
                     String effectStr = eff.args.has("effect") ? eff.args.get("effect").getAsString() : "";
                     int duration = eff.args.has("duration") ? eff.args.get("duration").getAsInt() : 200;
                     int amp = eff.args.has("amplifier") ? eff.args.get("amplifier").getAsInt() : 0;
-                    ResourceLocation rl = new ResourceLocation(effectStr);
-                    MobEffect me = ForgeRegistries.MOB_EFFECTS.getValue(rl);
-                    if (me != null) {
-                        player.addEffect(new MobEffectInstance(me, duration, amp));
+                    ResourceLocation rl = ResourceLocation.parse(effectStr);
+                    var holder = BuiltInRegistries.MOB_EFFECT.getHolder(rl);
+                    if (holder.isPresent()) {
+                        player.addEffect(new MobEffectInstance(holder.get(), duration, amp));
                     }
                 }
                 case "teleport_random" -> {
@@ -1147,11 +1151,11 @@ public final class WishManager {
      * @return 成功したら true（エンチャントが1つも無ければ false）
      */
     private static boolean tryOverEnchant(ItemStack stack, RandomSource random) {
-        java.util.Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(stack);
-        if (map.isEmpty()) return false;
-        List<Enchantment> keys = new ArrayList<>(map.keySet());
-        Enchantment ench = keys.get(random.nextInt(keys.size()));
-        stack.enchant(ench, ench.getMaxLevel() + 1);
+        var enchantments = stack.getEnchantments();
+        if (enchantments.isEmpty()) return false;
+        List<Holder<Enchantment>> keys = new ArrayList<>(enchantments.keySet());
+        Holder<Enchantment> holder = keys.get(random.nextInt(keys.size()));
+        stack.enchant(holder, holder.value().getMaxLevel() + 1);
         return true;
     }
 
@@ -1173,12 +1177,12 @@ public final class WishManager {
         if (entityId == null || entityId.isEmpty()) return;
         ResourceLocation rl;
         try {
-            rl = new ResourceLocation(entityId);
+            rl = ResourceLocation.parse(entityId);
         } catch (Exception e) {
             LOGGER.warn("Invalid entity id {}", entityId);
             return;
         }
-        var type = ForgeRegistries.ENTITY_TYPES.getValue(rl);
+        var type = BuiltInRegistries.ENTITY_TYPE.get(rl);
         if (type == null) {
             LOGGER.warn("Unknown entity {}", entityId);
             return;
@@ -1282,16 +1286,11 @@ public final class WishManager {
         if (respawnPos != null) {
             targetLevel = player.server.getLevel(dim);
             if (targetLevel == null) targetLevel = player.server.overworld();
-            // try to find safe respawn position (bed/anchor)
+            // try to find safe respawn position (bed/anchor).
+            // 1.21: ServerPlayer.findRespawnAndUseSpawnBlock は private のため、
+            // ベッド/アンカー位置をそのまま使う (就寝済み位置は基本安全)。
             try {
-                var opt = net.minecraft.world.entity.player.Player.findRespawnPositionAndUseSpawnBlock(targetLevel, respawnPos, angle, forced, false);
-                if (opt.isPresent()) {
-                    Vec3 v = opt.get();
-                    targetVec = v;
-                } else {
-                    // fallback to respawnPos itself if not forced? use heightmap
-                    targetVec = new Vec3(respawnPos.getX() + 0.5, respawnPos.getY() + 0.1, respawnPos.getZ() + 0.5);
-                }
+                targetVec = new Vec3(respawnPos.getX() + 0.5, respawnPos.getY() + 0.1, respawnPos.getZ() + 0.5);
             } catch (Exception ex) {
                 LOGGER.warn("Failed to find respawn position, fallback to raw pos", ex);
                 targetVec = new Vec3(respawnPos.getX() + 0.5, respawnPos.getY() + 0.1, respawnPos.getZ() + 0.5);
@@ -1338,7 +1337,7 @@ public final class WishManager {
         }
         ResourceLocation rl;
         try {
-            rl = new ResourceLocation(biomeIdStr);
+            rl = ResourceLocation.parse(biomeIdStr);
         } catch (Exception ex) {
             LOGGER.warn("Invalid biome id {}", biomeIdStr);
             return false;
@@ -1453,12 +1452,12 @@ public final class WishManager {
         ResourceLocation lootRL;
         if (lootTableStr != null && !lootTableStr.isEmpty()) {
             try {
-                lootRL = new ResourceLocation(lootTableStr);
+                lootRL = ResourceLocation.parse(lootTableStr);
             } catch (Exception ex) {
-                lootRL = new ResourceLocation(defaults[random.nextInt(defaults.length)]);
+                lootRL = ResourceLocation.parse(defaults[random.nextInt(defaults.length)]);
             }
         } else {
-            lootRL = new ResourceLocation(defaults[random.nextInt(defaults.length)]);
+            lootRL = ResourceLocation.parse(defaults[random.nextInt(defaults.length)]);
         }
         // find position in front of player
         BlockPos origin = player.blockPosition();
@@ -1490,7 +1489,7 @@ public final class WishManager {
             level.setBlock(target, chestState, 3);
             var be = level.getBlockEntity(target);
             if (be instanceof RandomizableContainerBlockEntity rc) {
-                rc.setLootTable(lootRL, random.nextLong());
+                rc.setLootTable(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, lootRL), random.nextLong());
             }
             level.playSound(null, target, SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1.0F, 1.0F);
         } catch (Exception ex) {

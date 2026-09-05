@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "wooden_slab",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "bamboomod:sakura_planks"
+    }
+  },
+  "result": {
+    "count": 6,
+    "id": "bamboomod:sakura_slab"
+  }
+}

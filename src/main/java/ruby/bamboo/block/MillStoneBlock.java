@@ -33,6 +33,14 @@ import ruby.bamboo.block.entity.MillStoneBlockEntity;
  */
 public class MillStoneBlock extends BaseEntityBlock {
 
+    public static final com.mojang.serialization.MapCodec<MillStoneBlock> CODEC =
+            com.mojang.serialization.MapCodec.unit(MillStoneBlock::new);
+
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
+
     /** 粉砕モーション (0-3)。旧 PropertyInteger META の実使用範囲 */
     public static final IntegerProperty GRIND_MOTION = IntegerProperty.create("grind_motion", 0, 3);
 
@@ -67,8 +75,7 @@ public class MillStoneBlock extends BaseEntityBlock {
     // ===== GUI オープン (旧 onBlockActivated 相当) =====
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
-            BlockHitResult hit) {
+    public net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.phys.BlockHitResult hit) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "bamboomod:sakura_leave"
+    }
+  },
+  "result": {
+    "count": 3,
+    "id": "bamboomod:sakura_carpet"
+  }
+}

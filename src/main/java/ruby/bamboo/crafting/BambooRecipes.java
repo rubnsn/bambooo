@@ -1,7 +1,7 @@
 package ruby.bamboo.crafting;
 
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 
 /**
  * レシピ登録 (旧 BambooRecipes#addGrindRecipe の移植)。

@@ -1,0 +1,22 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "",
+  "pattern": [
+    " S ",
+    "S S",
+    " S "
+  ],
+  "key": {
+    "S": {
+      "tag": "c:cobblestone"
+    }
+  },
+  "result": {
+    "count": 4,
+    "id": "bamboomod:shuriken_stone"
+  },
+  "experience": 0.2,
+  "cookingtime": 100,
+  "fuelCost": 100
+}

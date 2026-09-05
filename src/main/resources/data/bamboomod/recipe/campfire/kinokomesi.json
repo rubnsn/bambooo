@@ -1,0 +1,19 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "food",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "minecraft:brown_mushroom"
+    },
+    {
+      "item": "bamboomod:rawrice"
+    }
+  ],
+  "result": {
+    "id": "bamboomod:bamboofood_kinokomesi"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

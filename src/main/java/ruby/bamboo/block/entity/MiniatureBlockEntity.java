@@ -1,6 +1,9 @@
 package ruby.bamboo.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -10,6 +13,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -20,7 +24,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.registries.ForgeRegistries;
 import ruby.bamboo.core.init.BambooBlockEntities;
 
 /**
@@ -471,29 +474,29 @@ public class MiniatureBlockEntity extends BlockEntity {
     // ===== NBT =====
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
         writeSyncData(tag);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         readSyncData(tag);
     }
 
     // ===== 同期 (MillStoneBlockEntity L444-470 パターン) =====
 
     @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
         writeSyncData(tag);
         return tag;
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        super.handleUpdateTag(tag);
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        super.handleUpdateTag(tag, registries);
         readSyncData(tag);
     }
 
@@ -501,11 +504,11 @@ public class MiniatureBlockEntity extends BlockEntity {
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
         CompoundTag tag = new CompoundTag();
         writeSyncData(tag);
-        return ClientboundBlockEntityDataPacket.create(this, be -> tag);
+        return ClientboundBlockEntityDataPacket.create(this, (be, registries) -> tag);
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
         readSyncData(pkt.getTag());
     }
 
@@ -537,24 +540,28 @@ public class MiniatureBlockEntity extends BlockEntity {
     }
 
     public void saveToItemStack(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         tag.putInt(TAG_SIZE, this.size);
         if (!isEmpty()) {
             CompoundTag bet = new CompoundTag();
             writeSyncData(bet);
             tag.put("BlockEntityTag", bet);
         }
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
 
     public static int getSizeFromStack(ItemStack stack) {
         if (stack == null || stack.isEmpty()) {
             return DEFAULT_SIZE;
         }
-        CompoundTag tag = stack.getTag();
-        if (tag != null && tag.contains(TAG_SIZE, Tag.TAG_INT)) {
+        if (!stack.has(DataComponents.CUSTOM_DATA)) {
+            return DEFAULT_SIZE;
+        }
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (tag.contains(TAG_SIZE, Tag.TAG_INT)) {
             return clampSize(tag.getInt(TAG_SIZE));
         }
-        if (tag != null && tag.contains("BlockEntityTag", Tag.TAG_COMPOUND)) {
+        if (tag.contains("BlockEntityTag", Tag.TAG_COMPOUND)) {
             CompoundTag bet = tag.getCompound("BlockEntityTag");
             if (bet.contains(TAG_SIZE, Tag.TAG_INT)) {
                 return clampSize(bet.getInt(TAG_SIZE));
@@ -670,7 +677,7 @@ public class MiniatureBlockEntity extends BlockEntity {
 
     /**
      * NbtUtils.writeBlockState 形式の CompoundTag から BlockState を復元。
-     * ForgeRegistries へのフォールバックで MODブロックも含めて解決する。unknown ブロックは AIR にフォールバック。
+     * BuiltInRegistries へのフォールバックで MODブロックも含めて解決する。unknown ブロックは AIR にフォールバック。
      * level.holderLookup を用いた NbtUtils.readBlockState は HolderGetter の二重抽象メソッドにより
      * ラムダ不可のため、Phase A では手動パースに統一する (Phase E 以降で必要なら匿名クラスで対応)。
      */
@@ -690,7 +697,7 @@ public class MiniatureBlockEntity extends BlockEntity {
         if (id == null) {
             return Blocks.AIR.defaultBlockState();
         }
-        Block block = ForgeRegistries.BLOCKS.getValue(id);
+        Block block = BuiltInRegistries.BLOCK.get(id);
         if (block == null) {
             return Blocks.AIR.defaultBlockState();
         }

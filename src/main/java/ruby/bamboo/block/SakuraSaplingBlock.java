@@ -2,7 +2,7 @@ package ruby.bamboo.block;
 
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.SaplingBlock;
-import net.minecraft.world.level.block.grower.AbstractTreeGrower;
+import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 
@@ -15,13 +15,10 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
  */
 public class SakuraSaplingBlock extends SaplingBlock {
 
-    public static final AbstractTreeGrower SAKURA_TREE = new AbstractTreeGrower() {
-        @Override
-        protected net.minecraft.resources.ResourceKey<ConfiguredFeature<?, ?>> getConfiguredFeature(
-                RandomSource rand, boolean hasFlowers) {
-            return rand.nextInt(10) == 0 ? SakuraTreeFeatures.SAKURA_BIG : SakuraTreeFeatures.SAKURA;
-        }
-    };
+    public static final TreeGrower SAKURA_TREE = new TreeGrower("sakura", 0.1F,
+            java.util.Optional.empty(), java.util.Optional.empty(),
+            java.util.Optional.of(SakuraTreeFeatures.SAKURA), java.util.Optional.of(SakuraTreeFeatures.SAKURA_BIG),
+            java.util.Optional.empty(), java.util.Optional.empty());
 
     public SakuraSaplingBlock(BlockBehaviour.Properties props) {
         super(SAKURA_TREE, props);

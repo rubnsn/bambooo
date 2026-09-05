@@ -21,7 +21,7 @@ import ruby.bamboo.BambooMod;
  */
 public class CampfireScreen extends AbstractContainerScreen<CampfireMenu> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID, "textures/gui/campfire.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/gui/campfire.png");
 
     public CampfireScreen(CampfireMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -38,7 +38,7 @@ public class CampfireScreen extends AbstractContainerScreen<CampfireMenu> {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(graphics);
+        this.renderBackground(graphics, mouseX, mouseY, partialTick);
         super.render(graphics, mouseX, mouseY, partialTick);
         this.renderTooltip(graphics, mouseX, mouseY);
     }

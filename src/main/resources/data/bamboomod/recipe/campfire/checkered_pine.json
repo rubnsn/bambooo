@@ -1,0 +1,24 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "checkered",
+  "pattern": [
+    "S#",
+    "#S"
+  ],
+  "key": {
+    "S": {
+      "item": "bamboomod:sakura_planks"
+    },
+    "#": {
+      "item": "minecraft:spruce_planks"
+    }
+  },
+  "result": {
+    "count": 4,
+    "id": "bamboomod:checkered_pine"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

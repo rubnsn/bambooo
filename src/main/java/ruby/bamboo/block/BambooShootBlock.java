@@ -24,6 +24,14 @@ import ruby.bamboo.core.init.BambooBlocks;
  */
 public class BambooShootBlock extends BushBlock implements net.minecraft.world.level.block.BonemealableBlock {
 
+    public static final com.mojang.serialization.MapCodec<BambooShootBlock> CODEC =
+            net.minecraft.world.level.block.state.BlockBehaviour.simpleCodec(BambooShootBlock::new);
+
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends BushBlock> codec() {
+        return CODEC;
+    }
+
     /** 旧 BLOCK_AABB (0.3,0,0.3)-(0.7,0.5,0.7) */
     private static final VoxelShape SHAPE = Block.box(5, 0, 5, 11, 8, 11);
 
@@ -72,7 +80,7 @@ public class BambooShootBlock extends BushBlock implements net.minecraft.world.l
     // ===== BonemealableBlock (旧 IGrowable) =====
 
     @Override
-    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state, boolean isClient) {
+    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
         return true;
     }
 

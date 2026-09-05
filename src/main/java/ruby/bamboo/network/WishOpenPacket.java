@@ -1,17 +1,23 @@
 package ruby.bamboo.network;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import ruby.bamboo.client.ClientWishHandler;
-
-import java.util.function.Supplier;
 
 /**
  * S→C 願い入力画面を開けパケット。payloadなし。
  */
-public class WishOpenPacket {
+public class WishOpenPacket implements CustomPacketPayload {
+
+    public static final CustomPacketPayload.Type<WishOpenPacket> TYPE =
+            new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("bamboomod", "wish_open"));
+
+    /** 既存 encode/decode をそのまま使う codec (シリアライズ内容は 1.20.1 と同一)。 */
+    public static final StreamCodec<FriendlyByteBuf, WishOpenPacket> STREAM_CODEC =
+            StreamCodec.of((buf, msg) -> encode(msg, buf), WishOpenPacket::decode);
 
     public WishOpenPacket() {
     }
@@ -23,8 +29,13 @@ public class WishOpenPacket {
         return new WishOpenPacket();
     }
 
-    public static void handle(WishOpenPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientWishHandler.handleOpen()));
-        ctx.get().setPacketHandled(true);
+    public static void handle(WishOpenPacket msg, IPayloadContext ctx) {
+        // playToClient のためサーバでは実行されない。クライアントハンドラを直接呼ぶ。
+        ctx.enqueueWork(() -> ClientWishHandler.handleOpen());
+    }
+
+    @Override
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

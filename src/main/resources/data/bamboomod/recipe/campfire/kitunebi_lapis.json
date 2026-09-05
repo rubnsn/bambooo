@@ -1,0 +1,25 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "",
+  "pattern": [
+    "XXX",
+    " Y ",
+    "XXX"
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:lapis_lazuli"
+    },
+    "Y": {
+      "item": "minecraft:jack_o_lantern"
+    }
+  },
+  "result": {
+    "count": 6,
+    "id": "bamboomod:kitunebi"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

@@ -1,9 +1,8 @@
 package ruby.bamboo.entity.arrow;
 
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import ruby.bamboo.BambooMod;
 
 /**
@@ -13,19 +12,14 @@ import ruby.bamboo.BambooMod;
  * {@link TimerBomb#tickAll()} を呼び出す必要がある。(旧 1.10.2 の
  * ITickable 相当)
  */
-@Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = BambooMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class TimerBombHandler {
 
     private TimerBombHandler() {
     }
 
     @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.side != LogicalSide.SERVER) {
-            return;
-        }
-        if (event.phase == TickEvent.Phase.END) {
-            TimerBomb.tickAll();
-        }
+    public static void onServerTick(ServerTickEvent.Post event) {
+        TimerBomb.tickAll();
     }
 }

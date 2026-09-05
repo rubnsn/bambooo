@@ -1,0 +1,22 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "",
+  "pattern": [
+    " S ",
+    "S S",
+    " S "
+  ],
+  "key": {
+    "S": {
+      "tag": "c:gems/diamond"
+    }
+  },
+  "result": {
+    "count": 32,
+    "id": "bamboomod:shuriken_diamond"
+  },
+  "experience": 1.0,
+  "cookingtime": 300,
+  "fuelCost": 300
+}

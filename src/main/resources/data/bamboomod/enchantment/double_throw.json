@@ -1,0 +1,22 @@
+{
+  "description": {
+    "translate": "enchantment.bamboomod.double_throw"
+  },
+  "supported_items": "bamboomod:ninja_bracelet",
+  "weight": 2,
+  "max_level": 1,
+  "min_cost": {
+    "base": 20,
+    "per_level_above_first": 0
+  },
+  "max_cost": {
+    "base": 50,
+    "per_level_above_first": 0
+  },
+  "anvil_cost": 1,
+  "slots": [
+    "mainhand"
+  ],
+  "exclusive_set": "#bamboomod:exclusive_set/throw_count",
+  "effects": {}
+}

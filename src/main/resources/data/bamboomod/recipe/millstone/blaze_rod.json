@@ -1,0 +1,16 @@
+{
+  "type": "bamboomod:millstone",
+  "category": "misc",
+  "ingredient": {
+    "item": "minecraft:blaze_rod"
+  },
+  "count": 1,
+  "result": {
+    "count": 2,
+    "id": "minecraft:blaze_powder"
+  },
+  "bonus": {
+    "id": "minecraft:blaze_powder"
+  },
+  "bonusChance": 0.5
+}

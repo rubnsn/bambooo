@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "bamboomod:brick_brown"
+    }
+  },
+  "result": {
+    "count": 6,
+    "id": "bamboomod:brick_brown_slab"
+  }
+}

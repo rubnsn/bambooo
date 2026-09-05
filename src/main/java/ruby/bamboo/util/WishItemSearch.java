@@ -3,7 +3,7 @@ package ruby.bamboo.util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -24,7 +24,7 @@ public final class WishItemSearch {
         List<Item> exact = new ArrayList<>();
         List<ItemWithName> partials = new ArrayList<>();
 
-        for (Item item : ForgeRegistries.ITEMS) {
+        for (Item item : BuiltInRegistries.ITEM) {
             ItemStack stack = new ItemStack(item);
             if (stack.isEmpty()) {
                 continue;
@@ -73,7 +73,7 @@ public final class WishItemSearch {
     }
 
     private static int namespacePriority(Item item) {
-        ResourceLocation rl = ForgeRegistries.ITEMS.getKey(item);
+        ResourceLocation rl = BuiltInRegistries.ITEM.getKey(item);
         if (rl == null) {
             return 2;
         }
@@ -88,12 +88,12 @@ public final class WishItemSearch {
     }
 
     private static int registryNameLength(Item item) {
-        ResourceLocation rl = ForgeRegistries.ITEMS.getKey(item);
+        ResourceLocation rl = BuiltInRegistries.ITEM.getKey(item);
         return rl == null ? Integer.MAX_VALUE : rl.getPath().length();
     }
 
     private static String registryName(Item item) {
-        ResourceLocation rl = ForgeRegistries.ITEMS.getKey(item);
+        ResourceLocation rl = BuiltInRegistries.ITEM.getKey(item);
         return rl == null ? "" : rl.toString();
     }
 

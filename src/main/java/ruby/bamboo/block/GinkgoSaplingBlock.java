@@ -2,7 +2,7 @@ package ruby.bamboo.block;
 
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.SaplingBlock;
-import net.minecraft.world.level.block.grower.AbstractTreeGrower;
+import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
@@ -17,13 +17,10 @@ import ruby.bamboo.core.init.BambooBlocks;
  */
 public class GinkgoSaplingBlock extends SaplingBlock {
 
-    public static final AbstractTreeGrower GINKGO_TREE = new AbstractTreeGrower() {
-        @Override
-        protected net.minecraft.resources.ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> getConfiguredFeature(
-                RandomSource rand, boolean hasFlowers) {
-            return rand.nextInt(10) == 0 ? GinkgoTreeFeatures.GINKGO_BIG : GinkgoTreeFeatures.GINKGO;
-        }
-    };
+    public static final TreeGrower GINKGO_TREE = new TreeGrower("ginkgo", 0.1F,
+            java.util.Optional.empty(), java.util.Optional.empty(),
+            java.util.Optional.of(GinkgoTreeFeatures.GINKGO), java.util.Optional.of(GinkgoTreeFeatures.GINKGO_BIG),
+            java.util.Optional.empty(), java.util.Optional.empty());
 
     public GinkgoSaplingBlock(BlockBehaviour.Properties props) {
         super(GINKGO_TREE, props);

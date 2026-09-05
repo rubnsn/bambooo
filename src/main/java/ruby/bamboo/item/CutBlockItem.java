@@ -3,11 +3,13 @@ package ruby.bamboo.item;
 import java.util.function.Consumer;
 
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import ruby.bamboo.block.entity.CutBlockEntity;
 import ruby.bamboo.client.renderer.CutBlockItemRenderer;
 
@@ -111,8 +113,8 @@ public class CutBlockItem extends BlockItem {
             level.setBlock(placePos, newState, 3);
             if (level.getBlockEntity(placePos) instanceof CutBlockEntity newBe) {
                 if (isMulti) {
-                    net.minecraft.nbt.CompoundTag tag = stack.getTag();
-                    if (tag != null && tag.contains("BlockEntityTag", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
+                    net.minecraft.nbt.CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+                    if (tag.contains("BlockEntityTag", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
                         net.minecraft.nbt.CompoundTag bet = tag.getCompound("BlockEntityTag");
                         newBe.readSyncData(bet);
                     } else {
@@ -253,8 +255,8 @@ public class CutBlockItem extends BlockItem {
         CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(stack);
         if (data.state().isAir()) {
             try {
-                net.minecraft.nbt.CompoundTag tag = stack.getTag();
-                if (tag != null && tag.contains("BlockEntityTag", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
+                net.minecraft.nbt.CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+                if (tag.contains("BlockEntityTag", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
                     net.minecraft.nbt.CompoundTag bet = tag.getCompound("BlockEntityTag");
                     if (bet.contains(CutBlockEntity.TAG_BOUNDS, net.minecraft.nbt.Tag.TAG_INT_ARRAY)) {
                         int[] b = bet.getIntArray(CutBlockEntity.TAG_BOUNDS);

@@ -24,8 +24,8 @@ import ruby.bamboo.entity.companion.DolphinCompanionEntity;
  */
 public class DolphinCompanionRenderer extends DolphinRenderer {
 
-    private static final ResourceLocation GRAY_TEXTURE = new ResourceLocation("bamboomod", "textures/entity/dolphin_grayscale.png");
-    private static final ResourceLocation VANILLA_TEXTURE = new ResourceLocation("minecraft", "textures/entity/dolphin.png");
+    private static final ResourceLocation GRAY_TEXTURE = ResourceLocation.fromNamespaceAndPath("bamboomod", "textures/entity/dolphin_grayscale.png");
+    private static final ResourceLocation VANILLA_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/entity/dolphin.png");
 
     public DolphinCompanionRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
@@ -45,10 +45,14 @@ public class DolphinCompanionRenderer extends DolphinRenderer {
             super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
             return;
         }
-        if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.RenderLivingEvent.Pre<>(entity, this, partialTicks, poseStack, buffer, packedLight))) return;
+        if (net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.client.event.RenderLivingEvent.Pre<>(entity, this, partialTicks, poseStack, buffer, packedLight)).isCanceled()) return;
         // グレースケール白テクスチャに染料を乗算
         DyeColor dye = dolphin.getDolphinColor();
-        float[] cols = dye.getTextureDiffuseColors();
+        int dyeColor = dye.getTextureDiffuseColor();
+        float[] cols = new float[] {
+                (float) (dyeColor >> 16 & 255) / 255.0F,
+                (float) (dyeColor >> 8 & 255) / 255.0F,
+                (float) (dyeColor & 255) / 255.0F };
         // LivingEntityRenderer の render を複製して色だけ差し替え
         poseStack.pushPose();
         DolphinModel<Dolphin> model = this.getModel();
@@ -82,10 +86,6 @@ public class DolphinCompanionRenderer extends DolphinRenderer {
             }
         }
         float f7 = this.getBob(entity, partialTicks);
-        this.setupRotations(entity, poseStack, f7, f, partialTicks);
-        poseStack.scale(-1.0F, -1.0F, 1.0F);
-        this.scale(entity, poseStack, partialTicks);
-        poseStack.translate(0.0F, -1.501F, 0.0F);
         float f8 = 0.0F;
         float f5 = 0.0F;
         if (!shouldSit && entity.isAlive()) {
@@ -94,6 +94,10 @@ public class DolphinCompanionRenderer extends DolphinRenderer {
             if (entity.isBaby()) f5 *= 3.0F;
             if (f8 > 1.0F) f8 = 1.0F;
         }
+        this.setupRotations(entity, poseStack, f7, f, partialTicks, f8);
+        poseStack.scale(-1.0F, -1.0F, 1.0F);
+        this.scale(entity, poseStack, partialTicks);
+        poseStack.translate(0.0F, -1.501F, 0.0F);
         model.prepareMobModel(entity, f5, f8, partialTicks);
         model.setupAnim(entity, f5, f8, f7, f2, f6);
         Minecraft mc = Minecraft.getInstance();
@@ -104,11 +108,14 @@ public class DolphinCompanionRenderer extends DolphinRenderer {
         if (rendertype != null) {
             VertexConsumer vc = buffer.getBuffer(rendertype);
             int overlay = getOverlayCoords(entity, this.getWhiteOverlayProgress(entity, partialTicks));
-            // 白テクスチャに染料を乗算 (グレースケール対応)
+            // 白テクスチャに染料を乗算 (グレースケール対応)。1.21 は ARGB int で渡す
             float r = cols[0];
             float g = cols[1];
             float b = cols[2];
-            model.renderToBuffer(poseStack, vc, packedLight, overlay, r, g, b, flag1 ? 0.15F : 1.0F);
+            float a = flag1 ? 0.15F : 1.0F;
+            int color = ((int) (a * 255.0F) << 24) | ((int) (r * 255.0F) << 16)
+                    | ((int) (g * 255.0F) << 8) | (int) (b * 255.0F);
+            model.renderToBuffer(poseStack, vc, packedLight, overlay, color);
         }
         if (!entity.isSpectator()) {
             for (var layer : this.layers) {
@@ -118,9 +125,9 @@ public class DolphinCompanionRenderer extends DolphinRenderer {
         poseStack.popPose();
         // nameTag 等は EntityRenderer 側で処理 (LivingEntityRenderer の super は呼ばず直接 EntityRenderer 相当)
         if (this.shouldShowName(entity)) {
-            this.renderNameTag(entity, entity.getDisplayName(), poseStack, buffer, packedLight);
+            this.renderNameTag(entity, entity.getDisplayName(), poseStack, buffer, packedLight, partialTicks);
         }
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.RenderLivingEvent.Post<>(entity, this, partialTicks, poseStack, buffer, packedLight));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.client.event.RenderLivingEvent.Post<>(entity, this, partialTicks, poseStack, buffer, packedLight));
     }
 
     @Override

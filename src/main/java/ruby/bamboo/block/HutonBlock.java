@@ -79,7 +79,7 @@ public class HutonBlock extends BedBlock {
     // ===== Bed判定 (isBed) =====
 
     @Override
-    public boolean isBed(BlockState state, BlockGetter level, BlockPos pos, @Nullable Entity player) {
+    public boolean isBed(BlockState state, BlockGetter level, BlockPos pos, net.minecraft.world.entity.LivingEntity sleeper) {
         return true;
     }
 
@@ -148,8 +148,7 @@ public class HutonBlock extends BedBlock {
     // ===== 右クリック (旧 onBlockActivated) =====
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
-            BlockHitResult hit) {
+    public net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.phys.BlockHitResult hit) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
@@ -219,7 +218,7 @@ public class HutonBlock extends BedBlock {
             return InteractionResult.SUCCESS;
         } else {
             // 夜間は通常の睡眠処理へ委譲
-            return super.use(state, level, pos, player, hand, hit);
+            return super.useWithoutItem(state, level, pos, player, hit);
         }
     }
 

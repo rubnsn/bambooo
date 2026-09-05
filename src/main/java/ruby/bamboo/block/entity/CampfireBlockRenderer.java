@@ -35,7 +35,7 @@ import ruby.bamboo.block.entity.CampfireBlockEntity.BakeType;
  */
 public class CampfireBlockRenderer implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<CampfireBlockEntity> {
 
-    public static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID, "textures/entity/campfire.png");
+    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/entity/campfire.png");
 
     /** シングルトン (BEWLR から renderWood を呼ぶため) */
     private static CampfireBlockRenderer instance;

@@ -1,6 +1,6 @@
 package ruby.bamboo.core.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
  * 竹の願い用 Config — bamboomod-wish.toml (COMMON)。
@@ -9,26 +9,26 @@ import net.minecraftforge.common.ForgeConfigSpec;
  */
 public class WishConfig {
 
-    public static final ForgeConfigSpec COMMON_SPEC;
+    public static final ModConfigSpec COMMON_SPEC;
     public static final Common COMMON;
 
     static {
-        ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder b = new ModConfigSpec.Builder();
         COMMON = new Common(b);
         COMMON_SPEC = b.build();
     }
 
     public static class Common {
-        public final ForgeConfigSpec.BooleanValue enabled;
-        public final ForgeConfigSpec.IntValue chance;
-        public final ForgeConfigSpec.IntValue cooldownTicks;
-        public final ForgeConfigSpec.BooleanValue allowCreative;
-        public final ForgeConfigSpec.ConfigValue<String> fallbackMode;
-        public final ForgeConfigSpec.IntValue wishTimeoutTicks;
-        public final ForgeConfigSpec.BooleanValue punishGreed;
-        public final ForgeConfigSpec.IntValue overenchantChance;
+        public final ModConfigSpec.BooleanValue enabled;
+        public final ModConfigSpec.IntValue chance;
+        public final ModConfigSpec.IntValue cooldownTicks;
+        public final ModConfigSpec.BooleanValue allowCreative;
+        public final ModConfigSpec.ConfigValue<String> fallbackMode;
+        public final ModConfigSpec.IntValue wishTimeoutTicks;
+        public final ModConfigSpec.BooleanValue punishGreed;
+        public final ModConfigSpec.IntValue overenchantChance;
 
-        public Common(ForgeConfigSpec.Builder b) {
+        public Common(ModConfigSpec.Builder b) {
             b.push("wish");
             enabled = b.comment("Enable wish feature")
                     .define("enabled", true);

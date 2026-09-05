@@ -1,10 +1,8 @@
 package ruby.bamboo.core.init;
 
+import java.util.function.Supplier;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 import ruby.bamboo.BambooMod;
 
 /**
@@ -23,11 +21,11 @@ public final class BambooParticles {
      * 1=桜属 / 2=広葉(緑・赤) / 3=広葉(黄・橙)。
      * 色は addParticle の速度引数 (xd,yd,zd) で RGB を渡す。
      */
-    public static final RegistryObject<SimpleParticleType> PETAL_1 = BambooMod.PARTICLE_TYPES.register("petal_1",
+    public static final Supplier<SimpleParticleType> PETAL_1 = BambooMod.PARTICLE_TYPES.register("petal_1",
             () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> PETAL_2 = BambooMod.PARTICLE_TYPES.register("petal_2",
+    public static final Supplier<SimpleParticleType> PETAL_2 = BambooMod.PARTICLE_TYPES.register("petal_2",
             () -> new SimpleParticleType(false));
-    public static final RegistryObject<SimpleParticleType> PETAL_3 = BambooMod.PARTICLE_TYPES.register("petal_3",
+    public static final Supplier<SimpleParticleType> PETAL_3 = BambooMod.PARTICLE_TYPES.register("petal_3",
             () -> new SimpleParticleType(false));
 
     /**

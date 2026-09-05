@@ -6,10 +6,10 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.lwjgl.glfw.GLFW;
-import ruby.bamboo.network.BambooNetwork;
+import net.neoforged.neoforge.network.PacketDistributor;
 import ruby.bamboo.network.WishRequestPacket;
 
 @OnlyIn(Dist.CLIENT)
@@ -58,7 +58,7 @@ public class WishScreen extends Screen {
             wish = wish.substring(0, 30);
         }
         wish = wish.replaceAll("\\p{Cntrl}", "");
-        BambooNetwork.CHANNEL.sendToServer(new WishRequestPacket(wish));
+        PacketDistributor.sendToServer(new WishRequestPacket(wish));
         this.onClose();
     }
 
@@ -76,7 +76,7 @@ public class WishScreen extends Screen {
 
     @Override
     public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(gfx);
+        this.renderBackground(gfx, mouseX, mouseY, partialTicks);
         gfx.drawCenteredString(this.font, this.title.copy().withStyle(ChatFormatting.GOLD), this.width / 2, this.height / 2 - 40, 0xFFFFFF);
         super.render(gfx, mouseX, mouseY, partialTicks);
     }

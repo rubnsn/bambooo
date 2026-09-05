@@ -7,6 +7,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -41,7 +42,7 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
 
     public static final EnumProperty<Direction> PARENT_DIR = EnumProperty.create("parent_dir", Direction.class);
 
-    public SpringWaterBlock(Supplier<? extends FlowingFluid> fluid, Properties props) {
+    public SpringWaterBlock(FlowingFluid fluid, Properties props) {
         super(fluid, props
                 .mapColor(MapColor.WATER)
                 .sound(SoundType.EMPTY)
@@ -194,7 +195,7 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hit) {
+    public net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.phys.BlockHitResult hit) {
         return InteractionResult.PASS;
     }
 
@@ -461,7 +462,7 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
     }
 
     @Override
-    public ItemStack pickupBlock(LevelAccessor level, BlockPos pos, BlockState state) {
+    public ItemStack pickupBlock(@Nullable Player player, LevelAccessor level, BlockPos pos, BlockState state) {
         return new ItemStack(Items.WATER_BUCKET);
     }
 

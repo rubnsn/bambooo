@@ -1,6 +1,6 @@
 package ruby.bamboo.core.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
  * 温泉（源泉+温泉水）用 Config — bamboomod-spring.toml (COMMON)。
@@ -9,25 +9,25 @@ import net.minecraftforge.common.ForgeConfigSpec;
  */
 public class SpringConfig {
 
-    public static final ForgeConfigSpec COMMON_SPEC;
+    public static final ModConfigSpec COMMON_SPEC;
     public static final Common COMMON;
 
     static {
-        ForgeConfigSpec.Builder b = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder b = new ModConfigSpec.Builder();
         COMMON = new Common(b);
         COMMON_SPEC = b.build();
     }
 
     public static class Common {
-        public final ForgeConfigSpec.IntValue maxSpreadRadius;
-        public final ForgeConfigSpec.IntValue sourceTickDelay;
-        public final ForgeConfigSpec.IntValue waterTickDelay;
-        public final ForgeConfigSpec.IntValue evaporationDelay;
-        public final ForgeConfigSpec.IntValue maxLevel;
-        public final ForgeConfigSpec.IntValue reparentInterval;
-        public final ForgeConfigSpec.IntValue tintColor;
+        public final ModConfigSpec.IntValue maxSpreadRadius;
+        public final ModConfigSpec.IntValue sourceTickDelay;
+        public final ModConfigSpec.IntValue waterTickDelay;
+        public final ModConfigSpec.IntValue evaporationDelay;
+        public final ModConfigSpec.IntValue maxLevel;
+        public final ModConfigSpec.IntValue reparentInterval;
+        public final ModConfigSpec.IntValue tintColor;
 
-        public Common(ForgeConfigSpec.Builder b) {
+        public Common(ModConfigSpec.Builder b) {
             b.push("spring");
             maxSpreadRadius = b.comment("Max horizontal spread radius (manhattan XZ) from parent. 0 = unlimited. Default 32 = 2 chunks")
                     .defineInRange("maxSpreadRadius", 32, 0, 64);

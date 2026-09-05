@@ -3,15 +3,14 @@ package ruby.bamboo.handler;
 import com.mojang.logging.LogUtils;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.AxeItem;
-import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.slf4j.Logger;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.BambooBlock;
 import ruby.bamboo.core.config.WishConfig;
-import ruby.bamboo.network.BambooNetwork;
 import ruby.bamboo.network.WishOpenPacket;
 
 import java.util.Map;
@@ -22,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 竹を斧で破壊した際の願い発動ハンドラ。
  * port-spec-wish §3.2 準拠。
  */
-@Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = BambooMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class WishEventHandler {
 
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -73,7 +72,7 @@ public class WishEventHandler {
         COOLDOWN.put(sp.getUUID(), now);
         PENDING.put(sp.getUUID(), now);
         LOGGER.info("Wish triggered for player {}", sp.getName().getString());
-        BambooNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> sp), new WishOpenPacket());
+        PacketDistributor.sendToPlayer(sp, new WishOpenPacket());
     }
 
     public static boolean validateAndConsumePending(ServerPlayer player) {
@@ -103,7 +102,7 @@ public class WishEventHandler {
         long now = sp.serverLevel().getGameTime();
         PENDING.put(sp.getUUID(), now);
         LOGGER.info("Wish wand triggered for player {}", sp.getName().getString());
-        BambooNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> sp), new WishOpenPacket());
+        PacketDistributor.sendToPlayer(sp, new WishOpenPacket());
     }
 
     // for testing / debugging

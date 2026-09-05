@@ -64,7 +64,7 @@ public class ShurikenEntity extends AbstractArrow {
     }
 
     public ShurikenEntity(Level level, LivingEntity shooter) {
-        super(BambooEntities.SHURIKEN.get(), shooter, level);
+        super(BambooEntities.SHURIKEN.get(), shooter, level, new ItemStack(BambooItems.SHURIKEN_STONE.get()), null);
         this.setNoGravity(true);
     }
 
@@ -79,9 +79,9 @@ public class ShurikenEntity extends AbstractArrow {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ITEMSTACK, ItemStack.EMPTY);
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ITEMSTACK, ItemStack.EMPTY);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class ShurikenEntity extends AbstractArrow {
         this.shakeTime = 7;
         this.setCritArrow(false);
         this.setSoundEvent(SoundEvents.ARROW_HIT);
-        this.setShotFromCrossbow(false);
+        // 1.21: shotFromCrossbow は firedFromWeapon 由来の getter のみ (setter 廃止)。手裏剣は null のため常に false。
         state.onProjectileHit(this.level(), state, result, this);
     }
 
@@ -129,7 +129,7 @@ public class ShurikenEntity extends AbstractArrow {
                     livingShooter.setLastHurtMob(target);
                 }
                 if (this.isOnFire() && !(target instanceof net.minecraft.world.entity.monster.EnderMan)) {
-                    target.setSecondsOnFire(5);
+                    target.setRemainingFireTicks(5);
                 }
                 if (target instanceof LivingEntity livingTarget && !this.customPotionEffects.isEmpty()) {
                     for (MobEffectInstance eff : this.customPotionEffects) {
@@ -236,7 +236,7 @@ public class ShurikenEntity extends AbstractArrow {
                             entity.setIsReturn(this.isReturn);
                             entity.setSnipeLevel(this.snipeLevel);
                             entity.setBaseDamage(this.getBaseDamage() * 0.7D);
-                            if (this.isOnFire()) entity.setSecondsOnFire(100);
+                            if (this.isOnFire()) entity.setRemainingFireTicks(100);
                             this.level().addFreshEntity(entity);
                             this.level().playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(), SoundEvents.SNOWBALL_THROW, net.minecraft.sounds.SoundSource.PLAYERS, 0.5F, 0.4F / (this.random.nextFloat() * 0.4F + 0.8F));
                             this.multiThrow = -1;
@@ -315,12 +315,12 @@ public class ShurikenEntity extends AbstractArrow {
         super.addAdditionalSaveData(tag);
         ItemStack stack = this.getPickupItemStackOrigin();
         if (!stack.isEmpty()) {
-            tag.put("Item", stack.save(new CompoundTag()));
+            tag.put("Item", stack.save(this.registryAccess()));
         }
         if (!this.customPotionEffects.isEmpty()) {
             ListTag list = new ListTag();
             for (MobEffectInstance eff : this.customPotionEffects) {
-                list.add(eff.save(new CompoundTag()));
+                list.add(eff.save());
             }
             tag.put("CustomPotionEffects", list);
         }
@@ -337,7 +337,7 @@ public class ShurikenEntity extends AbstractArrow {
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         if (tag.contains("Item")) {
-            ItemStack stack = ItemStack.of(tag.getCompound("Item"));
+            ItemStack stack = ItemStack.parseOptional(this.registryAccess(), tag.getCompound("Item"));
             this.setItemStack(stack);
         }
         this.customPotionEffects.clear();
@@ -358,8 +358,13 @@ public class ShurikenEntity extends AbstractArrow {
     }
 
     @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket() {
-        return super.getAddEntityPacket();
+    public Packet<ClientGamePacketListener> getAddEntityPacket(net.minecraft.server.level.ServerEntity entity) {
+        return super.getAddEntityPacket(entity);
+    }
+
+    @Override
+    protected ItemStack getDefaultPickupItem() {
+        return new ItemStack(BambooItems.SHURIKEN_STONE.get());
     }
 
     @Override
@@ -368,12 +373,12 @@ public class ShurikenEntity extends AbstractArrow {
         return stack.isEmpty() ? new ItemStack(BambooItems.SHURIKEN_STONE.get()) : stack;
     }
 
-    private ItemStack getPickupItemStackOrigin() {
+    public ItemStack getPickupItemStackOrigin() {
         return this.entityData.get(ITEMSTACK);
     }
 
     public void setItemStack(ItemStack stack) {
-        if (stack.getItem() != this.getPickupItemStackOrigin().getItem() || stack.hasTag()) {
+        if (stack.getItem() != this.getPickupItemStackOrigin().getItem() || stack.has(net.minecraft.core.component.DataComponents.CUSTOM_DATA)) {
             ItemStack copy = stack.copy();
             copy.setCount(1);
             this.entityData.set(ITEMSTACK, copy);

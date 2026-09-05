@@ -2,6 +2,7 @@ package ruby.bamboo.block.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
@@ -12,11 +13,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import ruby.bamboo.core.init.BambooBlockEntities;
 
 /**
@@ -33,7 +29,7 @@ public class WallShelfBlockEntity extends BlockEntity implements WorldlyContaine
 
     private NonNullList<ItemStack> items = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
 
-    private final LazyOptional<IItemHandlerModifiable>[] handlers = SidedInvWrapper.create(this, Direction.values());
+    // ホッパー連携は NeoForge BlockCapability へ移行 (BambooCapabilities.registerCaps で登録)。
 
     public WallShelfBlockEntity(BlockPos pos, BlockState state) {
         super(BambooBlockEntities.WALL_SHELF_BE.get(), pos, state);
@@ -119,17 +115,17 @@ public class WallShelfBlockEntity extends BlockEntity implements WorldlyContaine
     // ===== NBT =====
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        ContainerHelper.saveAllItems(tag, items);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ContainerHelper.saveAllItems(tag, items, registries);
         // isDouble は書かない (旧ワールド読込時のみ無視)
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         items = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(tag, items);
+        ContainerHelper.loadAllItems(tag, items, registries);
         // 旧NBT isDouble があっても無視 (削除してクリーンに)
         if (tag.contains("isDouble")) {
             // 何もしない (読飛ばし)。将来的にタグを消す場合は super.load 後に除去してもよいが保持しても害なし
@@ -139,51 +135,41 @@ public class WallShelfBlockEntity extends BlockEntity implements WorldlyContaine
     // ===== 同期 (MillStoneパターン) =====
 
     @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
-        ContainerHelper.saveAllItems(tag, items);
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
+        ContainerHelper.saveAllItems(tag, items, registries);
         return tag;
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        super.handleUpdateTag(tag);
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        super.handleUpdateTag(tag, registries);
         items = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(tag, items);
+        ContainerHelper.loadAllItems(tag, items, registries);
     }
 
     @Override
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        CompoundTag tag = new CompoundTag();
-        ContainerHelper.saveAllItems(tag, items);
-        return ClientboundBlockEntityDataPacket.create(this, be -> tag);
+        return ClientboundBlockEntityDataPacket.create(this,
+                (be, registries) -> {
+                    CompoundTag tag = new CompoundTag();
+                    if (be instanceof WallShelfBlockEntity shelf) {
+                        ContainerHelper.saveAllItems(tag, shelf.items, registries);
+                    }
+                    return tag;
+                });
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
         CompoundTag tag = pkt.getTag();
         if (tag != null) {
             items = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
-            ContainerHelper.loadAllItems(tag, items);
+            ContainerHelper.loadAllItems(tag, items, registries);
         }
     }
 
-    // ===== Capability =====
-
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-        if (cap == ForgeCapabilities.ITEM_HANDLER && side != null) {
-            return handlers[side.ordinal()].cast();
-        }
-        if (cap == ForgeCapabilities.ITEM_HANDLER && side == null) {
-            return handlers[0].cast();
-        }
-        return super.getCapability(cap, side);
-    }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        for (var h : handlers) h.invalidate();
-    }
+    // ===== Capability (ホッパー/パイプ連携: NeoForge BlockCapability へ移行) =====
+    // 旧 getCapability/invalidateCaps (ForgeCapabilities/LazyOptional) は削除。
+    // 登録は BambooCapabilities.registerCaps (RegisterCapabilitiesEvent) で行う。
 }

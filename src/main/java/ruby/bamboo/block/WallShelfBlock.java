@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -37,6 +37,14 @@ import ruby.bamboo.block.entity.WallShelfBlockEntity;
  * hit位置で左右スロットを判定し、空なら手持ちから1個格納、あれば取出してpopする。壁不要(飾り)。
  */
 public class WallShelfBlock extends BaseEntityBlock {
+
+    public static final com.mojang.serialization.MapCodec<WallShelfBlock> CODEC =
+            com.mojang.serialization.MapCodec.unit(WallShelfBlock::new);
+
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -95,14 +103,13 @@ public class WallShelfBlock extends BaseEntityBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
-            BlockHitResult hit) {
+    public net.minecraft.world.ItemInteractionResult useItemOn(net.minecraft.world.item.ItemStack useStack, BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hit) {
         if (level.isClientSide) {
-            return InteractionResult.SUCCESS;
+            return ItemInteractionResult.SUCCESS;
         }
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof WallShelfBlockEntity shelf)) {
-            return InteractionResult.PASS;
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         // 旧 WallShelf.onBlockActivated と同等の hit位置→LEFT/RIGHT判定を移植
         Vec3 hitVec = hit.getLocation();
@@ -163,7 +170,7 @@ public class WallShelfBlock extends BaseEntityBlock {
             level.sendBlockUpdated(pos, state, state, 3);
             level.updateNeighborsAt(pos, this);
         }
-        return InteractionResult.CONSUME;
+        return ItemInteractionResult.CONSUME;
     }
 
     @Override

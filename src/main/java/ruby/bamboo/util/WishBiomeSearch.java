@@ -87,7 +87,7 @@ public final class WishBiomeSearch {
     }
 
     private static void add(String rl, String... aliases) {
-        ResourceLocation id = new ResourceLocation(rl);
+        ResourceLocation id = ResourceLocation.parse(rl);
         List<String> list = BIOME_ALIASES.computeIfAbsent(id, k -> new ArrayList<>());
         for (String a : aliases) list.add(a);
         // also add rl path itself as alias

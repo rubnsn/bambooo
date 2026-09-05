@@ -22,7 +22,7 @@ import ruby.bamboo.BambooMod;
  */
 public class MillStoneScreen extends AbstractContainerScreen<MillStoneMenu> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID, "textures/gui/millstone.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/gui/millstone.png");
 
     public MillStoneScreen(MillStoneMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -39,7 +39,7 @@ public class MillStoneScreen extends AbstractContainerScreen<MillStoneMenu> {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(graphics);
+        this.renderBackground(graphics, mouseX, mouseY, partialTick);
         super.render(graphics, mouseX, mouseY, partialTick);
         this.renderTooltip(graphics, mouseX, mouseY);
     }

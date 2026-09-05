@@ -15,6 +15,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.core.init.BambooBlocks;
 import ruby.bamboo.crafting.grind.BambooGrindRecipe;
@@ -22,12 +23,14 @@ import ruby.bamboo.crafting.grind.BambooGrindRecipe;
 /**
  * JEI カテゴリ: 石臼 (millstone) 。
  * 1入力 → 1出力 + ボーナス(確率) を表示。
+ * <p>
+ * JEI 19 (1.21): レシピは {@link RecipeHolder} で渡される。
  */
 @SuppressWarnings("removal")
-public class MillstoneCategory implements IRecipeCategory<BambooGrindRecipe> {
+public class MillstoneCategory implements IRecipeCategory<RecipeHolder<BambooGrindRecipe>> {
 
-    public static final RecipeType<BambooGrindRecipe> TYPE =
-            new RecipeType<>(new ResourceLocation(BambooMod.MODID, "millstone"), BambooGrindRecipe.class);
+    public static final RecipeType<RecipeHolder<BambooGrindRecipe>> TYPE =
+            RecipeType.createRecipeHolderType(ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "millstone"));
 
     public static final int WIDTH = 110;
     public static final int HEIGHT = 40;
@@ -45,7 +48,7 @@ public class MillstoneCategory implements IRecipeCategory<BambooGrindRecipe> {
     }
 
     @Override
-    public RecipeType<BambooGrindRecipe> getRecipeType() {
+    public RecipeType<RecipeHolder<BambooGrindRecipe>> getRecipeType() {
         return TYPE;
     }
 
@@ -66,7 +69,8 @@ public class MillstoneCategory implements IRecipeCategory<BambooGrindRecipe> {
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, BambooGrindRecipe recipe, IFocusGroup focuses) {
+    public void setRecipe(IRecipeLayoutBuilder builder, RecipeHolder<BambooGrindRecipe> holder, IFocusGroup focuses) {
+        BambooGrindRecipe recipe = holder.value();
         // 入力 (count表示のため ItemStack 化)
         java.util.List<ItemStack> inputStacks = new java.util.ArrayList<>();
         for (ItemStack s : recipe.ingredient().getItems()) {
@@ -99,7 +103,8 @@ public class MillstoneCategory implements IRecipeCategory<BambooGrindRecipe> {
 
     @Override
     @SuppressWarnings("removal")
-    public void draw(BambooGrindRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void draw(RecipeHolder<BambooGrindRecipe> holder, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+        BambooGrindRecipe recipe = holder.value();
         // 矢印
         try {
             guiHelper.getRecipeArrow().draw(guiGraphics, 32, 12);

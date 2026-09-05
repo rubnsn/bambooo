@@ -1,13 +1,16 @@
 package ruby.bamboo.enchant;
 
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.core.init.BambooEnchantments;
 import ruby.bamboo.item.NinjaBraceletItem;
@@ -17,7 +20,7 @@ import ruby.bamboo.item.katana.KatanaDropManager;
  * 追い剥ぎ (pickpocket) ハンドラ。
  * 腕輪の pickpocket lv*10% でドロップ再抽選。
  */
-@Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = BambooMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class PickpocketHandler {
 
     @SubscribeEvent
@@ -28,16 +31,20 @@ public class PickpocketHandler {
         var src = event.getSource().getEntity();
         if (!(src instanceof Player player)) return;
 
+        // 1.21: Enchantment は datapack 化したため Holder 経由で取得する
+        Holder<Enchantment> pickpocket = serverLevel.registryAccess()
+                .lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(BambooEnchantments.PICKPOCKET);
+
         int lv = 0;
         for (ItemStack s : player.getInventory().items) {
             if (!s.isEmpty() && s.getItem() instanceof NinjaBraceletItem) {
-                int cur = EnchantmentHelper.getItemEnchantmentLevel(BambooEnchantments.PICKPOCKET.get(), s);
+                int cur = EnchantmentHelper.getItemEnchantmentLevel(pickpocket, s);
                 if (cur > lv) lv = cur;
             }
         }
         for (ItemStack s : player.getInventory().offhand) {
             if (!s.isEmpty() && s.getItem() instanceof NinjaBraceletItem) {
-                int cur = EnchantmentHelper.getItemEnchantmentLevel(BambooEnchantments.PICKPOCKET.get(), s);
+                int cur = EnchantmentHelper.getItemEnchantmentLevel(pickpocket, s);
                 if (cur > lv) lv = cur;
             }
         }

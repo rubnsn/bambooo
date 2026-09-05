@@ -2,7 +2,7 @@ package ruby.bamboo.block;
 
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.SaplingBlock;
-import net.minecraft.world.level.block.grower.AbstractTreeGrower;
+import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
@@ -19,13 +19,10 @@ import ruby.bamboo.core.init.BambooBlocks;
  */
 public class HinokiSaplingBlock extends SaplingBlock {
 
-    public static final AbstractTreeGrower HINOKI_TREE = new AbstractTreeGrower() {
-        @Override
-        protected net.minecraft.resources.ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> getConfiguredFeature(
-                RandomSource rand, boolean hasFlowers) {
-            return rand.nextInt(10) == 0 ? HinokiTreeFeatures.HINOKI_BIG : HinokiTreeFeatures.HINOKI;
-        }
-    };
+    public static final TreeGrower HINOKI_TREE = new TreeGrower("hinoki", 0.1F,
+            java.util.Optional.empty(), java.util.Optional.empty(),
+            java.util.Optional.of(HinokiTreeFeatures.HINOKI), java.util.Optional.of(HinokiTreeFeatures.HINOKI_BIG),
+            java.util.Optional.empty(), java.util.Optional.empty());
 
     public HinokiSaplingBlock(BlockBehaviour.Properties props) {
         super(HINOKI_TREE, props);

@@ -3,14 +3,14 @@ package ruby.bamboo.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.MovementInputUpdateEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.entity.KaginawaHookEntity;
-import ruby.bamboo.network.BambooNetwork;
+import net.neoforged.neoforge.network.PacketDistributor;
 import ruby.bamboo.network.KaginawaInputPacket;
 import ruby.bamboo.network.KaginawaStateManager;
 
@@ -18,17 +18,14 @@ import ruby.bamboo.network.KaginawaStateManager;
  * クライアント側入力ポーリング → サーバへパケ送信。
  * Shift=伸長, Space=巻取り, Space+W=牽引, WASD=振り子, Sprint=加速
  */
-@Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+@EventBusSubscriber(modid = BambooMod.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public final class KaginawaClientHandler {
 
     private KaginawaClientHandler() {
     }
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) {
-            return;
-        }
+    public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null || mc.isPaused()) {
@@ -77,7 +74,7 @@ public final class KaginawaClientHandler {
         }
 
         KaginawaInputPacket pkt = new KaginawaInputPacket(reelDir, pull, forward, side, sprint);
-        BambooNetwork.CHANNEL.sendToServer(pkt);
+        PacketDistributor.sendToServer(pkt);
         // クライアント予測: サーバと同じ pending をローカルにも反映してデシンク防止
         hook.handleInput(reelDir, pull, forward, side, sprint);
     }

@@ -23,7 +23,7 @@ public class ExplodeArrowEntity extends AbstractArrow {
     }
 
     public ExplodeArrowEntity(EntityType<? extends ExplodeArrowEntity> type, LivingEntity shooter, Level level) {
-        super(type, shooter, level);
+        super(type, shooter, level, new ItemStack(BambooItems.EXPLODE_ARROW.get()), null);
     }
 
     public ExplodeArrowEntity(Level level, LivingEntity shooter) {
@@ -43,7 +43,36 @@ public class ExplodeArrowEntity extends AbstractArrow {
     }
 
     @Override
+    protected ItemStack getDefaultPickupItem() {
+        return new ItemStack(BambooItems.EXPLODE_ARROW.get());
+    }
+
+    @Override
     protected ItemStack getPickupItem() {
         return new ItemStack(BambooItems.EXPLODE_ARROW.get());
+    }
+
+    /** Punch相当のノックバック量 (1.21: AbstractArrowのknockback廃止のため自前保持) */
+    private int knockback;
+
+    public int getKnockback() {
+        return this.knockback;
+    }
+
+    public void setKnockback(int knockback) {
+        this.knockback = knockback;
+    }
+
+    @Override
+    protected void doPostHurtEffects(LivingEntity target) {
+        super.doPostHurtEffects(target);
+        if (this.knockback > 0) {
+            double d0 = Math.max(0.0, 1.0 - target.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE));
+            net.minecraft.world.phys.Vec3 vec3 = this.getDeltaMovement().multiply(1.0, 0.0, 1.0).normalize()
+                    .scale(this.knockback * 0.6 * d0);
+            if (vec3.lengthSqr() > 0.0) {
+                target.push(vec3.x, 0.1, vec3.z);
+            }
+        }
     }
 }

@@ -1,0 +1,19 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "",
+  "pattern": [
+    "WW"
+  ],
+  "key": {
+    "W": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "result": {
+    "id": "bamboomod:wall_shelf"
+  },
+  "experience": 0.0,
+  "cookingtime": 100,
+  "fuelCost": 100
+}

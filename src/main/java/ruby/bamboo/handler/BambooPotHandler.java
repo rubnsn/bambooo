@@ -8,9 +8,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.BambooPotBlock;
 import ruby.bamboo.block.entity.BambooPotBlockEntity;
@@ -21,7 +21,7 @@ import ruby.bamboo.block.entity.BambooPotBlockEntity;
  * シフト+右クリック（グリッド9個）の要求が隣接設置に化ける。
  * ここで RightClickBlock を横取りし、鉢に空きがあれば同一ブロック内にグリッド配置する。
  */
-@Mod.EventBusSubscriber(modid = BambooMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = BambooMod.MODID, bus = EventBusSubscriber.Bus.GAME)
 public final class BambooPotHandler {
 
     private BambooPotHandler() {}

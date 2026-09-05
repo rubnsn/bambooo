@@ -61,7 +61,7 @@ public class SlideDoorBlock extends DoorBlock implements net.minecraft.world.lev
 
     public SlideDoorBlock(Properties properties, boolean translucent) {
         // DoorBlock は BlockSetType を要求する。音は sakura準拠で無音にしたいが DoorBlock は type から音を取るため OAK を渡し、playSound を無効化する
-        super(properties, BlockSetType.OAK);
+        super(BlockSetType.OAK, properties);
         this.translucent = translucent;
         this.registerDefaultState(this.defaultBlockState().setValue(MIRROR, false).setValue(MOVED, false));
     }
@@ -138,7 +138,7 @@ public class SlideDoorBlock extends DoorBlock implements net.minecraft.world.lev
     // ===== 開閉ロジック (sakura準拠、音無し) =====
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.phys.BlockHitResult hit) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
@@ -245,9 +245,9 @@ public class SlideDoorBlock extends DoorBlock implements net.minecraft.world.lev
     }
 
     @Override
-    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         // DoorBlock のクリエイティブ破壊時の上半分ドロップ防止を呼びつつ、追加処理なし
-        super.playerWillDestroy(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override

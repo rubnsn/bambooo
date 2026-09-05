@@ -1,0 +1,17 @@
+{
+  "type": "bamboomod:millstone",
+  "category": "misc",
+  "ingredient": {
+    "item": "minecraft:bone"
+  },
+  "count": 1,
+  "result": {
+    "count": 3,
+    "id": "minecraft:bone_meal"
+  },
+  "bonus": {
+    "count": 2,
+    "id": "minecraft:bone_meal"
+  },
+  "bonusChance": 0.5
+}

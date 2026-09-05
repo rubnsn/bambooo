@@ -1,0 +1,24 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "equipment",
+  "group": "",
+  "pattern": [
+    "X",
+    "X",
+    "Y"
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:iron_ingot"
+    },
+    "Y": {
+      "tag": "c:bamboo"
+    }
+  },
+  "result": {
+    "id": "bamboomod:commonkatana"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

@@ -26,7 +26,7 @@ public class WishWandItem extends Item {
             // デバッグ用途: cooldown/chance をバイパスして直接願い発動
             WishEventHandler.triggerForWand(sp);
             if (!player.getAbilities().instabuild) {
-                stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
+                stack.hurtAndBreak(1, player, hand == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
             }
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);

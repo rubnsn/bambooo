@@ -39,13 +39,10 @@ import ruby.bamboo.network.KaginawaStateManager;
 public class CommonKatana extends SwordItem {
 
     public CommonKatana(Tier tier, Item.Properties properties) {
-        super(tier, 0, -2.4F, properties);
-    }
-
-    /** 通常攻撃力を無効化 (旧 getDamageVsEntity()=0。実ダメージは KatanaAttackHandler が与える) */
-    @Override
-    public float getDamage() {
-        return 0F;
+        // 1.21: ダメージ/速度は ATTRIBUTE_MODIFIERS。実ダメージは KatanaAttackHandler が与えるため
+        // ダメージ補正を打ち消して 0 にする (tier ボーナス分を減算)。速度は旧 -2.4F を維持。
+        super(tier, properties.attributes(
+                SwordItem.createAttributes(tier, -tier.getAttackDamageBonus(), -2.4F)));
     }
 
     /**

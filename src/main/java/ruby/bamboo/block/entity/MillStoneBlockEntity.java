@@ -2,7 +2,9 @@ package ruby.bamboo.block.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -18,15 +20,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraftforge.registries.ForgeRegistries;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.MillStoneBlock;
 import ruby.bamboo.core.init.BambooBlockEntities;
@@ -76,7 +71,7 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
 
     private static final RandomSource random = RandomSource.create();
 
-    private final LazyOptional<IItemHandlerModifiable>[] itemHandlers = SidedInvWrapper.create(this, Direction.values());
+    // ホッパー連携は NeoForge BlockCapability へ移行 (BambooCapabilities.registerCaps で登録)。
 
     public MillStoneBlockEntity(BlockPos pos, BlockState state) {
         super(BambooBlockEntities.MILL_STONE_BE.get(), pos, state);
@@ -134,8 +129,10 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
 
     private BambooGrindRecipe findRecipe(ItemStack stack) {
         if (stack.isEmpty() || level == null) return null;
-        var inv = new net.minecraft.world.SimpleContainer(stack.copy());
-        return level.getRecipeManager().getRecipeFor(BambooMod.MILLSTONE_RECIPE_TYPE.get(), inv, level).orElse(null);
+        return level.getRecipeManager()
+                .getRecipeFor(BambooMod.MILLSTONE_RECIPE_TYPE.get(),
+                        new net.minecraft.world.item.crafting.SingleRecipeInput(stack.copy()), level)
+                .map(net.minecraft.world.item.crafting.RecipeHolder::value).orElse(null);
     }
 
     /** RecipeManager用: StackedContentsへの充填 (レシピブックのフィルタ判定) */
@@ -216,10 +213,10 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
             return false;
         }
         // 既存と異種 → NG
-        if (!slot1.isEmpty() && !ItemStack.isSameItemSameTags(slot1, output)) {
+        if (!slot1.isEmpty() && !ItemStack.isSameItemSameComponents(slot1, output)) {
             return false;
         }
-        if (recipe.hasBonus() && !slot2.isEmpty() && !ItemStack.isSameItemSameTags(slot2, recipe.bonus())) {
+        if (recipe.hasBonus() && !slot2.isEmpty() && !ItemStack.isSameItemSameComponents(slot2, recipe.bonus())) {
             return false;
         }
         // スタック上限チェック (output)
@@ -274,7 +271,7 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
         ItemStack current = items.get(index);
         if (current.isEmpty()) {
             items.set(index, stack.copy());
-        } else if (ItemStack.isSameItemSameTags(current, stack)) {
+        } else if (ItemStack.isSameItemSameComponents(current, stack)) {
             current.grow(stack.getCount());
         }
     }
@@ -416,24 +413,24 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
     // ===== NBT =====
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
         tag.putInt("grindTime", grindTime);
         tag.putString("grindItemName",
-                ForgeRegistries.ITEMS.getKey(grindingItem == null ? Items.AIR : grindingItem).toString());
-        net.minecraft.world.ContainerHelper.saveAllItems(tag, items);
+                BuiltInRegistries.ITEM.getKey(grindingItem == null ? Items.AIR : grindingItem).toString());
+        net.minecraft.world.ContainerHelper.saveAllItems(tag, items, registries);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         this.items = NonNullList.withSize(3, ItemStack.EMPTY);
-        net.minecraft.world.ContainerHelper.loadAllItems(tag, this.items);
+        net.minecraft.world.ContainerHelper.loadAllItems(tag, this.items, registries);
         if (tag.contains("grindTime")) {
             this.grindTime = tag.getInt("grindTime");
         }
         if (tag.contains("grindItemName")) {
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(tag.getString("grindItemName")));
+            Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(tag.getString("grindItemName")));
             this.grindingItem = item == null ? Items.AIR : item;
         }
     }
@@ -441,15 +438,15 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
     // ===== クライアント同期 (粉砕中アイテムのパーティクル用) =====
 
     @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
         writeSyncData(tag);
         return tag;
     }
 
     @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        super.handleUpdateTag(tag);
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        super.handleUpdateTag(tag, registries);
         readSyncData(tag);
     }
 
@@ -457,44 +454,30 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
     public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
         CompoundTag tag = new CompoundTag();
         writeSyncData(tag);
-        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this, be -> tag);
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this, (be, registries) -> tag);
     }
 
     @Override
     public void onDataPacket(net.minecraft.network.Connection net,
-            net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket pkt) {
+            net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
         readSyncData(pkt.getTag());
     }
 
     private void writeSyncData(CompoundTag tag) {
         tag.putString("grindItemName",
-                ForgeRegistries.ITEMS.getKey(grindingItem == null ? Items.AIR : grindingItem).toString());
+                BuiltInRegistries.ITEM.getKey(grindingItem == null ? Items.AIR : grindingItem).toString());
     }
 
     private void readSyncData(CompoundTag tag) {
         if (tag.contains("grindItemName")) {
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(tag.getString("grindItemName")));
+            Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(tag.getString("grindItemName")));
             this.grindingItem = item == null ? Items.AIR : item;
         }
     }
 
-    // ===== Capability (ホッパー/パイプ連携) =====
-
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-        if (cap == ForgeCapabilities.ITEM_HANDLER && side != null) {
-            return itemHandlers[side.ordinal()].cast();
-        }
-        return super.getCapability(cap, side);
-    }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        for (LazyOptional<IItemHandlerModifiable> handler : itemHandlers) {
-            handler.invalidate();
-        }
-    }
+    // ===== Capability (ホッパー/パイプ連携: NeoForge BlockCapability へ移行) =====
+    // 旧 getCapability/invalidateCaps (ForgeCapabilities/LazyOptional) は削除。
+    // 登録は BambooCapabilities.registerCaps (RegisterCapabilitiesEvent) で行う。
 
     /** 破壊時に中身を散布 (JPChestBlock.onRemove から呼ばれる) */
     public void dropContents(Level level, BlockPos pos) {

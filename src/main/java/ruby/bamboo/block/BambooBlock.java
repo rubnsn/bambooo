@@ -30,6 +30,14 @@ import ruby.bamboo.core.init.BambooItems;
  */
 public class BambooBlock extends BushBlock implements BonemealableBlock {
 
+    public static final com.mojang.serialization.MapCodec<BambooBlock> CODEC =
+            net.minecraft.world.level.block.state.BlockBehaviour.simpleCodec(BambooBlock::new);
+
+    @Override
+    protected com.mojang.serialization.MapCodec<? extends BushBlock> codec() {
+        return CODEC;
+    }
+
     public static final IntegerProperty AGE = IntegerProperty.create("age", 0, 15);
 
     /** 旧 BLOCK_AABB (0.125,0,0.125)-(0.875,1,0.875) */
@@ -215,7 +223,7 @@ public class BambooBlock extends BushBlock implements BonemealableBlock {
     // ===== F: 骨粉対応復元 (旧 IGrowable) =====
 
     @Override
-    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state, boolean isClient) {
+    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
         return true;
     }
 

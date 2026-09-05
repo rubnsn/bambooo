@@ -50,9 +50,9 @@ public class DolphinCompanionEntity extends Dolphin {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(DATA_COLOR, DyeColor.WHITE.getId());
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_COLOR, DyeColor.WHITE.getId());
     }
 
     public DyeColor getDolphinColor() {
@@ -232,8 +232,5 @@ public class DolphinCompanionEntity extends Dolphin {
         }
     }
 
-    @Override
-    protected void dropAllDeathLoot(DamageSource source) {
-        super.dropAllDeathLoot(source);
-    }
+    // 1.21: dropAllDeathLoot のカスタムなし (旧 override は super 委譲のみのため削除)
 }

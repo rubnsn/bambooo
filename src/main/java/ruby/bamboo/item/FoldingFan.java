@@ -37,7 +37,7 @@ public class FoldingFan extends Item {
                 level.addFreshEntity(wind);
             }
             if (!player.getAbilities().instabuild) {
-                stack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
+                stack.hurtAndBreak(1, player, hand == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
             }
         }
 
