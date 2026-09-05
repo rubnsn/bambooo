@@ -1,7 +1,15 @@
 {
-    // NeoGradle (NeoForge 1.21.1) には prepareRun*Compile が無い。
-    // VSCode 起動設定 (Mc - Client 等) は preLaunchTask を使わないためタスク定義は空にしておく。
-    // 起動は F5 (Mc - Client) または ./gradlew runClient を使用。
+    // F5 (Mc - Client 等) の事前準備。NeoGradle に prepareRun*Compile は無いため自前定義。
+    // classes = compileJava + processResources(展開済みtoml生成)、writeMinecraftClasspath* = -DlegacyClassPath.file の実体。
     "version": "2.0.0",
-    "tasks": []
+    "tasks": [
+        {
+            "label": "prepareMcRun",
+            "type": "shell",
+            "command": "./gradlew classes writeMinecraftClasspathClient writeMinecraftClasspathData writeMinecraftClasspathGameTestServer writeMinecraftClasspathJunit writeMinecraftClasspathServer",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        }
+    ]
 }
