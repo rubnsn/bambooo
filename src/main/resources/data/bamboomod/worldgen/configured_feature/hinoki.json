@@ -37,24 +37,18 @@
       "type": "minecraft:pine_foliage_placer",
       "radius": {
         "type": "minecraft:uniform",
-        "value": {
-          "min_inclusive": 1,
-          "max_inclusive": 1
-        }
+        "min_inclusive": 1,
+        "max_inclusive": 1
       },
       "offset": {
         "type": "minecraft:uniform",
-        "value": {
-          "min_inclusive": 1,
-          "max_inclusive": 1
-        }
+        "min_inclusive": 1,
+        "max_inclusive": 1
       },
       "height": {
         "type": "minecraft:uniform",
-        "value": {
-          "min_inclusive": 3,
-          "max_inclusive": 4
-        }
+        "min_inclusive": 3,
+        "max_inclusive": 4
       }
     },
     "minimum_size": {

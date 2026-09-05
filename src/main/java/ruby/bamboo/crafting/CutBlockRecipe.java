@@ -255,7 +255,18 @@ public class CutBlockRecipe implements CraftingRecipe {
 
     public static class Serializer implements RecipeSerializer<CutBlockRecipe> {
         public static final MapCodec<CutBlockRecipe> CODEC = MapCodec.unit(CutBlockRecipe::new);
-        public static final StreamCodec<RegistryFriendlyByteBuf, CutBlockRecipe> STREAM_CODEC = StreamCodec.unit(new CutBlockRecipe());
+        // 無状態レシピのため送受信データなし。StreamCodec.unit は同一性チェックで落ちる
+        // (JSON読込の別インスタンスを update_recipes で送れない) ため自前実装する。
+        public static final StreamCodec<RegistryFriendlyByteBuf, CutBlockRecipe> STREAM_CODEC = new StreamCodec<>() {
+            @Override
+            public CutBlockRecipe decode(RegistryFriendlyByteBuf buf) {
+                return new CutBlockRecipe();
+            }
+
+            @Override
+            public void encode(RegistryFriendlyByteBuf buf, CutBlockRecipe recipe) {
+            }
+        };
 
         @Override
         public MapCodec<CutBlockRecipe> codec() {

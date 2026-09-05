@@ -3,7 +3,9 @@
   "ingredient": {
     "item": "bamboomod:rawrice"
   },
-  "result": "bamboomod:bamboofood_mugimesi",
+  "result": {
+    "id": "bamboomod:bamboofood_mugimesi"
+  },
   "experience": 0.35,
   "cookingtime": 200
 }

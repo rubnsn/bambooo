@@ -127,7 +127,8 @@ public class BambooGrindRecipe implements Recipe<SingleRecipeInput> {
             Ingredient.CONTENTS_STREAM_CODEC.encode(buf, recipe.ingredient);
             buf.writeVarInt(recipe.inputCount);
             ItemStack.STREAM_CODEC.encode(buf, recipe.result);
-            ItemStack.STREAM_CODEC.encode(buf, recipe.bonus);
+            // bonus無しレシピは EMPTY のため OPTIONAL 必須 (STREAM_CODEC は空不可で update_recipes が落ちる)
+            ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, recipe.bonus);
             buf.writeFloat(recipe.bonusChance);
         }
 
@@ -137,7 +138,7 @@ public class BambooGrindRecipe implements Recipe<SingleRecipeInput> {
             Ingredient ing = Ingredient.CONTENTS_STREAM_CODEC.decode(buf);
             int count = buf.readVarInt();
             ItemStack result = ItemStack.STREAM_CODEC.decode(buf);
-            ItemStack bonus = ItemStack.STREAM_CODEC.decode(buf);
+            ItemStack bonus = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
             float chance = buf.readFloat();
             return new BambooGrindRecipe(group, cat, ing, count, result, bonus, chance);
         }
