@@ -75,16 +75,20 @@ public final class ColoredLightUtil {
             } catch (Exception ignored) {
             }
         } else {
-            try {
-                var f = clz.getDeclaredField("level");
-                f.setAccessible(true);
-                Object v = f.get(getter);
-                if (v instanceof Level lvl2) {
-                    LEVEL_FIELD = f;
-                    LEVEL_FIELD_CLASS = clz;
-                    return lvl2;
+            // バニラ RenderChunkRegion の "level"、Sodium系 WorldSlice の "world" の順に探索。
+            // いずれもリフレクション名解決のみで、他modへのimport・依存は持たない
+            for (String name : new String[] { "level", "world" }) {
+                try {
+                    var f = clz.getDeclaredField(name);
+                    f.setAccessible(true);
+                    Object v = f.get(getter);
+                    if (v instanceof Level lvl2) {
+                        LEVEL_FIELD = f;
+                        LEVEL_FIELD_CLASS = clz;
+                        return lvl2;
+                    }
+                } catch (Exception ignored) {
                 }
-            } catch (Exception ignored) {
             }
         }
         try {
@@ -95,7 +99,11 @@ public final class ColoredLightUtil {
         return null;
     }
 
-    private static void ensureChunkScanned(LevelChunk chunk, Level lvl) {
+    /**
+     * チャンクの遅延スキャン (パレット枝刈り付き)。焼き込み時以外 (時刻変化時の再収集など)
+     * からも呼べるよう公開。スレッドセーフ (storage側synchronized)。
+     */
+    public static void ensureChunkScanned(LevelChunk chunk, Level lvl) {
         var opt = chunk.getCapability(BambooCapabilities.COLORED_LIGHT);
         if (!opt.isPresent()) return;
         var storage = opt.orElse(null);
@@ -138,6 +146,58 @@ public final class ColoredLightUtil {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * 時刻由来の昼光量 (0=夜、1=真昼)。dayTime正弦＋smoothstepで中天フラット・朝夕のみ変化。
+     * <p>
+     * 光エンジン値 (getBrightness) は時刻減衰を含まないため使わない。getDayTime は
+     * バニラ同期済みフィールド参照のみで、焼き込みワーカーからも安全。パケット不要。
+     * スカイライトなし次元 (ネザー等) は常に0 (無抑制)。
+     */
+    public static float daylightAmount(Level level) {
+        if (level == null) return 0f;
+        try {
+            if (!level.dimensionType().hasSkyLight()) return 0f;
+        } catch (Exception ignored) {
+        }
+        long t;
+        try {
+            t = level.getDayTime() % 24000L;
+        } catch (Exception e) {
+            return 0f;
+        }
+        if (t < 0) t += 24000L;
+        double elev = Math.sin((t / 24000.0) * Math.PI * 2.0);
+        if (elev <= 0) return 0f;
+        float d = (float) Math.min(1.0, elev);
+        return d * d * (3f - 2f * d);
+    }
+
+    /** 量子化した昼光レベル (0..levels)。再焼き込み駆動用。日中・夜間は不変 */
+    public static int daylightLevel(Level level, int levels) {
+        if (levels <= 0) return 0;
+        return Math.min(levels, (int) (daylightAmount(level) * levels));
+    }
+
+    /**
+     * 昼光抑制係数 (1=無抑制、0=完全抑制)。真昼残量 = 1-rate (既定0.75→0.25)。
+     */
+    public static float daylightFactor(Level level) {
+        try {
+            if (!ruby.bamboo.core.config.ColoredLightConfig.CLIENT.daylightSuppressEnabled.get()) return 1f;
+            float daylight = daylightAmount(level);
+            if (daylight <= 0f) return 1f;
+            double rate;
+            try {
+                rate = ruby.bamboo.core.config.ColoredLightConfig.CLIENT.daylightSuppressRate.get();
+            } catch (Exception e) {
+                rate = 0.75;
+            }
+            return Math.max(0f, 1f - daylight * (float) rate);
+        } catch (Exception e) {
+            return 1f;
         }
     }
 
@@ -264,6 +324,9 @@ public final class ColoredLightUtil {
         for (float w : weights) totalWeight += w;
         // 複数光源でも 1 でクランプ。0.8掛けで近距離でも20%白を残して暗すぎを緩和
         float alpha = Math.min(1f, totalWeight) * 0.8f;
+        // 昼光抑制: 太陽光が強い時間帯は発色光を弱める (時刻カーブ。屋内外不問)。
+        // 夜間・屋内相当 (後者は距離減衰側が担当) は全量のまま
+        alpha *= daylightFactor(lvlForCache != null ? lvlForCache : capLevel);
         int blendedPure = blendAdditive(colors, weights);
         int pr = (blendedPure >> 16) & 0xFF;
         int pg = (blendedPure >> 8) & 0xFF;

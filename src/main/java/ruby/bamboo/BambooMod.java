@@ -121,6 +121,10 @@ public class BambooMod {
         net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
                 net.minecraftforge.fml.config.ModConfig.Type.CLIENT,
                 MiniatureConfig.CLIENT_SPEC, "bamboomod-miniature.toml");
+        // 色付き光 (間接照明) 昼光抑制
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                net.minecraftforge.fml.config.ModConfig.Type.CLIENT,
+                ruby.bamboo.core.config.ColoredLightConfig.CLIENT_SPEC, "bamboomod-coloredlight.toml");
         IEventBus modEventBus = context.getModEventBus();
         // Config GUI — ModList の「Config」ボタンを有効化（DEDICATED_SERVER では Screen をロードしないよう DistExecutor 経由で分離）
         if (net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.CLIENT) {

@@ -4,7 +4,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.fml.ModLoadingContext;
-import ruby.bamboo.client.gui.MiniatureConfigScreen;
+import ruby.bamboo.client.gui.BambooConfigScreen;
 
 /**
  * クライアント専用の ConfigScreen 登録ヘルパー。
@@ -22,6 +22,6 @@ public final class ClientConfigRegistration {
     public static void register() {
         ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
                 () -> new ConfigScreenHandler.ConfigScreenFactory(
-                        (mc, screen) -> new MiniatureConfigScreen(screen)));
+                        (mc, screen) -> new BambooConfigScreen(screen)));
     }
 }

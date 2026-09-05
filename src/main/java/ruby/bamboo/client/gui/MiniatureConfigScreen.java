@@ -115,53 +115,15 @@ public class MiniatureConfigScreen extends Screen {
     }
 
     private Button createIntButton(Component label, int current, int min, int max, java.util.function.IntConsumer setter, int x, int y, int w, int h) {
-        // クリック毎に Config の現在値を取得して循環させる (final 変数 current は初回表示用のみ)
-        return Button.builder(Component.literal(label.getString() + ": " + current), b -> {
-            int cur = 0;
-            try {
-                // label から Config 値を逆引きせず、ボタンの表示から現在の数値をパースする簡易実装
-                String txt = b.getMessage().getString();
-                int idx = txt.lastIndexOf(": ");
-                if (idx >= 0) cur = Integer.parseInt(txt.substring(idx + 2).trim());
-                else cur = current;
-            } catch (Exception e) { cur = current; }
-            int next = cur + 1;
-            if (next > max) next = min;
-            setter.accept(next);
-            b.setMessage(Component.literal(label.getString() + ": " + next));
-        }).bounds(x, y, w, h).tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("クリックで " + min + "〜" + max + " を循環"))).build();
+        return ConfigWidgets.intCycle(label, current, min, max, setter, x, y, w, h);
     }
 
     private Button createChoicesButton(Component label, String current, String[] choices, java.util.function.Consumer<String> setter, int x, int y, int w, int h) {
-        return Button.builder(Component.literal(label.getString() + ": " + current), b -> {
-            String cur = current;
-            try {
-                String txt = b.getMessage().getString();
-                int idx = txt.lastIndexOf(": ");
-                if (idx >= 0) cur = txt.substring(idx + 2).trim();
-            } catch (Exception e) {}
-            int idx = -1;
-            for (int i = 0; i < choices.length; i++) if (choices[i].equals(cur)) { idx = i; break; }
-            String next = choices[(idx + 1) % choices.length];
-            setter.accept(next);
-            b.setMessage(Component.literal(label.getString() + ": " + next));
-        }).bounds(x, y, w, h).tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("クリックで " + String.join("/", choices) + " を循環"))).build();
+        return ConfigWidgets.choices(label, current, choices, setter, x, y, w, h);
     }
 
     private Button createDoubleButton(Component label, double current, double min, double max, double step, java.util.function.DoubleConsumer setter, int x, int y, int w, int h) {
-        String fmt = String.format("%.2f", current);
-        return Button.builder(Component.literal(label.getString() + ": " + fmt), b -> {
-            double cur = current;
-            try {
-                String txt = b.getMessage().getString();
-                int idx = txt.lastIndexOf(": ");
-                if (idx >= 0) cur = Double.parseDouble(txt.substring(idx + 2).trim());
-            } catch (Exception e) {}
-            double next = Math.round((cur + step) * 100.0) / 100.0;
-            if (next > max + 1e-9) next = min;
-            setter.accept(next);
-            b.setMessage(Component.literal(label.getString() + ": " + String.format("%.2f", next)));
-        }).bounds(x, y, w, h).tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("クリックで " + min + "〜" + max + " を " + step + " 刻みで循環"))).build();
+        return ConfigWidgets.doubleStep(label, current, min, max, step, setter, x, y, w, h);
     }
 
     @Override

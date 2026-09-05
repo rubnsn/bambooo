@@ -157,6 +157,13 @@ dependencies {
     compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
     runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
 
+    // Embeddium (SodiumのForge移植) — 開発環境のみ (runClient軽量化用)。
+    // runtimeOnlyのため配布jarに同梱されず、mods.toml依存追加も不要。
+    // リポジトリは上記 JEI maven (https://maven.blamejared.com) を共用。
+    runtimeOnly fg.deobf("org.embeddedt:embeddium-${mc_version}:${embeddium_version}")
+    // 参照用 (Sodium系Mixinのコンパイルのみ。配布jarに同梱されず、不在時は @Pseudo で無効化)
+    compileOnly fg.deobf("org.embeddedt:embeddium-${mc_version}:${embeddium_version}")
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"
