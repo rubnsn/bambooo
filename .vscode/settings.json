@@ -1,11 +1,15 @@
 {
-    // Forge 1.20.1 開発には JDK 17 が必須。
-    // システム既定(JDK 8 等)が選ばれると外部ライブラリ(forge userdev jar 等)の解決に失敗するため明示する。
+    // NeoForge 1.21.1 開発用。コンパイルは Java 21 (Gradle toolchain が自動調達) のため言語サーバーにも JDK 21 を登録する。
+    // Gradle デーモン自体は JDK 17 起動で問題ないため gradle.javaHome は 17 のまま。
     "java.configuration.runtimes": [
         {
-            "name": "JavaSE-17",
-            "path": "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.8-hotspot",
+            "name": "JavaSE-21",
+            "path": "C:\\Users\\white\\.gradle\\jdks\\eclipse_adoptium-21-amd64-windows.2",
             "default": true
+        },
+        {
+            "name": "JavaSE-17",
+            "path": "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.8-hotspot"
         }
     ],
     // Gradle デーモン/同期も JDK 17 で実行する

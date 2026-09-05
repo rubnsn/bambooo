@@ -3,73 +3,13 @@
   "configurations": [
     {
       "type": "java",
-      "name": "runClient",
       "request": "launch",
-      "mainClass": "cpw.mods.bootstraplauncher.BootstrapLauncher",
-      "projectName": "mc",
-      "cwd": "${workspaceFolder}\\run\\client",
-      "vmArgs": "-Dforge.logging.console.level\u003ddebug -Dforge.logging.markers\u003dREGISTRIES -DlegacyClassPath.file\u003dE:\\mc\\build\\classpath\\runClient_minecraftClasspath.txt -Dnet.minecraftforge.gradle.GradleStart.srg.srg-mcp\u003dE:\\mc\\build\\createSrgToMcp\\output.srg -Dmixin.env.remapRefMap\u003dtrue -Dmixin.env.refMapRemappingFile\u003dE:\\mc\\build\\createSrgToMcp\\output.srg -DignoreList\u003dbootstraplauncher,securejarhandler,asm-commons,asm-util,asm-analysis,asm-tree,asm,JarJarFileSystems,client-extra,fmlcore,javafmllanguage,lowcodelanguage,mclanguage,forge- -DmergeModules\u003djna-5.10.0.jar,jna-platform-5.10.0.jar -Dforge.enabledGameTestNamespaces\u003dbamboomod -Dforge.enableGameTest\u003dtrue -Djava.net.preferIPv6Addresses\u003dsystem -p C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\cpw.mods\\bootstraplauncher\\1.1.2\\c546e00443d8432cda6baa1c860346980742628\\bootstraplauncher-1.1.2.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\cpw.mods\\securejarhandler\\2.1.10\\51e6a22c6c716beb11e244bf5b8be480f51dd6b5\\securejarhandler-2.1.10.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-commons\\9.8\\36e4d212970388e5bd2c5180292012502df461bb\\asm-commons-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-util\\9.8\\395f1c1f035258511f27bc9b2583d76e4b143f59\\asm-util-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-analysis\\9.8\\b9747a320844b6cb1eacd90d8ecfd260a16c01d3\\asm-analysis-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-tree\\9.8\\18419ca5b77a2f81097c741e7872e6ab8d2f40d\\asm-tree-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm\\9.8\\dc19ecb3f7889b7860697215cae99c0f9b6f6b4b\\asm-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\net.minecraftforge\\JarJarFileSystems\\0.3.19\\2464eb7d6b9ddb9db36a82cf8a95193e5c6fe020\\JarJarFileSystems-0.3.19.jar --add-modules ALL-MODULE-PATH --add-opens java.base/java.util.jar\u003dcpw.mods.securejarhandler --add-opens java.base/java.lang.invoke\u003dcpw.mods.securejarhandler --add-exports java.base/sun.security.util\u003dcpw.mods.securejarhandler --add-exports jdk.naming.dns/com.sun.jndi.dns\u003djava.naming -XX:HeapDumpPath\u003dMojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
-      "args": "--launchTarget forgeclientuserdev --version MOD_DEV --assetIndex 5 --assetsDir C:\\Users\\white\\.gradle\\caches\\forge_gradle\\assets --gameDir . --fml.forgeVersion 47.4.10 --fml.mcVersion 1.20.1 --fml.forgeGroup net.minecraftforge --fml.mcpVersion 20230612.114412 --mixin.config bamboomod.mixins.json",
-      "env": {
-        "MOD_CLASSES": "bamboomod%%${workspaceFolder}\\build\\resources\\main;bamboomod%%${workspaceFolder}\\build\\classes\\java\\main",
-        "MCP_MAPPINGS": "official_1.20.1"
-      },
-      "preLaunchTask": "prepareRunClientCompile"
-    },
-    {
-      "type": "java",
-      "name": "runData",
-      "request": "launch",
-      "mainClass": "cpw.mods.bootstraplauncher.BootstrapLauncher",
-      "projectName": "mc",
-      "cwd": "${workspaceFolder}\\run-data",
-      "vmArgs": "-Dforge.logging.console.level\u003ddebug -Dforge.logging.markers\u003dREGISTRIES -DlegacyClassPath.file\u003dE:\\mc\\build\\classpath\\runData_minecraftClasspath.txt -Dnet.minecraftforge.gradle.GradleStart.srg.srg-mcp\u003dE:\\mc\\build\\createSrgToMcp\\output.srg -Dmixin.env.remapRefMap\u003dtrue -Dmixin.env.refMapRemappingFile\u003dE:\\mc\\build\\createSrgToMcp\\output.srg -DignoreList\u003dbootstraplauncher,securejarhandler,asm-commons,asm-util,asm-analysis,asm-tree,asm,JarJarFileSystems,client-extra,fmlcore,javafmllanguage,lowcodelanguage,mclanguage,forge- -DmergeModules\u003djna-5.10.0.jar,jna-platform-5.10.0.jar -Djava.net.preferIPv6Addresses\u003dsystem -p C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\cpw.mods\\bootstraplauncher\\1.1.2\\c546e00443d8432cda6baa1c860346980742628\\bootstraplauncher-1.1.2.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\cpw.mods\\securejarhandler\\2.1.10\\51e6a22c6c716beb11e244bf5b8be480f51dd6b5\\securejarhandler-2.1.10.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-commons\\9.8\\36e4d212970388e5bd2c5180292012502df461bb\\asm-commons-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-util\\9.8\\395f1c1f035258511f27bc9b2583d76e4b143f59\\asm-util-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-analysis\\9.8\\b9747a320844b6cb1eacd90d8ecfd260a16c01d3\\asm-analysis-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-tree\\9.8\\18419ca5b77a2f81097c741e7872e6ab8d2f40d\\asm-tree-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm\\9.8\\dc19ecb3f7889b7860697215cae99c0f9b6f6b4b\\asm-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\net.minecraftforge\\JarJarFileSystems\\0.3.19\\2464eb7d6b9ddb9db36a82cf8a95193e5c6fe020\\JarJarFileSystems-0.3.19.jar --add-modules ALL-MODULE-PATH --add-opens java.base/java.util.jar\u003dcpw.mods.securejarhandler --add-opens java.base/java.lang.invoke\u003dcpw.mods.securejarhandler --add-exports java.base/sun.security.util\u003dcpw.mods.securejarhandler --add-exports jdk.naming.dns/com.sun.jndi.dns\u003djava.naming",
-      "args": "--launchTarget forgedatauserdev --assetIndex 5 --assetsDir C:\\Users\\white\\.gradle\\caches\\forge_gradle\\assets --gameDir . --fml.forgeVersion 47.4.10 --fml.mcVersion 1.20.1 --fml.forgeGroup net.minecraftforge --fml.mcpVersion 20230612.114412 --mod bamboomod --all --output E:\\mc\\src\\generated\\resources --existing E:\\mc\\src\\main\\resources --mixin.config bamboomod.mixins.json",
-      "env": {
-        "MOD_CLASSES": "bamboomod%%${workspaceFolder}\\build\\resources\\main;bamboomod%%${workspaceFolder}\\build\\classes\\java\\main",
-        "MCP_MAPPINGS": "official_1.20.1"
-      },
-      "preLaunchTask": "prepareRunDataCompile"
-    },
-    {
-      "type": "java",
-      "name": "runGameTestServer",
-      "request": "launch",
-      "mainClass": "cpw.mods.bootstraplauncher.BootstrapLauncher",
-      "projectName": "mc",
-      "cwd": "${workspaceFolder}\\run",
-      "vmArgs": "-Dforge.logging.console.level\u003ddebug -Dforge.logging.markers\u003dREGISTRIES -DlegacyClassPath.file\u003dE:\\mc\\build\\classpath\\runGameTestServer_minecraftClasspath.txt -Dnet.minecraftforge.gradle.GradleStart.srg.srg-mcp\u003dE:\\mc\\build\\createSrgToMcp\\output.srg -Dmixin.env.remapRefMap\u003dtrue -Dmixin.env.refMapRemappingFile\u003dE:\\mc\\build\\createSrgToMcp\\output.srg -DignoreList\u003dbootstraplauncher,securejarhandler,asm-commons,asm-util,asm-analysis,asm-tree,asm,JarJarFileSystems,client-extra,fmlcore,javafmllanguage,lowcodelanguage,mclanguage,forge- -DmergeModules\u003djna-5.10.0.jar,jna-platform-5.10.0.jar -Dforge.enabledGameTestNamespaces\u003dbamboomod -Djava.net.preferIPv6Addresses\u003dsystem -p C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\cpw.mods\\bootstraplauncher\\1.1.2\\c546e00443d8432cda6baa1c860346980742628\\bootstraplauncher-1.1.2.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\cpw.mods\\securejarhandler\\2.1.10\\51e6a22c6c716beb11e244bf5b8be480f51dd6b5\\securejarhandler-2.1.10.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-commons\\9.8\\36e4d212970388e5bd2c5180292012502df461bb\\asm-commons-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-util\\9.8\\395f1c1f035258511f27bc9b2583d76e4b143f59\\asm-util-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-analysis\\9.8\\b9747a320844b6cb1eacd90d8ecfd260a16c01d3\\asm-analysis-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-tree\\9.8\\18419ca5b77a2f81097c741e7872e6ab8d2f40d\\asm-tree-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm\\9.8\\dc19ecb3f7889b7860697215cae99c0f9b6f6b4b\\asm-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\net.minecraftforge\\JarJarFileSystems\\0.3.19\\2464eb7d6b9ddb9db36a82cf8a95193e5c6fe020\\JarJarFileSystems-0.3.19.jar --add-modules ALL-MODULE-PATH --add-opens java.base/java.util.jar\u003dcpw.mods.securejarhandler --add-opens java.base/java.lang.invoke\u003dcpw.mods.securejarhandler --add-exports java.base/sun.security.util\u003dcpw.mods.securejarhandler --add-exports jdk.naming.dns/com.sun.jndi.dns\u003djava.naming",
-      "args": "--launchTarget forgegametestserveruserdev --gameDir . --fml.forgeVersion 47.4.10 --fml.mcVersion 1.20.1 --fml.forgeGroup net.minecraftforge --fml.mcpVersion 20230612.114412 --mixin.config bamboomod.mixins.json",
-      "env": {
-        "MOD_CLASSES": "bamboomod%%${workspaceFolder}\\build\\resources\\main;bamboomod%%${workspaceFolder}\\build\\classes\\java\\main",
-        "MCP_MAPPINGS": "official_1.20.1"
-      },
-      "preLaunchTask": "prepareRunGameTestServerCompile"
-    },
-    {
-      "type": "java",
-      "name": "runServer",
-      "request": "launch",
-      "mainClass": "cpw.mods.bootstraplauncher.BootstrapLauncher",
-      "projectName": "mc",
-      "cwd": "${workspaceFolder}\\run",
-      "vmArgs": "-Dforge.logging.console.level\u003ddebug -Dforge.logging.markers\u003dREGISTRIES -DlegacyClassPath.file\u003dE:\\mc\\build\\classpath\\runServer_minecraftClasspath.txt -Dnet.minecraftforge.gradle.GradleStart.srg.srg-mcp\u003dE:\\mc\\build\\createSrgToMcp\\output.srg -Dmixin.env.remapRefMap\u003dtrue -Dmixin.env.refMapRemappingFile\u003dE:\\mc\\build\\createSrgToMcp\\output.srg -DignoreList\u003dbootstraplauncher,securejarhandler,asm-commons,asm-util,asm-analysis,asm-tree,asm,JarJarFileSystems,client-extra,fmlcore,javafmllanguage,lowcodelanguage,mclanguage,forge- -DmergeModules\u003djna-5.10.0.jar,jna-platform-5.10.0.jar -Dforge.enabledGameTestNamespaces\u003dbamboomod -Dforge.enableGameTest\u003dtrue -Djava.net.preferIPv6Addresses\u003dsystem -p C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\cpw.mods\\bootstraplauncher\\1.1.2\\c546e00443d8432cda6baa1c860346980742628\\bootstraplauncher-1.1.2.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\cpw.mods\\securejarhandler\\2.1.10\\51e6a22c6c716beb11e244bf5b8be480f51dd6b5\\securejarhandler-2.1.10.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-commons\\9.8\\36e4d212970388e5bd2c5180292012502df461bb\\asm-commons-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-util\\9.8\\395f1c1f035258511f27bc9b2583d76e4b143f59\\asm-util-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-analysis\\9.8\\b9747a320844b6cb1eacd90d8ecfd260a16c01d3\\asm-analysis-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm-tree\\9.8\\18419ca5b77a2f81097c741e7872e6ab8d2f40d\\asm-tree-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\org.ow2.asm\\asm\\9.8\\dc19ecb3f7889b7860697215cae99c0f9b6f6b4b\\asm-9.8.jar;C:\\Users\\white\\.gradle\\caches\\modules-2\\files-2.1\\net.minecraftforge\\JarJarFileSystems\\0.3.19\\2464eb7d6b9ddb9db36a82cf8a95193e5c6fe020\\JarJarFileSystems-0.3.19.jar --add-modules ALL-MODULE-PATH --add-opens java.base/java.util.jar\u003dcpw.mods.securejarhandler --add-opens java.base/java.lang.invoke\u003dcpw.mods.securejarhandler --add-exports java.base/sun.security.util\u003dcpw.mods.securejarhandler --add-exports jdk.naming.dns/com.sun.jndi.dns\u003djava.naming",
-      "args": "--launchTarget forgeserveruserdev --gameDir . --fml.forgeVersion 47.4.10 --fml.mcVersion 1.20.1 --fml.forgeGroup net.minecraftforge --fml.mcpVersion 20230612.114412 --nogui --mixin.config bamboomod.mixins.json",
-      "env": {
-        "MOD_CLASSES": "bamboomod%%${workspaceFolder}\\build\\resources\\main;bamboomod%%${workspaceFolder}\\build\\classes\\java\\main",
-        "MCP_MAPPINGS": "official_1.20.1"
-      },
-      "preLaunchTask": "prepareRunServerCompile"
-    },
-    {
-      "type": "java",
-      "request": "launch",
-      "name": "1.21.1-NeoForge - Client",
+      "name": "Mc - Client",
       "presentation": {
-        "group": "NG - 1.21.1-NeoForge",
+        "group": "NG - mc",
         "order": 0
       },
-      "projectName": "1.21.1-NeoForge",
+      "projectName": "mc",
       "mainClass": "cpw.mods.bootstraplauncher.BootstrapLauncher",
       "args": [
         "--launchTarget",
@@ -97,46 +37,46 @@
         "--add-modules",
         "ALL-MODULE-PATH",
         "--add-opens",
-        "java.base/java.util.jar\u003dcpw.mods.securejarhandler",
+        "java.base/java.util.jar=cpw.mods.securejarhandler",
         "--add-opens",
-        "java.base/java.lang.invoke\u003dcpw.mods.securejarhandler",
+        "java.base/java.lang.invoke=cpw.mods.securejarhandler",
         "--add-exports",
-        "java.base/sun.security.util\u003dcpw.mods.securejarhandler",
+        "java.base/sun.security.util=cpw.mods.securejarhandler",
         "--add-exports",
-        "jdk.naming.dns/com.sun.jndi.dns\u003djava.naming",
-        "-XX:HeapDumpPath\u003dMojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
-        "-Dforge.logging.markers\u003dREGISTRIES",
-        "-Dforge.logging.console.level\u003ddebug",
-        "-Dneoforge.enabledGameTestNamespaces\u003dbamboomod",
-        "-Dneoforge.enableGameTest\u003dtrue",
-        "-DlegacyClassPath.file\u003dE:\\mc-wt\\1.21.1-NeoForge\\build\\neoForm\\neoFormJoined1.21.1-20240808.144430\\steps\\writeMinecraftClasspathClient\\classpath.txt",
-        "-DignoreList\u003dmixinextras-neoforge-0.5.3.jar,client-extra,neoforge-",
-        "-Djava.net.preferIPv6Addresses\u003dsystem"
+        "jdk.naming.dns/com.sun.jndi.dns=java.naming",
+        "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
+        "-Dforge.logging.markers=REGISTRIES",
+        "-Dforge.logging.console.level=debug",
+        "-Dneoforge.enabledGameTestNamespaces=bamboomod",
+        "-Dneoforge.enableGameTest=true",
+        "-DlegacyClassPath.file=E:\\mc\\build\\neoForm\\neoFormJoined1.21.1-20240808.144430\\steps\\writeMinecraftClasspathClient\\classpath.txt",
+        "-DignoreList=mixinextras-neoforge-0.5.3.jar,client-extra,neoforge-",
+        "-Djava.net.preferIPv6Addresses=system"
       ],
       "cwd": "${workspaceFolder}\\run\\client",
       "env": {
-        "MOD_CLASSES": "1.21.1-NeoForge%%E:\\mc-wt\\1.21.1-NeoForge\\bin\\main"
+        "MOD_CLASSES": "mc%%E:\\mc\\bin\\main"
       },
       "shortenCommandLine": "argfile"
     },
     {
       "type": "java",
       "request": "launch",
-      "name": "1.21.1-NeoForge - Data",
+      "name": "Mc - Data",
       "presentation": {
-        "group": "NG - 1.21.1-NeoForge",
+        "group": "NG - mc",
         "order": 1
       },
-      "projectName": "1.21.1-NeoForge",
+      "projectName": "mc",
       "mainClass": "cpw.mods.bootstraplauncher.BootstrapLauncher",
       "args": [
         "--mod",
         "bamboomod",
         "--all",
         "--output",
-        "E:\\mc-wt\\1.21.1-NeoForge\\src\\generated\\resources",
+        "E:\\mc\\src\\generated\\resources",
         "--existing",
-        "E:\\mc-wt\\1.21.1-NeoForge\\src\\main\\resources",
+        "E:\\mc\\src\\main\\resources",
         "--launchTarget",
         "forgedatadev",
         "--assetIndex",
@@ -160,34 +100,34 @@
         "--add-modules",
         "ALL-MODULE-PATH",
         "--add-opens",
-        "java.base/java.util.jar\u003dcpw.mods.securejarhandler",
+        "java.base/java.util.jar=cpw.mods.securejarhandler",
         "--add-opens",
-        "java.base/java.lang.invoke\u003dcpw.mods.securejarhandler",
+        "java.base/java.lang.invoke=cpw.mods.securejarhandler",
         "--add-exports",
-        "java.base/sun.security.util\u003dcpw.mods.securejarhandler",
+        "java.base/sun.security.util=cpw.mods.securejarhandler",
         "--add-exports",
-        "jdk.naming.dns/com.sun.jndi.dns\u003djava.naming",
-        "-Dforge.logging.markers\u003dREGISTRIES",
-        "-Dforge.logging.console.level\u003ddebug",
-        "-DlegacyClassPath.file\u003dE:\\mc-wt\\1.21.1-NeoForge\\build\\neoForm\\neoFormJoined1.21.1-20240808.144430\\steps\\writeMinecraftClasspathData\\classpath.txt",
-        "-DignoreList\u003dmixinextras-neoforge-0.5.3.jar,client-extra,neoforge-",
-        "-Djava.net.preferIPv6Addresses\u003dsystem"
+        "jdk.naming.dns/com.sun.jndi.dns=java.naming",
+        "-Dforge.logging.markers=REGISTRIES",
+        "-Dforge.logging.console.level=debug",
+        "-DlegacyClassPath.file=E:\\mc\\build\\neoForm\\neoFormJoined1.21.1-20240808.144430\\steps\\writeMinecraftClasspathData\\classpath.txt",
+        "-DignoreList=mixinextras-neoforge-0.5.3.jar,client-extra,neoforge-",
+        "-Djava.net.preferIPv6Addresses=system"
       ],
       "cwd": "${workspaceFolder}\\run\\data",
       "env": {
-        "MOD_CLASSES": "1.21.1-NeoForge%%E:\\mc-wt\\1.21.1-NeoForge\\bin\\main"
+        "MOD_CLASSES": "mc%%E:\\mc\\bin\\main"
       },
       "shortenCommandLine": "argfile"
     },
     {
       "type": "java",
       "request": "launch",
-      "name": "1.21.1-NeoForge - GameTestServer",
+      "name": "Mc - GameTestServer",
       "presentation": {
-        "group": "NG - 1.21.1-NeoForge",
+        "group": "NG - mc",
         "order": 2
       },
-      "projectName": "1.21.1-NeoForge",
+      "projectName": "mc",
       "mainClass": "cpw.mods.bootstraplauncher.BootstrapLauncher",
       "args": [
         "--launchTarget",
@@ -209,37 +149,37 @@
         "--add-modules",
         "ALL-MODULE-PATH",
         "--add-opens",
-        "java.base/java.util.jar\u003dcpw.mods.securejarhandler",
+        "java.base/java.util.jar=cpw.mods.securejarhandler",
         "--add-opens",
-        "java.base/java.lang.invoke\u003dcpw.mods.securejarhandler",
+        "java.base/java.lang.invoke=cpw.mods.securejarhandler",
         "--add-exports",
-        "java.base/sun.security.util\u003dcpw.mods.securejarhandler",
+        "java.base/sun.security.util=cpw.mods.securejarhandler",
         "--add-exports",
-        "jdk.naming.dns/com.sun.jndi.dns\u003djava.naming",
-        "-Dforge.logging.markers\u003dREGISTRIES",
-        "-Dforge.logging.console.level\u003ddebug",
-        "-Dneoforge.enabledGameTestNamespaces\u003dbamboomod",
-        "-Dneoforge.enableGameTest\u003dtrue",
-        "-Dneoforge.gameTestServer\u003dtrue",
-        "-DlegacyClassPath.file\u003dE:\\mc-wt\\1.21.1-NeoForge\\build\\neoForm\\neoFormJoined1.21.1-20240808.144430\\steps\\writeMinecraftClasspathGameTestServer\\classpath.txt",
-        "-DignoreList\u003dmixinextras-neoforge-0.5.3.jar,client-extra,neoforge-",
-        "-Djava.net.preferIPv6Addresses\u003dsystem"
+        "jdk.naming.dns/com.sun.jndi.dns=java.naming",
+        "-Dforge.logging.markers=REGISTRIES",
+        "-Dforge.logging.console.level=debug",
+        "-Dneoforge.enabledGameTestNamespaces=bamboomod",
+        "-Dneoforge.enableGameTest=true",
+        "-Dneoforge.gameTestServer=true",
+        "-DlegacyClassPath.file=E:\\mc\\build\\neoForm\\neoFormJoined1.21.1-20240808.144430\\steps\\writeMinecraftClasspathGameTestServer\\classpath.txt",
+        "-DignoreList=mixinextras-neoforge-0.5.3.jar,client-extra,neoforge-",
+        "-Djava.net.preferIPv6Addresses=system"
       ],
       "cwd": "${workspaceFolder}\\run\\gameTestServer",
       "env": {
-        "MOD_CLASSES": "1.21.1-NeoForge%%E:\\mc-wt\\1.21.1-NeoForge\\bin\\main"
+        "MOD_CLASSES": "mc%%E:\\mc\\bin\\main"
       },
       "shortenCommandLine": "argfile"
     },
     {
       "type": "java",
       "request": "launch",
-      "name": "1.21.1-NeoForge - Junit",
+      "name": "Mc - Junit",
       "presentation": {
-        "group": "NG - 1.21.1-NeoForge",
+        "group": "NG - mc",
         "order": 3
       },
-      "projectName": "1.21.1-NeoForge",
+      "projectName": "mc",
       "mainClass": "cpw.mods.bootstraplauncher.BootstrapLauncher",
       "args": [
         "--launchTarget",
@@ -267,35 +207,35 @@
         "--add-modules",
         "ALL-MODULE-PATH",
         "--add-opens",
-        "java.base/java.util.jar\u003dcpw.mods.securejarhandler",
+        "java.base/java.util.jar=cpw.mods.securejarhandler",
         "--add-opens",
-        "java.base/java.lang.invoke\u003dcpw.mods.securejarhandler",
+        "java.base/java.lang.invoke=cpw.mods.securejarhandler",
         "--add-exports",
-        "java.base/sun.security.util\u003dcpw.mods.securejarhandler",
+        "java.base/sun.security.util=cpw.mods.securejarhandler",
         "--add-exports",
-        "jdk.naming.dns/com.sun.jndi.dns\u003djava.naming",
-        "-XX:HeapDumpPath\u003dMojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
-        "-Dforge.logging.markers\u003dREGISTRIES",
-        "-Dforge.logging.console.level\u003ddebug",
-        "-DlegacyClassPath.file\u003dE:\\mc-wt\\1.21.1-NeoForge\\build\\neoForm\\neoFormJoined1.21.1-20240808.144430\\steps\\writeMinecraftClasspathJunit\\classpath.txt",
-        "-DignoreList\u003dmixinextras-neoforge-0.5.3.jar,client-extra,neoforge-",
-        "-Djava.net.preferIPv6Addresses\u003dsystem"
+        "jdk.naming.dns/com.sun.jndi.dns=java.naming",
+        "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
+        "-Dforge.logging.markers=REGISTRIES",
+        "-Dforge.logging.console.level=debug",
+        "-DlegacyClassPath.file=E:\\mc\\build\\neoForm\\neoFormJoined1.21.1-20240808.144430\\steps\\writeMinecraftClasspathJunit\\classpath.txt",
+        "-DignoreList=mixinextras-neoforge-0.5.3.jar,client-extra,neoforge-",
+        "-Djava.net.preferIPv6Addresses=system"
       ],
       "cwd": "${workspaceFolder}\\run\\junit",
       "env": {
-        "MOD_CLASSES": "1.21.1-NeoForge%%E:\\mc-wt\\1.21.1-NeoForge\\bin\\main"
+        "MOD_CLASSES": "mc%%E:\\mc\\bin\\main"
       },
       "shortenCommandLine": "argfile"
     },
     {
       "type": "java",
       "request": "launch",
-      "name": "1.21.1-NeoForge - Server",
+      "name": "Mc - Server",
       "presentation": {
-        "group": "NG - 1.21.1-NeoForge",
+        "group": "NG - mc",
         "order": 4
       },
-      "projectName": "1.21.1-NeoForge",
+      "projectName": "mc",
       "mainClass": "cpw.mods.bootstraplauncher.BootstrapLauncher",
       "args": [
         "--nogui",
@@ -318,23 +258,23 @@
         "--add-modules",
         "ALL-MODULE-PATH",
         "--add-opens",
-        "java.base/java.util.jar\u003dcpw.mods.securejarhandler",
+        "java.base/java.util.jar=cpw.mods.securejarhandler",
         "--add-opens",
-        "java.base/java.lang.invoke\u003dcpw.mods.securejarhandler",
+        "java.base/java.lang.invoke=cpw.mods.securejarhandler",
         "--add-exports",
-        "java.base/sun.security.util\u003dcpw.mods.securejarhandler",
+        "java.base/sun.security.util=cpw.mods.securejarhandler",
         "--add-exports",
-        "jdk.naming.dns/com.sun.jndi.dns\u003djava.naming",
-        "-Dforge.logging.markers\u003dREGISTRIES",
-        "-Dforge.logging.console.level\u003ddebug",
-        "-Dneoforge.enabledGameTestNamespaces\u003dbamboomod",
-        "-DlegacyClassPath.file\u003dE:\\mc-wt\\1.21.1-NeoForge\\build\\neoForm\\neoFormJoined1.21.1-20240808.144430\\steps\\writeMinecraftClasspathServer\\classpath.txt",
-        "-DignoreList\u003dmixinextras-neoforge-0.5.3.jar,client-extra,neoforge-",
-        "-Djava.net.preferIPv6Addresses\u003dsystem"
+        "jdk.naming.dns/com.sun.jndi.dns=java.naming",
+        "-Dforge.logging.markers=REGISTRIES",
+        "-Dforge.logging.console.level=debug",
+        "-Dneoforge.enabledGameTestNamespaces=bamboomod",
+        "-DlegacyClassPath.file=E:\\mc\\build\\neoForm\\neoFormJoined1.21.1-20240808.144430\\steps\\writeMinecraftClasspathServer\\classpath.txt",
+        "-DignoreList=mixinextras-neoforge-0.5.3.jar,client-extra,neoforge-",
+        "-Djava.net.preferIPv6Addresses=system"
       ],
       "cwd": "${workspaceFolder}\\run\\server",
       "env": {
-        "MOD_CLASSES": "1.21.1-NeoForge%%E:\\mc-wt\\1.21.1-NeoForge\\bin\\main"
+        "MOD_CLASSES": "mc%%E:\\mc\\bin\\main"
       },
       "shortenCommandLine": "argfile"
     }
