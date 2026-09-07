@@ -1,8 +1,12 @@
 package ruby.bamboo.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -44,6 +48,8 @@ import ruby.bamboo.block.entity.BambooPotBlockEntity;
 public class BambooPotBlock extends BaseEntityBlock {
 
     // ===== 調整用定数 =====
+    /** HaC葉物花の縮小率。HaC花瓶準拠 (葉物0.45/通常0.65)。描画時に乗算。 */
+    public static final float HAC_LEAFY_SCALE_MUL = 0.45f / 0.65f;
     /** 自由配置の基準スケール (花は1.5倍大きく、サボテンは小さく) */
     public static final float FREE_SCALE_BASE = 0.63f;
     public static final float FREE_SCALE_VARIATION = 0.06f;
@@ -263,8 +269,14 @@ public class BambooPotBlock extends BaseEntityBlock {
         }
     }
 
+    /** プランター植栽可の自前ブロックタグ。HaC不在でも欠番は無視される。 */
+    public static final TagKey<Block> POT_PLANTABLE = TagKey.create(Registries.BLOCK,
+            new ResourceLocation("bamboomod", "plantable_in_pot"));
+
     /**
      * 鉢に挿せる植物か判定。鉢自体は除外（鉢は上記で別扱い）。
+     * HaC連携はタグ経由のみ（直参照なし）: 切り花等の非BlockItemは {@code minecraft:flowers}、
+     * 花の種子（SeedItemDC等のBlockItem）はブロック側 {@code bamboomod:plantable_in_pot} で拾う。
      */
     public static boolean isValidPlant(ItemStack stack) {
         if (stack.isEmpty()) return false;
@@ -272,6 +284,7 @@ public class BambooPotBlock extends BaseEntityBlock {
             if (stack.is(ruby.bamboo.core.init.BambooBlocks.BAMBOO_POT.get().asItem())) return false; // 鉢は植物扱いしない
         } catch (Exception ignored) {}
         if (stack.is(ItemTags.SMALL_FLOWERS)) return true;
+        if (stack.is(ItemTags.FLOWERS)) return true;
         if (stack.is(ItemTags.SAPLINGS)) return true;
         if (stack.is(Items.CACTUS)) return true;
         if (stack.is(Items.DEAD_BUSH)) return true;
@@ -287,6 +300,7 @@ public class BambooPotBlock extends BaseEntityBlock {
             if (holder.is(BlockTags.SMALL_FLOWERS)) return true;
             if (holder.is(BlockTags.SAPLINGS)) return true;
             if (holder.is(BlockTags.FLOWERS)) return true;
+            if (holder.is(POT_PLANTABLE)) return true;
         }
         return false;
     }

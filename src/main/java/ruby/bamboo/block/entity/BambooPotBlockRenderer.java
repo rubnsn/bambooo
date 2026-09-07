@@ -12,11 +12,15 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.state.BlockState;
 import ruby.bamboo.block.BambooPotBlock;
+import ruby.bamboo.compat.dcs.DcsClimateCompat;
 
 /**
  * 竹鉢の BER — 最大16本をオフセット+スケールで描画。
  * 各エントリの offsetX/Z は中心からの -0.5〜0.5、スケールはエントリ毎にばらつき。
  * バニラ鉢植えサイズを参照しつつ、3個で幅が埋まるように調整（GRID_SCALE）。
+ * 植物の描画は {@code BlockRenderer#renderSingleBlock} のバニラ経路のみを使う。
+ * HaCの花は {@link DcsClimateCompat#getPottedFlowerState} で開花状態を解決できればそれを描画する
+ * （H&C不在・失敗時は従来通り。defeatedcrow.* への直参照なし）。
  */
 public class BambooPotBlockRenderer implements BlockEntityRenderer<BambooPotBlockEntity> {
 
@@ -47,14 +51,15 @@ public class BambooPotBlockRenderer implements BlockEntityRenderer<BambooPotBloc
             float wz = worldOff[1];
             // BlockItemはcross等のブロックモデルで描画（花をCrossで表示）
             if (e.stack.getItem() instanceof BlockItem bi) {
-                BlockState plantState = bi.getBlock().defaultBlockState();
-                double y = 6.0D / 16.0D;
-                poseStack.pushPose();
-                float scale = e.scale;
-                poseStack.translate(0.5D + wx - 0.5D * scale, y, 0.5D + wz - 0.5D * scale);
-                poseStack.scale(scale, scale, scale);
-                blockRenderer.renderSingleBlock(plantState, poseStack, buffer, packedLight, packedOverlay);
-                poseStack.popPose();
+                BlockState plantState = DcsClimateCompat.getPottedFlowerState(e.stack)
+                        .orElseGet(() -> bi.getBlock().defaultBlockState());
+                renderPlantBlock(blockRenderer, plantState, poseStack, buffer, packedLight, packedOverlay, wx, wz, leafyAdjustedScale(e.scale, plantState));
+                continue;
+            }
+            // 非BlockItemでもHaCの切り花等は対応ブロックの開花状態があればブロック経路で描画
+            BlockState hacFlower = DcsClimateCompat.getPottedFlowerState(e.stack).orElse(null);
+            if (hacFlower != null) {
+                renderPlantBlock(blockRenderer, hacFlower, poseStack, buffer, packedLight, packedOverlay, wx, wz, leafyAdjustedScale(e.scale, hacFlower));
                 continue;
             }
             poseStack.pushPose();
@@ -70,5 +75,23 @@ public class BambooPotBlockRenderer implements BlockEntityRenderer<BambooPotBloc
             ir.renderStatic(e.stack, ItemDisplayContext.FIXED, packedLight, packedOverlay, poseStack, buffer, be.getLevel(), (int) be.getBlockPos().asLong());
             poseStack.popPose();
         }
+    }
+
+    /** HaC葉物花は花瓶準拠で縮小（既植栽分にも描画時適用）。通常花は等倍。 */
+    private float leafyAdjustedScale(float scale, BlockState plantState) {
+        if (DcsClimateCompat.isLeafyFlower(plantState)) return scale * BambooPotBlock.HAC_LEAFY_SCALE_MUL;
+        return scale;
+    }
+
+    /** ブロック経路の描画本体（y=6/16 直上、scale補正）。 */
+    private void renderPlantBlock(net.minecraft.client.renderer.block.BlockRenderDispatcher blockRenderer,
+            BlockState plantState, PoseStack poseStack, MultiBufferSource buffer,
+            int packedLight, int packedOverlay, float wx, float wz, float scale) {
+        double y = 6.0D / 16.0D;
+        poseStack.pushPose();
+        poseStack.translate(0.5D + wx - 0.5D * scale, y, 0.5D + wz - 0.5D * scale);
+        poseStack.scale(scale, scale, scale);
+        blockRenderer.renderSingleBlock(plantState, poseStack, buffer, packedLight, packedOverlay);
+        poseStack.popPose();
     }
 }
