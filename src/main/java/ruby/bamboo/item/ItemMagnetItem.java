@@ -2,13 +2,18 @@ package ruby.bamboo.item;
 
 import java.util.List;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+
+import javax.annotation.Nullable;
 
 /**
  * 磁石 (sakura ItemMagnet の 1.20.1 移植)。
@@ -40,5 +45,10 @@ public class ItemMagnetItem extends Item implements Accessory {
         for (ExperienceOrb e : orbs) {
             e.playerTouch(player);
         }
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("tooltip.bamboomod.item_magnet").withStyle(net.minecraft.ChatFormatting.AQUA));
     }
 }

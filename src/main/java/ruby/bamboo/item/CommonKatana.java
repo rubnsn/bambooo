@@ -1,5 +1,6 @@
 package ruby.bamboo.item;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -20,9 +21,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import ruby.bamboo.entity.KaginawaHookEntity;
 import ruby.bamboo.network.KaginawaStateManager;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * 刀 (旧 CommonKatana の移植 → 鈎縄統合版)。
@@ -120,5 +125,10 @@ public class CommonKatana extends SwordItem {
     /** ドロップ率基底値 (特殊刀で上書き前提。現状は通常刀のみ) */
     public static float getDropRate() {
         return 0F;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("tooltip.bamboomod.commonkatana.hook").withStyle(net.minecraft.ChatFormatting.AQUA));
     }
 }

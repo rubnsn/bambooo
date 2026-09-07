@@ -2,16 +2,22 @@ package ruby.bamboo.item;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.HoeItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import ruby.bamboo.core.init.BambooBlocks;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * 田んぼクワ (sakura PaddyFieldHoe の移植)。
@@ -64,5 +70,11 @@ public class PaddyFieldHoeItem extends HoeItem {
             }
         }
         return InteractionResult.PASS;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("tooltip.bamboomod.paddy_field_hoe").withStyle(net.minecraft.ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.bamboomod.paddy_field.bucket").withStyle(net.minecraft.ChatFormatting.AQUA));
     }
 }

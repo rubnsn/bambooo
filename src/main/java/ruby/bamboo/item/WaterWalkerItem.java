@@ -1,12 +1,17 @@
 package ruby.bamboo.item;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * ウォーターウォーカー (sakura WaterWalker の 1.20.1 移植。登録名の typo water_warker を修正)。
@@ -35,5 +40,10 @@ public class WaterWalkerItem extends Item implements Accessory {
             player.setDeltaMovement(motion.x, 0.0D, motion.z);
             player.setOnGround(true);
         }
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("tooltip.bamboomod.water_walker").withStyle(net.minecraft.ChatFormatting.AQUA));
     }
 }

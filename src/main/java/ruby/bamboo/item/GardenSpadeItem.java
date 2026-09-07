@@ -2,16 +2,22 @@ package ruby.bamboo.item;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import ruby.bamboo.core.init.BambooBlocks;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * 花壇用スコップ。
@@ -50,5 +56,10 @@ public class GardenSpadeItem extends ShovelItem {
             }
         }
         return InteractionResult.PASS;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("tooltip.bamboomod.garden_spade").withStyle(net.minecraft.ChatFormatting.AQUA));
     }
 }

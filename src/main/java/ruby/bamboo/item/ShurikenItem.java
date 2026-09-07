@@ -1,5 +1,6 @@
 package ruby.bamboo.item;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -9,8 +10,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import ruby.bamboo.entity.ShurikenEntity;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * 手裏剣 (旧 Shuriken の 1.20.1 移植)。
@@ -57,5 +62,12 @@ public class ShurikenItem extends Item {
         }
         player.awardStat(Stats.ITEM_USED.get(this));
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("attribute.modifier.equals.0",
+                ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(attackDamage),
+                Component.translatable("tooltip.bamboomod.throwing_damage")).withStyle(net.minecraft.ChatFormatting.DARK_GREEN));
     }
 }

@@ -1,13 +1,18 @@
 package ruby.bamboo.item;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * 鉤爪 (sakura ClimbingClaw の 1.20.1 移植)。
@@ -42,6 +47,11 @@ public class ClimbingClawItem extends Item implements Accessory {
             double y = Math.max(motion.y, -0.15D);
             player.setDeltaMovement(x, y, z);
         }
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("tooltip.bamboomod.climbing_claw").withStyle(net.minecraft.ChatFormatting.AQUA));
     }
 
     /** 体側の当たり判定を XZ に 0.1 拡張し、固体ブロックに触れているか (流体は除外) */
