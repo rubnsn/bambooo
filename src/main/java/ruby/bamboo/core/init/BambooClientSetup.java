@@ -130,6 +130,11 @@ public final class BambooClientSetup {
                     BambooBlockEntities.BAMBOO_POT_BE.get(),
                     ruby.bamboo.block.entity.BambooPotBlockRenderer::new);
 
+            // 花壇の BER 登録 (プランター流用・天面1.0)
+            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+                    BambooBlockEntities.FLOWER_BED_BE.get(),
+                    ruby.bamboo.block.entity.FlowerBedBlockRenderer::new);
+
             // 風車・水車の BER 登録 (旧 Entity描画相当。1ブロック超え描画のためBE側INFINITE+offScreen)
             net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
                     BambooBlockEntities.MILL_BE.get(),

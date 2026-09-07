@@ -272,6 +272,10 @@ public final class BambooBlocks {
     public static final RegistryObject<ruby.bamboo.block.BambooPotBlock> BAMBOO_POT = register("bamboo_pot",
             ruby.bamboo.block.BambooPotBlock::new);
 
+    // ===== 花壇 (プランターの1ブロック拡大版。上面pot_top・側面/底面dirt、色・向きなし) =====
+    public static final RegistryObject<ruby.bamboo.block.FlowerBedBlock> FLOWER_BED = register("flower_bed",
+            ruby.bamboo.block.FlowerBedBlock::new);
+
     // ===== 源泉・温泉水 =====
     public static final RegistryObject<SpringBlock> SPRING_BLOCK = register("spring_block", SpringBlock::new);
     public static final RegistryObject<SpringWaterBlock> SPRING_WATER = registerNoItem("spring_water",

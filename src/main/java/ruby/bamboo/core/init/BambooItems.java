@@ -107,6 +107,10 @@ public final class BambooItems {
     public static final RegistryObject<ruby.bamboo.item.PaddyFieldHoeItem> PADDY_FIELD_HOE = register("paddy_field_hoe",
             () -> new ruby.bamboo.item.PaddyFieldHoeItem(new Item.Properties()));
 
+    /** 花壇用スコップ (土・草ブロックを花壇へ変換。IRON相当) */
+    public static final RegistryObject<ruby.bamboo.item.GardenSpadeItem> GARDEN_SPADE = register("garden_spade",
+            () -> new ruby.bamboo.item.GardenSpadeItem(new Item.Properties()));
+
     // ===== アクセサリ (インベントリ所持で発動。レシピ無し) =====
 
     /** 磁石 (sakura ItemMagnet。周囲のアイテム・経験値を自動回収) */

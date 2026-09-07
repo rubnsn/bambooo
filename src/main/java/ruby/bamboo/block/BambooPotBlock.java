@@ -283,6 +283,9 @@ public class BambooPotBlock extends BaseEntityBlock {
         try {
             if (stack.is(ruby.bamboo.core.init.BambooBlocks.BAMBOO_POT.get().asItem())) return false; // 鉢は植物扱いしない
         } catch (Exception ignored) {}
+        try {
+            if (stack.is(ruby.bamboo.core.init.BambooBlocks.FLOWER_BED.get().asItem())) return false; // 花壇も植物扱いしない
+        } catch (Exception ignored) {}
         if (stack.is(ItemTags.SMALL_FLOWERS)) return true;
         if (stack.is(ItemTags.FLOWERS)) return true;
         if (stack.is(ItemTags.SAPLINGS)) return true;

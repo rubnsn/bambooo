@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "particle": "bamboomod:block/pot_top",
+    "bottom": "minecraft:block/dirt",
+    "side": "minecraft:block/dirt",
+    "top": "bamboomod:block/pot_top"
+  }
+}
