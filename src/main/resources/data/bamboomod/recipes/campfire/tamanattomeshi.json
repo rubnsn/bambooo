@@ -1,0 +1,25 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "food",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "bamboomod:straw"
+    },
+    {
+      "item": "bamboomod:bean"
+    },
+    {
+      "item": "bamboomod:rawrice"
+    },
+    {
+      "item": "minecraft:egg"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:bamboofood_tamanattomeshi"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

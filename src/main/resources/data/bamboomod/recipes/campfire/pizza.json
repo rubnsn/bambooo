@@ -1,0 +1,25 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "food",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "bamboomod:dough"
+    },
+    {
+      "item": "bamboomod:tomato"
+    },
+    {
+      "item": "minecraft:milk_bucket"
+    },
+    {
+      "item": "minecraft:porkchop"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:bamboofood_pizza"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

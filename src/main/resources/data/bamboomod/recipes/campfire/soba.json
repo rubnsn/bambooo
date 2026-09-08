@@ -1,0 +1,28 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "food",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "bamboomod:bamboofood_men"
+    },
+    {
+      "item": "bamboomod:bean"
+    },
+    {
+      "item": "minecraft:water_bucket"
+    },
+    {
+      "item": "minecraft:cod"
+    },
+    {
+      "item": "minecraft:egg"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:bamboofood_soba"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

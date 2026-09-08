@@ -1,0 +1,19 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "food",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "bamboomod:straw"
+    },
+    {
+      "item": "bamboomod:bean"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:bamboofood_natto"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

@@ -86,6 +86,9 @@ public final class FishingManager {
         list.add(FishingEntry.junk(
                 new ResourceLocation("bamboomod:junk_bone"),
                 new ResourceLocation("minecraft:bone"), 2, 0));
+        list.add(FishingEntry.junk(
+                new ResourceLocation("bamboomod:junk_seaweed"),
+                new ResourceLocation("bamboomod:seaweed"), 3, 0));
         // 宝箱 (TREASURE) - 木/鉄/金/ダイヤの金属価値で段階化。MVP では直接インゴット等を与える
         list.add(FishingEntry.treasure(
                 new ResourceLocation("bamboomod:treasure_iron"),

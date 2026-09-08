@@ -68,6 +68,18 @@ public final class BambooItems {
                     new Item.Properties().food(new net.minecraft.world.food.FoodProperties.Builder()
                             .nutrition(2).saturationMod(0.4f).build())));
 
+    /** 小麦粉 (旧 bambooflour。石臼で小麦→小麦粉。非食用の中間素材) */
+    public static final RegistryObject<Item> FLOUR = register("flour",
+            () -> new Item(new Item.Properties()));
+
+    /** 生地 (旧 bamboodough。小麦粉+水バケツ。非食用の中間素材、ピザ用) */
+    public static final RegistryObject<Item> DOUGH = register("dough",
+            () -> new Item(new Item.Properties()));
+
+    /** 海藻 (旧 foodSeaweed。釣りのハズレ枠で入手する非食用素材) */
+    public static final RegistryObject<Item> SEAWEED = register("seaweed",
+            () -> new Item(new Item.Properties()));
+
     /** 扇子 (旧 FoldingFan。耐久100、風で葉破壊) */
     public static final RegistryObject<ruby.bamboo.item.FoldingFan> FOLDING_FAN = register("foldingfan",
             () -> new ruby.bamboo.item.FoldingFan(new Item.Properties().durability(100)));

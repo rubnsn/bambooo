@@ -30,5 +30,6 @@ public final class BambooRecipes {
 
     // 囲炉裏レシピはJSON (data/bamboomod/recipes/campfire/*.json) で管理。
     // 旧addCookingRecipe / registerBambooFoodRecipes はBambooCampfireRecipe(JSON)へ移行済み。
-    // 未移植作物(soy_beans/red_beans/zunda/seaweed等)依存レシピは作物移植後にJSON追加する。
+    // 未移植中間素材(tofu_kinu等)・未移植作物(tallgrass代用未定の三色団子等)依存レシピは見送り。
+    // soy_beans→bean代用、seaweed→釣りハズレ枠、flour/dough/men新設で旧レシピの大半をJSON復元済み。
 }

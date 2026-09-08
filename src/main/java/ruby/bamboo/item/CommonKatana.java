@@ -127,6 +127,25 @@ public class CommonKatana extends SwordItem {
         return 0F;
     }
 
+    /**
+     * クラフト容器化 (麺切り用)。耐久が無いため消費せずそのまま返却する。
+     * <p>
+     * 1.20.1 の容器返却はフィールド制 ({@code Item.Properties#craftRemainder}、
+     * {@code Item#getCraftingRemainingItem()} は final) のため自己参照できない。
+     * 代わりに Forge の ItemStack 敏感版 ({@code IForgeItem} 既定メソッド) を
+     * 上書きする。バニラ作業台は {@code Recipe#getRemainingItems} 経由で
+     * こちらが呼ばれる。囲炉裏は no-arg 版 (null→空扱い) のため対象外。
+     */
+    @Override
+    public boolean hasCraftingRemainingItem(ItemStack stack) {
+        return true;
+    }
+
+    @Override
+    public ItemStack getCraftingRemainingItem(ItemStack stack) {
+        return stack.copyWithCount(1);
+    }
+
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.bamboomod.commonkatana.hook").withStyle(net.minecraft.ChatFormatting.AQUA));

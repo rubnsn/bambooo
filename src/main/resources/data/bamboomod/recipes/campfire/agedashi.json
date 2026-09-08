@@ -1,0 +1,19 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "food",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "bamboomod:bamboofood_tofu"
+    },
+    {
+      "item": "bamboomod:flour"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:bamboofood_agedashi"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

@@ -1,0 +1,28 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "food",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "bamboomod:bamboofood_mochi"
+    },
+    {
+      "item": "bamboomod:bamboo"
+    },
+    {
+      "item": "minecraft:sugar"
+    },
+    {
+      "item": "bamboomod:bean"
+    },
+    {
+      "item": "bamboomod:bean"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:bamboofood_danzunda"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

@@ -1,0 +1,10 @@
+{
+  "id": "bamboomod:junk_seaweed",
+  "item": "bamboomod:seaweed",
+  "category": "JUNK",
+  "weight": 3,
+  "reqBitePower": 0,
+  "stamina": 8,
+  "power": 0,
+  "move": "SMOOTH"
+}

@@ -287,7 +287,8 @@ public final class BambooBlocks {
             ruby.bamboo.block.BambooPotBlock::new);
 
     // ===== 花壇 (プランターの1ブロック拡大版。上面pot_top・側面/底面dirt、色・向きなし) =====
-    public static final RegistryObject<ruby.bamboo.block.FlowerBedBlock> FLOWER_BED = register("flower_bed",
+    // 入手はスコップ変換のみのためクリエタブには出さない (BlockItem自体は中クリック/asItem用に登録維持)
+    public static final RegistryObject<ruby.bamboo.block.FlowerBedBlock> FLOWER_BED = registerNoCreative("flower_bed",
             ruby.bamboo.block.FlowerBedBlock::new);
 
     // ===== 源泉・温泉水 =====
@@ -495,6 +496,16 @@ public final class BambooBlocks {
         RegistryObject<B> block = BambooMod.BLOCKS.register(name, factory);
         BambooMod.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
         BambooItems.addCreative(block);
+        return block;
+    }
+
+    /**
+     * BlockItem は登録するがクリエタブには出さない (入手経路が変換・生成のみのブロック用)。
+     */
+    private static <B extends Block> RegistryObject<B> registerNoCreative(String name,
+            java.util.function.Supplier<? extends B> factory) {
+        RegistryObject<B> block = BambooMod.BLOCKS.register(name, factory);
+        BambooMod.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
         return block;
     }
 

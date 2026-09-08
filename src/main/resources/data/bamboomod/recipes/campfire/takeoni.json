@@ -1,0 +1,22 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "food",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "bamboomod:rawrice"
+    },
+    {
+      "item": "bamboomod:seaweed"
+    },
+    {
+      "item": "bamboomod:bamboo_shoot"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:bamboofood_takeoni"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

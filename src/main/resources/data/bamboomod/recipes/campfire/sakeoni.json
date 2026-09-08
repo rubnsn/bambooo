@@ -1,0 +1,22 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "food",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "bamboomod:rawrice"
+    },
+    {
+      "item": "bamboomod:seaweed"
+    },
+    {
+      "item": "minecraft:salmon"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:bamboofood_sakeoni"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

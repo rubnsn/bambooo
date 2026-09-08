@@ -1,0 +1,28 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "food",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "bamboomod:bamboofood_mochi"
+    },
+    {
+      "item": "bamboomod:bamboo"
+    },
+    {
+      "item": "minecraft:sugar"
+    },
+    {
+      "item": "bamboomod:sakura_leave"
+    },
+    {
+      "item": "minecraft:short_grass"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:bamboofood_dansansyoku"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}

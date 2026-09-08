@@ -1,0 +1,34 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "food",
+  "group": "",
+  "ingredients": [
+    {
+      "item": "bamboomod:bamboofood_men"
+    },
+    {
+      "item": "bamboomod:bean"
+    },
+    {
+      "item": "minecraft:water_bucket"
+    },
+    {
+      "item": "minecraft:cod"
+    },
+    {
+      "item": "minecraft:egg"
+    },
+    {
+      "item": "bamboomod:seaweed"
+    },
+    {
+      "item": "minecraft:porkchop"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:bamboofood_ramen"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}
