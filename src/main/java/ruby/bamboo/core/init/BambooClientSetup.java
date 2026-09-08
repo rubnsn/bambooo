@@ -35,6 +35,8 @@ public final class BambooClientSetup {
             cutout(BambooBlocks.BAMBOO.get());
             cutout(BambooBlocks.BAMBOO_SHOOT.get());
             cutout(BambooBlocks.RICE_PLANT.get());
+            cutout(BambooBlocks.TOMATO_PLANT.get());
+            cutout(BambooBlocks.BEAN_PLANT.get());
             cutout(BambooBlocks.SAKURA_SAPLING.get());
             cutout(BambooBlocks.MAPLE_SAPLING.get());
             cutout(BambooBlocks.GINKGO_SAPLING.get());

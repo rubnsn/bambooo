@@ -32,6 +32,8 @@ import ruby.bamboo.block.MillStoneBlock;
 import ruby.bamboo.block.MillBlock;
 import ruby.bamboo.block.PaddyFieldBlock;
 import ruby.bamboo.block.RicePlantBlock;
+import ruby.bamboo.block.TomatoPlantBlock;
+import ruby.bamboo.block.BeanPlantBlock;
 import ruby.bamboo.block.SakuraLeaveBlock;
 import ruby.bamboo.block.SakuraLogBlock;
 import ruby.bamboo.block.SakuraSaplingBlock;
@@ -120,6 +122,18 @@ public final class BambooBlocks {
     /** 稲 (旧 rice_plant) */
     public static final RegistryObject<RicePlantBlock> RICE_PLANT = registerNoItem("rice_plant",
             () -> new RicePlantBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT).sound(SoundType.CROP)
+                    .strength(0.0f).randomTicks().noCollission().instabreak()));
+
+    /** トマト (旧 tomatoPlant)。種兼用アイテム tomato で植える */
+    public static final RegistryObject<TomatoPlantBlock> TOMATO_PLANT = registerNoItem("tomato_plant",
+            () -> new TomatoPlantBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT).sound(SoundType.CROP)
+                    .strength(0.0f).randomTicks().noCollission().instabreak()));
+
+    /** 豆 (旧 beanPlant)。種兼用アイテム bean で植える */
+    public static final RegistryObject<BeanPlantBlock> BEAN_PLANT = registerNoItem("bean_plant",
+            () -> new BeanPlantBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.PLANT).sound(SoundType.CROP)
                     .strength(0.0f).randomTicks().noCollission().instabreak()));
 

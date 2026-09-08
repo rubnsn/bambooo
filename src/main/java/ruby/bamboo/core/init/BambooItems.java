@@ -56,6 +56,18 @@ public final class BambooItems {
     public static final RegistryObject<ItemNameBlockItem> RICE_SEED = register("riceseed",
             () -> new ItemNameBlockItem(BambooBlocks.RICE_PLANT.get(), new Item.Properties()));
 
+    /** トマト (旧 itemtomato。種兼用食料、ニンジン相当) */
+    public static final RegistryObject<ItemNameBlockItem> TOMATO = register("tomato",
+            () -> new ItemNameBlockItem(BambooBlocks.TOMATO_PLANT.get(),
+                    new Item.Properties().food(new net.minecraft.world.food.FoodProperties.Builder()
+                            .nutrition(3).saturationMod(0.6f).build())));
+
+    /** 豆 (旧 itembean。種兼用食料) */
+    public static final RegistryObject<ItemNameBlockItem> BEAN = register("bean",
+            () -> new ItemNameBlockItem(BambooBlocks.BEAN_PLANT.get(),
+                    new Item.Properties().food(new net.minecraft.world.food.FoodProperties.Builder()
+                            .nutrition(2).saturationMod(0.4f).build())));
+
     /** 扇子 (旧 FoldingFan。耐久100、風で葉破壊) */
     public static final RegistryObject<ruby.bamboo.item.FoldingFan> FOLDING_FAN = register("foldingfan",
             () -> new ruby.bamboo.item.FoldingFan(new Item.Properties().durability(100)));
