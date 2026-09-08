@@ -4,10 +4,7 @@
   "group": "",
   "ingredients": [
     {
-      "item": "bamboomod:straw"
-    },
-    {
-      "item": "bamboomod:bean"
+      "item": "bamboomod:bamboofood_natto"
     },
     {
       "item": "bamboomod:rawrice"
