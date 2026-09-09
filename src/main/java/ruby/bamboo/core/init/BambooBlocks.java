@@ -7,7 +7,7 @@ import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.registries.RegistryObject;
 import ruby.bamboo.BambooMod;
@@ -46,10 +46,6 @@ import ruby.bamboo.block.SlideDoorBlock;
 import ruby.bamboo.block.SpringBlock;
 import ruby.bamboo.block.SpringWaterBlock;
 import ruby.bamboo.block.TatamiBlock;
-import ruby.bamboo.block.decoration.DecorationBlock;
-import ruby.bamboo.block.decoration.DecorationSlabBlock;
-import ruby.bamboo.block.decoration.DecorationStairsBlock;
-import ruby.bamboo.block.decoration.EnumDecoration;
 
 /**
  * ブロック登録。旧 BambooData.@BambooBlock アノテーション + DataLoader の置き換え。
@@ -61,8 +57,16 @@ public final class BambooBlocks {
 
     // ===== 縦スライス第1弾: シンプルブロック =====
 
-    /** わらブロック (旧 wara / deco系の通常ブロック)。スラブ・階段も registerDeco で登録する */
-    public static final RegistryObject<Block> WARA = registerDeco(EnumDecoration.WARA);
+    /** わらブロック (旧 wara / deco系)。slab・stairs共に無機能装飾 */
+    public static final RegistryObject<Block> WARA = register("wara",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_YELLOW).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<SlabBlock> WARA_SLAB = register("wara_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_YELLOW).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<StairBlock> WARA_STAIRS = register("wara_stairs",
+            () -> new StairBlock(WARA.get().defaultBlockState(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_YELLOW).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
 
     /** 桜の木材 (sakura_planks) */
     public static final RegistryObject<SakuraPlankBlock> SAKURA_PLANKS = register("sakura_planks",
@@ -77,13 +81,69 @@ public final class BambooBlocks {
 
     // ===== 第2弾: デコレーション系 (kawara/plaster/namako/kaya/cbirch/coak/cpine + wara) =====
 
-    public static final RegistryObject<Block> KAWARA = registerDeco(EnumDecoration.KAWARA);
-    public static final RegistryObject<Block> PLASTER = registerDeco(EnumDecoration.PLASTER);
-    public static final RegistryObject<Block> NAMAKO = registerDeco(EnumDecoration.NAMAKO);
-    public static final RegistryObject<Block> KAYA = registerDeco(EnumDecoration.KAYA);
-    public static final RegistryObject<Block> CBIRCH = registerDeco(EnumDecoration.CBIRCH);
-    public static final RegistryObject<Block> COAK = registerDeco(EnumDecoration.COAK);
-    public static final RegistryObject<Block> CPINE = registerDeco(EnumDecoration.CPINE);
+    public static final RegistryObject<Block> KAWARA = register("kawara",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_GRAY).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<SlabBlock> KAWARA_SLAB = register("kawara_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_GRAY).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<StairBlock> KAWARA_STAIRS = register("kawara_stairs",
+            () -> new StairBlock(KAWARA.get().defaultBlockState(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_GRAY).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<Block> PLASTER = register("plaster",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.QUARTZ).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<SlabBlock> PLASTER_SLAB = register("plaster_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.QUARTZ).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<StairBlock> PLASTER_STAIRS = register("plaster_stairs",
+            () -> new StairBlock(PLASTER.get().defaultBlockState(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.QUARTZ).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<Block> NAMAKO = register("namako",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DEEPSLATE).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<SlabBlock> NAMAKO_SLAB = register("namako_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DEEPSLATE).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<StairBlock> NAMAKO_STAIRS = register("namako_stairs",
+            () -> new StairBlock(NAMAKO.get().defaultBlockState(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DEEPSLATE).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<Block> KAYA = register("kaya",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_BROWN).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<SlabBlock> KAYA_SLAB = register("kaya_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_BROWN).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<StairBlock> KAYA_STAIRS = register("kaya_stairs",
+            () -> new StairBlock(KAYA.get().defaultBlockState(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_BROWN).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<Block> CBIRCH = register("cbirch",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.SAND).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<SlabBlock> CBIRCH_SLAB = register("cbirch_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.SAND).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<StairBlock> CBIRCH_STAIRS = register("cbirch_stairs",
+            () -> new StairBlock(CBIRCH.get().defaultBlockState(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.SAND).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<Block> COAK = register("coak",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<SlabBlock> COAK_SLAB = register("coak_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<StairBlock> COAK_STAIRS = register("coak_stairs",
+            () -> new StairBlock(COAK.get().defaultBlockState(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<Block> CPINE = register("cpine",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<SlabBlock> CPINE_SLAB = register("cpine_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_BROWN).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
+    public static final RegistryObject<StairBlock> CPINE_STAIRS = register("cpine_stairs",
+            () -> new StairBlock(CPINE.get().defaultBlockState(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_BROWN).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE).strength(0.5F, 300F)));
 
     // ===== 第3弾: 畫 (旧metaバリアントを4種の独立ブロック化) =====
 
@@ -311,7 +371,7 @@ public final class BambooBlocks {
     public static final RegistryObject<MillBlock> WATERWHEEL = register("waterwheel",
             () -> new MillBlock(MillBlock.Type.WATERWHEEL));
 
-    // ===== sakura無機能deco移植: 単独Block登録 21件 (EnumDecoration未拡張) =====
+    // ===== sakura無機能deco移植: 単独Block登録 21件 =====
     // sakura_slab (sakura 32): PlayerFacingSlab相当だが今回は SlabBlock で SakuraPlank 流用
     public static final RegistryObject<SlabBlock> SAKURA_SLAB = register("sakura_slab",
             () -> new SlabBlock(BlockBehaviour.Properties.of()
@@ -456,36 +516,6 @@ public final class BambooBlocks {
                 () -> new net.minecraft.world.item.BlockItem(block.get(), new Item.Properties()));
         BambooItems.addCreative(block);
         return block;
-    }
-
-    /**
-     * デコ系1種につき 通常/スラブ/階段 を登録する。
-     * (旧DecorationFactory相当。ダブルスラブは1.20.1では単一ブロックで表現されるため不要)
-     */
-    private static RegistryObject<Block> registerDeco(EnumDecoration deco) {
-        // 旧 DecorationFactory.registerNormal 相当: ベースブロックにも BlockItem が必要。
-        // BlockItem 無しのブロックは Block#asItem() が Items.AIR を返すため、
-        // クリエイティブタブ登録時に空スタックが紛れ込みクラッシュの原因になる。
-        RegistryObject<Block> base = BambooMod.BLOCKS.register(deco.getBlockName(),
-                () -> new DecorationBlock(deco));
-        BambooMod.ITEMS.register(deco.getBlockName(),
-                () -> new BlockItem(base.get(), new Item.Properties()));
-        BambooItems.addCreative(base);
-
-        // 注意: RegistryObject.get() は登録イベント発火後にしか解決できないため、
-        // 階段のベース状態はファクトリラムダ内で遅延取得する (同一DeferredRegisterは登録順に処理される)
-        RegistryObject<SlabBlock> slab = BambooMod.BLOCKS.register(deco.getSlabName(),
-                () -> new DecorationSlabBlock(deco));
-        BambooMod.ITEMS.register(deco.getSlabName(),
-                () -> new BlockItem(slab.get(), new Item.Properties()));
-        BambooItems.addCreative(slab);
-
-        RegistryObject<StairBlock> stairs = BambooMod.BLOCKS.register(deco.getStairsName(),
-                () -> new DecorationStairsBlock(deco, base.get().defaultBlockState()));
-        BambooMod.ITEMS.register(deco.getStairsName(),
-                () -> new BlockItem(stairs.get(), new Item.Properties()));
-        BambooItems.addCreative(stairs);
-        return base;
     }
 
     /**
