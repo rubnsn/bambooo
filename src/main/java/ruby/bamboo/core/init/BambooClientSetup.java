@@ -238,6 +238,10 @@ public final class BambooClientSetup {
             try { return state.getValue(ruby.bamboo.block.BambooPotBlock.COLOR).color; } catch (Exception e) { return ruby.bamboo.block.BambooPotColor.BROWN.color; }
         }, BambooBlocks.BAMBOO_POT.get());
         // 新葉の tint (broadleaf.png を色乗算)
+        // 桜の葉 — COLOR プロパティ8色を旧無彩色ベース (block/sakura) に乗算。既定WHITE
+        event.register((state, level, pos, tintIndex) -> {
+            try { return state.getValue(ruby.bamboo.block.SakuraLeaveBlock.COLOR).color; } catch (Exception e) { return ruby.bamboo.block.SakuraLeaveBlock.PETAL_COLOR; }
+        }, BambooBlocks.SAKURA_LEAVES.get());
         event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR, BambooBlocks.MAPLE_LEAVES.get());
         event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR, BambooBlocks.GINKGO_LEAVES.get());
         event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR, BambooBlocks.HINOKI_LEAVES.get());
@@ -329,6 +333,7 @@ public final class BambooClientSetup {
             event.register((stack, tintIndex) -> color, new Item[] { block.asItem() });
         }
         // 新葉のインベントリアイコンにも色乗算
+        event.register((stack, tintIndex) -> ruby.bamboo.block.SakuraLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.SAKURA_LEAVES.get().asItem() });
         event.register((stack, tintIndex) -> ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.MAPLE_LEAVES.get().asItem() });
         event.register((stack, tintIndex) -> ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.GINKGO_LEAVES.get().asItem() });
         event.register((stack, tintIndex) -> ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.HINOKI_LEAVES.get().asItem() });

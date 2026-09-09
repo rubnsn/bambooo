@@ -154,21 +154,12 @@ public class WindEntity extends Entity {
         if (!level.isClientSide) {
             return;
         }
-        // ペタル種別と色を解決
+        // ペタル種別と色を解決 (PetalEmitter の葉はその色・種別、else 旧Green)
         int color = 0xFFFFFF;
         net.minecraft.core.particles.SimpleParticleType petalType = ruby.bamboo.core.init.BambooParticles.PETAL_1.get();
-        if (state.getBlock() instanceof SakuraLeaveBlock) {
-            color = SakuraLeaveBlock.PETAL_COLOR;
-            petalType = ruby.bamboo.core.init.BambooParticles.PETAL_1.get();
-        } else if (state.getBlock() instanceof MapleLeaveBlock) {
-            color = MapleLeaveBlock.PETAL_COLOR;
-            petalType = ruby.bamboo.core.init.BambooParticles.PETAL_2.get();
-        } else if (state.getBlock() instanceof GinkgoLeaveBlock) {
-            color = GinkgoLeaveBlock.PETAL_COLOR;
-            petalType = ruby.bamboo.core.init.BambooParticles.PETAL_3.get();
-        } else if (state.getBlock() instanceof HinokiLeaveBlock) {
-            color = HinokiLeaveBlock.PETAL_COLOR;
-            petalType = ruby.bamboo.core.init.BambooParticles.PETAL_1.get(); // 旧Green petal_1
+        if (state.getBlock() instanceof ruby.bamboo.block.PetalEmitter emitter) {
+            color = emitter.petalColor(state);
+            petalType = emitter.petalType(state);
         } else {
             // バニラ葉/vine/DoublePlant は旧Green (0x3F9E55, petal_1) と同じ緑で統一
             // 旧 Wind は 0xFFFFFF だったが、指示により旧Greenに合わせる

@@ -21,6 +21,7 @@
       "state": {
         "Name": "bamboomod:sakura_leave",
         "Properties": {
+          "color": "white",
           "distance": "7",
           "persistent": "false",
           "waterlogged": "false"

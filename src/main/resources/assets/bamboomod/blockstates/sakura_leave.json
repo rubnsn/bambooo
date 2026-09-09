@@ -1,5 +1,20 @@
 {
   "variants": {
-    "": { "model": "bamboomod:block/sakura_leave" }
+    "color=white": { "model": "bamboomod:block/sakura_leave" },
+    "color=orange": { "model": "bamboomod:block/sakura_leave" },
+    "color=magenta": { "model": "bamboomod:block/sakura_leave" },
+    "color=light_blue": { "model": "bamboomod:block/sakura_leave" },
+    "color=yellow": { "model": "bamboomod:block/sakura_leave" },
+    "color=lime": { "model": "bamboomod:block/sakura_leave" },
+    "color=pink": { "model": "bamboomod:block/sakura_leave" },
+    "color=gray": { "model": "bamboomod:block/sakura_leave" },
+    "color=light_gray": { "model": "bamboomod:block/sakura_leave" },
+    "color=cyan": { "model": "bamboomod:block/sakura_leave" },
+    "color=purple": { "model": "bamboomod:block/sakura_leave" },
+    "color=blue": { "model": "bamboomod:block/sakura_leave" },
+    "color=brown": { "model": "bamboomod:block/sakura_leave" },
+    "color=green": { "model": "bamboomod:block/sakura_leave" },
+    "color=red": { "model": "bamboomod:block/sakura_leave" },
+    "color=black": { "model": "bamboomod:block/sakura_leave" }
   }
 }
