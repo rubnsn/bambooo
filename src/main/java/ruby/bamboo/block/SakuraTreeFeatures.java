@@ -15,7 +15,7 @@ import ruby.bamboo.BambooMod;
  * (data/bamboomod/worldgen/configured_feature/) の JSON で定義する。
  * <ul>
  * <li>sakura: 標準 (幹4+1、葉球 半径2)</li>
- * <li>sakura_big: 大木 (幹6+2、葉球 半径3)</li>
+ * <li>sakura_big: 大木 (fancy分岐、旧GenSakuraBigTree相当、vanilla fancy_oak準拠)</li>
  * </ul>
  */
 public final class SakuraTreeFeatures {

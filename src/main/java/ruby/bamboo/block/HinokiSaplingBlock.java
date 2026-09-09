@@ -9,6 +9,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.featuresize.TwoLayersFeatureSize;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.PineFoliagePlacer;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
+import net.minecraft.world.level.levelgen.feature.trunkplacers.FancyTrunkPlacer;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.StraightTrunkPlacer;
 import ruby.bamboo.core.init.BambooBlocks;
 
@@ -32,6 +33,18 @@ public class HinokiSaplingBlock extends SaplingBlock {
     }
 
     public static TreeConfiguration buildTreeConfig(BlockState leafState, boolean big) {
+        // 大木: 幹のみ fancy分岐、葉はヒノキらしさ保持で pine のまま大型化
+        if (big) {
+            return new TreeConfiguration.TreeConfigurationBuilder(
+                    BlockStateProvider.simple(BambooBlocks.HINOKI_LOG.get()),
+                    new FancyTrunkPlacer(3, 11, 0),
+                    BlockStateProvider.simple(leafState),
+                    new PineFoliagePlacer(
+                            net.minecraft.util.valueproviders.ConstantInt.of(1),
+                            net.minecraft.util.valueproviders.ConstantInt.of(1),
+                            net.minecraft.util.valueproviders.ConstantInt.of(4)),
+                    new TwoLayersFeatureSize(0, 0, 0, java.util.OptionalInt.of(4))).ignoreVines().build();
+        }
         // ヒノキ: 高め + 円錐
         // 直幹 6+2 (big 8+2相当) + Pine 葉 (radius 2-3, height 4)
         return new TreeConfiguration.TreeConfigurationBuilder(
