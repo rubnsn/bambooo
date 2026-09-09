@@ -1,5 +1,6 @@
 package ruby.bamboo.item;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -51,7 +52,7 @@ public class ClimbingClawItem extends Item implements Accessory {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.bamboomod.climbing_claw").withStyle(net.minecraft.ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.bamboomod.climbing_claw").withStyle(ChatFormatting.AQUA));
     }
 
     /** 体側の当たり判定を XZ に 0.1 拡張し、固体ブロックに触れているか (流体は除外) */

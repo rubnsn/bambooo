@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import ruby.bamboo.BambooMod;
@@ -30,7 +31,7 @@ import ruby.bamboo.BambooMod;
  * インベントリアイコンはフラット(1枚絵: item/generated + item/millstone.png)のため
  * BEWLR は不要。
  */
-public class MillStoneBlockRenderer implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<MillStoneBlockEntity> {
+public class MillStoneBlockRenderer implements BlockEntityRenderer<MillStoneBlockEntity> {
 
     public static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID, "textures/entity/millstone.png");
 

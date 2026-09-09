@@ -6,6 +6,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import ruby.bamboo.block.SlideDoorBlock;
 import ruby.bamboo.core.init.BambooBlockEntities;
 
@@ -36,7 +37,7 @@ public class SlideDoorBlockEntity extends BlockEntity {
 
     private void tick(Level level, BlockPos pos, BlockState state) {
         // 上半分は下半分の動きに追従させることで上下ズレを解消
-        if (state.getValue(SlideDoorBlock.HALF) == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER) {
+        if (state.getValue(SlideDoorBlock.HALF) == DoubleBlockHalf.UPPER) {
             BlockEntity below = level.getBlockEntity(pos.below());
             if (below instanceof SlideDoorBlockEntity belowSlide) {
                 this.prevPosX = belowSlide.prevPosX;

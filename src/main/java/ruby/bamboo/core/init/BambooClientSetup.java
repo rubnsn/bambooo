@@ -1,19 +1,59 @@
 package ruby.bamboo.core.init;
 
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import ruby.bamboo.BambooMod;
+import ruby.bamboo.block.BambooPotBlock;
+import ruby.bamboo.block.BambooPotColor;
+import ruby.bamboo.block.GinkgoLeaveBlock;
+import ruby.bamboo.block.HinokiLeaveBlock;
 import ruby.bamboo.block.IndLightBlock;
+import ruby.bamboo.block.MapleLeaveBlock;
+import ruby.bamboo.block.SakuraLeaveBlock;
 import ruby.bamboo.block.SlideDoorBlock;
+import ruby.bamboo.block.SpringBlock;
+import ruby.bamboo.block.SpringColor;
+import ruby.bamboo.block.SpringWaterBlock;
+import ruby.bamboo.block.entity.BambooPotBlockRenderer;
+import ruby.bamboo.block.entity.CampfireBlockRenderer;
+import ruby.bamboo.block.entity.FlowerBedBlockRenderer;
+import ruby.bamboo.block.entity.MillBlockRenderer;
+import ruby.bamboo.block.entity.MillStoneBlockRenderer;
+import ruby.bamboo.block.entity.SlideDoorBlockRenderer;
+import ruby.bamboo.block.entity.WallShelfBlockRenderer;
+import ruby.bamboo.client.particle.PetalParticle;
+import ruby.bamboo.client.renderer.BambooArrowRenderer;
+import ruby.bamboo.client.renderer.ChairRenderer;
+import ruby.bamboo.client.renderer.CutBlockRenderer;
+import ruby.bamboo.client.renderer.DolphinCompanionRenderer;
+import ruby.bamboo.client.renderer.FirecrackerRenderer;
+import ruby.bamboo.client.renderer.FishingBobberRenderer;
+import ruby.bamboo.client.renderer.KaginawaHookRenderer;
+import ruby.bamboo.client.renderer.LlamaCompanionRenderer;
+import ruby.bamboo.client.renderer.MiniatureBlockRenderer;
+import ruby.bamboo.client.renderer.ShurikenRenderer;
+import ruby.bamboo.client.renderer.WindRenderer;
+import ruby.bamboo.core.config.SpringConfig;
+import ruby.bamboo.gui.CampfireScreen;
+import ruby.bamboo.gui.MillStoneScreen;
+import ruby.bamboo.gui.SackScreen;
 import ruby.bamboo.item.BambooBowItem;
 
 /**
@@ -82,65 +122,65 @@ public final class BambooClientSetup {
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.PADDY_FIELD.get(), RenderType.translucent());
 
             // 石臼の BER 登録 (旧 TESR 相当)
-            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+            BlockEntityRenderers.register(
                     BambooBlockEntities.MILL_STONE_BE.get(),
-                    ruby.bamboo.block.entity.MillStoneBlockRenderer::new);
+                    MillStoneBlockRenderer::new);
 
             // 石臼 GUI の Screen 登録 (未登録だと「Failed to create screen」でGUIが開かない)
-            net.minecraft.client.gui.screens.MenuScreens.register(BambooMenus.MILL_STONE.get(),
-                    ruby.bamboo.gui.MillStoneScreen::new);
+            MenuScreens.register(BambooMenus.MILL_STONE.get(),
+                    MillStoneScreen::new);
 
             // 囲炉裏の BER 登録 (旧 TESR 相当)
-            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+            BlockEntityRenderers.register(
                     BambooBlockEntities.CAMPFIRE_BE.get(),
-                    ruby.bamboo.block.entity.CampfireBlockRenderer::new);
+                    CampfireBlockRenderer::new);
 
             // 囲炉裏 GUI の Screen 登録
-            net.minecraft.client.gui.screens.MenuScreens.register(BambooMenus.CAMPFIRE.get(),
-                    ruby.bamboo.gui.CampfireScreen::new);
+            MenuScreens.register(BambooMenus.CAMPFIRE.get(),
+                    CampfireScreen::new);
 
             // 袋 GUI の Screen 登録
-            net.minecraft.client.gui.screens.MenuScreens.register(BambooMenus.SACK.get(),
-                    ruby.bamboo.gui.SackScreen::new);
+            MenuScreens.register(BambooMenus.SACK.get(),
+                    SackScreen::new);
 
             // 壁棚の BER 登録 (sakura-master WallShelfItemRender 相当)
-            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+            BlockEntityRenderers.register(
                     BambooBlockEntities.WALL_SHELF_BE.get(),
-                    ruby.bamboo.block.entity.WallShelfBlockRenderer::new);
+                    WallShelfBlockRenderer::new);
 
             // 引き戸の BER 登録 (sakura-master SlideDoorRender 相当)
-            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+            BlockEntityRenderers.register(
                     BambooBlockEntities.SLIDE_DOOR_BE.get(),
-                    ruby.bamboo.block.entity.SlideDoorBlockRenderer::new);
+                    SlideDoorBlockRenderer::new);
 
             // ミニチュア (箱庭) の BER 登録
-            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+            BlockEntityRenderers.register(
                     BambooBlockEntities.MINIATURE_BE.get(),
-                    ruby.bamboo.client.renderer.MiniatureBlockRenderer::new);
+                    MiniatureBlockRenderer::new);
             // ミニチュアはスケール描画のため translucent/cutout を混在させるが、BERで処理するため
             // ブロック側の RenderType は設定不要。ただし念のため cutout を指定しておく
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.MINIATURE.get(), RenderType.cutout());
 
             // カットブロックの BER 登録
-            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+            BlockEntityRenderers.register(
                     BambooBlockEntities.CUT_BLOCK_BE.get(),
-                    ruby.bamboo.client.renderer.CutBlockRenderer::new);
+                    CutBlockRenderer::new);
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.CUT_BLOCK.get(), RenderType.cutout());
 
             // 竹鉢の BER 登録
-            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+            BlockEntityRenderers.register(
                     BambooBlockEntities.BAMBOO_POT_BE.get(),
-                    ruby.bamboo.block.entity.BambooPotBlockRenderer::new);
+                    BambooPotBlockRenderer::new);
 
             // 花壇の BER 登録 (プランター流用・天面1.0)
-            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+            BlockEntityRenderers.register(
                     BambooBlockEntities.FLOWER_BED_BE.get(),
-                    ruby.bamboo.block.entity.FlowerBedBlockRenderer::new);
+                    FlowerBedBlockRenderer::new);
 
             // 風車・水車の BER 登録 (旧 Entity描画相当。1ブロック超え描画のためBE側INFINITE+offScreen)
-            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+            BlockEntityRenderers.register(
                     BambooBlockEntities.MILL_BE.get(),
-                    ruby.bamboo.block.entity.MillBlockRenderer::new);
+                    MillBlockRenderer::new);
 
             // 温泉水 — 半透明 (Phase B) — ブロックと流体両方をtranslucentに (バニラ水と同様)
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.SPRING_WATER.get(), RenderType.translucent());
@@ -153,44 +193,44 @@ public final class BambooClientSetup {
             cutout(BambooBlocks.MAPLE_CARPET.get());
             cutout(BambooBlocks.GINKGO_CARPET.get());
             // 布団用椅子エンティティ (huton_chair) — 不可視レンダラ。未登録だと shouldRender で NPE
-            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.HUTON_CHAIR.get(),
-                    ruby.bamboo.client.renderer.ChairRenderer::new);
+            EntityRenderers.register(BambooEntities.HUTON_CHAIR.get(),
+                    ChairRenderer::new);
 
             // 鈎縄フック (刀右クリック) — 太線quad帯レンダラ
-            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.KAGINAWA_HOOK.get(),
-                    ruby.bamboo.client.renderer.KaginawaHookRenderer::new);
+            EntityRenderers.register(BambooEntities.KAGINAWA_HOOK.get(),
+                    KaginawaHookRenderer::new);
 
             // 風 (扇子) — 不可視 (パーティクルで演出)
-            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.WIND.get(),
-                    ruby.bamboo.client.renderer.WindRenderer::new);
+            EntityRenderers.register(BambooEntities.WIND.get(),
+                    WindRenderer::new);
 
             // 竹弓の各種矢 (竹/松明/光/爆発) — 共通 bamboospear テクスチャ
-            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.BAMBOO_ARROW.get(),
-                    ruby.bamboo.client.renderer.BambooArrowRenderer::new);
-            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.TORCH_ARROW.get(),
-                    ruby.bamboo.client.renderer.BambooArrowRenderer::new);
-            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.LIGHT_ARROW.get(),
-                    ruby.bamboo.client.renderer.BambooArrowRenderer::new);
-            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.EXPLODE_ARROW.get(),
-                    ruby.bamboo.client.renderer.BambooArrowRenderer::new);
+            EntityRenderers.register(BambooEntities.BAMBOO_ARROW.get(),
+                    BambooArrowRenderer::new);
+            EntityRenderers.register(BambooEntities.TORCH_ARROW.get(),
+                    BambooArrowRenderer::new);
+            EntityRenderers.register(BambooEntities.LIGHT_ARROW.get(),
+                    BambooArrowRenderer::new);
+            EntityRenderers.register(BambooEntities.EXPLODE_ARROW.get(),
+                    BambooArrowRenderer::new);
 
             // 手裏剣 — アイテム回転描画
-            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.SHURIKEN.get(),
-                    ruby.bamboo.client.renderer.ShurikenRenderer::new);
+            EntityRenderers.register(BambooEntities.SHURIKEN.get(),
+                    ShurikenRenderer::new);
 
             // かんしゃく玉 — クロススプライト+転がり回転 (旧 RenderThrowable 相当)
-            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.FIRECRACKER.get(),
-                    ruby.bamboo.client.renderer.FirecrackerRenderer::new);
+            EntityRenderers.register(BambooEntities.FIRECRACKER.get(),
+                    FirecrackerRenderer::new);
 
             // イルカ仲間 / ラマ仲間
-            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.DOLPHIN_COMPANION.get(),
-                    ruby.bamboo.client.renderer.DolphinCompanionRenderer::new);
-            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.LLAMA_COMPANION.get(),
-                    ruby.bamboo.client.renderer.LlamaCompanionRenderer::new);
+            EntityRenderers.register(BambooEntities.DOLPHIN_COMPANION.get(),
+                    DolphinCompanionRenderer::new);
+            EntityRenderers.register(BambooEntities.LLAMA_COMPANION.get(),
+                    LlamaCompanionRenderer::new);
 
             // 釣りウキ
-            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.FISHING_BOBBER.get(),
-                    ruby.bamboo.client.renderer.FishingBobberRenderer::new);
+            EntityRenderers.register(BambooEntities.FISHING_BOBBER.get(),
+                    FishingBobberRenderer::new);
 
             // 竹弓の引き絞りモデル (pull/pulling override)。バニラは Items.BOW にしか
             // 登録されないため、独自 BowItem 継承クラスには自前で登録が必要。
@@ -203,13 +243,13 @@ public final class BambooClientSetup {
      * バニラ弓と同じ閾値 (pull 0.65 / 0.9) でモデル override が発火する。
      */
     private static void registerBambooBowModelProperties() {
-        net.minecraft.resources.ResourceLocation pulling = new net.minecraft.resources.ResourceLocation("minecraft", "pulling");
-        net.minecraft.resources.ResourceLocation pull = new net.minecraft.resources.ResourceLocation("minecraft", "pull");
-        net.minecraft.client.renderer.item.ItemProperties.register(BambooItems.BAMBOO_BOW.get(),
+        ResourceLocation pulling = new ResourceLocation("minecraft", "pulling");
+        ResourceLocation pull = new ResourceLocation("minecraft", "pull");
+        ItemProperties.register(BambooItems.BAMBOO_BOW.get(),
                 pulling, (stack, level, entity, seed) -> {
                     return entity != null && entity.isUsingItem() ? 1.0F : 0.0F;
                 });
-        net.minecraft.client.renderer.item.ItemProperties.register(BambooItems.BAMBOO_BOW.get(),
+        ItemProperties.register(BambooItems.BAMBOO_BOW.get(),
                 pull, (stack, level, entity, seed) -> {
                     if (entity == null) {
                         return 0.0F;
@@ -218,7 +258,7 @@ public final class BambooClientSetup {
                         return 0.0F;
                     }
                     int charge = stack.getUseDuration() - entity.getUseItemRemainingTicks();
-                    return net.minecraft.util.Mth.clamp(charge / 20.0F, 0.0F, 1.0F);
+                    return Mth.clamp(charge / 20.0F, 0.0F, 1.0F);
                 });
     }
 
@@ -235,62 +275,62 @@ public final class BambooClientSetup {
         // 竹鉢 — 染料色を側面に乗算（土面はtintなし）
         event.register((state, level, pos, tintIndex) -> {
             if (tintIndex != 0) return 0xFFFFFF;
-            try { return state.getValue(ruby.bamboo.block.BambooPotBlock.COLOR).color; } catch (Exception e) { return ruby.bamboo.block.BambooPotColor.BROWN.color; }
+            try { return state.getValue(BambooPotBlock.COLOR).color; } catch (Exception e) { return BambooPotColor.BROWN.color; }
         }, BambooBlocks.BAMBOO_POT.get());
         // 新葉の tint (broadleaf.png を色乗算)
         // 桜の葉 — COLOR プロパティ8色を旧無彩色ベース (block/sakura) に乗算。既定WHITE
         event.register((state, level, pos, tintIndex) -> {
-            try { return state.getValue(ruby.bamboo.block.SakuraLeaveBlock.COLOR).color; } catch (Exception e) { return ruby.bamboo.block.SakuraLeaveBlock.PETAL_COLOR; }
+            try { return state.getValue(SakuraLeaveBlock.COLOR).color; } catch (Exception e) { return SakuraLeaveBlock.PETAL_COLOR; }
         }, BambooBlocks.SAKURA_LEAVES.get());
-        event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR, BambooBlocks.MAPLE_LEAVES.get());
-        event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR, BambooBlocks.GINKGO_LEAVES.get());
-        event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR, BambooBlocks.HINOKI_LEAVES.get());
+        event.register((state, level, pos, tintIndex) -> MapleLeaveBlock.PETAL_COLOR, BambooBlocks.MAPLE_LEAVES.get());
+        event.register((state, level, pos, tintIndex) -> GinkgoLeaveBlock.PETAL_COLOR, BambooBlocks.GINKGO_LEAVES.get());
+        event.register((state, level, pos, tintIndex) -> HinokiLeaveBlock.PETAL_COLOR, BambooBlocks.HINOKI_LEAVES.get());
         // 葉カーペット — 同じ broadleaf を葉と同じ色で tint (テクスチャ新規なし、流用)
-        event.register((state, level, pos, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR; }, BambooBlocks.MAPLE_CARPET.get());
-        event.register((state, level, pos, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR; }, BambooBlocks.GINKGO_CARPET.get());
-        event.register((state, level, pos, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR; }, BambooBlocks.HINOKI_CARPET.get());
+        event.register((state, level, pos, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return MapleLeaveBlock.PETAL_COLOR; }, BambooBlocks.MAPLE_CARPET.get());
+        event.register((state, level, pos, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return GinkgoLeaveBlock.PETAL_COLOR; }, BambooBlocks.GINKGO_CARPET.get());
+        event.register((state, level, pos, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return HinokiLeaveBlock.PETAL_COLOR; }, BambooBlocks.HINOKI_CARPET.get());
 
         // 温泉水 — PARENT_DIR で源泉の COLOR を辿り、染料色は鮮やかに、DEFAULTのみtint乗算 + 3-4ブロック馴染み
         event.register((state, level, pos, tintIndex) -> {
             if (tintIndex != 0) return 0xFFFFFF;
             if (level == null || pos == null) {
                 int tint2;
-                try { tint2 = ruby.bamboo.core.config.SpringConfig.COMMON.tintColor.get(); } catch (Exception e) { tint2 = 0xE0F8FF; }
-                return ruby.bamboo.block.SpringWaterBlock.multiplyColor(ruby.bamboo.block.SpringColor.DEFAULT.color, tint2);
+                try { tint2 = SpringConfig.COMMON.tintColor.get(); } catch (Exception e) { tint2 = 0xE0F8FF; }
+                return SpringWaterBlock.multiplyColor(SpringColor.DEFAULT.color, tint2);
             }
             // 源泉の色を PARENT_DIR 鎖で辿る（ChunkRenderCache でも動作する BlockAndTintGetter 版）
-            var srcPos = ruby.bamboo.block.SpringWaterBlock.findSource(level, pos, state, 32);
+            var srcPos = SpringWaterBlock.findSource(level, pos, state, 32);
             int baseColor;
             if (srcPos != null) {
                 var srcState = level.getBlockState(srcPos);
-                if (srcState.getBlock() instanceof ruby.bamboo.block.SpringBlock) {
-                    baseColor = srcState.getValue(ruby.bamboo.block.SpringBlock.COLOR).color;
-                } else baseColor = ruby.bamboo.block.SpringColor.DEFAULT.color;
-            } else baseColor = ruby.bamboo.block.SpringColor.DEFAULT.color;
+                if (srcState.getBlock() instanceof SpringBlock) {
+                    baseColor = srcState.getValue(SpringBlock.COLOR).color;
+                } else baseColor = SpringColor.DEFAULT.color;
+            } else baseColor = SpringColor.DEFAULT.color;
             // 染料色は tint で薄めず純色で、DEFAULT/VANILLA のみ Forest×tint
             int tint;
-            try { tint = ruby.bamboo.core.config.SpringConfig.COMMON.tintColor.get(); } catch (Exception e) { tint = 0xE0F8FF; }
+            try { tint = SpringConfig.COMMON.tintColor.get(); } catch (Exception e) { tint = 0xE0F8FF; }
             int selfCol;
-            if (baseColor != ruby.bamboo.block.SpringColor.DEFAULT.color && baseColor != ruby.bamboo.block.SpringColor.VANILLA.color) {
+            if (baseColor != SpringColor.DEFAULT.color && baseColor != SpringColor.VANILLA.color) {
                 selfCol = 0xFF000000 | baseColor;
             } else {
-                selfCol = ruby.bamboo.block.SpringWaterBlock.multiplyColor(baseColor, tint);
+                selfCol = SpringWaterBlock.multiplyColor(baseColor, tint);
             }
             // 3x3 サンプリングで平均して馴染ませる（sakura 流のブレンドを簡略化）
             int rSum = (selfCol >> 16) & 0xFF, gSum = (selfCol >> 8) & 0xFF, bSum = selfCol & 0xFF, cnt = 1;
-            for (var dir : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+            for (var dir : Direction.Plane.HORIZONTAL) {
                 var off = pos.relative(dir);
                 var offState = level.getBlockState(off);
                 if (!offState.is(BambooBlocks.SPRING_WATER.get())) continue;
-                var offSrc = ruby.bamboo.block.SpringWaterBlock.findSource(level, off, offState, 32);
-                int offBase = ruby.bamboo.block.SpringColor.DEFAULT.color;
+                var offSrc = SpringWaterBlock.findSource(level, off, offState, 32);
+                int offBase = SpringColor.DEFAULT.color;
                 if (offSrc != null) {
                     var offSrcState = level.getBlockState(offSrc);
-                    if (offSrcState.getBlock() instanceof ruby.bamboo.block.SpringBlock) offBase = offSrcState.getValue(ruby.bamboo.block.SpringBlock.COLOR).color;
+                    if (offSrcState.getBlock() instanceof SpringBlock) offBase = offSrcState.getValue(SpringBlock.COLOR).color;
                 }
                 int offCol;
-                if (offBase != ruby.bamboo.block.SpringColor.DEFAULT.color && offBase != ruby.bamboo.block.SpringColor.VANILLA.color) offCol = 0xFF000000 | offBase;
-                else offCol = ruby.bamboo.block.SpringWaterBlock.multiplyColor(offBase, tint);
+                if (offBase != SpringColor.DEFAULT.color && offBase != SpringColor.VANILLA.color) offCol = 0xFF000000 | offBase;
+                else offCol = SpringWaterBlock.multiplyColor(offBase, tint);
                 rSum += (offCol >> 16) & 0xFF; gSum += (offCol >> 8) & 0xFF; bSum += offCol & 0xFF; cnt++;
             }
             if (cnt == 1) return selfCol;
@@ -304,13 +344,13 @@ public final class BambooClientSetup {
      */
     @SubscribeEvent
     public static void onRegisterParticleProviders(
-            net.minecraftforge.client.event.RegisterParticleProvidersEvent event) {
+            RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(BambooParticles.PETAL_1.get(),
-                ruby.bamboo.client.particle.PetalParticle.Provider::new);
+                PetalParticle.Provider::new);
         event.registerSpriteSet(BambooParticles.PETAL_2.get(),
-                ruby.bamboo.client.particle.PetalParticle.Provider::new);
+                PetalParticle.Provider::new);
         event.registerSpriteSet(BambooParticles.PETAL_3.get(),
-                ruby.bamboo.client.particle.PetalParticle.Provider::new);
+                PetalParticle.Provider::new);
     }
 
     /**
@@ -325,7 +365,7 @@ public final class BambooClientSetup {
         // 竹鉢アイテム — 既定BROWNで tint
         event.register((stack, tintIndex) -> {
             if (tintIndex != 0) return 0xFFFFFF;
-            return ruby.bamboo.block.BambooPotColor.BROWN.color;
+            return BambooPotColor.BROWN.color;
         }, BambooBlocks.BAMBOO_POT.get().asItem());
         for (var indlight : BambooBlocks.INDLIGHTS) {
             IndLightBlock block = (IndLightBlock) indlight.get();
@@ -333,12 +373,12 @@ public final class BambooClientSetup {
             event.register((stack, tintIndex) -> color, new Item[] { block.asItem() });
         }
         // 新葉のインベントリアイコンにも色乗算
-        event.register((stack, tintIndex) -> ruby.bamboo.block.SakuraLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.SAKURA_LEAVES.get().asItem() });
-        event.register((stack, tintIndex) -> ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.MAPLE_LEAVES.get().asItem() });
-        event.register((stack, tintIndex) -> ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.GINKGO_LEAVES.get().asItem() });
-        event.register((stack, tintIndex) -> ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.HINOKI_LEAVES.get().asItem() });
-        event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.MAPLE_CARPET.get().asItem() });
-        event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.GINKGO_CARPET.get().asItem() });
-        event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.HINOKI_CARPET.get().asItem() });
+        event.register((stack, tintIndex) -> SakuraLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.SAKURA_LEAVES.get().asItem() });
+        event.register((stack, tintIndex) -> MapleLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.MAPLE_LEAVES.get().asItem() });
+        event.register((stack, tintIndex) -> GinkgoLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.GINKGO_LEAVES.get().asItem() });
+        event.register((stack, tintIndex) -> HinokiLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.HINOKI_LEAVES.get().asItem() });
+        event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return MapleLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.MAPLE_CARPET.get().asItem() });
+        event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return GinkgoLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.GINKGO_CARPET.get().asItem() });
+        event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return HinokiLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.HINOKI_CARPET.get().asItem() });
     }
 }

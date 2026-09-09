@@ -1,5 +1,6 @@
 package ruby.bamboo.item;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -14,6 +15,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import ruby.bamboo.core.init.BambooBlocks;
 
 import javax.annotation.Nullable;
@@ -46,8 +48,8 @@ public class GardenSpadeItem extends ShovelItem {
                 level.playSound(player, pos, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1.0F, 1.0F);
                 if (!level.isClientSide) {
                     level.setBlock(pos, BambooBlocks.FLOWER_BED.get().defaultBlockState(), 11);
-                    level.gameEvent(net.minecraft.world.level.gameevent.GameEvent.BLOCK_CHANGE, pos,
-                            net.minecraft.world.level.gameevent.GameEvent.Context.of(player, BambooBlocks.FLOWER_BED.get().defaultBlockState()));
+                    level.gameEvent(GameEvent.BLOCK_CHANGE, pos,
+                            GameEvent.Context.of(player, BambooBlocks.FLOWER_BED.get().defaultBlockState()));
                     if (player != null) {
                         context.getItemInHand().hurtAndBreak(1, player, p -> p.broadcastBreakEvent(context.getHand()));
                     }
@@ -60,6 +62,6 @@ public class GardenSpadeItem extends ShovelItem {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.bamboomod.garden_spade").withStyle(net.minecraft.ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.bamboomod.garden_spade").withStyle(ChatFormatting.AQUA));
     }
 }

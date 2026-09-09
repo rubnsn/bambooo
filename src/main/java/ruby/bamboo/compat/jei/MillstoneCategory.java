@@ -1,5 +1,7 @@
 package ruby.bamboo.compat.jei;
 
+import java.util.ArrayList;
+import java.util.List;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -68,7 +70,7 @@ public class MillstoneCategory implements IRecipeCategory<BambooGrindRecipe> {
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, BambooGrindRecipe recipe, IFocusGroup focuses) {
         // 入力 (count表示のため ItemStack 化)
-        java.util.List<ItemStack> inputStacks = new java.util.ArrayList<>();
+        List<ItemStack> inputStacks = new ArrayList<>();
         for (ItemStack s : recipe.ingredient().getItems()) {
             ItemStack copy = s.copy();
             copy.setCount(recipe.inputCount());

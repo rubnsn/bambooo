@@ -4,12 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
 import ruby.bamboo.core.init.BambooBlockEntities;
 
 /**
@@ -184,7 +191,7 @@ public class FlowerBedBlockEntity extends BlockEntity {
     }
 
     @Override
-    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
         CompoundTag tag = new CompoundTag();
         ListTag list = new ListTag();
         for (PlantEntry e : plants) {
@@ -197,11 +204,11 @@ public class FlowerBedBlockEntity extends BlockEntity {
             list.add(ct);
         }
         tag.put("Plants", list);
-        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this, be -> tag);
+        return ClientboundBlockEntityDataPacket.create(this, be -> tag);
     }
 
     @Override
-    public void onDataPacket(net.minecraft.network.Connection connection, net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket pkt) {
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket pkt) {
         CompoundTag tag = pkt.getTag();
         plants.clear();
         if (tag != null && tag.contains("Plants", Tag.TAG_LIST)) {
@@ -222,13 +229,13 @@ public class FlowerBedBlockEntity extends BlockEntity {
 
     // ホッパー無効: capabilityを公開しない
     @Override
-    public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> cap, net.minecraft.core.Direction side) {
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
         return super.getCapability(cap, side);
     }
 
-    public void dropAllContents(net.minecraft.world.level.Level lvl, BlockPos p) {
+    public void dropAllContents(Level lvl, BlockPos p) {
         for (PlantEntry e : plants) {
-            net.minecraft.world.Containers.dropItemStack(lvl, p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5, e.stack);
+            Containers.dropItemStack(lvl, p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5, e.stack);
         }
         plants.clear();
     }

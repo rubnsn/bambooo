@@ -19,10 +19,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import ruby.bamboo.BambooMod;
@@ -75,7 +77,7 @@ public class CutBlockGhostRenderer {
         if (bhr.getType() != HitResult.Type.BLOCK) return;
         BlockPos hitPos = bhr.getBlockPos();
         Direction face = bhr.getDirection();
-        net.minecraft.world.phys.Vec3 hitVec = bhr.getLocation();
+        Vec3 hitVec = bhr.getLocation();
         CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(held);
         if (data.state().isAir()) return;
 
@@ -125,7 +127,7 @@ public class CutBlockGhostRenderer {
         float maxZ = bounds[5] / 16f;
 
         PoseStack poseStack = event.getPoseStack();
-        net.minecraft.world.phys.Vec3 cam = event.getCamera().getPosition();
+        Vec3 cam = event.getCamera().getPosition();
         poseStack.pushPose();
         poseStack.translate(placePos.getX() - cam.x, placePos.getY() - cam.y, placePos.getZ() - cam.z);
 
@@ -141,7 +143,7 @@ public class CutBlockGhostRenderer {
     private static boolean isCutBlock(ItemStack stack) {
         if (stack.isEmpty()) return false;
         try {
-            String key = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
+            String key = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
             return key.equals("bamboomod:cut_block");
         } catch (Exception e) {
             return false;

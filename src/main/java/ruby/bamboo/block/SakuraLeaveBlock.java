@@ -3,6 +3,8 @@ package ruby.bamboo.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,7 +35,7 @@ public class SakuraLeaveBlock extends LeavesBlock implements PetalEmitter {
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(COLOR);
     }
@@ -64,7 +66,7 @@ public class SakuraLeaveBlock extends LeavesBlock implements PetalEmitter {
      * 直下が空気のときのみ発生。色・種別は COLOR プロパティ由来。
      */
     @Override
-    public void animateTick(BlockState state, net.minecraft.world.level.Level level, BlockPos pos,
+    public void animateTick(BlockState state, Level level, BlockPos pos,
             RandomSource rand) {
         super.animateTick(state, level, pos, rand);
         emitPetals(state, level, pos, rand);

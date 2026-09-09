@@ -1,8 +1,15 @@
 package ruby.bamboo.mixin.vanilla;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.client.model.data.ModelData;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -25,7 +32,7 @@ public abstract class ModelBlockRendererMixin {
     private static final ThreadLocal<Vector3f> bamboomod$currentTint = ThreadLocal.withInitial(() -> new Vector3f(1, 1, 1));
 
     @Inject(method = "tesselateBlock", at = @At("HEAD"))
-    private void bamboomod$setTint(BlockAndTintGetter level, net.minecraft.client.resources.model.BakedModel model, net.minecraft.world.level.block.state.BlockState state, BlockPos pos, com.mojang.blaze3d.vertex.PoseStack stack, com.mojang.blaze3d.vertex.VertexConsumer consumer, boolean checkSides, net.minecraft.util.RandomSource random, long seed, int overlay, CallbackInfo ci) {
+    private void bamboomod$setTint(BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, PoseStack stack, VertexConsumer consumer, boolean checkSides, RandomSource random, long seed, int overlay, CallbackInfo ci) {
         if (level == null || pos == null) {
             bamboomod$currentTint.set(new Vector3f(1, 1, 1));
             return;
@@ -39,7 +46,7 @@ public abstract class ModelBlockRendererMixin {
     }
 
     @Inject(method = "tesselateBlock(Lnet/minecraft/world/level/BlockAndTintGetter;Lnet/minecraft/client/resources/model/BakedModel;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;ZLnet/minecraft/util/RandomSource;JILnet/minecraftforge/client/model/data/ModelData;Lnet/minecraft/client/renderer/RenderType;)V", at = @At("HEAD"), remap = false)
-    private void bamboomod$setTint2(BlockAndTintGetter level, net.minecraft.client.resources.model.BakedModel model, net.minecraft.world.level.block.state.BlockState state, BlockPos pos, com.mojang.blaze3d.vertex.PoseStack stack, com.mojang.blaze3d.vertex.VertexConsumer consumer, boolean checkSides, net.minecraft.util.RandomSource random, long seed, int overlay, net.minecraftforge.client.model.data.ModelData data, net.minecraft.client.renderer.RenderType type, CallbackInfo ci) {
+    private void bamboomod$setTint2(BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, PoseStack stack, VertexConsumer consumer, boolean checkSides, RandomSource random, long seed, int overlay, ModelData data, RenderType type, CallbackInfo ci) {
         if (level == null || pos == null) {
             bamboomod$currentTint.set(new Vector3f(1, 1, 1));
             return;
@@ -53,12 +60,12 @@ public abstract class ModelBlockRendererMixin {
     }
 
     @Inject(method = "tesselateBlock", at = @At("RETURN"))
-    private void bamboomod$clearTint(BlockAndTintGetter level, net.minecraft.client.resources.model.BakedModel model, net.minecraft.world.level.block.state.BlockState state, BlockPos pos, com.mojang.blaze3d.vertex.PoseStack stack, com.mojang.blaze3d.vertex.VertexConsumer consumer, boolean checkSides, net.minecraft.util.RandomSource random, long seed, int overlay, CallbackInfo ci) {
+    private void bamboomod$clearTint(BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, PoseStack stack, VertexConsumer consumer, boolean checkSides, RandomSource random, long seed, int overlay, CallbackInfo ci) {
         bamboomod$currentTint.remove();
     }
 
     @Inject(method = "tesselateBlock(Lnet/minecraft/world/level/BlockAndTintGetter;Lnet/minecraft/client/resources/model/BakedModel;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;ZLnet/minecraft/util/RandomSource;JILnet/minecraftforge/client/model/data/ModelData;Lnet/minecraft/client/renderer/RenderType;)V", at = @At("RETURN"), remap = false)
-    private void bamboomod$clearTint2(BlockAndTintGetter level, net.minecraft.client.resources.model.BakedModel model, net.minecraft.world.level.block.state.BlockState state, BlockPos pos, com.mojang.blaze3d.vertex.PoseStack stack, com.mojang.blaze3d.vertex.VertexConsumer consumer, boolean checkSides, net.minecraft.util.RandomSource random, long seed, int overlay, net.minecraftforge.client.model.data.ModelData data, net.minecraft.client.renderer.RenderType type, CallbackInfo ci) {
+    private void bamboomod$clearTint2(BlockAndTintGetter level, BakedModel model, BlockState state, BlockPos pos, PoseStack stack, VertexConsumer consumer, boolean checkSides, RandomSource random, long seed, int overlay, ModelData data, RenderType type, CallbackInfo ci) {
         bamboomod$currentTint.remove();
     }
 

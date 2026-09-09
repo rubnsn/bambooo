@@ -7,6 +7,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -117,7 +118,7 @@ public class FishingMinigameScreen extends Screen {
                     // 時間切れ → 初回ならクールダウン、2回目なら失敗
                     if (hookAttempts == 1) {
                         state = State.HOOK_COOLDOWN;
-                        var rnd = (mc.player != null) ? mc.player.getRandom() : net.minecraft.util.RandomSource.create();
+                        var rnd = (mc.player != null) ? mc.player.getRandom() : RandomSource.create();
                         cooldownTicksRemaining = 15 + rnd.nextInt(25); // 0.75-2sec
                         mc.gui.setTitle(Component.empty());
                     } else {
@@ -128,7 +129,7 @@ public class FishingMinigameScreen extends Screen {
             case HOOK_COOLDOWN -> {
                 cooldownTicksRemaining--;
                 if (cooldownTicksRemaining <= 0) {
-                    var rnd = (mc.player != null) ? mc.player.getRandom() : net.minecraft.util.RandomSource.create();
+                    var rnd = (mc.player != null) ? mc.player.getRandom() : RandomSource.create();
                     boolean retry = rnd.nextFloat() < 0.5f;
                     if (retry) {
                         enterHooking();
@@ -189,7 +190,7 @@ public class FishingMinigameScreen extends Screen {
     private void updateFish() {
         if (fishTargetTimer <= 0) {
             Minecraft mc = Minecraft.getInstance();
-            var random = mc.player != null ? mc.player.getRandom() : net.minecraft.util.RandomSource.create();
+            var random = mc.player != null ? mc.player.getRandom() : RandomSource.create();
             fishDarting = false;
             float newTarget = 50f;
             int pattern = pkt.movePatternOrdinal;

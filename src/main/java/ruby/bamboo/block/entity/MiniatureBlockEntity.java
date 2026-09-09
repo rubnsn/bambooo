@@ -1,5 +1,8 @@
 package ruby.bamboo.block.entity;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -17,10 +20,12 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.registries.ForgeRegistries;
+import ruby.bamboo.block.MiniatureBlock;
 import ruby.bamboo.core.init.BambooBlockEntities;
 
 /**
@@ -85,10 +90,10 @@ public class MiniatureBlockEntity extends BlockEntity {
     private boolean renderActive = true;
     private boolean renderShellOnly = false;
     // クライアント側インスタンス追跡用 (Managerが参照)
-    private static final java.util.Set<MiniatureBlockEntity> CLIENT_INSTANCES =
-            java.util.Collections.synchronizedSet(java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>()));
+    private static final Set<MiniatureBlockEntity> CLIENT_INSTANCES =
+            Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
-    public static java.util.Set<MiniatureBlockEntity> getClientInstances() {
+    public static Set<MiniatureBlockEntity> getClientInstances() {
         return CLIENT_INSTANCES;
     }
 
@@ -385,9 +390,9 @@ public class MiniatureBlockEntity extends BlockEntity {
                     // ENABLED同期 (中身有無)
                     boolean enabled = !isEmpty();
                     BlockState st = this.level.getBlockState(this.worldPosition);
-                    if (st.hasProperty(ruby.bamboo.block.MiniatureBlock.ENABLED)
-                            && st.getValue(ruby.bamboo.block.MiniatureBlock.ENABLED) != enabled) {
-                        this.level.setBlock(this.worldPosition, st.setValue(ruby.bamboo.block.MiniatureBlock.ENABLED, enabled), 3);
+                    if (st.hasProperty(MiniatureBlock.ENABLED)
+                            && st.getValue(MiniatureBlock.ENABLED) != enabled) {
+                        this.level.setBlock(this.worldPosition, st.setValue(MiniatureBlock.ENABLED, enabled), 3);
                     }
                 }
                 this.dirty = false;
@@ -440,7 +445,7 @@ public class MiniatureBlockEntity extends BlockEntity {
                     if (rand.nextFloat() < 0.10f) {
                         // ageプロパティを探索
                         for (Property<?> prop : st.getProperties()) {
-                            if (prop.getName().equals("age") && prop instanceof net.minecraft.world.level.block.state.properties.IntegerProperty ip) {
+                            if (prop.getName().equals("age") && prop instanceof IntegerProperty ip) {
                                 int age = st.getValue(ip);
                                 int max = 0;
                                 for (Integer v : ip.getPossibleValues()) {

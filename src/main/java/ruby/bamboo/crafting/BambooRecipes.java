@@ -2,6 +2,7 @@ package ruby.bamboo.crafting;
 
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import ruby.bamboo.item.katana.KatanaDrops;
 
 /**
  * レシピ登録 (旧 BambooRecipes#addGrindRecipe の移植)。
@@ -22,7 +23,7 @@ public final class BambooRecipes {
     private static void onCommonSetup(FMLCommonSetupEvent event) {
         // 石臼・囲炉裏レシピはJSON化 (bamboomod:millstone / bamboomod:campfire)。旧GrindManager/CookingManagerコード登録は廃止。
         // 刀の特殊ドロップ表登録 (EntityType → loot_table 対応)
-        event.enqueueWork(ruby.bamboo.item.katana.KatanaDrops::register);
+        event.enqueueWork(KatanaDrops::register);
     }
 
     // 石臼レシピはJSON (data/bamboomod/recipes/millstone/*.json) で管理。旧addGrindRecipeはBambooGrindRecipeへ移行済み。

@@ -9,7 +9,11 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.RegistryObject;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.entity.ChairEntity;
+import ruby.bamboo.entity.FirecrackerEntity;
+import ruby.bamboo.entity.FishingBobberEntity;
 import ruby.bamboo.entity.KaginawaHookEntity;
+import ruby.bamboo.entity.ShurikenEntity;
+import ruby.bamboo.entity.WindEntity;
 import ruby.bamboo.entity.arrow.BambooArrowEntity;
 import ruby.bamboo.entity.arrow.ExplodeArrowEntity;
 import ruby.bamboo.entity.arrow.LightArrowEntity;
@@ -52,9 +56,9 @@ public final class BambooEntities {
      * 風 (旧 Wind。扇子用)。5x5の巨大判定、寿命5tick、葉破壊。
      * 当たり判定は巨大だがエンティティ衝突は無効、ブロック走査のみ。
      */
-    public static final RegistryObject<EntityType<ruby.bamboo.entity.WindEntity>> WIND = BambooMod.ENTITY_TYPES.register(
+    public static final RegistryObject<EntityType<WindEntity>> WIND = BambooMod.ENTITY_TYPES.register(
             "wind",
-            () -> EntityType.Builder.<ruby.bamboo.entity.WindEntity>of(ruby.bamboo.entity.WindEntity::new, MobCategory.MISC)
+            () -> EntityType.Builder.<WindEntity>of(WindEntity::new, MobCategory.MISC)
                     .sized(5.0F, 5.0F)
                     .clientTrackingRange(64)
                     .updateInterval(1)
@@ -79,9 +83,9 @@ public final class BambooEntities {
             "explode_arrow", ExplodeArrowEntity::new);
 
     /** 手裏剣 (stone/iron/diamond共通、見た目はItemStackで切替) */
-    public static final RegistryObject<EntityType<ruby.bamboo.entity.ShurikenEntity>> SHURIKEN = BambooMod.ENTITY_TYPES.register(
+    public static final RegistryObject<EntityType<ShurikenEntity>> SHURIKEN = BambooMod.ENTITY_TYPES.register(
             "shuriken",
-            () -> EntityType.Builder.<ruby.bamboo.entity.ShurikenEntity>of(ruby.bamboo.entity.ShurikenEntity::new, MobCategory.MISC)
+            () -> EntityType.Builder.<ShurikenEntity>of(ShurikenEntity::new, MobCategory.MISC)
                     .sized(0.5F, 0.5F)
                     .clientTrackingRange(4)
                     .updateInterval(20)
@@ -91,9 +95,9 @@ public final class BambooEntities {
      * かんしゃく玉 (旧 EntityFirecracker)。5種共通、見た目・挙動はItemStack/Typeで切替。
      * 0.25x0.25、バウンド物理のため更新頻度は高め。
      */
-    public static final RegistryObject<EntityType<ruby.bamboo.entity.FirecrackerEntity>> FIRECRACKER = BambooMod.ENTITY_TYPES.register(
+    public static final RegistryObject<EntityType<FirecrackerEntity>> FIRECRACKER = BambooMod.ENTITY_TYPES.register(
             "firecracker",
-            () -> EntityType.Builder.<ruby.bamboo.entity.FirecrackerEntity>of(ruby.bamboo.entity.FirecrackerEntity::new, MobCategory.MISC)
+            () -> EntityType.Builder.<FirecrackerEntity>of(FirecrackerEntity::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F)
                     .clientTrackingRange(10)
                     .updateInterval(2)
@@ -118,9 +122,9 @@ public final class BambooEntities {
                     .build("llama_companion"));
 
     /** 釣りウキ (bamboo_rod 専用。ロープで繋がる) */
-    public static final RegistryObject<EntityType<ruby.bamboo.entity.FishingBobberEntity>> FISHING_BOBBER = BambooMod.ENTITY_TYPES.register(
+    public static final RegistryObject<EntityType<FishingBobberEntity>> FISHING_BOBBER = BambooMod.ENTITY_TYPES.register(
             "fishing_bobber",
-            () -> EntityType.Builder.<ruby.bamboo.entity.FishingBobberEntity>of(ruby.bamboo.entity.FishingBobberEntity::new, MobCategory.MISC)
+            () -> EntityType.Builder.<FishingBobberEntity>of(FishingBobberEntity::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F)
                     .clientTrackingRange(64)
                     .updateInterval(2)

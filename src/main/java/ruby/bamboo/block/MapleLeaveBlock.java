@@ -3,6 +3,7 @@ package ruby.bamboo.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,7 +34,7 @@ public class MapleLeaveBlock extends LeavesBlock implements PetalEmitter {
     }
 
     @Override
-    public void animateTick(BlockState state, net.minecraft.world.level.Level level, BlockPos pos,
+    public void animateTick(BlockState state, Level level, BlockPos pos,
             RandomSource rand) {
         super.animateTick(state, level, pos, rand);
         // 通常 1/100、突風時は PetalWind で密になる + たまに1粒おかわり

@@ -1,10 +1,14 @@
 package ruby.bamboo.crafting.cooking;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
+import java.util.Set;
 import javax.annotation.Nullable;
 
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -64,7 +68,7 @@ public final class CookingManager {
 
         // 素材1個だけ → バニラ精錬レシピ
         if (itemCount == 1 && single != null) {
-            var smelting = level.getRecipeManager().getRecipeFor(RecipeType.SMELTING, new net.minecraft.world.SimpleContainer(single), level);
+            var smelting = level.getRecipeManager().getRecipeFor(RecipeType.SMELTING, new SimpleContainer(single), level);
             if (smelting.isPresent()) {
                 ItemStack result = smelting.get().getResultItem(level.registryAccess());
                 if (!result.isEmpty()) {
@@ -97,7 +101,7 @@ public final class CookingManager {
             if (!ItemStack.isSameItem(r.output(), output)) {
                 continue;
             }
-            java.util.Set<net.minecraft.world.item.Item> kinds = new java.util.HashSet<>();
+            Set<Item> kinds = new HashSet<>();
             for (ItemStack ing : r.ingredients()) {
                 if (!ing.isEmpty()) {
                     kinds.add(ing.getItem());

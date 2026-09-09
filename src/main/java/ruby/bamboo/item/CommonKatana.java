@@ -1,5 +1,6 @@
 package ruby.bamboo.item;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -148,6 +149,6 @@ public class CommonKatana extends SwordItem {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.bamboomod.commonkatana.hook").withStyle(net.minecraft.ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.bamboomod.commonkatana.hook").withStyle(ChatFormatting.AQUA));
     }
 }

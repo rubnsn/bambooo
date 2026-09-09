@@ -16,6 +16,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 /**
  * 刀の特殊ドロップ管理 (旧 KatanaDropManager の移植)。
@@ -74,18 +77,18 @@ public final class KatanaDropManager {
         }
         ResourceLocation tableId = candidates.get(rand.nextInt(candidates.size()));
         var table = level.getServer().getLootData().getLootTable(tableId);
-        var builder = new net.minecraft.world.level.storage.loot.LootParams.Builder(level)
-                .withParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.THIS_ENTITY, killed)
-                .withParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.ORIGIN,
+        var builder = new LootParams.Builder(level)
+                .withParameter(LootContextParams.THIS_ENTITY, killed)
+                .withParameter(LootContextParams.ORIGIN,
                         killed.position())
-                .withOptionalParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.DAMAGE_SOURCE,
+                .withOptionalParameter(LootContextParams.DAMAGE_SOURCE,
                         null)
                 .withLuck(0F);
         // 確率判定は旧仕様どおり reality+dropRate 相当を random_chance で JSON 側に任せるため、
         // ここでは単純にテーブルロールする (dropRate 加算が必要な場合は JSON 側で調整)
-        var generated = new java.util.ArrayList<ItemStack>();
+        var generated = new ArrayList<ItemStack>();
         table.getRandomItems(builder.create(
-                net.minecraft.world.level.storage.loot.parameters.LootContextParamSets.ENTITY),
+                LootContextParamSets.ENTITY),
                 generated::add);
         return generated.isEmpty() ? null : generated.get(0);
     }

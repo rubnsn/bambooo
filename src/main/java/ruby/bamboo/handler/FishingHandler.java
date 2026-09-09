@@ -1,7 +1,10 @@
 package ruby.bamboo.handler;
 
 import com.mojang.logging.LogUtils;
+import java.lang.reflect.Field;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,6 +17,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -29,6 +33,7 @@ import ruby.bamboo.core.fishing.FishSize;
 import ruby.bamboo.core.fishing.FishingBiteHelper;
 import ruby.bamboo.core.fishing.FishingEntry;
 import ruby.bamboo.core.fishing.FishingManager;
+import ruby.bamboo.item.BambooRodItem;
 import ruby.bamboo.item.FishingBaitItem;
 import ruby.bamboo.item.LureItem;
 import ruby.bamboo.network.BambooNetwork;
@@ -39,7 +44,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.util.Mth;
 import ruby.bamboo.entity.FishingBobberEntity;
-import net.minecraft.world.phys.Vec3;
+import ruby.bamboo.skill.SkillHelper;
+import ruby.bamboo.skill.SkillType;
 
 /**
  * サーバー側 釣り pending 管理 + キャスト抽選。
@@ -134,7 +140,7 @@ public class FishingHandler {
         // 竿所持チェック
         boolean hasRod = false;
         for (InteractionHand hand : InteractionHand.values()) {
-            if (sp.getItemInHand(hand).getItem() instanceof ruby.bamboo.item.BambooRodItem) {
+            if (sp.getItemInHand(hand).getItem() instanceof BambooRodItem) {
                 hasRod = true;
                 break;
             }
@@ -149,14 +155,14 @@ public class FishingHandler {
         // 餌チェック
         BaitInfo baitInfo = findBaitInfo(sp);
         if (baitInfo == null) {
-            sp.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.bamboomod.fishing.no_bait").withStyle(net.minecraft.ChatFormatting.GRAY), true);
+            sp.displayClientMessage(Component.translatable("message.bamboomod.fishing.no_bait").withStyle(ChatFormatting.GRAY), true);
             return;
         }
         int baitPower = baitInfo.bitePower;
         int moonBonus = FishingBiteHelper.getMoonBonus(level);
         int rainBonus = FishingBiteHelper.getRainBonus(level);
         // 釣りスキル: バイト微強化 (+1/3Lv)。高品質魚は強化前提のバランス
-        int fishLv = ruby.bamboo.skill.SkillHelper.getLevel(sp, ruby.bamboo.skill.SkillType.FISHING);
+        int fishLv = SkillHelper.getLevel(sp, SkillType.FISHING);
         int bitePower = baitPower + moonBonus + rainBonus + fishLv / 3;
 
         distance = Math.max(4, Math.min(15, distance));
@@ -164,7 +170,7 @@ public class FishingHandler {
         // 水着水チェック — 水でなければキャンセル（無消費）
         Vec3 bobPos = computeBobberPos(sp, distance);
         if (bobPos == null) {
-            sp.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.bamboomod.fishing.not_water").withStyle(net.minecraft.ChatFormatting.GRAY), true);
+            sp.displayClientMessage(Component.translatable("message.bamboomod.fishing.not_water").withStyle(ChatFormatting.GRAY), true);
             level.playSound(null, sp.getX(), sp.getY(), sp.getZ(), SoundEvents.FISHING_BOBBER_SPLASH, SoundSource.PLAYERS, 0.4F, 0.8F);
             return;
         }
@@ -242,7 +248,7 @@ public class FishingHandler {
             mp.set(px, y, pz);
             var state = lvl.getBlockState(mp);
             // 水源または流れでも水として扱う（流れでも釣り可能に）
-            if (!state.getFluidState().isEmpty() && state.getFluidState().getType() == net.minecraft.world.level.material.Fluids.WATER) {
+            if (!state.getFluidState().isEmpty() && state.getFluidState().getType() == Fluids.WATER) {
                 // 上が空気または水なら水面として有効
                 var above = lvl.getBlockState(mp.above());
                 if (above.isAir() || !above.getFluidState().isEmpty()) {
@@ -255,7 +261,7 @@ public class FishingHandler {
                 }
             }
             // 水logged ブロックも水として扱う（例: 水入り半ブロック）
-            if (state.getFluidState().isSource() && state.getFluidState().getType() == net.minecraft.world.level.material.Fluids.WATER) {
+            if (state.getFluidState().isSource() && state.getFluidState().getType() == Fluids.WATER) {
                 return new Vec3(px + 0.5, y + 0.9, pz + 0.5);
             }
         }
@@ -306,7 +312,7 @@ public class FishingHandler {
         // ウキ再利用: 失敗/キャンセルはウキのみ、成功はItemEntityを引っ掛けて帰還
         FishingBobberEntity bob = BOBBERS.get(id);
         if (resultType == 0) {
-            ruby.bamboo.skill.SkillHelper.addXp(player, ruby.bamboo.skill.SkillType.FISHING, 1);
+            SkillHelper.addXp(player, SkillType.FISHING, 1);
             ServerLevel level = player.serverLevel();
             ItemStack catchStack = FishingManager.createCatchStack(
                     new FishingManager.RollResult(pending.entry, pending.size, pending.startProgress,
@@ -322,7 +328,7 @@ public class FishingHandler {
                     hookItem.setUnlimitedLifetime();
                     hookItem.setNoGravity(true);
                     try {
-                        java.lang.reflect.Field f = ItemEntity.class.getDeclaredField("bobOffs");
+                        Field f = ItemEntity.class.getDeclaredField("bobOffs");
                         f.setAccessible(true);
                         Vec3 to0 = new Vec3(player.getX(), player.getY() + 0.35, player.getZ()).subtract(bob.position());
                         float angle = (float) Mth.atan2(to0.x, to0.z);
@@ -403,7 +409,7 @@ public class FishingHandler {
         // 竿はメインハンド or オフハンドの bamboo_rod
         for (InteractionHand hand : InteractionHand.values()) {
             ItemStack handStack = player.getItemInHand(hand);
-            if (!handStack.isEmpty() && handStack.getItem() instanceof ruby.bamboo.item.BambooRodItem) {
+            if (!handStack.isEmpty() && handStack.getItem() instanceof BambooRodItem) {
                 handStack.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
                 return;
             }

@@ -1,15 +1,21 @@
 package ruby.bamboo.block.entity;
 
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -17,6 +23,8 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * ミニチュア内用 LevelReader ラッパー。
@@ -56,7 +64,7 @@ public class MiniatureFakeLevelReader implements LevelReader {
         try {
             return outerLevel.getBlockState(outerPos);
         } catch (Exception e) {
-            return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+            return Blocks.AIR.defaultBlockState();
         }
     }
 
@@ -98,7 +106,7 @@ public class MiniatureFakeLevelReader implements LevelReader {
     }
 
     @Override
-    public int getBlockTint(BlockPos pos, net.minecraft.world.level.ColorResolver resolver) {
+    public int getBlockTint(BlockPos pos, ColorResolver resolver) {
         if (be.isInRange(pos.getX(), pos.getY(), pos.getZ())) {
             // 内部では外の tint を借用
             return outerLevel.getBlockTint(bePos, resolver);
@@ -186,17 +194,17 @@ public class MiniatureFakeLevelReader implements LevelReader {
     // ===== CollisionGetter =====
 
     @Override
-    public net.minecraft.world.level.border.WorldBorder getWorldBorder() {
+    public WorldBorder getWorldBorder() {
         return outerLevel.getWorldBorder();
     }
 
     @Override
-    public net.minecraft.world.level.BlockGetter getChunkForCollisions(int x, int z) {
+    public BlockGetter getChunkForCollisions(int x, int z) {
         return outerLevel.getChunkForCollisions(x, z);
     }
 
     @Override
-    public java.util.List<net.minecraft.world.phys.shapes.VoxelShape> getEntityCollisions(net.minecraft.world.entity.Entity entity, net.minecraft.world.phys.AABB box) {
+    public List<VoxelShape> getEntityCollisions(Entity entity, AABB box) {
         return outerLevel.getEntityCollisions(entity, box);
     }
 }

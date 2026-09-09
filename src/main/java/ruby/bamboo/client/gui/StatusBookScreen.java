@@ -11,6 +11,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import ruby.bamboo.core.init.BambooCapabilities;
 import ruby.bamboo.skill.SkillType;
 
@@ -167,7 +168,7 @@ public class StatusBookScreen extends Screen {
     }
 
     private int drawWrapped(GuiGraphics gfx, String s, int x, int y, int w, int color) {
-        for (net.minecraft.util.FormattedCharSequence line : this.font.split(Component.literal(s), w)) {
+        for (FormattedCharSequence line : this.font.split(Component.literal(s), w)) {
             gfx.drawString(this.font, line, x, y, color, false);
             y += 11;
         }

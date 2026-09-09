@@ -1,6 +1,7 @@
 package ruby.bamboo.util;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 
@@ -116,7 +117,7 @@ public final class WishBiomeSearch {
                     // prefer longer alias (more specific)
                     if (len > bestLen) {
                         // also ensure biome exists in registry (avoid stale)
-                        var key = net.minecraft.resources.ResourceKey.create(Registries.BIOME, rl);
+                        var key = ResourceKey.create(Registries.BIOME, rl);
                         var reg = level.registryAccess().registryOrThrow(Registries.BIOME);
                         if (reg.containsKey(key) || rl.getNamespace().equals("minecraft")) {
                             best = rl;

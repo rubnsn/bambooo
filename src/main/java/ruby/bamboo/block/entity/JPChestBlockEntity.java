@@ -18,6 +18,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.InvWrapper;
+import ruby.bamboo.core.init.BambooBlockEntities;
 
 /**
  * 和風チェストの BlockEntity (旧 TileJPChest)。
@@ -37,7 +38,7 @@ public class JPChestBlockEntity extends BaseContainerBlockEntity {
     private final LazyOptional<IItemHandler> itemHandler = LazyOptional.of(() -> new InvWrapper(this));
 
     public JPChestBlockEntity(BlockPos pos, BlockState state) {
-        super(ruby.bamboo.core.init.BambooBlockEntities.JP_CHEST_BE.get(), pos, state);
+        super(BambooBlockEntities.JP_CHEST_BE.get(), pos, state);
     }
 
     // ===== Container 実装 =====

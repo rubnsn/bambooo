@@ -1,5 +1,6 @@
 package ruby.bamboo.item;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -14,6 +15,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraftforge.common.ToolActions;
 import ruby.bamboo.core.init.BambooBlocks;
 
 import javax.annotation.Nullable;
@@ -49,7 +52,7 @@ public class PaddyFieldHoeItem extends HoeItem {
                     || block == Blocks.FARMLAND;
             // また、ForgeのToolActionでも判定 (他mod互換) — getToolModifiedStateが非nullなら耕せる
             if (!isTillable) {
-                var toolState = state.getToolModifiedState(context, net.minecraftforge.common.ToolActions.HOE_TILL, false);
+                var toolState = state.getToolModifiedState(context, ToolActions.HOE_TILL, false);
                 if (toolState != null) {
                     isTillable = true;
                 }
@@ -60,8 +63,8 @@ public class PaddyFieldHoeItem extends HoeItem {
                 if (!level.isClientSide) {
                     level.setBlock(pos, BambooBlocks.PADDY_FIELD.get().defaultBlockState(), 11);
                     // sakura: level.setBlockState(pos, PADDY_FIELD.default)
-                    level.gameEvent(net.minecraft.world.level.gameevent.GameEvent.BLOCK_CHANGE, pos,
-                            net.minecraft.world.level.gameevent.GameEvent.Context.of(player, BambooBlocks.PADDY_FIELD.get().defaultBlockState()));
+                    level.gameEvent(GameEvent.BLOCK_CHANGE, pos,
+                            GameEvent.Context.of(player, BambooBlocks.PADDY_FIELD.get().defaultBlockState()));
                     if (player != null) {
                         context.getItemInHand().hurtAndBreak(1, player, p -> p.broadcastBreakEvent(context.getHand()));
                     }
@@ -74,7 +77,7 @@ public class PaddyFieldHoeItem extends HoeItem {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.bamboomod.paddy_field_hoe").withStyle(net.minecraft.ChatFormatting.AQUA));
-        tooltip.add(Component.translatable("tooltip.bamboomod.paddy_field.bucket").withStyle(net.minecraft.ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.bamboomod.paddy_field_hoe").withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.bamboomod.paddy_field.bucket").withStyle(ChatFormatting.AQUA));
     }
 }

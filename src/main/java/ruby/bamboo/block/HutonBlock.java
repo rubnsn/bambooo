@@ -1,5 +1,6 @@
 package ruby.bamboo.block;
 
+import java.util.List;
 import javax.annotation.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -186,7 +188,7 @@ public class HutonBlock extends BedBlock {
                         long newTime = serverLevel.getDayTime() + TIME_ACC + 1;
                         serverLevel.setDayTime(newTime);
                         try {
-                            net.minecraft.world.level.storage.ServerLevelData sld = (net.minecraft.world.level.storage.ServerLevelData) serverLevel.getLevelData();
+                            ServerLevelData sld = (ServerLevelData) serverLevel.getLevelData();
                             if (serverLevel.isRaining()) {
                                 int rainTime = sld.getRainTime();
                                 if (rainTime > TIME_ACC) {
@@ -231,7 +233,7 @@ public class HutonBlock extends BedBlock {
     }
 
     private boolean kickVillagerOutOfBed(Level level, BlockPos pos) {
-        java.util.List<Villager> list = level.getEntitiesOfClass(Villager.class, new AABB(pos), LivingEntity::isSleeping);
+        List<Villager> list = level.getEntitiesOfClass(Villager.class, new AABB(pos), LivingEntity::isSleeping);
         if (list.isEmpty()) {
             return false;
         } else {

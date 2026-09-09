@@ -3,6 +3,7 @@ package ruby.bamboo.block;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import ruby.bamboo.BambooMod;
 
 /**
@@ -11,13 +12,13 @@ import ruby.bamboo.BambooMod;
  */
 public final class HinokiTreeFeatures {
 
-    public static final ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> HINOKI = create("hinoki");
-    public static final ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> HINOKI_BIG = create("hinoki_big");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> HINOKI = create("hinoki");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> HINOKI_BIG = create("hinoki_big");
 
     private HinokiTreeFeatures() {
     }
 
-    private static ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> create(String name) {
+    private static ResourceKey<ConfiguredFeature<?, ?>> create(String name) {
         return ResourceKey.create(Registries.CONFIGURED_FEATURE,
                 new ResourceLocation(BambooMod.MODID, name));
     }

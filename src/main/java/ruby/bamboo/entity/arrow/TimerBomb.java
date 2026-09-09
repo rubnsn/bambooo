@@ -1,5 +1,6 @@
 package ruby.bamboo.entity.arrow;
 
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -8,6 +9,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -27,7 +29,7 @@ public final class TimerBomb {
     /** タイマー切れ後の猶予 (旧 FUSE_TIMER=40tick) */
     private static final int FUSE_TICKS = 40;
 
-    private static final List<TimerBomb> ACTIVE = new java.util.ArrayList<>();
+    private static final List<TimerBomb> ACTIVE = new ArrayList<>();
 
     private final ServerLevel level;
     private final LivingEntity target;
@@ -131,7 +133,7 @@ public final class TimerBomb {
                 offsetY /= offsetSqrt;
                 offsetZ /= offsetSqrt;
 
-                double density = net.minecraft.world.level.Explosion.getSeenPercent(center, e);
+                double density = Explosion.getSeenPercent(center, e);
                 double d10 = (1.0D - distance) * density;
                 // 旧式: ((d10²+d10)/2 × 8 × pow + 1)
                 double dmg = ((d10 * d10 + d10) / 2.0D) * 8.0D * pow + 1.0D;

@@ -2,6 +2,7 @@ package ruby.bamboo.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
@@ -62,7 +63,7 @@ public final class KaginawaClientHandler {
         boolean pull = false;
 
         // 地面判定は onGround()/getOnPos() ではなく POS Y-1(足元-0.1)の実ブロックで (noGravityで信用できない)
-        net.minecraft.core.BlockPos belowPos = net.minecraft.core.BlockPos.containing(player.getX(), player.getY() - 0.2, player.getZ());
+        BlockPos belowPos = BlockPos.containing(player.getX(), player.getY() - 0.2, player.getZ());
         boolean onSolidGround = !player.level().getBlockState(belowPos).isAir();
         byte reelDir = 0;
         if (shift && !onSolidGround) {

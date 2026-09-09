@@ -3,19 +3,39 @@ package ruby.bamboo.client.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.client.model.data.ModelData;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -72,7 +92,7 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
         } catch (Exception e) {
             fake = null;
         }
-        net.minecraft.world.level.BlockAndTintGetter getter = fake != null ? fake : be.getLevel();
+        BlockAndTintGetter getter = fake != null ? fake : be.getLevel();
 
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
@@ -80,11 +100,11 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
                     if (shellOnly && !be.isShellCell(x, y, z)) continue;
                     BlockState state = be.getCell(x, y, z);
                     if (state == null || state.isAir() || state.getBlock() == Blocks.AIR) continue;
-                    net.minecraft.world.level.block.RenderShape shape = state.getRenderShape();
+                    RenderShape shape = state.getRenderShape();
                     boolean hasBE = state.hasBlockEntity();
-                    boolean shouldTesselate = (shape == net.minecraft.world.level.block.RenderShape.MODEL);
+                    boolean shouldTesselate = (shape == RenderShape.MODEL);
                     if (shouldTesselate) {
-                        net.minecraft.client.resources.model.BakedModel model = this.blockRenderer.getBlockModel(state);
+                        BakedModel model = this.blockRenderer.getBlockModel(state);
                         ModelData md;
                         try {
                             md = model.getModelData(getter, new BlockPos(x, y, z), state, ModelData.EMPTY);
@@ -107,11 +127,11 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
                     }
                     if (hasBE) {
                         try {
-                            net.minecraft.world.level.block.entity.BlockEntity te = null;
-                            net.minecraft.world.level.block.Block blk = state.getBlock();
-                            if (blk instanceof net.minecraft.world.level.block.EntityBlock eb) {
+                            BlockEntity te = null;
+                            Block blk = state.getBlock();
+                            if (blk instanceof EntityBlock eb) {
                                 te = eb.newBlockEntity(bePos, state);
-                            } else if (blk instanceof net.minecraft.world.level.block.BaseEntityBlock base) {
+                            } else if (blk instanceof BaseEntityBlock base) {
                                 te = base.newBlockEntity(bePos, state);
                             }
                             if (te != null) {
@@ -122,7 +142,7 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
                                     poseStack.pushPose();
                                     poseStack.translate(x, y, z);
                                     //noinspection unchecked
-                                    ((net.minecraft.client.renderer.blockentity.BlockEntityRenderer) renderer)
+                                    ((BlockEntityRenderer) renderer)
                                             .render(te, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
                                     poseStack.popPose();
                                 }
@@ -131,10 +151,10 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
                         }
                     }
                     if (!shouldTesselate && !hasBE) {
-                        if (shape != net.minecraft.world.level.block.RenderShape.ENTITYBLOCK_ANIMATED
-                                && shape != net.minecraft.world.level.block.RenderShape.INVISIBLE) {
+                        if (shape != RenderShape.ENTITYBLOCK_ANIMATED
+                                && shape != RenderShape.INVISIBLE) {
                             try {
-                                net.minecraft.client.resources.model.BakedModel model = this.blockRenderer.getBlockModel(state);
+                                BakedModel model = this.blockRenderer.getBlockModel(state);
                                 ModelData md = ModelData.EMPTY;
                                 try {
                                     md = model.getModelData(getter, new BlockPos(x, y, z), state, ModelData.EMPTY);
@@ -162,7 +182,7 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
         // RenderType は translucent (ItemBlockRenderTypes.getRenderLayer) が正しいパス。旧実装の固定色/全側面常時/
         // Atlas毎フレーム取得/LEVEL 段階操作は廃止し、LiquidBlockRenderer 相当の height 平均化・フローUV・tint を
         // PoseStack(1/size) の Matrix でスケール描画する。
-        java.util.List<BlockPos> fluidCells = new java.util.ArrayList<>();
+        List<BlockPos> fluidCells = new ArrayList<>();
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
                 for (int z = 0; z < size; z++) {
@@ -177,7 +197,7 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
         if (!fluidCells.isEmpty()) {
             // translucent の重なり対策: 奥から手前へソート (必要最小限)
             try {
-                net.minecraft.world.phys.Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+                Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
                 fluidCells.sort((a, b) -> {
                     double ax = bePos.getX() + (a.getX() + 0.5) * scale;
                     double ay = bePos.getY() + (a.getY() + 0.5) * scale;
@@ -271,20 +291,20 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
     // 注意: 水はフルキューブでなく height 可変 (getHeight + corner平均)、スプライト still/flow は Atlas アニメ、
     // RenderType は ItemBlockRenderTypes.getRenderLayer が正しいパス。
     private void renderFluidScaled(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay,
-                                   MiniatureBlockEntity be, BlockPos cellPos, net.minecraft.world.level.BlockAndTintGetter getter,
+                                   MiniatureBlockEntity be, BlockPos cellPos, BlockAndTintGetter getter,
                                    BlockState blockState, FluidState fluidState) {
         // 旧実装の LEVEL 手動/固定色/Atlas毎フレーム取得/shouldCull=false は廃止。
-        net.minecraft.world.level.material.Fluid fluid = fluidState.getType();
-        net.minecraft.client.renderer.texture.TextureAtlasSprite[] sprites;
+        Fluid fluid = fluidState.getType();
+        TextureAtlasSprite[] sprites;
         try {
-            sprites = net.minecraftforge.client.ForgeHooksClient.getFluidSprites(getter, cellPos, fluidState);
+            sprites = ForgeHooksClient.getFluidSprites(getter, cellPos, fluidState);
         } catch (Exception e) {
             return;
         }
         if (sprites == null || sprites.length < 2 || sprites[0] == null) return;
         int tint;
         try {
-            tint = net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions.of(fluidState).getTintColor(fluidState, getter, cellPos);
+            tint = IClientFluidTypeExtensions.of(fluidState).getTintColor(fluidState, getter, cellPos);
         } catch (Exception e) {
             tint = 0xFFFFFFFF;
         }
@@ -297,15 +317,15 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
         // 非水でも半透明が必要なら alpha を流体側で保持。水は 0.8 相当だが tint の alpha を尊重。
         // 旧実装は固定 180/255 にしていたが、正しくは tint の alpha を使う。
 
-        net.minecraft.client.renderer.RenderType rt;
+        RenderType rt;
         try {
-            rt = net.minecraft.client.renderer.ItemBlockRenderTypes.getRenderLayer(fluidState);
+            rt = ItemBlockRenderTypes.getRenderLayer(fluidState);
         } catch (Exception e) {
-            rt = net.minecraft.client.renderer.RenderType.translucent();
+            rt = RenderType.translucent();
         }
-        net.minecraft.client.renderer.texture.TextureAtlasSprite spriteStill = sprites[0];
-        net.minecraft.client.renderer.texture.TextureAtlasSprite spriteFlow = sprites.length > 1 && sprites[1] != null ? sprites[1] : spriteStill;
-        net.minecraft.client.renderer.texture.TextureAtlasSprite spriteOverlay = sprites.length > 2 ? sprites[2] : null;
+        TextureAtlasSprite spriteStill = sprites[0];
+        TextureAtlasSprite spriteFlow = sprites.length > 1 && sprites[1] != null ? sprites[1] : spriteStill;
+        TextureAtlasSprite spriteOverlay = sprites.length > 2 ? sprites[2] : null;
 
         VertexConsumer vc = bufferSource.getBuffer(rt);
         PoseStack.Pose pose = poseStack.last();
@@ -384,7 +404,7 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
 
         // ライティング: lava は発光、水は外側 packedLight を用いる (Miniature は外部光借用)
         int light = packedLight;
-        if (fluidState.is(net.minecraft.tags.FluidTags.LAVA)) light = 0xF000F0;
+        if (fluidState.is(FluidTags.LAVA)) light = 0xF000F0;
 
         // シェーディング (LiquidBlockRenderer と同様に shade を tint に乗算)
         float shadeDown = getter.getShade(Direction.DOWN, true);
@@ -404,9 +424,9 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
             if (rh10 < 0) rh10 = 0;
             if (rh01 < 0) rh01 = 0;
             if (rh11 < 0) rh11 = 0;
-            net.minecraft.world.phys.Vec3 flow = fluidState.getFlow(getter, cellPos);
+            Vec3 flow = fluidState.getFlow(getter, cellPos);
             float u0, v0, u1, v1, u2, v2, u3, v3;
-            net.minecraft.client.renderer.texture.TextureAtlasSprite topSprite;
+            TextureAtlasSprite topSprite;
             if (flow.x == 0.0D && flow.z == 0.0D) {
                 topSprite = spriteStill;
                 u0 = topSprite.getU(0.0D);
@@ -421,19 +441,19 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
                 float shrink = topSprite.uvShrinkRatio();
                 float cu = (u0 + u1 + u2 + u3) / 4.0F;
                 float cv = (v0 + v1 + v2 + v3) / 4.0F;
-                u0 = net.minecraft.util.Mth.lerp(shrink, u0, cu);
-                u1 = net.minecraft.util.Mth.lerp(shrink, u1, cu);
-                u2 = net.minecraft.util.Mth.lerp(shrink, u2, cu);
-                u3 = net.minecraft.util.Mth.lerp(shrink, u3, cu);
-                v0 = net.minecraft.util.Mth.lerp(shrink, v0, cv);
-                v1 = net.minecraft.util.Mth.lerp(shrink, v1, cv);
-                v2 = net.minecraft.util.Mth.lerp(shrink, v2, cv);
-                v3 = net.minecraft.util.Mth.lerp(shrink, v3, cv);
+                u0 = Mth.lerp(shrink, u0, cu);
+                u1 = Mth.lerp(shrink, u1, cu);
+                u2 = Mth.lerp(shrink, u2, cu);
+                u3 = Mth.lerp(shrink, u3, cu);
+                v0 = Mth.lerp(shrink, v0, cv);
+                v1 = Mth.lerp(shrink, v1, cv);
+                v2 = Mth.lerp(shrink, v2, cv);
+                v3 = Mth.lerp(shrink, v3, cv);
             } else {
                 topSprite = spriteFlow;
-                float angle = (float)net.minecraft.util.Mth.atan2(flow.z, flow.x) - ((float)Math.PI / 2F);
-                float s = net.minecraft.util.Mth.sin(angle) * 0.25F;
-                float c = net.minecraft.util.Mth.cos(angle) * 0.25F;
+                float angle = (float)Mth.atan2(flow.z, flow.x) - ((float)Math.PI / 2F);
+                float s = Mth.sin(angle) * 0.25F;
+                float c = Mth.cos(angle) * 0.25F;
                 u0 = topSprite.getU(8.0 + (-c - s) * 16.0);
                 v0 = topSprite.getV(8.0 + (-c + s) * 16.0);
                 u1 = topSprite.getU(8.0 + (-c + s) * 16.0);
@@ -445,14 +465,14 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
                 float shrink = topSprite.uvShrinkRatio();
                 float cu = (u0 + u1 + u2 + u3) / 4.0F;
                 float cv = (v0 + v1 + v2 + v3) / 4.0F;
-                u0 = net.minecraft.util.Mth.lerp(shrink, u0, cu);
-                u1 = net.minecraft.util.Mth.lerp(shrink, u1, cu);
-                u2 = net.minecraft.util.Mth.lerp(shrink, u2, cu);
-                u3 = net.minecraft.util.Mth.lerp(shrink, u3, cu);
-                v0 = net.minecraft.util.Mth.lerp(shrink, v0, cv);
-                v1 = net.minecraft.util.Mth.lerp(shrink, v1, cv);
-                v2 = net.minecraft.util.Mth.lerp(shrink, v2, cv);
-                v3 = net.minecraft.util.Mth.lerp(shrink, v3, cv);
+                u0 = Mth.lerp(shrink, u0, cu);
+                u1 = Mth.lerp(shrink, u1, cu);
+                u2 = Mth.lerp(shrink, u2, cu);
+                u3 = Mth.lerp(shrink, u3, cu);
+                v0 = Mth.lerp(shrink, v0, cv);
+                v1 = Mth.lerp(shrink, v1, cv);
+                v2 = Mth.lerp(shrink, v2, cv);
+                v3 = Mth.lerp(shrink, v3, cv);
             }
             float rUp = shadeUp * rf;
             float gUp = shadeUp * gf;
@@ -504,7 +524,7 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
             }
             if (!shouldDir) continue;
             if (isFaceOccludedByNeighbor(getter, cellPos, dir, Math.max(ha, hb), neighborSt)) continue;
-            net.minecraft.client.renderer.texture.TextureAtlasSprite sideSprite = spriteFlow;
+            TextureAtlasSprite sideSprite = spriteFlow;
             if (spriteOverlay != null && neighborSt.shouldDisplayFluidOverlay(getter, cellPos.relative(dir), fluidState)) {
                 sideSprite = spriteOverlay;
             }
@@ -534,12 +554,12 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
         }
     }
 
-    private static float getHeight(net.minecraft.world.level.BlockAndTintGetter getter, net.minecraft.world.level.material.Fluid fluid, BlockPos pos) {
+    private static float getHeight(BlockAndTintGetter getter, Fluid fluid, BlockPos pos) {
         BlockState bs = getter.getBlockState(pos);
         return getHeight(getter, fluid, pos, bs, bs.getFluidState());
     }
 
-    private static float getHeight(net.minecraft.world.level.BlockAndTintGetter getter, net.minecraft.world.level.material.Fluid fluid, BlockPos pos, BlockState blockState, FluidState fluidState) {
+    private static float getHeight(BlockAndTintGetter getter, Fluid fluid, BlockPos pos, BlockState blockState, FluidState fluidState) {
         if (fluid.isSame(fluidState.getType())) {
             BlockState upBS = getter.getBlockState(pos.above());
             return fluid.isSame(upBS.getFluidState().getType()) ? 1.0F : fluidState.getOwnHeight();
@@ -548,7 +568,7 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
         }
     }
 
-    private static float calculateAverageHeight(net.minecraft.world.level.BlockAndTintGetter getter, net.minecraft.world.level.material.Fluid fluid, float selfH, float other1, float other2, BlockPos diagPos) {
+    private static float calculateAverageHeight(BlockAndTintGetter getter, Fluid fluid, float selfH, float other1, float other2, BlockPos diagPos) {
         if (!(other2 >= 1.0F) && !(other1 >= 1.0F)) {
             float[] w = new float[2];
             if (other2 > 0.0F || other1 > 0.0F) {
@@ -575,24 +595,24 @@ public class MiniatureBlockRenderer implements BlockEntityRenderer<MiniatureBloc
         }
     }
 
-    private static boolean isFaceOccludedByState(net.minecraft.world.level.BlockGetter getter, Direction dir, float height, BlockPos pos, BlockState state) {
+    private static boolean isFaceOccludedByState(BlockGetter getter, Direction dir, float height, BlockPos pos, BlockState state) {
         if (state.canOcclude()) {
-            net.minecraft.world.phys.shapes.VoxelShape vs = net.minecraft.world.phys.shapes.Shapes.box(0.0D, 0.0D, 0.0D, 1.0D, (double)height, 1.0D);
-            net.minecraft.world.phys.shapes.VoxelShape vs1 = state.getOcclusionShape(getter, pos);
-            return net.minecraft.world.phys.shapes.Shapes.blockOccudes(vs, vs1, dir);
+            VoxelShape vs = Shapes.box(0.0D, 0.0D, 0.0D, 1.0D, (double)height, 1.0D);
+            VoxelShape vs1 = state.getOcclusionShape(getter, pos);
+            return Shapes.blockOccudes(vs, vs1, dir);
         }
         return false;
     }
 
-    private static boolean isFaceOccludedByNeighbor(net.minecraft.world.level.BlockGetter getter, BlockPos pos, Direction dir, float height, BlockState neighborState) {
+    private static boolean isFaceOccludedByNeighbor(BlockGetter getter, BlockPos pos, Direction dir, float height, BlockState neighborState) {
         return isFaceOccludedByState(getter, dir, height, pos.relative(dir), neighborState);
     }
 
-    private static boolean isFaceOccludedBySelf(net.minecraft.world.level.BlockGetter getter, BlockPos pos, BlockState state, Direction dir) {
+    private static boolean isFaceOccludedBySelf(BlockGetter getter, BlockPos pos, BlockState state, Direction dir) {
         return isFaceOccludedByState(getter, dir.getOpposite(), 1.0F, pos, state);
     }
 
-    private static boolean shouldRenderFace(net.minecraft.world.level.BlockAndTintGetter getter, BlockPos pos, FluidState fluidState, BlockState blockState, Direction dir, FluidState neighborFluid) {
+    private static boolean shouldRenderFace(BlockAndTintGetter getter, BlockPos pos, FluidState fluidState, BlockState blockState, Direction dir, FluidState neighborFluid) {
         return !isFaceOccludedBySelf(getter, pos, blockState, dir) && !fluidState.getType().isSame(neighborFluid.getType());
     }
 

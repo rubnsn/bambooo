@@ -1,5 +1,6 @@
 package ruby.bamboo.compat.jei;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import mezz.jei.api.IModPlugin;
@@ -14,11 +15,17 @@ import mezz.jei.api.registration.IRecipeTransferRegistration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidType;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.core.init.BambooBlocks;
 import ruby.bamboo.core.init.BambooItems;
 import ruby.bamboo.core.init.BambooMenus;
+import ruby.bamboo.gui.CampfireMenu;
 import ruby.bamboo.gui.CampfireScreen;
+import ruby.bamboo.gui.MillStoneMenu;
 import ruby.bamboo.gui.MillStoneScreen;
 
 @JeiPlugin
@@ -61,7 +68,7 @@ public class BambooJeiPlugin implements IModPlugin {
     public void registerRecipes(IRecipeRegistration registration) {
         var minecraft = Minecraft.getInstance();
         // JEI専用カットブロックレシピ (レベル未依存で生成可能)
-        List<net.minecraft.world.item.crafting.CraftingRecipe> cutJei = List.of();
+        List<CraftingRecipe> cutJei = List.of();
         try {
             cutJei = CutBlockJeiRecipes.createJeiRecipes();
         } catch (Exception e) {
@@ -94,7 +101,7 @@ public class BambooJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(BambooBlocks.CAMPFIRE.get()), CampfireCategory.TYPE);
         registration.addRecipeCatalyst(new ItemStack(BambooBlocks.MILLSTONE.get()), MillstoneCategory.TYPE);
         // カットブロック専用カテゴリの触媒は作業台のみ（左ペインに透明カットブロックが出ないように）
-        registration.addRecipeCatalyst(new ItemStack(net.minecraft.world.level.block.Blocks.CRAFTING_TABLE), CutBlockCategory.TYPE);
+        registration.addRecipeCatalyst(new ItemStack(Blocks.CRAFTING_TABLE), CutBlockCategory.TYPE);
     }
 
     @Override
@@ -109,9 +116,9 @@ public class BambooJeiPlugin implements IModPlugin {
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         // 囲炉裏: 0-8 素材 (3x3) → プレイヤーINV 11-46 (36スロット)
-        registration.addRecipeTransferHandler(ruby.bamboo.gui.CampfireMenu.class, BambooMenus.CAMPFIRE.get(), CampfireCategory.TYPE, 0, 9, 11, 36);
+        registration.addRecipeTransferHandler(CampfireMenu.class, BambooMenus.CAMPFIRE.get(), CampfireCategory.TYPE, 0, 9, 11, 36);
         // 石臼: 0 入力1 → プレイヤーINV 3-38 (36スロット)
-        registration.addRecipeTransferHandler(ruby.bamboo.gui.MillStoneMenu.class, BambooMenus.MILL_STONE.get(), MillstoneCategory.TYPE, 0, 1, 3, 36);
+        registration.addRecipeTransferHandler(MillStoneMenu.class, BambooMenus.MILL_STONE.get(), MillstoneCategory.TYPE, 0, 1, 3, 36);
     }
 
     @Override
@@ -127,7 +134,7 @@ public class BambooJeiPlugin implements IModPlugin {
         // スキル本13種 + 願いの杖(デバッグ用)はレシピ無しのため JEI から隠す
         try {
             var ingredientManager = runtime.getIngredientManager();
-            java.util.List<ItemStack> toHide = new java.util.ArrayList<>();
+            List<ItemStack> toHide = new ArrayList<>();
             for (var ro : BambooItems.SKILL_BOOKS) {
                 try {
                     toHide.add(new ItemStack(ro.get()));
@@ -149,16 +156,16 @@ public class BambooJeiPlugin implements IModPlugin {
         // 温泉水(source/flowing)はバケツ無し・BlockItem無しのため JEI の流体リストから隠す
         try {
             var ingredientManager = runtime.getIngredientManager();
-            java.util.List<net.minecraftforge.fluids.FluidStack> fluids = new java.util.ArrayList<>();
+            List<FluidStack> fluids = new ArrayList<>();
             try {
-                fluids.add(new net.minecraftforge.fluids.FluidStack(BambooMod.SPRING_WATER_SOURCE.get(),
-                        net.minecraftforge.fluids.FluidType.BUCKET_VOLUME));
+                fluids.add(new FluidStack(BambooMod.SPRING_WATER_SOURCE.get(),
+                        FluidType.BUCKET_VOLUME));
             } catch (Exception e) {
                 BambooMod.LOGGER.warn("Failed to resolve spring_water source for JEI hide", e);
             }
             try {
-                fluids.add(new net.minecraftforge.fluids.FluidStack(BambooMod.SPRING_WATER_FLOWING.get(),
-                        net.minecraftforge.fluids.FluidType.BUCKET_VOLUME));
+                fluids.add(new FluidStack(BambooMod.SPRING_WATER_FLOWING.get(),
+                        FluidType.BUCKET_VOLUME));
             } catch (Exception e) {
                 BambooMod.LOGGER.warn("Failed to resolve spring_water flowing for JEI hide", e);
             }

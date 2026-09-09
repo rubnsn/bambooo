@@ -22,6 +22,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.common.FarmlandWaterManager;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.PlantType;
 import ruby.bamboo.core.init.BambooBlocks;
@@ -61,7 +62,7 @@ public class PaddyFieldBlock extends FarmBlock implements SimpleWaterloggedBlock
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(WATERLOGGED);
     }
@@ -180,7 +181,7 @@ public class PaddyFieldBlock extends FarmBlock implements SimpleWaterloggedBlock
         boolean waterlogged = state.getValue(WATERLOGGED);
         BlockPos upperPos = pos.above();
         BlockState upperState = level.getBlockState(upperPos);
-        net.minecraft.world.level.block.Block upperBlock = upperState.getBlock();
+        Block upperBlock = upperState.getBlock();
         if (!waterlogged) {
             if (upperBlock instanceof IPlantable plantable) {
                 PlantType type = plantable.getPlantType(level, upperPos);
@@ -220,7 +221,7 @@ public class PaddyFieldBlock extends FarmBlock implements SimpleWaterloggedBlock
     }
 
     @Override
-    public void neighborChanged(BlockState state, Level level, BlockPos pos, net.minecraft.world.level.block.Block block, BlockPos fromPos, boolean isMoving) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
         super.neighborChanged(state, level, pos, block, fromPos, isMoving);
         if (!level.isClientSide) {
             BlockState fromState = level.getBlockState(fromPos);
@@ -257,7 +258,7 @@ public class PaddyFieldBlock extends FarmBlock implements SimpleWaterloggedBlock
                 return true;
             }
         }
-        return net.minecraftforge.common.FarmlandWaterManager.hasBlockWaterTicket(level, pos);
+        return FarmlandWaterManager.hasBlockWaterTicket(level, pos);
     }
 
     @Override

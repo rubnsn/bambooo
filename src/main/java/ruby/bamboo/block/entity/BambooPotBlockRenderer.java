@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -84,7 +85,7 @@ public class BambooPotBlockRenderer implements BlockEntityRenderer<BambooPotBloc
     }
 
     /** ブロック経路の描画本体（y=6/16 直上、scale補正）。 */
-    private void renderPlantBlock(net.minecraft.client.renderer.block.BlockRenderDispatcher blockRenderer,
+    private void renderPlantBlock(BlockRenderDispatcher blockRenderer,
             BlockState plantState, PoseStack poseStack, MultiBufferSource buffer,
             int packedLight, int packedOverlay, float wx, float wz, float scale) {
         double y = 6.0D / 16.0D;

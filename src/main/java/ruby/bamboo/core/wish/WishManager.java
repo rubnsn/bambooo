@@ -1,8 +1,12 @@
 package ruby.bamboo.core.wish;
 
 import com.mojang.logging.LogUtils;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.function.Predicate;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -20,14 +24,30 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.Llama;
+import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.EnchantedBookItem;
+import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
@@ -35,9 +55,14 @@ import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import ruby.bamboo.core.config.WishConfig;
+import ruby.bamboo.core.init.BambooItems;
+import ruby.bamboo.entity.companion.DolphinCompanionEntity;
+import ruby.bamboo.entity.companion.LlamaCompanionEntity;
 import ruby.bamboo.util.WishBiomeSearch;
 import ruby.bamboo.util.WishEntitySearch;
 import ruby.bamboo.util.WishItemSearch;
@@ -663,12 +688,12 @@ public final class WishManager {
     private static void giveRandomEnchantedBook(ServerPlayer player, RandomSource random) {
         // ランダムなエンチャントを1つ選び、エンチャント本として付与
         var enchantments = ForgeRegistries.ENCHANTMENTS.getValues().stream().filter(e -> e != null && e.isDiscoverable() && !e.isCurse()).toList();
-        ItemStack book = new ItemStack(net.minecraft.world.item.Items.ENCHANTED_BOOK);
+        ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
         if (!enchantments.isEmpty()) {
             var ench = enchantments.get(random.nextInt(enchantments.size()));
             int lvl = 1 + random.nextInt(ench.getMaxLevel());
             // EnchantedBookItem は EnchantmentInstance を使う
-            net.minecraft.world.item.EnchantedBookItem.addEnchantment(book, new net.minecraft.world.item.enchantment.EnchantmentInstance(ench, lvl));
+            EnchantedBookItem.addEnchantment(book, new EnchantmentInstance(ench, lvl));
         }
         // 頭上にスポーン
         ServerLevel level = player.serverLevel();
@@ -1068,18 +1093,18 @@ public final class WishManager {
 
     private static boolean isToolForGuaranteedOverenchant(Item item) {
         // エンチャント本は除外
-        if (item instanceof net.minecraft.world.item.EnchantedBookItem) return false;
-        return item instanceof net.minecraft.world.item.TieredItem
-                || item instanceof net.minecraft.world.item.BowItem
-                || item instanceof net.minecraft.world.item.CrossbowItem
-                || item instanceof net.minecraft.world.item.TridentItem
-                || item instanceof net.minecraft.world.item.FishingRodItem
-                || item instanceof net.minecraft.world.item.ArmorItem
-                || item instanceof net.minecraft.world.item.ShieldItem;
+        if (item instanceof EnchantedBookItem) return false;
+        return item instanceof TieredItem
+                || item instanceof BowItem
+                || item instanceof CrossbowItem
+                || item instanceof TridentItem
+                || item instanceof FishingRodItem
+                || item instanceof ArmorItem
+                || item instanceof ShieldItem;
     }
 
     private static boolean tryOverEnchantDistinct(ItemStack stack, RandomSource random) {
-        java.util.Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(stack);
+        Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(stack);
         if (map.size() <= 1) return false;
         // 既に最大+1 になっているエンチャントを除外して別を狙う（簡易: 最大レベルを超えているものは除外）
         List<Enchantment> candidates = new ArrayList<>();
@@ -1212,7 +1237,7 @@ public final class WishManager {
      * @return 成功したら true（エンチャントが1つも無ければ false）
      */
     private static boolean tryOverEnchant(ItemStack stack, RandomSource random) {
-        java.util.Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(stack);
+        Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(stack);
         if (map.isEmpty()) return false;
         List<Enchantment> keys = new ArrayList<>(map.keySet());
         Enchantment ench = keys.get(random.nextInt(keys.size()));
@@ -1279,18 +1304,18 @@ public final class WishManager {
                 }
                 horse.setOwnerUUID(player.getUUID());
             }
-            if (entity instanceof ruby.bamboo.entity.companion.DolphinCompanionEntity dolphin) {
+            if (entity instanceof DolphinCompanionEntity dolphin) {
                 dolphin.setOwnerUUID(player.getUUID());
                 dolphin.setPersistenceRequired();
             }
-            if (entity instanceof ruby.bamboo.entity.companion.LlamaCompanionEntity llama) {
+            if (entity instanceof LlamaCompanionEntity llama) {
                 llama.tameForPlayer(player);
-            } else if (entity instanceof net.minecraft.world.entity.animal.horse.Llama vanillaLlama) {
+            } else if (entity instanceof Llama vanillaLlama) {
                 // vanilla llama summoned via old friend entries? make chested
                 try { vanillaLlama.setChest(true); } catch (Exception ignored) {}
             }
             // ensure persistence for all summoned friends
-            if (entity instanceof net.minecraft.world.entity.Mob mob) {
+            if (entity instanceof Mob mob) {
                 mob.setPersistenceRequired();
             }
             level.addFreshEntity(entity);
@@ -1349,7 +1374,7 @@ public final class WishManager {
             if (targetLevel == null) targetLevel = player.server.overworld();
             // try to find safe respawn position (bed/anchor)
             try {
-                var opt = net.minecraft.world.entity.player.Player.findRespawnPositionAndUseSpawnBlock(targetLevel, respawnPos, angle, forced, false);
+                var opt = Player.findRespawnPositionAndUseSpawnBlock(targetLevel, respawnPos, angle, forced, false);
                 if (opt.isPresent()) {
                     Vec3 v = opt.get();
                     targetVec = v;
@@ -1386,7 +1411,7 @@ public final class WishManager {
                     player.setYRot(targetYaw);
                     player.setYHeadRot(targetYaw);
                 } else {
-                    var set = java.util.EnumSet.noneOf(net.minecraft.world.entity.RelativeMovement.class);
+                    var set = EnumSet.noneOf(RelativeMovement.class);
                     player.teleportTo(targetLevel, targetVec.x, targetVec.y, targetVec.z, set, targetYaw, 0.0F);
                 }
                 current.playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
@@ -1417,7 +1442,7 @@ public final class WishManager {
             return false;
         }
         // predicate for Holder<Biome>
-        java.util.function.Predicate<Holder<Biome>> predicate = holder -> holder.is(key);
+        Predicate<Holder<Biome>> predicate = holder -> holder.is(key);
         // also support string matching via WishBiomeSearch normalization fallback
         BlockPos center = player.blockPosition();
         int radius = 6400;
@@ -1460,10 +1485,10 @@ public final class WishManager {
      * heightmap MOTION_BLOCKING_NO_LEAVES で地表を取得し、5x5 螺旋で探索。
      * 水上バイオームでも陸地が見つからなければ水面直上を返す。
      */
-    @org.jetbrains.annotations.Nullable
+    @Nullable
     private static BlockPos findSafeGround(ServerLevel level, BlockPos center) {
         // 陸地優先で探索
-        for (BlockPos pos : BlockPos.spiralAround(center, 2, net.minecraft.core.Direction.EAST, net.minecraft.core.Direction.SOUTH)) {
+        for (BlockPos pos : BlockPos.spiralAround(center, 2, Direction.EAST, Direction.SOUTH)) {
             BlockPos groundTop = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos);
             if (groundTop.getY() <= level.getMinBuildHeight()) continue;
             BlockPos feet = groundTop.above();
@@ -1477,7 +1502,7 @@ public final class WishManager {
             if (feetAir && headAir) return feet;
         }
         // 陸地が見つからなければ水上も許容して再探索
-        for (BlockPos pos : BlockPos.spiralAround(center, 2, net.minecraft.core.Direction.EAST, net.minecraft.core.Direction.SOUTH)) {
+        for (BlockPos pos : BlockPos.spiralAround(center, 2, Direction.EAST, Direction.SOUTH)) {
             BlockPos groundTop = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos);
             if (groundTop.getY() <= level.getMinBuildHeight()) continue;
             BlockPos feet = groundTop.above();
@@ -1506,7 +1531,7 @@ public final class WishManager {
         for (EntityType<?> type : ForgeRegistries.ENTITY_TYPES) {
             if (type == null) continue;
             try {
-                net.minecraft.world.item.SpawnEggItem egg = net.minecraftforge.common.ForgeSpawnEggItem.fromEntityType(type);
+                SpawnEggItem egg = ForgeSpawnEggItem.fromEntityType(type);
                 if (egg != null) {
                     out.add(new EggPick(type, egg));
                 }
@@ -1588,7 +1613,7 @@ public final class WishManager {
     /** スキル本13種からランダム1種。なければ null。 */
     @javax.annotation.Nullable
     private static Item randomSkillBook(RandomSource random) {
-        var books = ruby.bamboo.core.init.BambooItems.SKILL_BOOKS;
+        var books = BambooItems.SKILL_BOOKS;
         if (books.isEmpty()) {
             return null;
         }
@@ -1711,12 +1736,12 @@ public final class WishManager {
         }
         // 水中でなければ設置
         if (level.getBlockState(pos).canBeReplaced() || level.getBlockState(pos).isAir()) {
-            level.setBlock(pos, net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(), 3);
+            level.setBlock(pos, Blocks.WATER.defaultBlockState(), 3);
         } else {
             // 置けない場合は頭上に水バケツ的に水流を
             var above = player.blockPosition().above(2);
             if (level.getBlockState(above).canBeReplaced()) {
-                level.setBlock(above, net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(), 3);
+                level.setBlock(above, Blocks.WATER.defaultBlockState(), 3);
             }
         }
     }
@@ -1725,14 +1750,14 @@ public final class WishManager {
         ServerLevel level = player.serverLevel();
         var pos = player.blockPosition().above(10);
         // 上空10ブロックから壊れかけの金床を落下
-        var state = net.minecraft.world.level.block.Blocks.DAMAGED_ANVIL.defaultBlockState();
+        var state = Blocks.DAMAGED_ANVIL.defaultBlockState();
         // 可能なら CHIPPED/DAMAGED のいずれかランダムで壊れかけ感を出す
         if (player.getRandom().nextBoolean()) {
-            state = net.minecraft.world.level.block.Blocks.CHIPPED_ANVIL.defaultBlockState();
+            state = Blocks.CHIPPED_ANVIL.defaultBlockState();
         }
-        var falling = net.minecraft.world.entity.item.FallingBlockEntity.fall(level, pos, state);
+        var falling = FallingBlockEntity.fall(level, pos, state);
         falling.setHurtsEntities(2.0F, 40);
         level.addFreshEntity(falling);
-        level.playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.ANVIL_PLACE, net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 0.8F);
+        level.playSound(null, player.blockPosition(), SoundEvents.ANVIL_PLACE, SoundSource.BLOCKS, 1.0F, 0.8F);
     }
 }

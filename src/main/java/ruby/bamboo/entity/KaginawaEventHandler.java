@@ -1,5 +1,6 @@
 package ruby.bamboo.entity;
 
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
@@ -90,7 +91,7 @@ public final class KaginawaEventHandler {
         }
         // クライアント側フォールバック: 近傍エンティティ走査 (StateManagerがクライアントで空の場合)
         try {
-            for (ruby.bamboo.entity.KaginawaHookEntity e : player.level().getEntitiesOfClass(ruby.bamboo.entity.KaginawaHookEntity.class, player.getBoundingBox().inflate(64))) {
+            for (KaginawaHookEntity e : player.level().getEntitiesOfClass(KaginawaHookEntity.class, player.getBoundingBox().inflate(64))) {
                 var owner = e.getOwnerPlayer();
                 if (owner != null && owner.getUUID().equals(player.getUUID()) && e.isAnchored()) {
                     return true;
@@ -115,15 +116,15 @@ public final class KaginawaEventHandler {
             if (player.isNoGravity() && !player.getAbilities().flying && !player.isSpectator() && !player.isFallFlying()) {
                 player.setNoGravity(false);
             }
-            if (((net.minecraft.world.entity.LivingEntity) player).shouldDiscardFriction()) {
-                ((net.minecraft.world.entity.LivingEntity) player).setDiscardFriction(false);
+            if (((LivingEntity) player).shouldDiscardFriction()) {
+                ((LivingEntity) player).setDiscardFriction(false);
             }
             return;
         }
         // 重力落下する (setNoGravity(false)、バニラ重力によって振り子スイングしながら降下)。
         // 空気抵抗(*0.91)は discardFriction(true) で遮断して、フックショットの勢いを保つ。
         player.setNoGravity(false);
-        ((net.minecraft.world.entity.LivingEntity) player).setDiscardFriction(true);
+        ((LivingEntity) player).setDiscardFriction(true);
         player.fallDistance = 0;
     }
 }

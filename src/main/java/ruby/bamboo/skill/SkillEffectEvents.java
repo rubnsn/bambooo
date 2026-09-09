@@ -1,6 +1,13 @@
 package ruby.bamboo.skill;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -10,6 +17,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.level.block.Block;
+import net.minecraftforge.common.Tags;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingBreatheEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
@@ -34,7 +43,7 @@ public final class SkillEffectEvents {
     }
 
     /** 二刀流の遅延オフハンド振り (UUID→残tick)。 */
-    private static final java.util.Map<java.util.UUID, Integer> PENDING_SWING = new java.util.HashMap<>();
+    private static final Map<UUID, Integer> PENDING_SWING = new HashMap<>();
 
     // ===== 採掘3種 =====
 
@@ -94,7 +103,7 @@ public final class SkillEffectEvents {
                 PENDING_SWING.put(player.getUUID(), 4);
                 ItemStack off = player.getOffhandItem();
                 if (off.isDamageableItem() && player instanceof ServerPlayer sp) {
-                    off.hurtAndBreak(1, sp, p -> p.broadcastBreakEvent(net.minecraft.world.InteractionHand.OFF_HAND));
+                    off.hurtAndBreak(1, sp, p -> p.broadcastBreakEvent(InteractionHand.OFF_HAND));
                 }
             }
         }
@@ -118,23 +127,23 @@ public final class SkillEffectEvents {
         if (!(player.getMainHandItem().getItem() instanceof PickaxeItem)) {
             return;
         }
-        if (!event.getState().is(net.minecraftforge.common.Tags.Blocks.ORES)) {
+        if (!event.getState().is(Tags.Blocks.ORES)) {
             return;
         }
         int lv = SkillHelper.getLevel(player, SkillType.LUCK);
         if (lv <= 0 || sp.getRandom().nextFloat() >= 0.02F * lv) {
             return;
         }
-        net.minecraft.server.level.ServerLevel level = sp.serverLevel();
+        ServerLevel level = sp.serverLevel();
         var be = level.getBlockEntity(event.getPos());
-        java.util.List<ItemStack> preview = net.minecraft.world.level.block.Block.getDrops(
+        List<ItemStack> preview = Block.getDrops(
                 event.getState(), level, event.getPos(), be, player, player.getMainHandItem());
         if (preview.isEmpty()) {
             return;
         }
         ItemStack bonus = preview.get(sp.getRandom().nextInt(preview.size())).copy();
         if (!bonus.isEmpty()) {
-            net.minecraft.world.level.block.Block.popResource(level, event.getPos(), bonus);
+            Block.popResource(level, event.getPos(), bonus);
         }
     }
 
@@ -169,7 +178,7 @@ public final class SkillEffectEvents {
             return;
         }
         float chance = 0.02F * lv;
-        java.util.ArrayList<ItemEntity> extra = new java.util.ArrayList<>();
+        ArrayList<ItemEntity> extra = new ArrayList<>();
         for (ItemEntity drop : event.getDrops()) {
             if (player.getRandom().nextFloat() < chance && !drop.getItem().isEmpty()) {
                 ItemEntity copy = new ItemEntity(drop.level(), drop.getX(), drop.getY(), drop.getZ(),
@@ -229,7 +238,7 @@ public final class SkillEffectEvents {
         if (left != null) {
             if (left <= 1) {
                 PENDING_SWING.remove(player.getUUID());
-                player.swing(net.minecraft.world.InteractionHand.OFF_HAND, true);
+                player.swing(InteractionHand.OFF_HAND, true);
             } else {
                 PENDING_SWING.put(player.getUUID(), left - 1);
             }

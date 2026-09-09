@@ -25,6 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
@@ -282,7 +283,7 @@ public final class SkillReading {
 
     /** ログアウト時の掃除。 */
     @SubscribeEvent
-    public static void onLoggedOut(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
+    public static void onLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         Player p = event.getEntity();
         ACTIVE.remove(p.getUUID());
         COOLDOWN_UNTIL.remove(p.getUUID());

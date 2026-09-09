@@ -1,6 +1,7 @@
 package ruby.bamboo.handler;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -194,8 +195,8 @@ public final class SpringSoakHandler {
         // 水没など: 流体が spring なら周囲の spring_water ブロックから色を推測
         var f = level.getFluidState(pos);
         if (f.getType() == BambooMod.SPRING_WATER_SOURCE.get() || f.getType() == BambooMod.SPRING_WATER_FLOWING.get()) {
-            for (net.minecraft.core.Direction d : net.minecraft.core.Direction.values()) {
-                if (d == net.minecraft.core.Direction.UP) continue;
+            for (Direction d : Direction.values()) {
+                if (d == Direction.UP) continue;
                 BlockPos n = pos.relative(d);
                 BlockState ns = level.getBlockState(n);
                 if (ns.getBlock() instanceof SpringWaterBlock) {

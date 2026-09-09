@@ -1,5 +1,6 @@
 package ruby.bamboo.item;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -68,6 +69,6 @@ public class ShurikenItem extends Item {
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("attribute.modifier.equals.0",
                 ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(attackDamage),
-                Component.translatable("tooltip.bamboomod.throwing_damage")).withStyle(net.minecraft.ChatFormatting.DARK_GREEN));
+                Component.translatable("tooltip.bamboomod.throwing_damage")).withStyle(ChatFormatting.DARK_GREEN));
     }
 }

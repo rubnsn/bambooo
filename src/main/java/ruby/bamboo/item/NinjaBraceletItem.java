@@ -3,12 +3,14 @@ package ruby.bamboo.item;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -128,7 +130,7 @@ public class NinjaBraceletItem extends Item {
         return lv * 0.1F;
     }
 
-    boolean isUnbreaking(ItemStack stack, net.minecraft.util.RandomSource random) {
+    boolean isUnbreaking(ItemStack stack, RandomSource random) {
         int lv = getEnchantLv(stack, BambooEnchantments.UNBREAKING_BRACELET.get());
         return random.nextFloat() < lv * 0.25F;
     }
@@ -226,12 +228,12 @@ public class NinjaBraceletItem extends Item {
         int delay = getThrowingDelay(stack);
         int eco = (int) (getEconomyRate(stack) * 100);
         if (dmg > 0) {
-            tooltip.add(Component.translatable("attribute.modifier.equals.0", ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(dmg), Component.translatable("tooltip.bamboomod.throwing_damage")).withStyle(net.minecraft.ChatFormatting.DARK_GREEN));
+            tooltip.add(Component.translatable("attribute.modifier.equals.0", ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(dmg), Component.translatable("tooltip.bamboomod.throwing_damage")).withStyle(ChatFormatting.DARK_GREEN));
         }
-        tooltip.add(Component.translatable("attribute.modifier.equals.0", ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(delay), Component.translatable("tooltip.bamboomod.throwing_delay")).withStyle(net.minecraft.ChatFormatting.DARK_GREEN));
+        tooltip.add(Component.translatable("attribute.modifier.equals.0", ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(delay), Component.translatable("tooltip.bamboomod.throwing_delay")).withStyle(ChatFormatting.DARK_GREEN));
         if (eco > 0) {
-            tooltip.add(Component.translatable("attribute.modifier.equals.0", ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(eco), Component.translatable("tooltip.bamboomod.throwing_save")).withStyle(net.minecraft.ChatFormatting.DARK_GREEN));
+            tooltip.add(Component.translatable("attribute.modifier.equals.0", ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(eco), Component.translatable("tooltip.bamboomod.throwing_save")).withStyle(ChatFormatting.DARK_GREEN));
         }
-        tooltip.add(Component.translatable("tooltip.bamboomod.flash_jump").withStyle(net.minecraft.ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.bamboomod.flash_jump").withStyle(ChatFormatting.AQUA));
     }
 }

@@ -1,8 +1,11 @@
 package ruby.bamboo.block;
 
+import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -41,7 +44,7 @@ public class SakuraSaplingBlock extends SaplingBlock {
 
     public static final AbstractTreeGrower SAKURA_TREE = new AbstractTreeGrower() {
         @Override
-        protected net.minecraft.resources.ResourceKey<ConfiguredFeature<?, ?>> getConfiguredFeature(
+        protected ResourceKey<ConfiguredFeature<?, ?>> getConfiguredFeature(
                 RandomSource rand, boolean hasFlowers) {
             return rand.nextInt(10) == 0 ? SakuraTreeFeatures.SAKURA_BIG : SakuraTreeFeatures.SAKURA;
         }
@@ -63,17 +66,17 @@ public class SakuraSaplingBlock extends SaplingBlock {
                     new FancyTrunkPlacer(3, 11, 0),
                     BlockStateProvider.simple(leafState),
                     new FancyFoliagePlacer(
-                            net.minecraft.util.valueproviders.ConstantInt.of(2),
-                            net.minecraft.util.valueproviders.ConstantInt.of(4), 4),
-                    new TwoLayersFeatureSize(0, 0, 0, java.util.OptionalInt.of(4))).ignoreVines().build();
+                            ConstantInt.of(2),
+                            ConstantInt.of(4), 4),
+                    new TwoLayersFeatureSize(0, 0, 0, OptionalInt.of(4))).ignoreVines().build();
         }
         return new TreeConfiguration.TreeConfigurationBuilder(
                 BlockStateProvider.simple(BambooBlocks.SAKURA_LOG.get().defaultBlockState()),
                 new StraightTrunkPlacer(4, 2, 0),
                 BlockStateProvider.simple(leafState),
                 new BlobFoliagePlacer(
-                        net.minecraft.util.valueproviders.ConstantInt.of(2),
-                        net.minecraft.util.valueproviders.ConstantInt.of(0), 3),
+                        ConstantInt.of(2),
+                        ConstantInt.of(0), 3),
                 new TwoLayersFeatureSize(1, 0, 1)).ignoreVines().build();
     }
 

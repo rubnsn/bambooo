@@ -6,9 +6,11 @@ import java.util.List;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.block.Block;
@@ -29,8 +31,8 @@ public final class CutBlockJeiRecipes {
 
     private CutBlockJeiRecipes() {}
 
-    public static List<net.minecraft.world.item.crafting.CraftingRecipe> createJeiRecipes() {
-        List<net.minecraft.world.item.crafting.CraftingRecipe> list = new ArrayList<>();
+    public static List<CraftingRecipe> createJeiRecipes() {
+        List<CraftingRecipe> list = new ArrayList<>();
         // 代表素材: 丸石, 原木, 瓦 (mod)
         Block[] materials = new Block[] {
                 Blocks.COBBLESTONE
@@ -79,7 +81,7 @@ public final class CutBlockJeiRecipes {
         // 刀は消費されないことを JEI 上で示すため、ShapelessRecipe を継承して getRemainingItems を上書き
         return new ShapelessRecipe(id, "", CraftingBookCategory.MISC, result, ings) {
             @Override
-            public NonNullList<ItemStack> getRemainingItems(net.minecraft.world.inventory.CraftingContainer container) {
+            public NonNullList<ItemStack> getRemainingItems(CraftingContainer container) {
                 NonNullList<ItemStack> rem = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
                 for (int i = 0; i < container.getContainerSize(); i++) {
                     ItemStack s = container.getItem(i);
@@ -107,7 +109,7 @@ public final class CutBlockJeiRecipes {
         ings.add(Ingredient.of(katana));
         return new ShapelessRecipe(id, "", CraftingBookCategory.MISC, result, ings) {
             @Override
-            public NonNullList<ItemStack> getRemainingItems(net.minecraft.world.inventory.CraftingContainer container) {
+            public NonNullList<ItemStack> getRemainingItems(CraftingContainer container) {
                 NonNullList<ItemStack> rem = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
                 for (int i = 0; i < container.getContainerSize(); i++) {
                     ItemStack s = container.getItem(i);
@@ -133,7 +135,7 @@ public final class CutBlockJeiRecipes {
         ings.add(Ingredient.of(katana));
         return new ShapelessRecipe(id, "", CraftingBookCategory.MISC, result, ings) {
             @Override
-            public NonNullList<ItemStack> getRemainingItems(net.minecraft.world.inventory.CraftingContainer container) {
+            public NonNullList<ItemStack> getRemainingItems(CraftingContainer container) {
                 NonNullList<ItemStack> rem = NonNullList.withSize(container.getContainerSize(), ItemStack.EMPTY);
                 for (int i = 0; i < container.getContainerSize(); i++) {
                     ItemStack s = container.getItem(i);

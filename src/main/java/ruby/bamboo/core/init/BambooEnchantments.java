@@ -1,9 +1,11 @@
 package ruby.bamboo.core.init;
 
+import java.util.function.Supplier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.enchant.CriticalThrow;
@@ -27,7 +29,7 @@ public final class BambooEnchantments {
 
     // BambooMod.ENCHANTMENTS が SSOT。旧 wt では独自 DeferredRegister を作成していたが
     // bus 未登録でエンチャントが無登録になるため SSOT へエイリアスする。
-    public static final net.minecraftforge.registries.DeferredRegister<Enchantment> ENCHANTMENTS = BambooMod.ENCHANTMENTS;
+    public static final DeferredRegister<Enchantment> ENCHANTMENTS = BambooMod.ENCHANTMENTS;
 
     public static final RegistryObject<Enchantment> QUICK_THROW = register("quick_throw",
             () -> new QuickThrow(Enchantment.Rarity.COMMON, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
@@ -54,7 +56,7 @@ public final class BambooEnchantments {
     public static final RegistryObject<Enchantment> INFINITY_THROW = register("infinity_throw",
             () -> new InfinityThrow(Enchantment.Rarity.RARE, BraceletEnchantmentCategory.BRACELET, EquipmentSlot.MAINHAND));
 
-    private static RegistryObject<Enchantment> register(String name, java.util.function.Supplier<? extends Enchantment> sup) {
+    private static RegistryObject<Enchantment> register(String name, Supplier<? extends Enchantment> sup) {
         return ENCHANTMENTS.register(name, sup);
     }
 
@@ -75,7 +77,7 @@ public final class BambooEnchantments {
     }
 
     private static void addBook(RegistryObject<Enchantment> ro) {
-        ruby.bamboo.core.init.BambooItems.addCreativeStack(
+        BambooItems.addCreativeStack(
                 () -> EnchantedBookItem.createForEnchantment(new EnchantmentInstance(ro.get(), ro.get().getMaxLevel())));
     }
 }

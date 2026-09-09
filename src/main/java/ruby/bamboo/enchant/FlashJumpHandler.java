@@ -1,5 +1,8 @@
 package ruby.bamboo.enchant;
 
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
@@ -45,7 +48,7 @@ public class FlashJumpHandler {
     /**
      * パケット受信時にサーバで実行。WASD入力方向へ閃跳。
      */
-    public static void handlePacket(net.minecraft.server.level.ServerPlayer player, float forward, float strafe) {
+    public static void handlePacket(ServerPlayer player, float forward, float strafe) {
         if (player.isSpectator() || player.isCreative() && player.getAbilities().flying) return;
         if (player.onGround() || player.isInWater() || player.isInLava() || player.isFallFlying()) return;
         if (player.getPersistentData().getBoolean(TAG_FLASHED)) return;
@@ -77,7 +80,7 @@ public class FlashJumpHandler {
         player.hasImpulse = true;
         player.getPersistentData().putBoolean(TAG_FLASHED, true);
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, net.minecraft.sounds.SoundSource.PLAYERS, 0.6F, 1.4F);
+                SoundEvents.ENDER_DRAGON_FLAP, SoundSource.PLAYERS, 0.6F, 1.4F);
     }
 
     public static boolean hasFlashJump(Player player) {

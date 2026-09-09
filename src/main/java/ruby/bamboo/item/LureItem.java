@@ -1,5 +1,6 @@
 package ruby.bamboo.item;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -26,11 +27,11 @@ public class LureItem extends BambooItem {
     @Override
     public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.bamboomod.bait_lure")
-                .withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
+                .withStyle(ChatFormatting.DARK_GRAY));
         if (stack.isDamageableItem()) {
             int remaining = stack.getMaxDamage() - stack.getDamageValue();
             tooltip.add(Component.translatable("tooltip.bamboomod.lure_durability", remaining, stack.getMaxDamage())
-                    .withStyle(net.minecraft.ChatFormatting.GRAY));
+                    .withStyle(ChatFormatting.GRAY));
         }
     }
 

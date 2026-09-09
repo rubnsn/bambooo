@@ -18,6 +18,7 @@ import net.minecraftforge.fml.common.Mod;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.core.config.ColoredLightConfig;
 import ruby.bamboo.core.init.BambooCapabilities;
+import ruby.bamboo.util.ColoredLightUtil;
 
 /**
  * 昼光抑制の時刻追従: 時刻バケット変化でtintキャッシュを破棄し、
@@ -90,7 +91,7 @@ public final class ColoredLightDaylightSync {
         // 量子化昼光レベル変化時のみ再焼き込み。日中・夜間のフラット域は無コスト
         int daylight;
         try {
-            daylight = ruby.bamboo.util.ColoredLightUtil.daylightLevel(level, levels);
+            daylight = ColoredLightUtil.daylightLevel(level, levels);
         } catch (Exception e) {
             return;
         }
@@ -138,7 +139,7 @@ public final class ColoredLightDaylightSync {
                 // マップは非永続＋遅延スキャンのため、焼き込みを経ていないと空。
                 // dirtyを積む前にここでスキャンして光源を再収集する
                 try {
-                    ruby.bamboo.util.ColoredLightUtil.ensureChunkScanned(chunk, level);
+                    ColoredLightUtil.ensureChunkScanned(chunk, level);
                 } catch (Exception ignored) {
                 }
                 try {

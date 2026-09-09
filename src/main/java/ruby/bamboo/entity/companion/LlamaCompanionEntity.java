@@ -1,11 +1,14 @@
 package ruby.bamboo.entity.companion;
 
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.animal.horse.Llama;
 import net.minecraft.world.entity.player.Player;
@@ -81,7 +84,7 @@ public class LlamaCompanionEntity extends Llama {
     }
 
     @Nullable
-    public net.minecraft.world.entity.LivingEntity getControllingPassenger() {
+    public LivingEntity getControllingPassenger() {
         var e = this.getFirstPassenger();
         if (e instanceof Player p) return p;
         return null;
@@ -123,7 +126,7 @@ public class LlamaCompanionEntity extends Llama {
                 this.heal(4.0F);
                 this.playSound(SoundEvents.GENERIC_EAT, 1.0F, 1.0F);
                 if (!this.level().isClientSide) {
-                    ((net.minecraft.server.level.ServerLevel) this.level()).sendParticles(net.minecraft.core.particles.ParticleTypes.HEART,
+                    ((ServerLevel) this.level()).sendParticles(ParticleTypes.HEART,
                             this.getX(), this.getY() + 1.2, this.getZ(), 3, 0.3, 0.3, 0.3, 0.1);
                 }
             }

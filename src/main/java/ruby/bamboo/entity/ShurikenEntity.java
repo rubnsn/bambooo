@@ -15,10 +15,12 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
@@ -128,7 +130,7 @@ public class ShurikenEntity extends AbstractArrow {
                 if (shooter instanceof LivingEntity livingShooter) {
                     livingShooter.setLastHurtMob(target);
                 }
-                if (this.isOnFire() && !(target instanceof net.minecraft.world.entity.monster.EnderMan)) {
+                if (this.isOnFire() && !(target instanceof EnderMan)) {
                     target.setSecondsOnFire(5);
                 }
                 if (target instanceof LivingEntity livingTarget && !this.customPotionEffects.isEmpty()) {
@@ -238,7 +240,7 @@ public class ShurikenEntity extends AbstractArrow {
                             entity.setBaseDamage(this.getBaseDamage() * 0.7D);
                             if (this.isOnFire()) entity.setSecondsOnFire(100);
                             this.level().addFreshEntity(entity);
-                            this.level().playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(), SoundEvents.SNOWBALL_THROW, net.minecraft.sounds.SoundSource.PLAYERS, 0.5F, 0.4F / (this.random.nextFloat() * 0.4F + 0.8F));
+                            this.level().playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(), SoundEvents.SNOWBALL_THROW, SoundSource.PLAYERS, 0.5F, 0.4F / (this.random.nextFloat() * 0.4F + 0.8F));
                             this.multiThrow = -1;
                         } else {
                             this.multiThrow = 0;

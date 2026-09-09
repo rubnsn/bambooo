@@ -3,6 +3,7 @@ package ruby.bamboo.skill;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.Entity;
@@ -11,6 +12,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.SwordItem;
@@ -252,13 +254,13 @@ public final class SkillXpEvents {
     }
 
     /** 料理の食材種類数。囲炉裏・作業台レシピの最大値、なければ1 (素材自体)。 */
-    private static int countIngredientKinds(net.minecraft.server.level.ServerLevel level, ItemStack food) {
+    private static int countIngredientKinds(ServerLevel level, ItemStack food) {
         // 潜在回復1: 特殊回復食 (レシピの異種数に代えて固定値)
-        if (food.is(net.minecraft.world.item.Items.GOLDEN_APPLE)
-                || food.is(net.minecraft.world.item.Items.ENCHANTED_GOLDEN_APPLE)) {
+        if (food.is(Items.GOLDEN_APPLE)
+                || food.is(Items.ENCHANTED_GOLDEN_APPLE)) {
             return 8;
         }
-        if (food.is(net.minecraft.world.item.Items.GOLDEN_CARROT)) {
+        if (food.is(Items.GOLDEN_CARROT)) {
             return 5;
         }
         int best = CookingManager.countDistinctIngredients(food);

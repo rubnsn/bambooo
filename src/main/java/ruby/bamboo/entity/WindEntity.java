@@ -1,6 +1,7 @@
 package ruby.bamboo.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -16,7 +17,10 @@ import net.minecraft.world.phys.Vec3;
 import ruby.bamboo.block.GinkgoLeaveBlock;
 import ruby.bamboo.block.HinokiLeaveBlock;
 import ruby.bamboo.block.MapleLeaveBlock;
+import ruby.bamboo.block.PetalEmitter;
 import ruby.bamboo.block.SakuraLeaveBlock;
+import ruby.bamboo.client.particle.PetalParticle;
+import ruby.bamboo.core.init.BambooParticles;
 
 /**
  * 風エンティティ (旧 Wind の 1.20.1 移植)。
@@ -75,7 +79,7 @@ public class WindEntity extends Entity {
      * @param velocity   初速 1.5F
      * @param inaccuracy 分散 1.0F
      */
-    public void shootFromRotation(net.minecraft.world.entity.Entity shooter, float pitch, float yaw, float roll, float velocity, float inaccuracy) {
+    public void shootFromRotation(Entity shooter, float pitch, float yaw, float roll, float velocity, float inaccuracy) {
         float f = -Mth.sin(yaw * ((float) Math.PI / 180F)) * Mth.cos(pitch * ((float) Math.PI / 180F));
         float f1 = -Mth.sin((pitch + roll) * ((float) Math.PI / 180F));
         float f2 = Mth.cos(yaw * ((float) Math.PI / 180F)) * Mth.cos(pitch * ((float) Math.PI / 180F));
@@ -156,15 +160,15 @@ public class WindEntity extends Entity {
         }
         // ペタル種別と色を解決 (PetalEmitter の葉はその色・種別、else 旧Green)
         int color = 0xFFFFFF;
-        net.minecraft.core.particles.SimpleParticleType petalType = ruby.bamboo.core.init.BambooParticles.PETAL_1.get();
-        if (state.getBlock() instanceof ruby.bamboo.block.PetalEmitter emitter) {
+        SimpleParticleType petalType = BambooParticles.PETAL_1.get();
+        if (state.getBlock() instanceof PetalEmitter emitter) {
             color = emitter.petalColor(state);
             petalType = emitter.petalType(state);
         } else {
             // バニラ葉/vine/DoublePlant は旧Green (0x3F9E55, petal_1) と同じ緑で統一
             // 旧 Wind は 0xFFFFFF だったが、指示により旧Greenに合わせる
             color = HinokiLeaveBlock.PETAL_COLOR; // 0x3F9E55
-            petalType = ruby.bamboo.core.init.BambooParticles.PETAL_1.get();
+            petalType = BambooParticles.PETAL_1.get();
         }
 
         double x = pos.getX() + 0.5;
@@ -176,10 +180,10 @@ public class WindEntity extends Entity {
 
         // 旧 SakuraPetal.setMotion の風継承をPetalParticle側ThreadLocalで再現、1粒で負荷軽減
         Vec3 wind = this.getDeltaMovement();
-        ruby.bamboo.client.particle.PetalParticle.pushWind(wind);
+        PetalParticle.pushWind(wind);
         level.addParticle(petalType, x, y, z, r, g, b);
         // 万一 Providerでremoveされなかった場合の保険
-        ruby.bamboo.client.particle.PetalParticle.clearWind();
+        PetalParticle.clearWind();
     }
 
     @Override

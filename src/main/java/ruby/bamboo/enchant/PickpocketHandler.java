@@ -2,6 +2,7 @@ package ruby.bamboo.enchant;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -49,7 +50,7 @@ public class PickpocketHandler {
         ItemStack extra = KatanaDropManager.getRandomDropItem(serverLevel, target, serverLevel.getRandom(), 0);
         if (extra != null && !extra.isEmpty()) {
             // ドロップ追加: event.getDrops() に EntityItem を追加
-            var entityItem = new net.minecraft.world.entity.item.ItemEntity(serverLevel, target.getX(), target.getY(), target.getZ(), extra.copy());
+            var entityItem = new ItemEntity(serverLevel, target.getX(), target.getY(), target.getZ(), extra.copy());
             entityItem.setDefaultPickUpDelay();
             event.getDrops().add(entityItem);
         }

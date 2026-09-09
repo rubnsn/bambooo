@@ -6,6 +6,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -65,7 +66,7 @@ public final class BambooPotHandler {
         float rawLX = localHit[0];
         float offsetLX = Mth.clamp(Math.round(rawLX * 8f) / 8f, -0.375f, 0.375f);
         float offsetLZ = 0f; // 中央線
-        boolean isCactus = handStack.is(net.minecraft.world.item.Items.CACTUS);
+        boolean isCactus = handStack.is(Items.CACTUS);
         float scale = (isCactus ? BambooPotBlock.GRID_SCALE_CACTUS : BambooPotBlock.GRID_SCALE) + (level.random.nextFloat() - 0.5f) * 0.02f;
         float offsetX = offsetLX;
         float offsetZ = offsetLZ;

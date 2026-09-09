@@ -1,8 +1,14 @@
 package ruby.bamboo.core.init;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
@@ -14,7 +20,9 @@ import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.AndonBlock;
 import ruby.bamboo.block.BambooBlock;
 import ruby.bamboo.block.BambooPaneBlock;
+import ruby.bamboo.block.BambooPotBlock;
 import ruby.bamboo.block.BambooShootBlock;
+import ruby.bamboo.block.FlowerBedBlock;
 import ruby.bamboo.block.IndLightBlock;
 import ruby.bamboo.block.KitunebiBlock;
 import ruby.bamboo.block.CampfireBlock;
@@ -25,6 +33,7 @@ import ruby.bamboo.block.HinokiLeaveBlock;
 import ruby.bamboo.block.HinokiLogBlock;
 import ruby.bamboo.block.HinokiSaplingBlock;
 import ruby.bamboo.block.JPChestBlock;
+import ruby.bamboo.block.LeafCarpetBlock;
 import ruby.bamboo.block.MapleLeaveBlock;
 import ruby.bamboo.block.MapleLogBlock;
 import ruby.bamboo.block.MapleSaplingBlock;
@@ -46,6 +55,11 @@ import ruby.bamboo.block.SlideDoorBlock;
 import ruby.bamboo.block.SpringBlock;
 import ruby.bamboo.block.SpringWaterBlock;
 import ruby.bamboo.block.TatamiBlock;
+import ruby.bamboo.block.WallShelfBlock;
+import ruby.bamboo.block.entity.MiniatureBlockEntity;
+import ruby.bamboo.item.CampfireItem;
+import ruby.bamboo.item.CutBlockItem;
+import ruby.bamboo.item.MiniatureItem;
 
 /**
  * ブロック登録。旧 BambooData.@BambooBlock アノテーション + DataLoader の置き換え。
@@ -162,7 +176,7 @@ public final class BambooBlocks {
 
     // ===== 第3弾: 間接照明16色 =====
 
-    public static final java.util.List<RegistryObject<Block>> INDLIGHTS = registerIndLights();
+    public static final List<RegistryObject<Block>> INDLIGHTS = registerIndLights();
 
     // ===== 第4弾: シンプル植物 (竹・たけのこ・稲・さくら系) =====
 
@@ -326,15 +340,15 @@ public final class BambooBlocks {
     public static final RegistryObject<SlideDoorBlock> GLASS_DOOR = registerSlideDoor("glassdoor", true);
     public static final RegistryObject<SlideDoorBlock> GLASS_DOOR_GRID = registerSlideDoor("glassdoor_grid", true);
 
-    public static final java.util.List<RegistryObject<SlideDoorBlock>> SLIDE_DOORS = java.util.List.of(
+    public static final List<RegistryObject<SlideDoorBlock>> SLIDE_DOORS = List.of(
             SHOJI, SHOJI_YOKOGUMI, SHOJI_TATEGUMI, SHOJI_YUKIMI, HUSUMA, GLASS_DOOR, GLASS_DOOR_GRID);
 
     // ===== 布団 (旧 huton) =====
     public static final RegistryObject<HutonBlock> HUTON = register("huton", HutonBlock::new);
 
     // ===== 壁棚 (sakura-master WallShelf) =====
-    public static final RegistryObject<ruby.bamboo.block.WallShelfBlock> WALL_SHELF = register("wall_shelf",
-            ruby.bamboo.block.WallShelfBlock::new);
+    public static final RegistryObject<WallShelfBlock> WALL_SHELF = register("wall_shelf",
+            WallShelfBlock::new);
 
     // ===== ミニチュア (箱庭) — 単一アイテム + NBT Size(4,8,12,16) =====
     public static final RegistryObject<MiniatureBlock> MINIATURE = registerMiniature();
@@ -343,19 +357,19 @@ public final class BambooBlocks {
     public static final RegistryObject<CutBlock> CUT_BLOCK = registerCutBlock();
 
     // ===== 竹鉢 (sakura BambooPot 移植) =====
-    public static final RegistryObject<ruby.bamboo.block.BambooPotBlock> BAMBOO_POT = register("bamboo_pot",
-            ruby.bamboo.block.BambooPotBlock::new);
+    public static final RegistryObject<BambooPotBlock> BAMBOO_POT = register("bamboo_pot",
+            BambooPotBlock::new);
 
     // ===== 花壇 (プランターの1ブロック拡大版。上面pot_top・側面/底面dirt、色・向きなし) =====
     // 入手はスコップ変換のみのためクリエタブには出さない (BlockItem自体は中クリック/asItem用に登録維持)
-    public static final RegistryObject<ruby.bamboo.block.FlowerBedBlock> FLOWER_BED = registerNoCreative("flower_bed",
-            ruby.bamboo.block.FlowerBedBlock::new);
+    public static final RegistryObject<FlowerBedBlock> FLOWER_BED = registerNoCreative("flower_bed",
+            FlowerBedBlock::new);
 
     // ===== 源泉・温泉水 =====
     public static final RegistryObject<SpringBlock> SPRING_BLOCK = register("spring_block", SpringBlock::new);
     public static final RegistryObject<SpringWaterBlock> SPRING_WATER = registerNoItem("spring_water",
             () -> new SpringWaterBlock(() -> BambooMod.SPRING_WATER_SOURCE.get(),
-                    BlockBehaviour.Properties.copy(net.minecraft.world.level.block.Blocks.WATER).noLootTable().noOcclusion()));
+                    BlockBehaviour.Properties.copy(Blocks.WATER).noLootTable().noOcclusion()));
 
     // ===== 風車・水車 (旧 EntityWindmill/EntityWaterwheel の Block+BE 移植。無機能装飾) =====
 
@@ -471,17 +485,17 @@ public final class BambooBlocks {
                             .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.STONE).strength(1.5F, 6.0F).requiresCorrectToolForDrops()));
 
     // ===== 葉カーペット 4種 (桜/ヒノキ/モミジ/イチョウ) — バニラカーペット同様 厚さ1/16 =====
-    public static final RegistryObject<ruby.bamboo.block.LeafCarpetBlock> SAKURA_CARPET = register("sakura_carpet",
-            () -> new ruby.bamboo.block.LeafCarpetBlock(MapColor.COLOR_PINK));
-    public static final RegistryObject<ruby.bamboo.block.LeafCarpetBlock> HINOKI_CARPET = register("hinoki_carpet",
-            () -> new ruby.bamboo.block.LeafCarpetBlock(MapColor.PLANT));
-    public static final RegistryObject<ruby.bamboo.block.LeafCarpetBlock> MAPLE_CARPET = register("maple_carpet",
-            () -> new ruby.bamboo.block.LeafCarpetBlock(MapColor.COLOR_RED));
-    public static final RegistryObject<ruby.bamboo.block.LeafCarpetBlock> GINKGO_CARPET = register("ginkgo_carpet",
-            () -> new ruby.bamboo.block.LeafCarpetBlock(MapColor.COLOR_YELLOW));
+    public static final RegistryObject<LeafCarpetBlock> SAKURA_CARPET = register("sakura_carpet",
+            () -> new LeafCarpetBlock(MapColor.COLOR_PINK));
+    public static final RegistryObject<LeafCarpetBlock> HINOKI_CARPET = register("hinoki_carpet",
+            () -> new LeafCarpetBlock(MapColor.PLANT));
+    public static final RegistryObject<LeafCarpetBlock> MAPLE_CARPET = register("maple_carpet",
+            () -> new LeafCarpetBlock(MapColor.COLOR_RED));
+    public static final RegistryObject<LeafCarpetBlock> GINKGO_CARPET = register("ginkgo_carpet",
+            () -> new LeafCarpetBlock(MapColor.COLOR_YELLOW));
 
-    private static java.util.List<RegistryObject<Block>> registerIndLights() {
-        java.util.List<RegistryObject<Block>> result = new java.util.ArrayList<>();
+    private static List<RegistryObject<Block>> registerIndLights() {
+        List<RegistryObject<Block>> result = new ArrayList<>();
         for (IndLightBlock.DyeColor color : IndLightBlock.DyeColor.values()) {
             String name = "indlight_" + color.name;
             RegistryObject<IndLightBlock> block = BambooMod.BLOCKS.register(name,
@@ -513,7 +527,7 @@ public final class BambooBlocks {
         RegistryObject<BambooPaneBlock> block = BambooMod.BLOCKS.register(variant.regName,
                 () -> new BambooPaneBlock(variant));
         BambooMod.ITEMS.register(variant.regName,
-                () -> new net.minecraft.world.item.BlockItem(block.get(), new Item.Properties()));
+                () -> new BlockItem(block.get(), new Item.Properties()));
         BambooItems.addCreative(block);
         return block;
     }
@@ -522,7 +536,7 @@ public final class BambooBlocks {
      * 汎用登録ヘルパー: ブロック + 対応するBlockItem を同名で登録。
      */
     private static <B extends Block> RegistryObject<B> register(String name,
-            java.util.function.Supplier<? extends B> factory) {
+            Supplier<? extends B> factory) {
         RegistryObject<B> block = BambooMod.BLOCKS.register(name, factory);
         BambooMod.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
         BambooItems.addCreative(block);
@@ -533,7 +547,7 @@ public final class BambooBlocks {
      * BlockItem は登録するがクリエタブには出さない (入手経路が変換・生成のみのブロック用)。
      */
     private static <B extends Block> RegistryObject<B> registerNoCreative(String name,
-            java.util.function.Supplier<? extends B> factory) {
+            Supplier<? extends B> factory) {
         RegistryObject<B> block = BambooMod.BLOCKS.register(name, factory);
         BambooMod.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
         return block;
@@ -543,7 +557,7 @@ public final class BambooBlocks {
     private static RegistryObject<CampfireBlock> registerCampfire() {
         RegistryObject<CampfireBlock> block = BambooMod.BLOCKS.register("campfire", CampfireBlock::new);
         BambooMod.ITEMS.register("campfire",
-                () -> new ruby.bamboo.item.CampfireItem(block.get(), new Item.Properties()));
+                () -> new CampfireItem(block.get(), new Item.Properties()));
         BambooItems.addCreative(block);
         return block;
     }
@@ -552,7 +566,7 @@ public final class BambooBlocks {
         RegistryObject<SlideDoorBlock> block = BambooMod.BLOCKS.register(name,
                 () -> new SlideDoorBlock(SlideDoorBlock.createProp(translucent), translucent));
         BambooMod.ITEMS.register(name,
-                () -> new net.minecraft.world.item.DoubleHighBlockItem(block.get(), new Item.Properties()));
+                () -> new DoubleHighBlockItem(block.get(), new Item.Properties()));
         BambooItems.addCreative(block);
         return block;
     }
@@ -560,13 +574,13 @@ public final class BambooBlocks {
     /** ミニチュア登録: 単一BlockItem + NBT違い4種をクリエタブへ */
     private static RegistryObject<MiniatureBlock> registerMiniature() {
         RegistryObject<MiniatureBlock> block = BambooMod.BLOCKS.register("miniature", MiniatureBlock::new);
-        BambooMod.ITEMS.register("miniature", () -> new ruby.bamboo.item.MiniatureItem(block.get(), new Item.Properties()));
+        BambooMod.ITEMS.register("miniature", () -> new MiniatureItem(block.get(), new Item.Properties()));
         // クリエタブには Size 4,8,12,16 の4種を登録 (登録順=表示順)
         for (int s : new int[]{4, 8, 12, 16}) {
             final int size = s;
             BambooItems.addCreativeStack(() -> {
-                net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(block.get());
-                stack.getOrCreateTag().putInt(ruby.bamboo.block.entity.MiniatureBlockEntity.TAG_SIZE, size);
+                ItemStack stack = new ItemStack(block.get());
+                stack.getOrCreateTag().putInt(MiniatureBlockEntity.TAG_SIZE, size);
                 // 空の場合は BlockEntityTag は不要
                 return stack;
             });
@@ -577,7 +591,7 @@ public final class BambooBlocks {
     /** カットブロック登録: 単一BlockItem(クリエタブ登録なし、ダミー透明) */
     private static RegistryObject<CutBlock> registerCutBlock() {
         RegistryObject<CutBlock> block = BambooMod.BLOCKS.register("cut_block", CutBlock::new);
-        BambooMod.ITEMS.register("cut_block", () -> new ruby.bamboo.item.CutBlockItem(block.get(), new net.minecraft.world.item.Item.Properties()));
+        BambooMod.ITEMS.register("cut_block", () -> new CutBlockItem(block.get(), new Item.Properties()));
         // クリエタブ登録はしない（通常入手不能、レシピ生成のみ）
         return block;
     }
@@ -586,7 +600,7 @@ public final class BambooBlocks {
      * BlockItem 無しでブロックのみ登録 (作物等、種アイテムが別名で存在する場合用)。
      */
     private static <B extends Block> RegistryObject<B> registerNoItem(String name,
-            java.util.function.Supplier<? extends B> factory) {
+            Supplier<? extends B> factory) {
         return BambooMod.BLOCKS.register(name, factory);
     }
 }

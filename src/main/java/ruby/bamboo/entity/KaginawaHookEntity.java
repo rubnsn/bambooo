@@ -7,6 +7,7 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -20,6 +21,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import ruby.bamboo.core.init.BambooEntities;
+import ruby.bamboo.item.CommonKatana;
 import ruby.bamboo.network.KaginawaStateManager;
 
 import java.util.UUID;
@@ -110,7 +112,7 @@ public class KaginawaHookEntity extends Entity {
                 return p;
             }
         }
-        if (ownerUUID != null && level() instanceof net.minecraft.server.level.ServerLevel sl) {
+        if (ownerUUID != null && level() instanceof ServerLevel sl) {
             Entity e = sl.getEntity(ownerUUID);
             if (e instanceof Player p) {
                 owner = p;
@@ -353,7 +355,7 @@ public class KaginawaHookEntity extends Entity {
         // メイン/オフハンドのどちらかに刀があれば保持とみなす
         var main = player.getMainHandItem();
         var off = player.getOffhandItem();
-        return main.getItem() instanceof ruby.bamboo.item.CommonKatana || off.getItem() instanceof ruby.bamboo.item.CommonKatana;
+        return main.getItem() instanceof CommonKatana || off.getItem() instanceof CommonKatana;
     }
 
     private void tickAnchored(Player player) {
@@ -386,7 +388,7 @@ public class KaginawaHookEntity extends Entity {
 
         // 入力処理: reel (Space=-1巻取り/近づく, Shift=1伸長/遠ざかる)
         // 地面に接している時はShift(伸長)を抑止。onGround/getOnPosはnoGravityで信用できないため POS Y-1(足元-0.1)の実ブロックで判定
-        net.minecraft.core.BlockPos belowPos = net.minecraft.core.BlockPos.containing(player.getX(), player.getY() - 0.2, player.getZ());
+        BlockPos belowPos = BlockPos.containing(player.getX(), player.getY() - 0.2, player.getZ());
         boolean onSolidGround = !player.level().getBlockState(belowPos).isAir();
         if (pendingReelDir < 0) {
             float newLen = Mth.clamp(ropeLength + pendingReelDir * INITIAL_REEL_IN, MIN_LENGTH, MAX_LENGTH);

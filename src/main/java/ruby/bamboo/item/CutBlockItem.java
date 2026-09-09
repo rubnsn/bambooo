@@ -1,15 +1,32 @@
 package ruby.bamboo.item;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import ruby.bamboo.block.CutBlock;
 import ruby.bamboo.block.entity.CutBlockEntity;
 import ruby.bamboo.client.renderer.CutBlockItemRenderer;
+import ruby.bamboo.core.init.BambooBlocks;
 
 /**
  * カットブロックの BlockItem。
@@ -23,24 +40,24 @@ public class CutBlockItem extends BlockItem {
     }
 
     @Override
-    public net.minecraft.world.InteractionResult useOn(net.minecraft.world.item.context.UseOnContext context) {
-        net.minecraft.world.level.Level level = context.getLevel();
-        net.minecraft.core.BlockPos clickedPos = context.getClickedPos();
-        net.minecraft.core.Direction clickedFace = context.getClickedFace();
-        net.minecraft.world.phys.Vec3 hitVec = context.getClickLocation();
-        net.minecraft.world.entity.player.Player player = context.getPlayer();
-        net.minecraft.world.item.ItemStack stack = context.getItemInHand();
+    public InteractionResult useOn(UseOnContext context) {
+        Level level = context.getLevel();
+        BlockPos clickedPos = context.getClickedPos();
+        Direction clickedFace = context.getClickedFace();
+        Vec3 hitVec = context.getClickLocation();
+        Player player = context.getPlayer();
+        ItemStack stack = context.getItemInHand();
         if (stack.isEmpty()) return super.useOn(context);
-        java.util.List<ruby.bamboo.block.entity.CutBlockEntity.CutEntry> multiEntries = ruby.bamboo.block.entity.CutBlockEntity.readEntriesFromStack(stack);
+        List<CutBlockEntity.CutEntry> multiEntries = CutBlockEntity.readEntriesFromStack(stack);
         boolean isMulti = !multiEntries.isEmpty();
         CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(stack);
         if (data.state().isAir() && !isMulti) {
-            return net.minecraft.world.InteractionResult.FAIL;
+            return InteractionResult.FAIL;
         }
         CutBlockEntity.Tier tier = CutBlockEntity.Tier.OTHER;
         if (!isMulti) tier = CutBlockEntity.getTierFromLevels(data.xLevel(), data.yLevel(), data.zLevel());
         // 旧27種はOTHERとして扱い置換不可（QAデバッグで互換不要）
-        if (!isMulti && tier == CutBlockEntity.Tier.OTHER) return net.minecraft.world.InteractionResult.FAIL;
+        if (!isMulti && tier == CutBlockEntity.Tier.OTHER) return InteractionResult.FAIL;
 
         // 1) クリックしたブロックが既存cut_blockなら、RAY HIT面で前面/背面を判定し前面なら同一座標内に充填 (全Tier)
         if (!isMulti && level.getBlockEntity(clickedPos) instanceof CutBlockEntity existingBe && !existingBe.isEmpty()) {
@@ -50,17 +67,17 @@ public class CutBlockItem extends BlockItem {
                     existingBe.addEntry(data.state(), insideCand);
                     if (player == null || !player.getAbilities().instabuild) stack.shrink(1);
                     level.sendBlockUpdated(clickedPos, existingBe.getBlockState(), existingBe.getBlockState(), 3);
-                    level.playSound(null, clickedPos, existingBe.getBlockState().getSoundType().getPlaceSound(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+                    level.playSound(null, clickedPos, existingBe.getBlockState().getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0f, 1.0f);
                 }
-                return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
+                return InteractionResult.sidedSuccess(level.isClientSide);
             }
             // 前面でない(背面ヒット)ならフォールスルーして隣接へ
         }
 
         // 2) 新規配置: 隣接位置
-        net.minecraft.core.BlockPos placePos = clickedPos.relative(clickedFace);
-        net.minecraft.world.level.block.state.BlockState placeState = level.getBlockState(placePos);
-        boolean canReplace = placeState.canBeReplaced(new net.minecraft.world.item.context.BlockPlaceContext(context));
+        BlockPos placePos = clickedPos.relative(clickedFace);
+        BlockState placeState = level.getBlockState(placePos);
+        boolean canReplace = placeState.canBeReplaced(new BlockPlaceContext(context));
         // 隣接が既存cut_blockなら、RAYで前面(隣接内空隙)かを判定し該当なら充填 (全Tier)。HALF/EIGHT/QUARTER共通
         if (!isMulti && level.getBlockEntity(placePos) instanceof CutBlockEntity placeBe && !placeBe.isEmpty()) {
             int[] adjCand = CutBlockEntity.getAdjacentCandidate(placeBe, placePos, hitVec, clickedFace, tier);
@@ -69,12 +86,12 @@ public class CutBlockItem extends BlockItem {
                     placeBe.addEntry(data.state(), adjCand);
                     if (player == null || !player.getAbilities().instabuild) stack.shrink(1);
                     level.sendBlockUpdated(placePos, placeBe.getBlockState(), placeBe.getBlockState(), 3);
-                    level.playSound(null, placePos, placeBe.getBlockState().getSoundType().getPlaceSound(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+                    level.playSound(null, placePos, placeBe.getBlockState().getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0f, 1.0f);
                 }
-                return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
+                return InteractionResult.sidedSuccess(level.isClientSide);
             }
             // 前面でないが占有されている → 新規配置不可
-            return net.minecraft.world.InteractionResult.FAIL;
+            return InteractionResult.FAIL;
         }
         // 隣接が空のcut_blockなら新規配置として充填 (空は常に受け入れ)
         if (!isMulti && level.getBlockEntity(placePos) instanceof CutBlockEntity emptyPlaceBe && emptyPlaceBe.isEmpty()) {
@@ -88,32 +105,32 @@ public class CutBlockItem extends BlockItem {
                     emptyPlaceBe.addEntry(data.state(), b);
                     if (player == null || !player.getAbilities().instabuild) stack.shrink(1);
                     level.sendBlockUpdated(placePos, emptyPlaceBe.getBlockState(), emptyPlaceBe.getBlockState(), 3);
-                    level.playSound(null, placePos, emptyPlaceBe.getBlockState().getSoundType().getPlaceSound(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+                    level.playSound(null, placePos, emptyPlaceBe.getBlockState().getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0f, 1.0f);
                 }
-                return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
+                return InteractionResult.sidedSuccess(level.isClientSide);
             }
-            return net.minecraft.world.InteractionResult.FAIL;
+            return InteractionResult.FAIL;
         }
         if (isMulti && level.getBlockEntity(placePos) instanceof CutBlockEntity) {
-            return net.minecraft.world.InteractionResult.FAIL;
+            return InteractionResult.FAIL;
         }
         if (!canReplace) {
-            return net.minecraft.world.InteractionResult.FAIL;
+            return InteractionResult.FAIL;
         }
         if (!level.isClientSide) {
-            net.minecraft.world.level.block.state.BlockState newState = ruby.bamboo.core.init.BambooBlocks.CUT_BLOCK.get().defaultBlockState()
-                    .setValue(ruby.bamboo.block.CutBlock.FACING, context.getHorizontalDirection().getOpposite());
+            BlockState newState = BambooBlocks.CUT_BLOCK.get().defaultBlockState()
+                    .setValue(CutBlock.FACING, context.getHorizontalDirection().getOpposite());
             try {
-                net.minecraft.core.Direction facing = context.getHorizontalDirection().getOpposite();
-                if (facing.getAxis() == net.minecraft.core.Direction.Axis.Y) facing = net.minecraft.core.Direction.NORTH;
-                newState = ruby.bamboo.core.init.BambooBlocks.CUT_BLOCK.get().defaultBlockState().setValue(ruby.bamboo.block.CutBlock.FACING, facing);
+                Direction facing = context.getHorizontalDirection().getOpposite();
+                if (facing.getAxis() == Direction.Axis.Y) facing = Direction.NORTH;
+                newState = BambooBlocks.CUT_BLOCK.get().defaultBlockState().setValue(CutBlock.FACING, facing);
             } catch (Exception e) {}
             level.setBlock(placePos, newState, 3);
             if (level.getBlockEntity(placePos) instanceof CutBlockEntity newBe) {
                 if (isMulti) {
-                    net.minecraft.nbt.CompoundTag tag = stack.getTag();
-                    if (tag != null && tag.contains("BlockEntityTag", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
-                        net.minecraft.nbt.CompoundTag bet = tag.getCompound("BlockEntityTag");
+                    CompoundTag tag = stack.getTag();
+                    if (tag != null && tag.contains("BlockEntityTag", Tag.TAG_COMPOUND)) {
+                        CompoundTag bet = tag.getCompound("BlockEntityTag");
                         newBe.readSyncData(bet);
                     } else {
                         newBe.clearEntries();
@@ -139,12 +156,12 @@ public class CutBlockItem extends BlockItem {
                 }
             }
             if (player == null || !player.getAbilities().instabuild) stack.shrink(1);
-            level.playSound(null, placePos, newState.getSoundType().getPlaceSound(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+            level.playSound(null, placePos, newState.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0f, 1.0f);
         }
-        return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    private static int[] computeHalfBoundsForExisting(net.minecraft.world.phys.Vec3 hitVec, net.minecraft.core.BlockPos pos, net.minecraft.core.Direction face) {
+    private static int[] computeHalfBoundsForExisting(Vec3 hitVec, BlockPos pos, Direction face) {
         // 既存ブロック内のヒットは面の反対側（ヒット側）に寄せる。computeHalfBoundsは新規隣接側を返すため反転が必要な場合がある
         // 新規用 computeHalfBounds は隣接側（UP→下、NORTH→南等）を返す。既存の場合はヒット側（UP→上、NORTH→北等）にしたい
         int[] b = CutBlockEntity.computeHalfBounds(hitVec, pos, face);
@@ -210,7 +227,7 @@ public class CutBlockItem extends BlockItem {
         return b;
     }
 
-    private static int[] computeCubeBoundsForExisting(net.minecraft.world.phys.Vec3 hitVec, net.minecraft.core.BlockPos pos, net.minecraft.core.Direction face, int size, CutBlockEntity be) {
+    private static int[] computeCubeBoundsForExisting(Vec3 hitVec, BlockPos pos, Direction face, int size, CutBlockEntity be) {
         // 既存への充填は空きセルからヒット最近傍を選択。findBestBoundsをサイズ固定で呼び出すが、faceロックを回避するためnullで呼ぶ
         byte lvl = CutBlockEntity.sizeToLevel(size);
         int[] best = be.findBestBoundsForPlacement(hitVec, pos, lvl, lvl, lvl, null);
@@ -253,16 +270,16 @@ public class CutBlockItem extends BlockItem {
         CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(stack);
         if (data.state().isAir()) {
             try {
-                net.minecraft.nbt.CompoundTag tag = stack.getTag();
-                if (tag != null && tag.contains("BlockEntityTag", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
-                    net.minecraft.nbt.CompoundTag bet = tag.getCompound("BlockEntityTag");
-                    if (bet.contains(CutBlockEntity.TAG_BOUNDS, net.minecraft.nbt.Tag.TAG_INT_ARRAY)) {
+                CompoundTag tag = stack.getTag();
+                if (tag != null && tag.contains("BlockEntityTag", Tag.TAG_COMPOUND)) {
+                    CompoundTag bet = tag.getCompound("BlockEntityTag");
+                    if (bet.contains(CutBlockEntity.TAG_BOUNDS, Tag.TAG_INT_ARRAY)) {
                         int[] b = bet.getIntArray(CutBlockEntity.TAG_BOUNDS);
                         if (b.length >= 6) {
                             int xSize = b[3] - b[0]; int ySize = b[4] - b[1]; int zSize = b[5] - b[2];
                             String base = "カットブロック";
-                            if (bet.contains(CutBlockEntity.TAG_STATE, net.minecraft.nbt.Tag.TAG_COMPOUND)) {
-                                try { net.minecraft.world.level.block.state.BlockState st = net.minecraft.nbt.NbtUtils.readBlockState(net.minecraft.core.registries.BuiltInRegistries.BLOCK.asLookup(), bet.getCompound(CutBlockEntity.TAG_STATE)); base = st.getBlock().getName().getString(); } catch (Exception e) {}
+                            if (bet.contains(CutBlockEntity.TAG_STATE, Tag.TAG_COMPOUND)) {
+                                try { BlockState st = NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(), bet.getCompound(CutBlockEntity.TAG_STATE)); base = st.getBlock().getName().getString(); } catch (Exception e) {}
                             }
                             if (xSize == 16 && ySize == 16 && zSize == 16) return Component.literal(base);
                             String suf = tierSuffix(xSize, ySize, zSize);

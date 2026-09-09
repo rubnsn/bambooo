@@ -1,19 +1,30 @@
 package ruby.bamboo.block;
 
+import java.util.ArrayDeque;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BucketPickup;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -23,9 +34,14 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import ruby.bamboo.BambooMod;
 import ruby.bamboo.core.config.SpringConfig;
 import ruby.bamboo.core.init.BambooBlocks;
 
@@ -69,38 +85,38 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        return net.minecraft.world.phys.shapes.Shapes.empty();
+        return Shapes.empty();
     }
 
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        return net.minecraft.world.phys.shapes.Shapes.empty();
+        return Shapes.empty();
     }
 
     @Override
     public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
-        return net.minecraft.world.phys.shapes.Shapes.empty();
+        return Shapes.empty();
     }
 
     @Override
     public VoxelShape getVisualShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        return net.minecraft.world.phys.shapes.Shapes.empty();
+        return Shapes.empty();
     }
 
     @Override
-    public net.minecraft.world.level.material.FluidState getFluidState(BlockState state) {
+    public FluidState getFluidState(BlockState state) {
         int lv = state.getValue(LEVEL);
-        if (lv <= 0) return net.minecraft.world.level.material.Fluids.EMPTY.defaultFluidState();
+        if (lv <= 0) return Fluids.EMPTY.defaultFluidState();
         // Block LEVEL 1低(流動1) ->7高(流動7) を Fluid の高さに直結させるため直接マッピング
         // 7は満水に近い高さ、1は浅い
         try {
             if (lv >= 7) {
                 // 7高は SOURCE に近い高さで見せるため SOURCE を返す（流動7でも可だが SOURCE の方が高く見える）
-                return ruby.bamboo.BambooMod.SPRING_WATER_SOURCE.get().defaultFluidState();
+                return BambooMod.SPRING_WATER_SOURCE.get().defaultFluidState();
             }
-            return ruby.bamboo.BambooMod.SPRING_WATER_FLOWING.get().getFlowing(lv, false);
+            return BambooMod.SPRING_WATER_FLOWING.get().getFlowing(lv, false);
         } catch (Exception e) {
-            return net.minecraft.world.level.material.Fluids.EMPTY.defaultFluidState();
+            return Fluids.EMPTY.defaultFluidState();
         }
     }
 
@@ -115,15 +131,15 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
     }
 
     @Override
-    public float getDestroyProgress(BlockState state, net.minecraft.world.entity.player.Player player, BlockGetter level, BlockPos pos) {
+    public float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
         return 0.0F;
     }
 
     @Override
-    public void entityInside(BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.Entity entity) {
+    public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         super.entityInside(state, level, pos, entity);
         if (level.isClientSide) return;
-        if (entity instanceof net.minecraft.world.entity.item.ItemEntity itemEntity) {
+        if (entity instanceof ItemEntity itemEntity) {
             var stack = itemEntity.getItem();
             if (stack.isEmpty() || !(stack.getItem() instanceof DyeItem dyeItem)) return;
             BlockPos source = findSource(level, pos, state, 32);
@@ -133,7 +149,7 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
             SpringColor cur = srcState.getValue(SpringBlock.COLOR);
             SpringColor dyeCol = SpringColor.fromDye(dyeItem.getDyeColor());
             if (dyeCol == null || cur == dyeCol) return;
-            if (dyeItem.getDyeColor() == net.minecraft.world.item.DyeColor.BLACK) dyeCol = SpringColor.DEFAULT;
+            if (dyeItem.getDyeColor() == DyeColor.BLACK) dyeCol = SpringColor.DEFAULT;
             level.setBlock(source, srcState.setValue(SpringBlock.COLOR, dyeCol), 3);
             // 染料変更を全連結水に即時反映させるため、近傍の温泉水チャンクを再送（sakuraのgetFluidToList相当のBFS）
             try {
@@ -146,7 +162,7 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
                     } else {
                         // 水没の場合、その位置のブロックを再送
                         var fs = level.getFluidState(p);
-                        if (fs.getType() == ruby.bamboo.BambooMod.SPRING_WATER_SOURCE.get() || fs.getType() == ruby.bamboo.BambooMod.SPRING_WATER_FLOWING.get()) {
+                        if (fs.getType() == BambooMod.SPRING_WATER_SOURCE.get() || fs.getType() == BambooMod.SPRING_WATER_FLOWING.get()) {
                             var bs = level.getBlockState(p);
                             level.sendBlockUpdated(p, bs, bs, 3);
                         }
@@ -160,9 +176,9 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
     }
 
     /** sakura SpringSpawner.getFluidToList 相当: 源泉からの連結温泉水(流体)をBFSで収集 */
-    private static java.util.Set<BlockPos> collectConnectedWaters(Level level, BlockPos start, int limit) {
-        java.util.Set<BlockPos> found = new java.util.LinkedHashSet<>();
-        java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
+    private static Set<BlockPos> collectConnectedWaters(Level level, BlockPos start, int limit) {
+        Set<BlockPos> found = new LinkedHashSet<>();
+        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
         if (level.getBlockState(start).getBlock() instanceof SpringWaterBlock || isSpringFluid(level, start)) queue.add(start);
         else {
             // startが空気の場合、周囲から最初の水を探す
@@ -190,11 +206,11 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
 
     private static boolean isSpringFluid(Level level, BlockPos p) {
         var f = level.getFluidState(p);
-        return f.getType() == ruby.bamboo.BambooMod.SPRING_WATER_SOURCE.get() || f.getType() == ruby.bamboo.BambooMod.SPRING_WATER_FLOWING.get();
+        return f.getType() == BambooMod.SPRING_WATER_SOURCE.get() || f.getType() == BambooMod.SPRING_WATER_FLOWING.get();
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         return InteractionResult.PASS;
     }
 
@@ -442,7 +458,7 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
         }
         if (lv <= 1) {
             // 液体の消滅は removeBlock ではなく AIR 置換（pickupBlock と同様、flag 11 で更新）で水没と両立
-            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 11);
+            level.setBlock(pos, Blocks.AIR.defaultBlockState(), 11);
         } else {
             BlockState ns = state.setValue(LEVEL, lv - 1);
             level.setBlock(pos, ns, 3);
@@ -457,7 +473,7 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
         double x = pos.getX() + 0.5D + (random.nextDouble() - 0.5D) * 0.6D;
         double y = pos.getY() + 1.05D;
         double z = pos.getZ() + 0.5D + (random.nextDouble() - 0.5D) * 0.6D;
-        level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD, x, y, z, 0.0D, 0.03D, 0.0D);
+        level.addParticle(ParticleTypes.CLOUD, x, y, z, 0.0D, 0.03D, 0.0D);
     }
 
     @Override
@@ -490,7 +506,7 @@ public class SpringWaterBlock extends LiquidBlock implements BucketPickup {
     }
 
     @Nullable
-    public static BlockPos findSource(net.minecraft.world.level.BlockAndTintGetter getter, BlockPos pos, BlockState state, int limit) {
+    public static BlockPos findSource(BlockAndTintGetter getter, BlockPos pos, BlockState state, int limit) {
         if (getter instanceof Level lvl) return findSource(lvl, pos, state, limit);
         // クライアントの ChunkRenderCache 等でも辿れるよう BlockAndTintGetter 版を実装
         BlockPos cur = pos;

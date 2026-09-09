@@ -4,12 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
 import ruby.bamboo.core.init.BambooBlockEntities;
 
 /**
@@ -169,8 +178,8 @@ public class BambooPotBlockEntity extends BlockEntity {
             // 旧1スロットからの移行（ContainerHelper形式）
             // 互換: 旧は NonNullList 1件を ContainerHelper.saveAllItems で保存
             try {
-                net.minecraft.core.NonNullList<ItemStack> old = net.minecraft.core.NonNullList.withSize(1, ItemStack.EMPTY);
-                net.minecraft.world.ContainerHelper.loadAllItems(tag, old);
+                NonNullList<ItemStack> old = NonNullList.withSize(1, ItemStack.EMPTY);
+                ContainerHelper.loadAllItems(tag, old);
                 if (!old.get(0).isEmpty()) {
                     plants.add(new PlantEntry(old.get(0), 0f, 0f, 0.35f, false));
                 }
@@ -216,7 +225,7 @@ public class BambooPotBlockEntity extends BlockEntity {
     }
 
     @Override
-    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
         CompoundTag tag = new CompoundTag();
         ListTag list = new ListTag();
         for (PlantEntry e : plants) {
@@ -229,11 +238,11 @@ public class BambooPotBlockEntity extends BlockEntity {
             list.add(ct);
         }
         tag.put("Plants", list);
-        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this, be -> tag);
+        return ClientboundBlockEntityDataPacket.create(this, be -> tag);
     }
 
     @Override
-    public void onDataPacket(net.minecraft.network.Connection connection, net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket pkt) {
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket pkt) {
         CompoundTag tag = pkt.getTag();
         plants.clear();
         if (tag.contains("Plants", Tag.TAG_LIST)) {
@@ -252,13 +261,13 @@ public class BambooPotBlockEntity extends BlockEntity {
 
     // ホッパー無効: capabilityを公開しない
     @Override
-    public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> cap, net.minecraft.core.Direction side) {
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
         return super.getCapability(cap, side);
     }
 
-    public void dropAllContents(net.minecraft.world.level.Level lvl, BlockPos p) {
+    public void dropAllContents(Level lvl, BlockPos p) {
         for (PlantEntry e : plants) {
-            net.minecraft.world.Containers.dropItemStack(lvl, p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5, e.stack);
+            Containers.dropItemStack(lvl, p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5, e.stack);
         }
         plants.clear();
     }

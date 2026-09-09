@@ -2,11 +2,15 @@ package ruby.bamboo.core.fishing;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -223,7 +227,7 @@ public final class FishingManager {
                 case "is_warm_ocean" -> {
                     // 1.20.1 does not have IS_WARM_OCEAN tag exactly; approximate via biome tags or check biome key
                     // check if biome is warm ocean via resource location
-                    ResourceLocation biomeId = level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME).getKey(biome);
+                    ResourceLocation biomeId = level.registryAccess().registryOrThrow(Registries.BIOME).getKey(biome);
                     if (biomeId != null) {
                         String path = biomeId.getPath();
                         matches = path.contains("warm_ocean") || path.contains("lukewarm");
@@ -286,14 +290,14 @@ public final class FishingManager {
     /**
      * 釣果の ItemStack を生成する。NBT としてランクを付与する。
      */
-    public static net.minecraft.world.item.ItemStack createCatchStack(RollResult result, RandomSource random) {
+    public static ItemStack createCatchStack(RollResult result, RandomSource random) {
         ResourceLocation itemId = result.entry.itemId;
-        net.minecraft.world.item.Item item = ForgeRegistries.ITEMS.getValue(itemId);
-        if (item == null || item == net.minecraft.world.item.Items.AIR) {
+        Item item = ForgeRegistries.ITEMS.getValue(itemId);
+        if (item == null || item == Items.AIR) {
             LOGGER.warn("Unknown catch item {}", itemId);
-            return net.minecraft.world.item.ItemStack.EMPTY;
+            return ItemStack.EMPTY;
         }
-        net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item);
+        ItemStack stack = new ItemStack(item);
         // ランク付与: FISH のみ
         if (result.entry.category == FishingEntry.Category.FISH) {
             stack.getOrCreateTag().putString(FishSize.TAG_KEY, result.size.tagValue);

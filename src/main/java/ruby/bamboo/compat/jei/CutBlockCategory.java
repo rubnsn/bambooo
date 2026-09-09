@@ -11,6 +11,7 @@ import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -77,11 +78,11 @@ public class CutBlockCategory implements IRecipeCategory<CraftingRecipe> {
         // 出力 (右側)
         ItemStack result = recipe.getResultItem(Minecraft.getInstance().level != null
                 ? Minecraft.getInstance().level.registryAccess()
-                : net.minecraft.core.RegistryAccess.EMPTY);
+                : RegistryAccess.EMPTY);
         // result が empty の場合は getResultItem(EMPTY) で再試行
         if (result.isEmpty()) {
             try {
-                result = recipe.getResultItem(net.minecraft.core.RegistryAccess.EMPTY);
+                result = recipe.getResultItem(RegistryAccess.EMPTY);
             } catch (Exception e) {}
         }
         builder.addSlot(RecipeIngredientRole.OUTPUT, 86, 18).addItemStack(result);

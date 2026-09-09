@@ -3,7 +3,10 @@ package ruby.bamboo.crafting.cooking;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
@@ -16,6 +19,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
 import ruby.bamboo.BambooMod;
 
@@ -138,7 +142,7 @@ public class BambooCampfireRecipe implements Recipe<Container> {
             if (!container.getItem(i).isEmpty()) nonEmpty++;
         }
         if (nonEmpty != ingredients.size()) return false;
-        java.util.List<ItemStack> inputs = new java.util.ArrayList<>();
+        List<ItemStack> inputs = new ArrayList<>();
         for (int i = 0; i < 9 && i < container.getContainerSize(); i++) {
             ItemStack s = container.getItem(i);
             if (!s.isEmpty()) inputs.add(s);
@@ -253,7 +257,7 @@ public class BambooCampfireRecipe implements Recipe<Container> {
             String catStr = GsonHelper.getAsString(json, "category", "misc");
             Category cat = Category.fromString(catStr);
             JsonObject resultObj = GsonHelper.getAsJsonObject(json, "result");
-            ItemStack result = net.minecraft.world.item.crafting.ShapedRecipe.itemStackFromJson(resultObj);
+            ItemStack result = ShapedRecipe.itemStackFromJson(resultObj);
             float exp = GsonHelper.getAsFloat(json, "experience", 0.0F);
             int cookingTime = GsonHelper.getAsInt(json, "cookingtime", 200);
             int fuelCost = GsonHelper.getAsInt(json, "fuelCost", 200);
@@ -264,20 +268,20 @@ public class BambooCampfireRecipe implements Recipe<Container> {
                 // 定型
                 JsonArray patternArray = GsonHelper.getAsJsonArray(json, "pattern");
                 if (patternArray.size() == 0 || patternArray.size() > 3) {
-                    throw new com.google.gson.JsonParseException("Invalid pattern array size " + patternArray.size());
+                    throw new JsonParseException("Invalid pattern array size " + patternArray.size());
                 }
                 String[] pattern = new String[patternArray.size()];
                 for (int i = 0; i < patternArray.size(); i++) {
                     pattern[i] = GsonHelper.convertToString(patternArray.get(i), "pattern[" + i + "]");
                     if (pattern[i].length() > 3) {
-                        throw new com.google.gson.JsonParseException("Invalid pattern row length " + pattern[i].length());
+                        throw new JsonParseException("Invalid pattern row length " + pattern[i].length());
                     }
                 }
                 int width = pattern[0].length();
                 int height = pattern.length;
                 for (String row : pattern) {
                     if (row.length() != width) {
-                        throw new com.google.gson.JsonParseException("Pattern rows must be same width");
+                        throw new JsonParseException("Pattern rows must be same width");
                     }
                 }
                 JsonObject keyObj = GsonHelper.getAsJsonObject(json, "key");
@@ -285,10 +289,10 @@ public class BambooCampfireRecipe implements Recipe<Container> {
                 for (Map.Entry<String, JsonElement> e : keyObj.entrySet()) {
                     String k = e.getKey();
                     if (k.length() != 1) {
-                        throw new com.google.gson.JsonParseException("Invalid key entry '" + k + "' is not single char");
+                        throw new JsonParseException("Invalid key entry '" + k + "' is not single char");
                     }
                     if (k.equals(" ")) {
-                        throw new com.google.gson.JsonParseException("Invalid key entry ' ' is space");
+                        throw new JsonParseException("Invalid key entry ' ' is space");
                     }
                     keyMap.put(k, Ingredient.fromJson(e.getValue()));
                 }
@@ -303,7 +307,7 @@ public class BambooCampfireRecipe implements Recipe<Container> {
                             String ks = String.valueOf(c);
                             Ingredient ing = keyMap.get(ks);
                             if (ing == null) {
-                                throw new com.google.gson.JsonParseException("Pattern references missing key '" + ks + "'");
+                                throw new JsonParseException("Pattern references missing key '" + ks + "'");
                             }
                             patternList.set(y * width + x, ing);
                         }
@@ -315,19 +319,19 @@ public class BambooCampfireRecipe implements Recipe<Container> {
                     if (!ing.isEmpty()) ingredients.add(ing);
                 }
                 if (ingredients.isEmpty()) {
-                    throw new com.google.gson.JsonParseException("No ingredients for campfire recipe");
+                    throw new JsonParseException("No ingredients for campfire recipe");
                 }
                 return new BambooCampfireRecipe(id, group, cat, ingredients, patternList, width, height, true, result, exp, cookingTime, fuelCost);
             } else {
                 // 不定形
                 if (!json.has("ingredients")) {
-                    throw new com.google.gson.JsonParseException("No ingredients or pattern for campfire recipe");
+                    throw new JsonParseException("No ingredients or pattern for campfire recipe");
                 }
                 NonNullList<Ingredient> ingredients = itemsFromJson(GsonHelper.getAsJsonArray(json, "ingredients"));
                 if (ingredients.isEmpty()) {
-                    throw new com.google.gson.JsonParseException("No ingredients for campfire recipe");
+                    throw new JsonParseException("No ingredients for campfire recipe");
                 } else if (ingredients.size() > 9) {
-                    throw new com.google.gson.JsonParseException("Too many ingredients for campfire recipe! The max is 9");
+                    throw new JsonParseException("Too many ingredients for campfire recipe! The max is 9");
                 }
                 return new BambooCampfireRecipe(id, group, cat, ingredients, result, exp, cookingTime, fuelCost);
             }

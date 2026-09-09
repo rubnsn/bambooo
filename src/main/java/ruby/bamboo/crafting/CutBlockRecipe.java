@@ -18,6 +18,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.registries.ForgeRegistries;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.entity.CutBlockEntity;
 import ruby.bamboo.core.init.BambooBlocks;
@@ -205,7 +206,7 @@ public class CutBlockRecipe implements CraftingRecipe {
             if (stack.is(BambooItems.COMMON_KATANA.get())) return true;
         } catch (Exception e) {
         }
-        String key = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
+        String key = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
         return key.equals("bamboomod:commonkatana");
     }
 
@@ -215,7 +216,7 @@ public class CutBlockRecipe implements CraftingRecipe {
             if (stack.is(BambooBlocks.CUT_BLOCK.get().asItem())) return true;
         } catch (Exception e) {
         }
-        String key = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
+        String key = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
         return key.equals("bamboomod:cut_block");
     }
 

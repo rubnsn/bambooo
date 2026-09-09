@@ -1,8 +1,10 @@
 package ruby.bamboo.skill;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.network.PacketDistributor;
 import ruby.bamboo.core.init.BambooCapabilities;
 import ruby.bamboo.network.BambooNetwork;
 import ruby.bamboo.network.SkillSyncPacket;
@@ -35,8 +37,8 @@ public final class SkillHelper {
         if (leveled[0]) {
             if (!player.level().isClientSide) {
                 player.displayClientMessage(
-                        net.minecraft.network.chat.Component.translatable("message.bamboomod.skill.levelup",
-                                net.minecraft.network.chat.Component.translatable(
+                        Component.translatable("message.bamboomod.skill.levelup",
+                                Component.translatable(
                                         "skill.bamboomod." + type.getId() + ".name"),
                                 getLevel(player, type)),
                         false);
@@ -58,8 +60,8 @@ public final class SkillHelper {
         if (leveled[0]) {
             if (!player.level().isClientSide) {
                 player.displayClientMessage(
-                        net.minecraft.network.chat.Component.translatable("message.bamboomod.skill.levelup",
-                                net.minecraft.network.chat.Component.translatable(
+                        Component.translatable("message.bamboomod.skill.levelup",
+                                Component.translatable(
                                         "skill.bamboomod." + type.getId() + ".name"),
                                 getLevel(player, type)),
                         false);
@@ -75,7 +77,7 @@ public final class SkillHelper {
             return;
         }
         get(player).ifPresent(s -> BambooNetwork.CHANNEL.send(
-                net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> sp),
+                PacketDistributor.PLAYER.with(() -> sp),
                 new SkillSyncPacket(s.serializeNBT())));
     }
 

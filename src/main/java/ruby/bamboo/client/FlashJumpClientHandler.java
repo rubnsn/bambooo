@@ -1,6 +1,8 @@
 package ruby.bamboo.client;
 
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -85,6 +87,6 @@ public class FlashJumpClientHandler {
         player.hasImpulse = true;
         player.getPersistentData().putBoolean(TAG_FLASHED, true);
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                net.minecraft.sounds.SoundEvents.ENDER_DRAGON_FLAP, net.minecraft.sounds.SoundSource.PLAYERS, 0.6F, 1.4F);
+                SoundEvents.ENDER_DRAGON_FLAP, SoundSource.PLAYERS, 0.6F, 1.4F);
     }
 }

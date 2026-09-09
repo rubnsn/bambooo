@@ -6,6 +6,7 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -18,6 +19,8 @@ import net.minecraft.world.phys.Vec3;
 import ruby.bamboo.core.init.BambooEntities;
 
 import java.util.UUID;
+import ruby.bamboo.core.init.BambooItems;
+import ruby.bamboo.item.BambooRodItem;
 
 /**
  * Fishing bobber. Cast, bob, return with optional hooked item.
@@ -81,7 +84,7 @@ public class FishingBobberEntity extends Entity {
                 return p;
             }
         }
-        if (ownerUUID != null && level() instanceof net.minecraft.server.level.ServerLevel sl) {
+        if (ownerUUID != null && level() instanceof ServerLevel sl) {
             Entity e = sl.getEntity(ownerUUID);
             if (e instanceof Player p) {
                 owner = p;
@@ -139,7 +142,7 @@ public class FishingBobberEntity extends Entity {
 
     @Override
     protected boolean canAddPassenger(Entity passenger) {
-        return passenger instanceof net.minecraft.world.entity.item.ItemEntity;
+        return passenger instanceof ItemEntity;
     }
 
     @Override
@@ -154,11 +157,11 @@ public class FishingBobberEntity extends Entity {
 
     private boolean isHoldingRod(Player p) {
         try {
-            var rod = ruby.bamboo.core.init.BambooItems.BAMBOO_ROD.get();
+            var rod = BambooItems.BAMBOO_ROD.get();
             return p.getMainHandItem().is(rod) || p.getOffhandItem().is(rod);
         } catch (Exception e) {
-            return p.getMainHandItem().getItem() instanceof ruby.bamboo.item.BambooRodItem
-                    || p.getOffhandItem().getItem() instanceof ruby.bamboo.item.BambooRodItem;
+            return p.getMainHandItem().getItem() instanceof BambooRodItem
+                    || p.getOffhandItem().getItem() instanceof BambooRodItem;
         }
     }
 
@@ -331,7 +334,7 @@ public class FishingBobberEntity extends Entity {
             setCarried(s);
         }
         if (compound.contains("Returning")) setReturning(compound.getBoolean("Returning"));
-        if (ownerUUID != null && level() instanceof net.minecraft.server.level.ServerLevel sl) {
+        if (ownerUUID != null && level() instanceof ServerLevel sl) {
             var e = sl.getEntity(ownerUUID);
             if (e instanceof Player p) owner = p;
         }

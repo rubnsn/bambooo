@@ -1,9 +1,14 @@
 package ruby.bamboo.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.phys.Vec3;
 import ruby.bamboo.core.init.BambooParticles;
 
 /**
@@ -31,10 +36,10 @@ public class PetalParticle extends TextureSheetParticle {
     private float spinSum;
 
     /** Wind由来パーティクルの一時的な風ベクトル受け渡し (ThreadLocalでaddParticle前にset) */
-    private static final ThreadLocal<net.minecraft.world.phys.Vec3> NEXT_WIND = new ThreadLocal<>();
+    private static final ThreadLocal<Vec3> NEXT_WIND = new ThreadLocal<>();
 
     /** WindEntity側から呼ぶ: 次に生成する petal に風を適用する */
-    public static void pushWind(net.minecraft.world.phys.Vec3 wind) {
+    public static void pushWind(Vec3 wind) {
         if (wind != null) {
             NEXT_WIND.set(wind);
         }
@@ -54,7 +59,7 @@ public class PetalParticle extends TextureSheetParticle {
         this.setColor((float) colorR, (float) colorG, (float) colorB);
 
         // 初速: Wind由来なら旧 SakuraPetal.setMotion を再現、非Windはランダム漂い
-        net.minecraft.world.phys.Vec3 wind = NEXT_WIND.get();
+        Vec3 wind = NEXT_WIND.get();
         if (wind != null) {
             // 旧 SakuraPetal.setMotion 相当
             // randomF = (rand+rand+1)*0.15 → 0.15-0.45, sqで正規化
@@ -76,7 +81,7 @@ public class PetalParticle extends TextureSheetParticle {
             NEXT_WIND.remove();
         } else {
             // 非Windはランダム漂い + 環境風 (ローカル、PetalWind)
-            net.minecraft.world.phys.Vec3 env = PetalWind.getWind(level);
+            Vec3 env = PetalWind.getWind(level);
             this.xd = (level.random.nextFloat() - 0.5) * 0.1 + env.x;
             this.yd = -0.01;
             this.zd = (level.random.nextFloat() - 0.5) * 0.1 + env.z;
@@ -106,14 +111,14 @@ public class PetalParticle extends TextureSheetParticle {
         this.yd -= 0.004D;
 
         // 水中では浮遊 (旧 stopFall 相当)
-        if (this.level.getFluidState(this.posAt(this.x, this.y, this.z)).is(net.minecraft.tags.FluidTags.WATER)) {
+        if (this.level.getFluidState(this.posAt(this.x, this.y, this.z)).is(FluidTags.WATER)) {
             this.yd *= 0.8D;
             this.xd *= 0.9D;
             this.zd *= 0.9D;
         }
 
         // 環境風 (風向・風速は時刻で緩やかに変化、突風時は強まる。ローカルのみ)
-        net.minecraft.world.phys.Vec3 env = PetalWind.getWind(this.level);
+        Vec3 env = PetalWind.getWind(this.level);
         this.xd += env.x * 0.02D;
         this.zd += env.z * 0.02D;
         // ひらひら: swayに連動した微小な横揺れ (揚力っぽさ)
@@ -155,8 +160,8 @@ public class PetalParticle extends TextureSheetParticle {
         this.oRoll = prevRoll;
     }
 
-    private net.minecraft.core.BlockPos.MutableBlockPos posAt(double x, double y, double z) {
-        return new net.minecraft.core.BlockPos.MutableBlockPos(
+    private BlockPos.MutableBlockPos posAt(double x, double y, double z) {
+        return new BlockPos.MutableBlockPos(
                 (int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z));
     }
 
@@ -166,9 +171,9 @@ public class PetalParticle extends TextureSheetParticle {
     }
 
     /** Provider (registerSpriteSet 用) */
-    public record Provider(SpriteSet sprites) implements net.minecraft.client.particle.ParticleProvider<net.minecraft.core.particles.SimpleParticleType> {
+    public record Provider(SpriteSet sprites) implements ParticleProvider<SimpleParticleType> {
         @Override
-        public PetalParticle createParticle(net.minecraft.core.particles.SimpleParticleType type,
+        public PetalParticle createParticle(SimpleParticleType type,
                 ClientLevel level, double x, double y, double z,
                 double colorR, double colorG, double colorB) {
             return new PetalParticle(level, x, y, z, colorR, colorG, colorB, this.sprites);

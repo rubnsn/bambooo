@@ -4,18 +4,29 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -45,7 +56,7 @@ import ruby.bamboo.gui.CampfireMenu;
  * <li>BakeType (NONE/ATHER/MEAT/FISH) を結果スロットから判定し BER 描画に使用</li>
  * </ul>
  */
-public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer, net.minecraft.world.MenuProvider {
+public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
 
     /** 焼き種別 (旧 TileCampfire.BakeType) */
     public enum BakeType {
@@ -118,7 +129,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     private void updateFuel() {
         ItemStack fuelStack = items.get(SLOT_FUEL);
         if (!fuelStack.isEmpty()) {
-            int burnTime = net.minecraftforge.common.ForgeHooks.getBurnTime(fuelStack, null);
+            int burnTime = ForgeHooks.getBurnTime(fuelStack, null);
             if (burnTime > 0 && fuel + burnTime <= MAX_FUEL) {
                 fuel += burnTime;
                 fuelStack.shrink(1);
@@ -240,7 +251,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     private BambooCampfireRecipe findRecipe() {
         if (level == null) return null;
         // 0-8 をSimpleContainerで検索 (9サイズ。 fuel/result は含めない)
-        net.minecraft.world.SimpleContainer inv = new net.minecraft.world.SimpleContainer(9);
+        SimpleContainer inv = new SimpleContainer(9);
         for (int i = 0; i < 9; i++) inv.setItem(i, items.get(i).copy());
         var campfire = level.getRecipeManager().getRecipeFor(BambooMod.CAMPFIRE_RECIPE_TYPE.get(), inv, level);
         if (campfire.isPresent()) {
@@ -250,16 +261,16 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
         if (countNonEmpty() == 1) {
             ItemStack single = getSingleStack();
             if (single != null) {
-                var smelting = level.getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING,
-                        new net.minecraft.world.SimpleContainer(single), level);
+                var smelting = level.getRecipeManager().getRecipeFor(RecipeType.SMELTING,
+                        new SimpleContainer(single), level);
                 if (smelting.isPresent()) {
                     var recipe = smelting.get();
                     ItemStack res = recipe.getResultItem(level.registryAccess());
                     if (!res.isEmpty()) {
-                        NonNullList<net.minecraft.world.item.crafting.Ingredient> ing = NonNullList.create();
-                        ing.add(net.minecraft.world.item.crafting.Ingredient.of(single));
+                        NonNullList<Ingredient> ing = NonNullList.create();
+                        ing.add(Ingredient.of(single));
                         return new BambooCampfireRecipe(
-                                new net.minecraft.resources.ResourceLocation("bamboomod", "smelting_" + recipe.getId().getPath()),
+                                new ResourceLocation("bamboomod", "smelting_" + recipe.getId().getPath()),
                                 "", BambooCampfireRecipe.Category.MISC, ing, res.copy(), recipe.getExperience(), recipe.getCookingTime(), 200);
                     }
                 }
@@ -311,7 +322,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     }
 
     /** レシピブック用: StackedContents への充填 */
-    public void fillStackedContents(net.minecraft.world.entity.player.StackedContents helper) {
+    public void fillStackedContents(StackedContents helper) {
         for (int i = 0; i < 9; i++) {
             ItemStack s = items.get(i);
             if (!s.isEmpty()) helper.accountStack(s);
@@ -374,7 +385,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
             return false;
         }
         if (index == SLOT_FUEL) {
-            return net.minecraftforge.common.ForgeHooks.getBurnTime(stack, null) > 0;
+            return ForgeHooks.getBurnTime(stack, null) > 0;
         }
         return true;
     }
@@ -409,7 +420,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
 
     @Override
     public ItemStack removeItem(int index, int count) {
-        ItemStack taken = net.minecraft.world.ContainerHelper.removeItem(items, index, count);
+        ItemStack taken = ContainerHelper.removeItem(items, index, count);
         if (!taken.isEmpty()) {
             setChanged();
         }
@@ -418,7 +429,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
 
     @Override
     public ItemStack removeItemNoUpdate(int index) {
-        return net.minecraft.world.ContainerHelper.takeItem(items, index);
+        return ContainerHelper.takeItem(items, index);
     }
 
     @Override
@@ -450,7 +461,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new CampfireMenu(containerId, playerInventory, this,
-                new net.minecraft.world.inventory.SimpleContainerData(2) {
+                new SimpleContainerData(2) {
             @Override
             public int get(int index) {
                 return switch (index) {
@@ -478,14 +489,14 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
         if (!nowCookingResult.isEmpty()) {
             tag.put("nowItem", nowCookingResult.save(new CompoundTag()));
         }
-        net.minecraft.world.ContainerHelper.saveAllItems(tag, items);
+        ContainerHelper.saveAllItems(tag, items);
     }
 
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
         this.items = NonNullList.withSize(11, ItemStack.EMPTY);
-        net.minecraft.world.ContainerHelper.loadAllItems(tag, this.items);
+        ContainerHelper.loadAllItems(tag, this.items);
         if (tag.contains("fuel")) {
             this.fuel = tag.getInt("fuel");
         }
@@ -516,15 +527,15 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     }
 
     @Override
-    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
         CompoundTag tag = new CompoundTag();
         writeSyncData(tag);
-        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this, be -> tag);
+        return ClientboundBlockEntityDataPacket.create(this, be -> tag);
     }
 
     @Override
-    public void onDataPacket(net.minecraft.network.Connection net,
-            net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket pkt) {
+    public void onDataPacket(Connection net,
+            ClientboundBlockEntityDataPacket pkt) {
         readSyncData(pkt.getTag());
     }
 

@@ -1,5 +1,8 @@
 package ruby.bamboo.client.gui;
 
+import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
+import java.util.function.IntConsumer;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.Tooltip;
@@ -26,7 +29,7 @@ public final class ConfigWidgets {
     }
 
     public static Button intCycle(Component label, int current, int min, int max,
-            java.util.function.IntConsumer setter, int x, int y, int w, int h) {
+            IntConsumer setter, int x, int y, int w, int h) {
         return Button.builder(Component.literal(label.getString() + ": " + current), b -> {
             int cur = current;
             try {
@@ -43,7 +46,7 @@ public final class ConfigWidgets {
     }
 
     public static Button choices(Component label, String current, String[] choices,
-            java.util.function.Consumer<String> setter, int x, int y, int w, int h) {
+            Consumer<String> setter, int x, int y, int w, int h) {
         return Button.builder(Component.literal(label.getString() + ": " + current), b -> {
             String cur = current;
             try {
@@ -61,7 +64,7 @@ public final class ConfigWidgets {
     }
 
     public static Button doubleStep(Component label, double current, double min, double max, double step,
-            java.util.function.DoubleConsumer setter, int x, int y, int w, int h) {
+            DoubleConsumer setter, int x, int y, int w, int h) {
         String fmt = String.format("%.2f", current);
         return Button.builder(Component.literal(label.getString() + ": " + fmt), b -> {
             double cur = current;

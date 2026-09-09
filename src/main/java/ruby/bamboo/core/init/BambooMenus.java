@@ -8,6 +8,7 @@ import net.minecraftforge.registries.RegistryObject;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.gui.CampfireMenu;
 import ruby.bamboo.gui.MillStoneMenu;
+import ruby.bamboo.gui.SackMenu;
 
 /**
  * MenuType 登録 (石臼GUI用に新規追加)。
@@ -28,8 +29,8 @@ public final class BambooMenus {
             () -> new MenuType<>(CampfireMenu::new, FeatureFlags.VANILLA_SET));
 
     /** 袋のメニュー (1スロット)。クライアント側ファクトリは (id, inv) 2引数版 */
-    public static final RegistryObject<MenuType<ruby.bamboo.gui.SackMenu>> SACK = BambooMod.MENUS.register("sack",
-            () -> new MenuType<>(ruby.bamboo.gui.SackMenu::new, FeatureFlags.VANILLA_SET));
+    public static final RegistryObject<MenuType<SackMenu>> SACK = BambooMod.MENUS.register("sack",
+            () -> new MenuType<>(SackMenu::new, FeatureFlags.VANILLA_SET));
 
     /**
      * 静的初期化順序の保証用ダミー。BambooMod コンストラクタから呼ばれる。

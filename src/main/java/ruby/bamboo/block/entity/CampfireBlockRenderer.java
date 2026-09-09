@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import ruby.bamboo.BambooMod;
@@ -33,7 +34,7 @@ import ruby.bamboo.block.entity.CampfireBlockEntity.BakeType;
  * インベントリアイコンはフラット(1枚絵: item/generated + item/campfire.png)のため
  * BEWLR は不要。
  */
-public class CampfireBlockRenderer implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<CampfireBlockEntity> {
+public class CampfireBlockRenderer implements BlockEntityRenderer<CampfireBlockEntity> {
 
     public static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID, "textures/entity/campfire.png");
 

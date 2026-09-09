@@ -1,6 +1,7 @@
 package ruby.bamboo.crafting.grind;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
@@ -119,7 +120,7 @@ public class BambooGrindRecipe implements Recipe<Container> {
             } else if (json.has("input")) {
                 ing = Ingredient.fromJson(json.get("input"));
             } else {
-                throw new com.google.gson.JsonParseException("Missing ingredient for millstone recipe");
+                throw new JsonParseException("Missing ingredient for millstone recipe");
             }
             int count = GsonHelper.getAsInt(json, "count", 1);
             if (json.has("inputCount")) count = GsonHelper.getAsInt(json, "inputCount", count);
@@ -133,7 +134,7 @@ public class BambooGrindRecipe implements Recipe<Container> {
                 chance = GsonHelper.getAsFloat(json, "bonusChance", 0);
                 if (json.has("bonus_chance")) chance = GsonHelper.getAsFloat(json, "bonus_chance", chance);
             }
-            if (result.isEmpty()) throw new com.google.gson.JsonParseException("Result empty for millstone recipe");
+            if (result.isEmpty()) throw new JsonParseException("Result empty for millstone recipe");
             return new BambooGrindRecipe(id, group, cat, ing, count, result, bonus, chance);
         }
 

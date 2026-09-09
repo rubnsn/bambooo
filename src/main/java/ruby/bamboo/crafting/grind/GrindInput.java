@@ -2,9 +2,11 @@ package ruby.bamboo.crafting.grind;
 
 import java.util.Optional;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /**
  * 石臼レシピの入力条件 (旧 IGrindInputItem / GrindInputItem / GrindInputOreItem の置き換え)。
@@ -35,7 +37,7 @@ public final class GrindInput {
 
     /** タグ一致の入力条件 (旧 GrindInputOreItem 相当) */
     public static GrindInput ofTag(TagKey<Item> tag, int count) {
-        return new GrindInput(Optional.of(tag), net.minecraft.world.item.Items.AIR, count);
+        return new GrindInput(Optional.of(tag), Items.AIR, count);
     }
 
     public boolean isTag() {
@@ -60,7 +62,7 @@ public final class GrindInput {
      */
     public Item exemplarItem() {
         if (tag.isPresent()) {
-            return net.minecraft.core.registries.BuiltInRegistries.ITEM
+            return BuiltInRegistries.ITEM
                     .getTag(tag.get())
                     .map(holders -> holders.iterator().next().value())
                     .orElse(item);

@@ -2,6 +2,7 @@ package ruby.bamboo.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -85,7 +86,7 @@ public class CampfireBlock extends BaseEntityBlock {
             double x = pos.getX() + 0.5 + (random.nextFloat() * 0.4F - 0.2F);
             double y = pos.getY() + 0.2;
             double z = pos.getZ() + 0.5 + (random.nextFloat() * 0.4F - 0.2F);
-            level.addParticle(net.minecraft.core.particles.ParticleTypes.FLAME, x, y, z, 0.0D, 0.0D, 0.0D);
+            level.addParticle(ParticleTypes.FLAME, x, y, z, 0.0D, 0.0D, 0.0D);
         }
     }
 

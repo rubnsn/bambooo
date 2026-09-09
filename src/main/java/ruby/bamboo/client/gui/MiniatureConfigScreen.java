@@ -1,8 +1,12 @@
 package ruby.bamboo.client.gui;
 
+import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
+import java.util.function.IntConsumer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -48,7 +52,7 @@ public class MiniatureConfigScreen extends Screen {
         this.addRenderableWidget(CycleButton.onOffBuilder(MiniatureConfig.CLIENT.particleEnabled.get())
                 .withInitialValue(MiniatureConfig.CLIENT.particleEnabled.get())
                 .displayOnlyValue()
-                .withTooltip(v -> net.minecraft.client.gui.components.Tooltip.create(Component.translatable("bamboomod.config.miniature.particle.enabled.tooltip")))
+                .withTooltip(v -> Tooltip.create(Component.translatable("bamboomod.config.miniature.particle.enabled.tooltip")))
                 .create(leftX, yL, colW, h, Component.translatable("bamboomod.config.miniature.particle.enabled"),
                         (btn, val) -> MiniatureConfig.CLIENT.particleEnabled.set(val)));
         yL += gap;
@@ -114,15 +118,15 @@ public class MiniatureConfigScreen extends Screen {
                 .bounds(centerX - 100, bottomY, 200, 20).build());
     }
 
-    private Button createIntButton(Component label, int current, int min, int max, java.util.function.IntConsumer setter, int x, int y, int w, int h) {
+    private Button createIntButton(Component label, int current, int min, int max, IntConsumer setter, int x, int y, int w, int h) {
         return ConfigWidgets.intCycle(label, current, min, max, setter, x, y, w, h);
     }
 
-    private Button createChoicesButton(Component label, String current, String[] choices, java.util.function.Consumer<String> setter, int x, int y, int w, int h) {
+    private Button createChoicesButton(Component label, String current, String[] choices, Consumer<String> setter, int x, int y, int w, int h) {
         return ConfigWidgets.choices(label, current, choices, setter, x, y, w, h);
     }
 
-    private Button createDoubleButton(Component label, double current, double min, double max, double step, java.util.function.DoubleConsumer setter, int x, int y, int w, int h) {
+    private Button createDoubleButton(Component label, double current, double min, double max, double step, DoubleConsumer setter, int x, int y, int w, int h) {
         return ConfigWidgets.doubleStep(label, current, min, max, step, setter, x, y, w, h);
     }
 

@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.core.Direction;
@@ -38,6 +39,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import ruby.bamboo.block.entity.BambooPotBlockEntity;
+import ruby.bamboo.core.init.BambooBlocks;
 
 /**
  * 竹鉢 (sakura BambooPot 移植・固定形状版)。
@@ -69,7 +71,7 @@ public class BambooPotBlock extends BaseEntityBlock {
     public static final VoxelShape SHAPE_COLLISION = SHAPE_NS;
 
     public static final BooleanProperty ATTACHED = BlockStateProperties.ATTACHED;
-    public static final net.minecraft.world.level.block.state.properties.DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<BambooPotColor> COLOR = EnumProperty.create("color", BambooPotColor.class);
 
     public BambooPotBlock() {
@@ -84,7 +86,7 @@ public class BambooPotBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(ATTACHED, FACING, COLOR);
     }
@@ -281,10 +283,10 @@ public class BambooPotBlock extends BaseEntityBlock {
     public static boolean isValidPlant(ItemStack stack) {
         if (stack.isEmpty()) return false;
         try {
-            if (stack.is(ruby.bamboo.core.init.BambooBlocks.BAMBOO_POT.get().asItem())) return false; // 鉢は植物扱いしない
+            if (stack.is(BambooBlocks.BAMBOO_POT.get().asItem())) return false; // 鉢は植物扱いしない
         } catch (Exception ignored) {}
         try {
-            if (stack.is(ruby.bamboo.core.init.BambooBlocks.FLOWER_BED.get().asItem())) return false; // 花壇も植物扱いしない
+            if (stack.is(BambooBlocks.FLOWER_BED.get().asItem())) return false; // 花壇も植物扱いしない
         } catch (Exception ignored) {}
         if (stack.is(ItemTags.SMALL_FLOWERS)) return true;
         if (stack.is(ItemTags.FLOWERS)) return true;

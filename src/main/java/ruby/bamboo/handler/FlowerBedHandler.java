@@ -6,6 +6,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -75,7 +76,7 @@ public final class FlowerBedHandler {
         double hitZ = Mth.clamp(event.getHitVec().getLocation().z - pos.getZ(), 0.0, 1.0);
         float offsetX = FlowerBedBlock.gridSnap(hitX);
         float offsetZ = FlowerBedBlock.gridSnap(hitZ);
-        boolean isCactus = handStack.is(net.minecraft.world.item.Items.CACTUS);
+        boolean isCactus = handStack.is(Items.CACTUS);
         float scale = (isCactus ? BambooPotBlock.GRID_SCALE_CACTUS : BambooPotBlock.GRID_SCALE) + (level.random.nextFloat() - 0.5f) * 0.02f;
 
         boolean ok = bed.addPlant(handStack, offsetX, offsetZ, scale, true);

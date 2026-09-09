@@ -2,6 +2,9 @@ package ruby.bamboo.util;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -9,6 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.joml.Vector3f;
 import ruby.bamboo.api.ILightColor;
+import ruby.bamboo.core.config.ColoredLightConfig;
 import ruby.bamboo.core.init.BambooCapabilities;
 
 import java.util.List;
@@ -62,7 +66,7 @@ public final class ColoredLightUtil {
      *
      * @return 1.0基準の乗算係数 (白=1,1,1)。光源が無ければ 1,1,1 を返す。
      */
-    private static java.lang.reflect.Field LEVEL_FIELD = null;
+    private static Field LEVEL_FIELD = null;
     private static Class<?> LEVEL_FIELD_CLASS = null;
 
     private static Level extractLevel(BlockGetter getter) {
@@ -92,7 +96,7 @@ public final class ColoredLightUtil {
             }
         }
         try {
-            var mc = net.minecraft.client.Minecraft.getInstance();
+            var mc = Minecraft.getInstance();
             if (mc != null && mc.level != null) return mc.level;
         } catch (Exception ignored) {
         }
@@ -186,12 +190,12 @@ public final class ColoredLightUtil {
      */
     public static float daylightFactor(Level level) {
         try {
-            if (!ruby.bamboo.core.config.ColoredLightConfig.CLIENT.daylightSuppressEnabled.get()) return 1f;
+            if (!ColoredLightConfig.CLIENT.daylightSuppressEnabled.get()) return 1f;
             float daylight = daylightAmount(level);
             if (daylight <= 0f) return 1f;
             double rate;
             try {
-                rate = ruby.bamboo.core.config.ColoredLightConfig.CLIENT.daylightSuppressRate.get();
+                rate = ColoredLightConfig.CLIENT.daylightSuppressRate.get();
             } catch (Exception e) {
                 rate = 0.75;
             }
@@ -230,8 +234,8 @@ public final class ColoredLightUtil {
             }
         }
 
-        java.util.ArrayList<Integer> colors = new java.util.ArrayList<>();
-        java.util.ArrayList<Float> weights = new java.util.ArrayList<>();
+        ArrayList<Integer> colors = new ArrayList<>();
+        ArrayList<Float> weights = new ArrayList<>();
 
         Level capLevel = extractLevel(level);
 

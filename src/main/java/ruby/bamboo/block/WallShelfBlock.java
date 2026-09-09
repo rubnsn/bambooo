@@ -8,6 +8,7 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -131,7 +132,7 @@ public class WallShelfBlock extends BaseEntityBlock {
         boolean updated;
         if (!shelf.getItem(slot).isEmpty()) {
             // 取出
-            net.minecraft.world.item.ItemStack removed = shelf.removeItemNoUpdate(slot);
+            ItemStack removed = shelf.removeItemNoUpdate(slot);
             // setChanged は removeItemNoUpdateでは呼ばれないため明示
             shelf.setChanged();
             if (!removed.isEmpty()) {
@@ -142,15 +143,15 @@ public class WallShelfBlock extends BaseEntityBlock {
             updated = true;
             // 取出は空でも成功扱い (旧は removeStackFromSlot が常に返す)
         } else {
-            net.minecraft.world.item.ItemStack held = player.getItemInHand(hand);
+            ItemStack held = player.getItemInHand(hand);
             if (!held.isEmpty()) {
                 if (isCreative) {
-                    net.minecraft.world.item.ItemStack copy = held.copy();
+                    ItemStack copy = held.copy();
                     copy.setCount(1);
                     shelf.setItem(slot, copy);
                 } else {
                     // split(1)相当: 1個だけ移動
-                    net.minecraft.world.item.ItemStack one = held.split(1);
+                    ItemStack one = held.split(1);
                     shelf.setItem(slot, one);
                 }
                 updated = true;

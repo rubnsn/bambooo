@@ -1,5 +1,6 @@
 package ruby.bamboo.item;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -13,6 +14,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -46,8 +48,8 @@ public class BambooBowItem extends BowItem {
      * インベントリ内の一意な ArrowBase 種リスト (旧 getArrowTypes 相当)。
      */
     public List<ItemStack> getArrowTypes(Player player) {
-        List<ItemStack> result = new java.util.ArrayList<>();
-        List<ItemStack> all = new java.util.ArrayList<>();
+        List<ItemStack> result = new ArrayList<>();
+        List<ItemStack> all = new ArrayList<>();
         all.addAll(player.getInventory().items);
         all.addAll(player.getInventory().offhand);
         for (ItemStack stack : all) {
@@ -208,7 +210,7 @@ public class BambooBowItem extends BowItem {
     }
 
     /** インベントリ全体から指定アイテム数を消費 */
-    private void consumeFromInventory(Player player, net.minecraft.world.item.Item item, int amount) {
+    private void consumeFromInventory(Player player, Item item, int amount) {
         var inv = player.getInventory();
         for (int i = 0; i < inv.getContainerSize() && amount > 0; i++) {
             ItemStack s = inv.getItem(i);
@@ -220,7 +222,7 @@ public class BambooBowItem extends BowItem {
         }
     }
 
-    private static int countStack(Player player, net.minecraft.world.item.Item item) {
+    private static int countStack(Player player, Item item) {
         int total = 0;
         var inv = player.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {

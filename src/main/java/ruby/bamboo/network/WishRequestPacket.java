@@ -4,6 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 import ruby.bamboo.BambooMod;
+import ruby.bamboo.core.wish.WishManager;
 import ruby.bamboo.handler.WishEventHandler;
 
 import java.util.function.Supplier;
@@ -52,7 +53,7 @@ public class WishRequestPacket {
             }
             raw = raw.replaceAll("\\p{Cntrl}", "");
             BambooMod.LOGGER.info("Wish received from {}: '{}'", player.getName().getString(), raw);
-            ruby.bamboo.core.wish.WishManager.resolveAndExecute(player, raw);
+            WishManager.resolveAndExecute(player, raw);
         });
         ctx.get().setPacketHandled(true);
     }

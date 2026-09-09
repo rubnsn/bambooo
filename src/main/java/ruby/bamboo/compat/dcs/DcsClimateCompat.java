@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.fml.ModList;
 
@@ -77,7 +78,7 @@ public final class DcsClimateCompat {
     public static boolean isLeafyFlower(BlockState state) {
         if (state == null) return false;
         try {
-            if (state.getBlock() instanceof net.minecraft.world.level.block.LeavesBlock) return true;
+            if (state.getBlock() instanceof LeavesBlock) return true;
             if (!isLoaded()) return false;
             Class<?> cls = leavesCropBlockClass;
             if (cls == null && !leavesCropBlockResolved) {

@@ -1,5 +1,6 @@
 package ruby.bamboo.client.gui;
 
+import java.lang.reflect.Field;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -7,6 +8,9 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import ruby.bamboo.core.init.BambooItems;
 import ruby.bamboo.network.BambooNetwork;
 import ruby.bamboo.network.FishingCastRequestPacket;
 
@@ -39,7 +43,7 @@ public class FishingPowerGaugeScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(net.minecraft.client.gui.GuiGraphics gfx) {
+    public void renderBackground(GuiGraphics gfx) {
         // 暗転なし
     }
 
@@ -53,8 +57,8 @@ public class FishingPowerGaugeScreen extends Screen {
                 stopUsingAndClose();
                 return;
             }
-            boolean hasRod = player.getMainHandItem().getItem() == ruby.bamboo.core.init.BambooItems.BAMBOO_ROD.get()
-                    || player.getOffhandItem().getItem() == ruby.bamboo.core.init.BambooItems.BAMBOO_ROD.get();
+            boolean hasRod = player.getMainHandItem().getItem() == BambooItems.BAMBOO_ROD.get()
+                    || player.getOffhandItem().getItem() == BambooItems.BAMBOO_ROD.get();
             if (!hasRod) {
                 stopUsingAndClose();
                 return;
@@ -164,25 +168,25 @@ public class FishingPowerGaugeScreen extends Screen {
         mc.setScreen(null);
     }
 
-    private void keepBowPull(net.minecraft.world.entity.player.Player player) {
+    private void keepBowPull(Player player) {
         // 初回は BambooRodItem.use で startUsing 済み。以降は満引きを維持
         if (!player.isUsingItem()) {
             // 離されたら再開して引く動作を維持
             InteractionHand hand = InteractionHand.MAIN_HAND;
-            if (player.getOffhandItem().getItem() == ruby.bamboo.core.init.BambooItems.BAMBOO_ROD.get())
+            if (player.getOffhandItem().getItem() == BambooItems.BAMBOO_ROD.get())
                 hand = InteractionHand.OFF_HAND;
             player.startUsingItem(hand);
         }
         // 満引き状態を維持するため remaining を 72000-20 に固定
         try {
-            java.lang.reflect.Field f = net.minecraft.world.entity.LivingEntity.class.getDeclaredField("useItemRemaining");
+            Field f = LivingEntity.class.getDeclaredField("useItemRemaining");
             f.setAccessible(true);
             int dur = 72000;
             // BOW の満引きは 20tick なので 20 を引いた値を維持
             f.setInt(player, dur - 20);
         } catch (Exception ignored) {
             try {
-                java.lang.reflect.Field f2 = net.minecraft.world.entity.LivingEntity.class.getDeclaredField("f_21209_");
+                Field f2 = LivingEntity.class.getDeclaredField("f_21209_");
                 f2.setAccessible(true);
                 f2.setInt(player, 72000 - 20);
             } catch (Exception ignored2) {}

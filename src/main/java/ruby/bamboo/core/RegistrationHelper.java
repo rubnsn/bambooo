@@ -1,5 +1,6 @@
 package ruby.bamboo.core;
 
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -59,7 +60,7 @@ public final class RegistrationHelper {
     public static RegistryObject<Block> registerWithDefaultItem(String name, Supplier<? extends Block> factory,
             Item.Properties props) {
         RegistryObject<Block> block = BambooMod.BLOCKS.register(name, factory);
-        BambooMod.ITEMS.register(name, () -> new net.minecraft.world.item.BlockItem(block.get(), props));
+        BambooMod.ITEMS.register(name, () -> new BlockItem(block.get(), props));
         return block;
     }
 

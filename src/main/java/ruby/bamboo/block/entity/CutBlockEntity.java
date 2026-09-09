@@ -1,24 +1,34 @@
 package ruby.bamboo.block.entity;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.registries.ForgeRegistries;
+import ruby.bamboo.block.CutBlock;
 import ruby.bamboo.core.init.BambooBlockEntities;
 
 /**
@@ -48,7 +58,7 @@ public class CutBlockEntity extends BlockEntity {
     private byte zLevel = 0;
 
     // 複数エントリ
-    private final java.util.List<CutEntry> entries = new java.util.ArrayList<>();
+    private final List<CutEntry> entries = new ArrayList<>();
 
     private VoxelShape shapeCache = null;
     private boolean dirty = false;
@@ -116,9 +126,9 @@ public class CutBlockEntity extends BlockEntity {
         return Tier.OTHER;
     }
 
-    public static Tier getTierFromStack(net.minecraft.world.item.ItemStack stack) {
+    public static Tier getTierFromStack(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return Tier.OTHER;
-        if (stack.getItem() instanceof net.minecraft.world.item.BlockItem bi) {
+        if (stack.getItem() instanceof BlockItem bi) {
             BlockState st = bi.getBlock().defaultBlockState();
             if (isFullCubeState(st)) return Tier.FULL;
             return Tier.OTHER;
@@ -148,7 +158,7 @@ public class CutBlockEntity extends BlockEntity {
     }
 
     /** ハーフ(8x16x16) 6姿勢をヒット位置と面から決定。中央8x8は面平行、周辺は縦半 */
-    public static int[] computeHalfBounds(net.minecraft.world.phys.Vec3 hitVec, BlockPos clickedPos, Direction clickedFace) {
+    public static int[] computeHalfBounds(Vec3 hitVec, BlockPos clickedPos, Direction clickedFace) {
         double fx = hitVec.x - clickedPos.getX();
         double fy = hitVec.y - clickedPos.getY();
         double fz = hitVec.z - clickedPos.getZ();
@@ -216,7 +226,7 @@ public class CutBlockEntity extends BlockEntity {
     }
 
     /** 新規配置用キューブ(8 or 4) のbounds。面隣接側に寄せる */
-    public static int[] computeCubeBoundsForNewPlacement(net.minecraft.world.phys.Vec3 hitVec, BlockPos clickedPos, Direction clickedFace, int size) {
+    public static int[] computeCubeBoundsForNewPlacement(Vec3 hitVec, BlockPos clickedPos, Direction clickedFace, int size) {
         double fx = hitVec.x - clickedPos.getX();
         double fy = hitVec.y - clickedPos.getY();
         double fz = hitVec.z - clickedPos.getZ();
@@ -267,16 +277,16 @@ public class CutBlockEntity extends BlockEntity {
     private static final double HIT_EPS = 0.005;
 
     /** 既存BE内で hitVec+face*eps が空隙セルに入るかを判定。Tierで分岐し canAddEntry も確認 */
-    public static boolean shouldFillInside(CutBlockEntity be, BlockPos bePos, net.minecraft.world.phys.Vec3 hitVec, Direction face, Tier tier) {
+    public static boolean shouldFillInside(CutBlockEntity be, BlockPos bePos, Vec3 hitVec, Direction face, Tier tier) {
         return getInsideCandidate(be, bePos, hitVec, face, tier) != null;
     }
 
     /** 前面判定が真の時の candidate bounds を返す。偽なら null */
-    public static int[] getInsideCandidate(CutBlockEntity be, BlockPos bePos, net.minecraft.world.phys.Vec3 hitVec, Direction face, Tier tier) {
+    public static int[] getInsideCandidate(CutBlockEntity be, BlockPos bePos, Vec3 hitVec, Direction face, Tier tier) {
         if (be == null || bePos == null || hitVec == null || face == null || tier == null) return null;
         if (tier == Tier.OTHER || tier == Tier.FULL) return null;
         if (be.isEmpty()) return null;
-        net.minecraft.world.phys.Vec3 insidePos = hitVec.add(face.getStepX() * HIT_EPS, face.getStepY() * HIT_EPS, face.getStepZ() * HIT_EPS);
+        Vec3 insidePos = hitVec.add(face.getStepX() * HIT_EPS, face.getStepY() * HIT_EPS, face.getStepZ() * HIT_EPS);
         double fx = insidePos.x - bePos.getX();
         double fy = insidePos.y - bePos.getY();
         double fz = insidePos.z - bePos.getZ();
@@ -339,7 +349,7 @@ public class CutBlockEntity extends BlockEntity {
     }
 
     /** candidate bounds が insidePos を含むか */
-    private static boolean containsVec(net.minecraft.world.phys.Vec3 pos, BlockPos origin, int[] b) {
+    private static boolean containsVec(Vec3 pos, BlockPos origin, int[] b) {
         double fx = pos.x - origin.getX();
         double fy = pos.y - origin.getY();
         double fz = pos.z - origin.getZ();
@@ -349,7 +359,7 @@ public class CutBlockEntity extends BlockEntity {
     }
 
     /** HALF既存充填用のboundsを hitVec/face から算出。CutBlockItemの private をBE側に移設 */
-    public static int[] computeHalfBoundsForExistingInternal(net.minecraft.world.phys.Vec3 hitVec, BlockPos pos, Direction face) {
+    public static int[] computeHalfBoundsForExistingInternal(Vec3 hitVec, BlockPos pos, Direction face) {
         double fx = hitVec.x - pos.getX();
         double fy = hitVec.y - pos.getY();
         double fz = hitVec.z - pos.getZ();
@@ -411,11 +421,11 @@ public class CutBlockEntity extends BlockEntity {
     }
 
     /** 隣接BE用の candidate を返す。前面判定が真なら bounds、偽なら null */
-    public static int[] getAdjacentCandidate(CutBlockEntity placeBe, BlockPos placePos, net.minecraft.world.phys.Vec3 hitVec, Direction face, Tier tier) {
+    public static int[] getAdjacentCandidate(CutBlockEntity placeBe, BlockPos placePos, Vec3 hitVec, Direction face, Tier tier) {
         if (placeBe == null || placePos == null || hitVec == null || face == null || tier == null) return null;
         if (tier == Tier.OTHER || tier == Tier.FULL) return null;
         if (placeBe.isEmpty()) return null;
-        net.minecraft.world.phys.Vec3 insidePlace = hitVec.add(face.getStepX() * HIT_EPS, face.getStepY() * HIT_EPS, face.getStepZ() * HIT_EPS);
+        Vec3 insidePlace = hitVec.add(face.getStepX() * HIT_EPS, face.getStepY() * HIT_EPS, face.getStepZ() * HIT_EPS);
         double fx = insidePlace.x - placePos.getX();
         double fy = insidePlace.y - placePos.getY();
         double fz = insidePlace.z - placePos.getZ();
@@ -468,7 +478,7 @@ public class CutBlockEntity extends BlockEntity {
     }
 
     /** 隣接BE用にも同一判定を流用。insidePos( hitVec+face*eps )が placePos 内に入るかで判定 */
-    public static boolean shouldFillAdjacentInside(CutBlockEntity placeBe, BlockPos placePos, net.minecraft.world.phys.Vec3 hitVec, Direction face, Tier tier) {
+    public static boolean shouldFillAdjacentInside(CutBlockEntity placeBe, BlockPos placePos, Vec3 hitVec, Direction face, Tier tier) {
         return getAdjacentCandidate(placeBe, placePos, hitVec, face, tier) != null;
     }
 
@@ -568,7 +578,7 @@ public class CutBlockEntity extends BlockEntity {
      * @deprecated FACING依存の旧API。絶対Boundsを返す。
      */
     @Deprecated
-    public int[] getBounds(net.minecraft.core.Direction facing) {
+    public int[] getBounds(Direction facing) {
         return getBoundsAbsolute();
     }
 
@@ -600,7 +610,7 @@ public class CutBlockEntity extends BlockEntity {
     }
 
     @Deprecated
-    public VoxelShape getShapeCache(net.minecraft.core.Direction facing) {
+    public VoxelShape getShapeCache(Direction facing) {
         return getShapeCacheAbsolute();
     }
 
@@ -615,8 +625,8 @@ public class CutBlockEntity extends BlockEntity {
 
     // ===== 複数エントリ管理 =====
 
-    public java.util.List<CutEntry> getEntries() {
-        return java.util.Collections.unmodifiableList(this.entries);
+    public List<CutEntry> getEntries() {
+        return Collections.unmodifiableList(this.entries);
     }
 
     public int getEntryCount() {
@@ -725,28 +735,28 @@ public class CutBlockEntity extends BlockEntity {
 
     /** 旧2軸互換 */
     @Deprecated
-    public static int[] computeBoundsFromHit(net.minecraft.world.phys.Vec3 hitVec, BlockPos pos, byte yLevel, byte hLevel, net.minecraft.core.Direction facing) {
+    public static int[] computeBoundsFromHit(Vec3 hitVec, BlockPos pos, byte yLevel, byte hLevel, Direction facing) {
         return computeBoundsFromHit(hitVec, pos, pos, hLevel, yLevel, (byte) 0, facing, null);
     }
 
     @Deprecated
-    public static int[] computeBoundsFromHitForExisting(net.minecraft.world.phys.Vec3 hitVec, BlockPos clickedPos, byte yLevel, byte hLevel, net.minecraft.core.Direction facing) {
+    public static int[] computeBoundsFromHitForExisting(Vec3 hitVec, BlockPos clickedPos, byte yLevel, byte hLevel, Direction facing) {
         return computeBoundsFromHit(hitVec, clickedPos, clickedPos, hLevel, yLevel, (byte) 0, facing, null);
     }
 
     @Deprecated
-    public int[] findBestBoundsForPlacement(net.minecraft.world.phys.Vec3 hitVec, BlockPos pos, byte yLevel, byte hLevel, net.minecraft.core.Direction facing, net.minecraft.core.Direction clickedFace) {
+    public int[] findBestBoundsForPlacement(Vec3 hitVec, BlockPos pos, byte yLevel, byte hLevel, Direction facing, Direction clickedFace) {
         return findBestBoundsForPlacement(hitVec, pos, hLevel, yLevel, (byte) 0, clickedFace);
     }
 
     /** 3軸: 空き空間を考慮して最適なBoundsを探索（ヒットに最も近く、重ならないもの） */
-    public int[] findBestBoundsForPlacement(net.minecraft.world.phys.Vec3 hitVec, BlockPos pos, byte xLevel, byte yLevel, byte zLevel, net.minecraft.core.Direction clickedFace) {
+    public int[] findBestBoundsForPlacement(Vec3 hitVec, BlockPos pos, byte xLevel, byte yLevel, byte zLevel, Direction clickedFace) {
         int xSize = levelToSize(xLevel);
         int ySize = levelToSize(yLevel);
         int zSize = levelToSize(zLevel);
-        java.util.List<Integer> xOffsets = new java.util.ArrayList<>();
-        java.util.List<Integer> yOffsets = new java.util.ArrayList<>();
-        java.util.List<Integer> zOffsets = new java.util.ArrayList<>();
+        List<Integer> xOffsets = new ArrayList<>();
+        List<Integer> yOffsets = new ArrayList<>();
+        List<Integer> zOffsets = new ArrayList<>();
         if (xSize == 16) xOffsets.add(0);
         else if (xSize == 8) { xOffsets.add(0); xOffsets.add(4); xOffsets.add(8); }
         else { xOffsets.add(0); xOffsets.add(4); xOffsets.add(8); xOffsets.add(12); }
@@ -789,7 +799,7 @@ public class CutBlockEntity extends BlockEntity {
     }
 
     /** 汎用: hitVec と targetPos(配置先) と clickedPos/face を考慮してBounds決定 (3軸絶対) */
-    public static int[] computeBoundsFromHit(net.minecraft.world.phys.Vec3 hitVec, BlockPos targetPos, BlockPos clickedPos, byte xLevel, byte yLevel, byte zLevel, net.minecraft.core.Direction facing, net.minecraft.core.Direction clickedFace) {
+    public static int[] computeBoundsFromHit(Vec3 hitVec, BlockPos targetPos, BlockPos clickedPos, byte xLevel, byte yLevel, byte zLevel, Direction facing, Direction clickedFace) {
         int xSize = levelToSize(xLevel);
         int ySize = levelToSize(yLevel);
         int zSize = levelToSize(zLevel);
@@ -812,9 +822,9 @@ public class CutBlockEntity extends BlockEntity {
         // 各軸: clickedFaceが同軸ならヒットは境界上なのでオフセット0固定
         boolean canUseX = true, canUseY = true, canUseZ = true;
         if (clickedFace != null) {
-            if (clickedFace.getAxis() == net.minecraft.core.Direction.Axis.X) canUseX = false;
-            if (clickedFace.getAxis() == net.minecraft.core.Direction.Axis.Y) canUseY = false;
-            if (clickedFace.getAxis() == net.minecraft.core.Direction.Axis.Z) canUseZ = false;
+            if (clickedFace.getAxis() == Direction.Axis.X) canUseX = false;
+            if (clickedFace.getAxis() == Direction.Axis.Y) canUseY = false;
+            if (clickedFace.getAxis() == Direction.Axis.Z) canUseZ = false;
         }
         if (xSize != 16) {
             if (canUseX) {
@@ -889,16 +899,16 @@ public class CutBlockEntity extends BlockEntity {
     }
 
     // 旧シグネチャ互換 (facing無視)
-    public static int[] computeBoundsFromHit(net.minecraft.world.phys.Vec3 hitVec, BlockPos targetPos, BlockPos clickedPos, byte yLevel, byte hLevel, net.minecraft.core.Direction facing, net.minecraft.core.Direction clickedFace) {
+    public static int[] computeBoundsFromHit(Vec3 hitVec, BlockPos targetPos, BlockPos clickedPos, byte yLevel, byte hLevel, Direction facing, Direction clickedFace) {
         return computeBoundsFromHit(hitVec, targetPos, clickedPos, hLevel, yLevel, (byte) 0, facing, clickedFace);
     }
 
     // ===== フルキューブ判定（静的） =====
 
-    public static boolean isFullCubeState(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+    public static boolean isFullCubeState(BlockState state, BlockGetter level, BlockPos pos) {
         if (state == null || state.isAir()) return false;
         if (state.hasBlockEntity()) return false;
-        if (state.getRenderShape() != net.minecraft.world.level.block.RenderShape.MODEL) return false;
+        if (state.getRenderShape() != RenderShape.MODEL) return false;
         try {
             if (Block.isShapeFullBlock(state.getCollisionShape(level, pos))) return true;
             if (Block.isShapeFullBlock(state.getShape(level, pos))) return true;
@@ -911,7 +921,7 @@ public class CutBlockEntity extends BlockEntity {
     public static boolean isFullCubeState(BlockState state) {
         if (state == null || state.isAir()) return false;
         if (state.hasBlockEntity()) return false;
-        if (state.getRenderShape() != net.minecraft.world.level.block.RenderShape.MODEL) return false;
+        if (state.getRenderShape() != RenderShape.MODEL) return false;
         try {
             VoxelShape shape = state.getShape(null, BlockPos.ZERO);
             if (shape != null && Block.isShapeFullBlock(shape)) return true;
@@ -933,7 +943,7 @@ public class CutBlockEntity extends BlockEntity {
     public void rotate(Rotation rot) {
         if (rot == null || rot == Rotation.NONE) return;
         if (!this.entries.isEmpty()) {
-            java.util.List<CutEntry> rotated = new java.util.ArrayList<>();
+            List<CutEntry> rotated = new ArrayList<>();
             for (CutEntry e : this.entries) {
                 rotated.add(new CutEntry(e.state, rotateBounds(e.bounds, rot)));
             }
@@ -973,7 +983,7 @@ public class CutBlockEntity extends BlockEntity {
     public void mirror(Mirror mirror) {
         if (mirror == null || mirror == Mirror.NONE) return;
         if (!this.entries.isEmpty()) {
-            java.util.List<CutEntry> mirrored = new java.util.ArrayList<>();
+            List<CutEntry> mirrored = new ArrayList<>();
             for (CutEntry e : this.entries) {
                 mirrored.add(new CutEntry(e.state, mirrorBounds(e.bounds, mirror)));
             }
@@ -1040,8 +1050,8 @@ public class CutBlockEntity extends BlockEntity {
     public void setBlockState(BlockState state) {
         BlockState old = this.getBlockState();
         // pendingがあればそれを優先（CutBlock.rotate/mirrorからのThreadLocal）
-        Rotation pendingRot = ruby.bamboo.block.CutBlock.consumePendingRotation();
-        Mirror pendingMirror = ruby.bamboo.block.CutBlock.consumePendingMirror();
+        Rotation pendingRot = CutBlock.consumePendingRotation();
+        Mirror pendingMirror = CutBlock.consumePendingMirror();
         boolean handled = false;
         if (pendingRot != null && pendingRot != Rotation.NONE) {
             rotate(pendingRot);
@@ -1051,10 +1061,10 @@ public class CutBlockEntity extends BlockEntity {
             mirror(pendingMirror);
             handled = true;
         }
-        if (!handled && old != null && old.hasProperty(ruby.bamboo.block.CutBlock.FACING)
-                && state.hasProperty(ruby.bamboo.block.CutBlock.FACING)) {
-            Direction of = old.getValue(ruby.bamboo.block.CutBlock.FACING);
-            Direction nf = state.getValue(ruby.bamboo.block.CutBlock.FACING);
+        if (!handled && old != null && old.hasProperty(CutBlock.FACING)
+                && state.hasProperty(CutBlock.FACING)) {
+            Direction of = old.getValue(CutBlock.FACING);
+            Direction nf = state.getValue(CutBlock.FACING);
             if (of != nf) {
                 Rotation delta = getRotationFromFacing(of, nf);
                 if (delta != Rotation.NONE) {
@@ -1159,7 +1169,7 @@ public class CutBlockEntity extends BlockEntity {
 
     public void writeSyncData(CompoundTag tag) {
         if (!this.entries.isEmpty()) {
-            net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
+            ListTag list = new ListTag();
             for (CutEntry e : this.entries) {
                 CompoundTag entryTag = new CompoundTag();
                 entryTag.put(TAG_STATE, NbtUtils.writeBlockState(e.state));
@@ -1190,7 +1200,7 @@ public class CutBlockEntity extends BlockEntity {
         this.entries.clear();
         this.shapeCache = null;
         if (tag.contains(TAG_ENTRIES, Tag.TAG_LIST)) {
-            net.minecraft.nbt.ListTag list = tag.getList(TAG_ENTRIES, Tag.TAG_COMPOUND);
+            ListTag list = tag.getList(TAG_ENTRIES, Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 CompoundTag entryTag = list.getCompound(i);
                 if (!entryTag.contains(TAG_STATE, Tag.TAG_COMPOUND)) continue;
@@ -1299,7 +1309,7 @@ public class CutBlockEntity extends BlockEntity {
     /**
      * ItemStackから CutState/X/Y/ZLevel を読み取るヘルパー
      */
-    public static CutBlockData readFromStack(net.minecraft.world.item.ItemStack stack) {
+    public static CutBlockData readFromStack(ItemStack stack) {
         if (stack == null || stack.isEmpty()) {
             return new CutBlockData(Blocks.AIR.defaultBlockState(), (byte) 0, (byte) 0, (byte) 0);
         }
@@ -1310,7 +1320,7 @@ public class CutBlockEntity extends BlockEntity {
         CompoundTag bet = tag.contains("BlockEntityTag", Tag.TAG_COMPOUND) ? tag.getCompound("BlockEntityTag") : tag;
         // Entriesがある場合は先頭エントリを代表として返す (表示用)。複数復元は readEntriesFromStack を使う
         if (bet.contains(TAG_ENTRIES, Tag.TAG_LIST)) {
-            net.minecraft.nbt.ListTag list = bet.getList(TAG_ENTRIES, Tag.TAG_COMPOUND);
+            ListTag list = bet.getList(TAG_ENTRIES, Tag.TAG_COMPOUND);
             if (!list.isEmpty()) {
                 CompoundTag entryTag = list.getCompound(0);
                 if (entryTag.contains(TAG_STATE, Tag.TAG_COMPOUND)) {
@@ -1355,14 +1365,14 @@ public class CutBlockEntity extends BlockEntity {
     /**
      * ItemStackから Entries リストを読み取る (複数復元用)。空なら空リスト。
      */
-    public static java.util.List<CutEntry> readEntriesFromStack(net.minecraft.world.item.ItemStack stack) {
-        java.util.List<CutEntry> result = new java.util.ArrayList<>();
+    public static List<CutEntry> readEntriesFromStack(ItemStack stack) {
+        List<CutEntry> result = new ArrayList<>();
         if (stack == null || stack.isEmpty()) return result;
         CompoundTag tag = stack.getTag();
         if (tag == null) return result;
         CompoundTag bet = tag.contains("BlockEntityTag", Tag.TAG_COMPOUND) ? tag.getCompound("BlockEntityTag") : tag;
         if (!bet.contains(TAG_ENTRIES, Tag.TAG_LIST)) return result;
-        net.minecraft.nbt.ListTag list = bet.getList(TAG_ENTRIES, Tag.TAG_COMPOUND);
+        ListTag list = bet.getList(TAG_ENTRIES, Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag entryTag = list.getCompound(i);
             if (!entryTag.contains(TAG_STATE, Tag.TAG_COMPOUND)) continue;

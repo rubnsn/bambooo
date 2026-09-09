@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import ruby.bamboo.BambooMod;
@@ -32,8 +33,8 @@ public class ShurikenRenderer extends EntityRenderer<ShurikenEntity> {
         poseStack.pushPose();
         poseStack.translate(0, 0.25D, 0);
         // Yaw: -90補正 + xAngle + pitch回転 (sakura踏襲)
-        float yaw = net.minecraft.util.Mth.lerp(partialTicks, entity.yRotO, entity.getYRot()) - 90.0F;
-        float pitch = net.minecraft.util.Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
+        float yaw = Mth.lerp(partialTicks, entity.yRotO, entity.getYRot()) - 90.0F;
+        float pitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
         poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(entity.xAngle));
         poseStack.mulPose(Axis.ZP.rotationDegrees(pitch));

@@ -3,7 +3,9 @@ package ruby.bamboo.block.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -43,7 +45,7 @@ public class FlowerBedBlockRenderer implements BlockEntityRenderer<FlowerBedBloc
         int plantLight = packedLight;
         try {
             if (be.getLevel() != null) {
-                plantLight = net.minecraft.client.renderer.LevelRenderer.getLightColor(be.getLevel(), be.getBlockPos().above());
+                plantLight = LevelRenderer.getLightColor(be.getLevel(), be.getBlockPos().above());
             }
         } catch (Exception ignored) {
         }
@@ -90,7 +92,7 @@ public class FlowerBedBlockRenderer implements BlockEntityRenderer<FlowerBedBloc
     }
 
     /** ブロック経路の描画本体 (天面直上、scale補正)。 */
-    private void renderPlantBlock(net.minecraft.client.renderer.block.BlockRenderDispatcher blockRenderer,
+    private void renderPlantBlock(BlockRenderDispatcher blockRenderer,
             BlockState plantState, PoseStack poseStack, MultiBufferSource buffer,
             int packedLight, int packedOverlay, float wx, float wz, float scale) {
         poseStack.pushPose();

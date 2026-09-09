@@ -1,16 +1,22 @@
 package ruby.bamboo.entity.companion;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Dolphin;
@@ -98,14 +104,14 @@ public class DolphinCompanionEntity extends Dolphin {
     }
 
     @Nullable
-    public net.minecraft.world.entity.LivingEntity getControllingPassenger() {
+    public LivingEntity getControllingPassenger() {
         var e = this.getFirstPassenger();
         if (e instanceof Player p) return p;
         return null;
     }
 
     @Override
-    protected boolean canAddPassenger(net.minecraft.world.entity.Entity passenger) {
+    protected boolean canAddPassenger(Entity passenger) {
         return this.getPassengers().isEmpty();
     }
 
@@ -167,7 +173,7 @@ public class DolphinCompanionEntity extends Dolphin {
                     Vec3 cur = this.getDeltaMovement();
                     Vec3 next = cur.add(motion).scale(0.92);
                     this.setDeltaMovement(next);
-                    this.move(net.minecraft.world.entity.MoverType.SELF, this.getDeltaMovement());
+                    this.move(MoverType.SELF, this.getDeltaMovement());
                 } else {
                     super.travel(new Vec3(f1, travelVector.y, f));
                 }
@@ -178,7 +184,7 @@ public class DolphinCompanionEntity extends Dolphin {
     }
 
     @Override
-    protected void positionRider(net.minecraft.world.entity.Entity passenger, net.minecraft.world.entity.Entity.MoveFunction moveFunc) {
+    protected void positionRider(Entity passenger, Entity.MoveFunction moveFunc) {
         super.positionRider(passenger, moveFunc);
     }
 
@@ -192,7 +198,7 @@ public class DolphinCompanionEntity extends Dolphin {
                 this.heal(4.0F);
                 this.playSound(SoundEvents.DOLPHIN_EAT, 1.0F, 1.0F);
                 if (!this.level().isClientSide) {
-                    ((net.minecraft.server.level.ServerLevel) this.level()).sendParticles(net.minecraft.core.particles.ParticleTypes.HEART,
+                    ((ServerLevel) this.level()).sendParticles(ParticleTypes.HEART,
                             this.getX(), this.getY() + 0.8, this.getZ(), 3, 0.3, 0.3, 0.3, 0.1);
                 }
             }
@@ -219,7 +225,7 @@ public class DolphinCompanionEntity extends Dolphin {
 
     private static boolean isFish(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        try { if (stack.is(net.minecraft.tags.ItemTags.FISHES)) return true; } catch (Exception ignored) {}
+        try { if (stack.is(ItemTags.FISHES)) return true; } catch (Exception ignored) {}
         return stack.is(Items.COD) || stack.is(Items.SALMON) || stack.is(Items.TROPICAL_FISH) || stack.is(Items.PUFFERFISH)
                 || stack.is(Items.COOKED_COD) || stack.is(Items.COOKED_SALMON);
     }

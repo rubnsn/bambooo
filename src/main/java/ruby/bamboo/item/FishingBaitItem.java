@@ -1,5 +1,6 @@
 package ruby.bamboo.item;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -25,6 +26,6 @@ public class FishingBaitItem extends BambooItem {
     @Override
     public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.bamboomod.bait_consumable")
-                .withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
+                .withStyle(ChatFormatting.DARK_GRAY));
     }
 }

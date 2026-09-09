@@ -16,6 +16,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.ModelData;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -516,7 +517,7 @@ public class CutBlockRenderer implements BlockEntityRenderer<CutBlockEntity> {
     }
 
     @Override
-    public boolean shouldRender(CutBlockEntity be, net.minecraft.world.phys.Vec3 cameraPos) {
-        return net.minecraft.world.phys.Vec3.atCenterOf(be.getBlockPos()).closerThan(cameraPos, getViewDistance());
+    public boolean shouldRender(CutBlockEntity be, Vec3 cameraPos) {
+        return Vec3.atCenterOf(be.getBlockPos()).closerThan(cameraPos, getViewDistance());
     }
 }

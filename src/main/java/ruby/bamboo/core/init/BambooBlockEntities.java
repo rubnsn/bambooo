@@ -6,6 +6,7 @@ import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.entity.BambooPotBlockEntity;
 import ruby.bamboo.block.entity.CampfireBlockEntity;
 import ruby.bamboo.block.entity.CutBlockEntity;
+import ruby.bamboo.block.entity.FlowerBedBlockEntity;
 import ruby.bamboo.block.entity.JPChestBlockEntity;
 import ruby.bamboo.block.entity.MillBlockEntity;
 import ruby.bamboo.block.entity.MillStoneBlockEntity;
@@ -76,8 +77,8 @@ public final class BambooBlockEntities {
             .register("bamboo_pot", () -> BlockEntityType.Builder.of(BambooPotBlockEntity::new, BambooBlocks.BAMBOO_POT.get()).build(null));
 
     /** 花壇 (プランターの1ブロック拡大版) */
-    public static final RegistryObject<BlockEntityType<ruby.bamboo.block.entity.FlowerBedBlockEntity>> FLOWER_BED_BE = BambooMod.BLOCK_ENTITIES
-            .register("flower_bed", () -> BlockEntityType.Builder.of(ruby.bamboo.block.entity.FlowerBedBlockEntity::new, BambooBlocks.FLOWER_BED.get()).build(null));
+    public static final RegistryObject<BlockEntityType<FlowerBedBlockEntity>> FLOWER_BED_BE = BambooMod.BLOCK_ENTITIES
+            .register("flower_bed", () -> BlockEntityType.Builder.of(FlowerBedBlockEntity::new, BambooBlocks.FLOWER_BED.get()).build(null));
 
     /** 風車・水車 (旧 EntityMill系。単一BEで3ブロックを共用、回転はクライアント演出のみ) */
     public static final RegistryObject<BlockEntityType<MillBlockEntity>> MILL_BE = BambooMod.BLOCK_ENTITIES

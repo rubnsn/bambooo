@@ -10,9 +10,13 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -63,8 +67,8 @@ public class KaginawaHookRenderer extends EntityRenderer<KaginawaHookEntity> {
         // カメラに対してビルボード的に回転させると見やすい
         // ただし GROUND 表示で十分視認できるため追加回転なし
         try {
-            net.minecraft.world.item.ItemStack slime = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SLIME_BALL);
-            Minecraft.getInstance().getItemRenderer().renderStatic(slime, net.minecraft.world.item.ItemDisplayContext.GROUND, packedLight, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, poseStack, buffer, entity.level(), 0);
+            ItemStack slime = new ItemStack(Items.SLIME_BALL);
+            Minecraft.getInstance().getItemRenderer().renderStatic(slime, ItemDisplayContext.GROUND, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, entity.level(), 0);
         } catch (Exception e) {
             // フォールバック: 旧cube
             renderHookCube(poseStack, buffer, packedLight);

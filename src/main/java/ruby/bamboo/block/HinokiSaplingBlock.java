@@ -1,10 +1,14 @@
 package ruby.bamboo.block;
 
+import java.util.OptionalInt;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.level.block.grower.AbstractTreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.featuresize.TwoLayersFeatureSize;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.PineFoliagePlacer;
@@ -21,7 +25,7 @@ public class HinokiSaplingBlock extends SaplingBlock {
 
     public static final AbstractTreeGrower HINOKI_TREE = new AbstractTreeGrower() {
         @Override
-        protected net.minecraft.resources.ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> getConfiguredFeature(
+        protected ResourceKey<ConfiguredFeature<?, ?>> getConfiguredFeature(
                 RandomSource rand, boolean hasFlowers) {
             return rand.nextInt(10) == 0 ? HinokiTreeFeatures.HINOKI_BIG : HinokiTreeFeatures.HINOKI;
         }
@@ -39,10 +43,10 @@ public class HinokiSaplingBlock extends SaplingBlock {
                     new StraightTrunkPlacer(8, 2, 1),
                     BlockStateProvider.simple(leafState),
                     new PineFoliagePlacer(
-                            net.minecraft.util.valueproviders.ConstantInt.of(1),
-                            net.minecraft.util.valueproviders.ConstantInt.of(1),
-                            net.minecraft.util.valueproviders.ConstantInt.of(4)),
-                    new TwoLayersFeatureSize(0, 0, 0, java.util.OptionalInt.of(4))).ignoreVines().build();
+                            ConstantInt.of(1),
+                            ConstantInt.of(1),
+                            ConstantInt.of(4)),
+                    new TwoLayersFeatureSize(0, 0, 0, OptionalInt.of(4))).ignoreVines().build();
         }
         // ヒノキ: 高め + 円錐
         // 直幹 6+2 (big 8+2相当) + Pine 葉 (radius 2-3, height 4)
@@ -51,9 +55,9 @@ public class HinokiSaplingBlock extends SaplingBlock {
                 new StraightTrunkPlacer(big ? 8 : 6, 2, 1),
                 BlockStateProvider.simple(leafState),
                 new PineFoliagePlacer(
-                        net.minecraft.util.valueproviders.ConstantInt.of(1),
-                        net.minecraft.util.valueproviders.ConstantInt.of(1),
-                        net.minecraft.util.valueproviders.ConstantInt.of(big ? 4 : 3)),
+                        ConstantInt.of(1),
+                        ConstantInt.of(1),
+                        ConstantInt.of(big ? 4 : 3)),
                 new TwoLayersFeatureSize(1, 0, 1)).ignoreVines().build();
     }
 }

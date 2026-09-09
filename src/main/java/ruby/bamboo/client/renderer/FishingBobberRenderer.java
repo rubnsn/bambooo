@@ -2,19 +2,24 @@ package ruby.bamboo.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import ruby.bamboo.core.init.BambooItems;
 import ruby.bamboo.entity.FishingBobberEntity;
 
 /**
@@ -53,7 +58,7 @@ public class FishingBobberRenderer extends EntityRenderer<FishingBobberEntity> {
         pose.pushPose();
         pose.scale(0.5F, 0.5F, 0.5F);
         pose.mulPose(this.entityRenderDispatcher.cameraOrientation());
-        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180.0F));
+        pose.mulPose(Axis.YP.rotationDegrees(180.0F));
         PoseStack.Pose last = pose.last();
         Matrix4f mat = last.pose();
         Matrix3f normal = last.normal();
@@ -65,14 +70,14 @@ public class FishingBobberRenderer extends EntityRenderer<FishingBobberEntity> {
         pose.popPose();
 
         // ---- 成功時はアイテムをウキに引っ掛けて一緒に飛ばす ----
-        net.minecraft.world.item.ItemStack carried = entity.getCarried();
+        ItemStack carried = entity.getCarried();
         if (!carried.isEmpty()) {
             pose.pushPose();
             // ウキの少し上（0.35）に浮かせて、常にカメラ向き（平面がプレイヤーを向く）
             pose.translate(0.0D, 0.35D, 0.0D);
             pose.mulPose(this.entityRenderDispatcher.cameraOrientation());
             pose.scale(0.75F, 0.75F, 0.75F);
-            Minecraft.getInstance().getItemRenderer().renderStatic(carried, net.minecraft.world.item.ItemDisplayContext.FIXED, packedLight, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, pose, buf, entity.level(), entity.getId());
+            Minecraft.getInstance().getItemRenderer().renderStatic(carried, ItemDisplayContext.FIXED, packedLight, OverlayTexture.NO_OVERLAY, pose, buf, entity.level(), entity.getId());
             pose.popPose();
         }
 
@@ -92,7 +97,7 @@ public class FishingBobberRenderer extends EntityRenderer<FishingBobberEntity> {
             Camera.NearPlane near = cam.getNearPlane();
             int arm = owner.getMainArm() == HumanoidArm.RIGHT ? 1 : -1;
             // 竿が主手にあるかで反転
-            if (owner.getMainHandItem().getItem() != ruby.bamboo.core.init.BambooItems.BAMBOO_ROD.get() && owner.getOffhandItem().getItem() == ruby.bamboo.core.init.BambooItems.BAMBOO_ROD.get()) {
+            if (owner.getMainHandItem().getItem() != BambooItems.BAMBOO_ROD.get() && owner.getOffhandItem().getItem() == BambooItems.BAMBOO_ROD.get()) {
                 arm = -arm;
             }
             Vec3 nearPos = near.getPointOnPlane((float) arm * 0.525F, -0.1F).scale(fovScale).yRot(0.5F * owner.getAttackAnim(partialTick)).xRot(-0.7F * owner.getAttackAnim(partialTick));
@@ -109,7 +114,7 @@ public class FishingBobberRenderer extends EntityRenderer<FishingBobberEntity> {
             double sinYaw = Mth.sin(yawLerp);
             double cosYaw = Mth.cos(yawLerp);
             int k = owner.getMainArm() == HumanoidArm.RIGHT ? 1 : -1;
-            if (owner.getMainHandItem().getItem() != ruby.bamboo.core.init.BambooItems.BAMBOO_ROD.get() && owner.getOffhandItem().getItem() == ruby.bamboo.core.init.BambooItems.BAMBOO_ROD.get()) {
+            if (owner.getMainHandItem().getItem() != BambooItems.BAMBOO_ROD.get() && owner.getOffhandItem().getItem() == BambooItems.BAMBOO_ROD.get()) {
                 k = -k;
             }
             double handOffsetX = (double) k * 0.35D;

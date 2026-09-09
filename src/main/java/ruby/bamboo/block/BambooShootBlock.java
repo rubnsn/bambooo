@@ -4,10 +4,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,7 +24,7 @@ import ruby.bamboo.core.init.BambooBlocks;
  * 骨粉でも成長 (IGrowable → BonemealableBlock)。
  * 旧版の META (0-1) は実質使われていないため廃止し単一状態とした。
  */
-public class BambooShootBlock extends BushBlock implements net.minecraft.world.level.block.BonemealableBlock {
+public class BambooShootBlock extends BushBlock implements BonemealableBlock {
 
     /** 旧 BLOCK_AABB (0.3,0,0.3)-(0.7,0.5,0.7) */
     private static final VoxelShape SHAPE = Block.box(5, 0, 5, 11, 8, 11);
@@ -77,7 +79,7 @@ public class BambooShootBlock extends BushBlock implements net.minecraft.world.l
     }
 
     @Override
-    public boolean isBonemealSuccess(net.minecraft.world.level.Level level, RandomSource rand, BlockPos pos,
+    public boolean isBonemealSuccess(Level level, RandomSource rand, BlockPos pos,
             BlockState state) {
         return true;
     }

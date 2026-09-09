@@ -2,6 +2,7 @@ package ruby.bamboo.item;
 
 import java.util.List;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -49,6 +50,6 @@ public class ItemMagnetItem extends Item implements Accessory {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.bamboomod.item_magnet").withStyle(net.minecraft.ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.bamboomod.item_magnet").withStyle(ChatFormatting.AQUA));
     }
 }
