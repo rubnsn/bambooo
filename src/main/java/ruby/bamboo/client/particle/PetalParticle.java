@@ -15,6 +15,8 @@ import ruby.bamboo.core.init.BambooParticles;
  * <li>毎tick: gravity -0.004、全軸 drag ×0.95</li>
  * <li>寿命 60+rand(120) tick</li>
  * <li>スイング回転 (旧 rx/ry/rz の往復相当 → roll の sin 揺れで再現)</li>
+ * <li>空気抵抗を受けるわずかな回転 (ランダムトルクを減衰させつつ積算)</li>
+ * <li>環境風 PetalWind (風向・風速は時刻で緩やかに変化、突風時は強まる。ローカルのみ)</li>
  * <li>着地で回転停止、水中で浮遊 (stopFall 相当)</li>
  * </ul>
  * 色は addParticle の速度引数 (xd,yd,zd) で RGB を受け取る。
@@ -24,6 +26,9 @@ public class PetalParticle extends TextureSheetParticle {
     private final SpriteSet sprites;
     private float swayPhase;
     private float swaySpeed;
+    /** 空気抵抗で減衰する回転角速度とその積算 (roll に重畳) */
+    private float spin;
+    private float spinSum;
 
     /** Wind由来パーティクルの一時的な風ベクトル受け渡し (ThreadLocalでaddParticle前にset) */
     private static final ThreadLocal<net.minecraft.world.phys.Vec3> NEXT_WIND = new ThreadLocal<>();
@@ -70,9 +75,11 @@ public class PetalParticle extends TextureSheetParticle {
             this.zd += (level.random.nextFloat() - 0.5) * 0.02;
             NEXT_WIND.remove();
         } else {
-            this.xd = (level.random.nextFloat() - 0.5) * 0.1;
+            // 非Windはランダム漂い + 環境風 (ローカル、PetalWind)
+            net.minecraft.world.phys.Vec3 env = PetalWind.getWind(level);
+            this.xd = (level.random.nextFloat() - 0.5) * 0.1 + env.x;
             this.yd = -0.01;
-            this.zd = (level.random.nextFloat() - 0.5) * 0.1;
+            this.zd = (level.random.nextFloat() - 0.5) * 0.1 + env.z;
         }
 
         // 寿命 60+rand(120)
@@ -105,6 +112,14 @@ public class PetalParticle extends TextureSheetParticle {
             this.zd *= 0.9D;
         }
 
+        // 環境風 (風向・風速は時刻で緩やかに変化、突風時は強まる。ローカルのみ)
+        net.minecraft.world.phys.Vec3 env = PetalWind.getWind(this.level);
+        this.xd += env.x * 0.02D;
+        this.zd += env.z * 0.02D;
+        // ひらひら: swayに連動した微小な横揺れ (揚力っぽさ)
+        this.xd += Math.cos(this.swayPhase) * 0.0006D;
+        this.zd += Math.sin(this.swayPhase * 0.9D) * 0.0006D;
+
         this.move(this.xd, this.yd, this.zd);
 
         // 全軸 drag ×0.95
@@ -118,10 +133,25 @@ public class PetalParticle extends TextureSheetParticle {
             this.zd *= 0.7D;
         }
 
-        // スイング回転 (roll を往復させる)
+        // 空気抵抗を受けるわずかな回転: ランダムトルクを抵抗で減衰させつつ積算し、swayに重畳
+        this.spin += (this.level.random.nextFloat() - 0.5F) * 0.02F;
+        double hSpeed = Math.sqrt(this.xd * this.xd + this.zd * this.zd);
+        this.spin += (float) hSpeed * 0.02F * (Math.cos(this.swayPhase) >= 0.0 ? 1.0F : -1.0F);
+        this.spin *= 0.95F;
+        if (this.spin > 0.15F) {
+            this.spin = 0.15F;
+        } else if (this.spin < -0.15F) {
+            this.spin = -0.15F;
+        }
+        if (this.onGround) {
+            this.spin *= 0.6F;
+        }
+        this.spinSum += this.spin;
+
+        // スイング回転 (roll を往復させる) + 空気抵抗回転の重畳
         this.swayPhase += this.swaySpeed;
         float prevRoll = this.roll;
-        this.roll = (float) Math.sin(this.swayPhase) * 0.6F;
+        this.roll = (float) Math.sin(this.swayPhase) * 0.6F + this.spinSum;
         this.oRoll = prevRoll;
     }
 

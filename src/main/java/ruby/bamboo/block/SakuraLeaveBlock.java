@@ -5,6 +5,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import ruby.bamboo.client.particle.PetalWind;
 import ruby.bamboo.core.init.BambooParticles;
 
 /**
@@ -25,13 +26,14 @@ public class SakuraLeaveBlock extends LeavesBlock {
 
     /**
      * 花びらパーティクル (旧 SakuraLeave#randomDisplayTick 相当)。
-     * 1/100 の確率で直下が空気なら発生。
+     * 通常 1/100、突風時は PetalWind で密になる + たまに1粒おかわり。
+     * 直下が空気のときのみ発生。
      */
     @Override
     public void animateTick(BlockState state, net.minecraft.world.level.Level level, BlockPos pos,
             RandomSource rand) {
         super.animateTick(state, level, pos, rand);
-        if (rand.nextInt(100) != 0) {
+        if (rand.nextInt(PetalWind.spawnChance(100, level)) != 0) {
             return;
         }
         BlockPos below = pos.below();
@@ -45,6 +47,13 @@ public class SakuraLeaveBlock extends LeavesBlock {
                     ((PETAL_COLOR >> 16) & 0xff) / 255.0,
                     ((PETAL_COLOR >> 8) & 0xff) / 255.0,
                     (PETAL_COLOR & 0xff) / 255.0);
+            if (PetalWind.spawnExtra(rand, level)) {
+                level.addParticle(BambooParticles.PETAL_1.get(),
+                        pos.getX() + rand.nextDouble(), y, pos.getZ() + rand.nextDouble(),
+                        ((PETAL_COLOR >> 16) & 0xff) / 255.0,
+                        ((PETAL_COLOR >> 8) & 0xff) / 255.0,
+                        (PETAL_COLOR & 0xff) / 255.0);
+            }
         }
     }
 }
