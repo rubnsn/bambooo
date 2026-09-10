@@ -23,6 +23,11 @@ import ruby.bamboo.util.ColoredLightUtil;
  * ({@code ModelBlockRendererMixin}) と完全同値になる。Sodium側の面別明度・AOは
  * 後段で掛かるため、裏面への回り込みは起きない。
  * <p>
+ * 注意: {@code getVertexColors} の戻りは ABGR (各 ColorProvider が
+ * {@code ColorARGB.toABGR} 済み。無tint白 -1 は ARGB/ABGR 同値のため区別不可)。
+ * よって {@code (c>>16)&FF=青・(c&FF)=赤} として乗算し、ABGRのまま返す。
+ * ARGB扱いすると赤青が入れ替わる (緑は中央バイトのため無事)。
+ * <p>
  * 依存安全策: {@code @Pseudo}＋{@code targets}文字列指定のため、Embeddium不在時は
  * 適用自体がスキップされる (配布jarへの同梱・mods.toml依存なし、compileOnly参照のみ)。
  * 白 (1,1,1) の99.9%は早期リターンで無変更のため、通常ブロックの焼き込みは不変。
@@ -70,10 +75,11 @@ public abstract class SodiumBlockRendererMixin {
         float r = tint.x(), g = tint.y(), b = tint.z();
         for (int i = 0; i < colors.length; i++) {
             int c = colors[i];
-            int rr = Math.min(255, Math.round(((c >> 16) & 0xFF) * r));
+            // ABGR: 低バイトが赤、高バイト(>>16)が青。tint.x=赤を低バイトに、tint.z=青を高バイトに掛ける
+            int rr = Math.min(255, Math.round((c & 0xFF) * r));
             int gg = Math.min(255, Math.round(((c >> 8) & 0xFF) * g));
-            int bb = Math.min(255, Math.round((c & 0xFF) * b));
-            colors[i] = (c & 0xFF000000) | (rr << 16) | (gg << 8) | bb;
+            int bb = Math.min(255, Math.round(((c >> 16) & 0xFF) * b));
+            colors[i] = (c & 0xFF000000) | (bb << 16) | (gg << 8) | rr;
         }
     }
 }
