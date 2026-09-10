@@ -63,6 +63,7 @@ import ruby.bamboo.core.config.WishConfig;
 import ruby.bamboo.core.init.BambooItems;
 import ruby.bamboo.entity.companion.DolphinCompanionEntity;
 import ruby.bamboo.entity.companion.LlamaCompanionEntity;
+import ruby.bamboo.transform.WishTransformHandler;
 import ruby.bamboo.util.WishBiomeSearch;
 import ruby.bamboo.util.WishEntitySearch;
 import ruby.bamboo.util.WishItemSearch;
@@ -141,7 +142,7 @@ public final class WishManager {
             return;
         }
 
-        // 2. normal entries
+        // 2. normal entries (変身は transform.json の priority エントリで解決される)
         List<WishEntry> hits = new ArrayList<>();
         synchronized (WishManager.class) {
             for (WishEntry e : ENTRIES) {
@@ -776,6 +777,8 @@ public final class WishManager {
         boolean hasRespawn = false;
         boolean hasSpawner = false;
         boolean hasRandomEgg = false;
+        boolean hasTransform = false;
+        boolean transformFailed = false;
         String firstTreasureLoot = null;
         for (WishEffect eff : entry.effects) {
             if (firstEffectType == null) firstEffectType = eff.type;
@@ -836,6 +839,13 @@ public final class WishManager {
                     boolean over = giveItemInternal(player, skillBook, 1, null, random);
                     if (over) hasOver = true;
                 }
+            } else if ("transform".equalsIgnoreCase(eff.type)) {
+                String entityStr = eff.args.has("entity") ? eff.args.get("entity").getAsString() : "";
+                hasTransform = true;
+                if (!WishTransformHandler.applyStatic(player, entityStr)) transformFailed = true;
+            } else if ("untransform".equalsIgnoreCase(eff.type)) {
+                hasTransform = true;
+                if (!WishTransformHandler.applyStatic(player, "")) transformFailed = true;
             } else {
                 executeEffectInternal(player, eff, random);
             }
@@ -876,6 +886,13 @@ public final class WishManager {
                 player.displayClientMessage(Component.translatable("bamboomod.wish.result.biome").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
             } else {
                 player.displayClientMessage(Component.translatable("bamboomod.wish.result.generic").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            }
+        } else if (hasTransform) {
+            // 変身リザルト: entry.message (種族別セリフの lang キー) を送る。失敗時は unknown。
+            if (transformFailed) {
+                player.displayClientMessage(Component.translatable("bamboomod.wish.result.transform_unknown").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            } else if (entry.message != null && !entry.message.isEmpty()) {
+                player.displayClientMessage(Component.translatable(entry.message).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
             }
         } else if (firstGiveItem != null) {
             ItemStack tmp = new ItemStack(firstGiveItem);
@@ -1024,6 +1041,18 @@ public final class WishManager {
                     } else {
                         player.displayClientMessage(Component.translatable("bamboomod.wish.result.generic").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
                     }
+                }
+                case "transform" -> {
+                    String entityStr = eff.args.has("entity") ? eff.args.get("entity").getAsString() : "";
+                    if (WishTransformHandler.applyStatic(player, entityStr)) {
+                        player.displayClientMessage(WishTransformHandler.messageFor(entityStr).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    } else {
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.transform_unknown").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    }
+                }
+                case "untransform" -> {
+                    WishTransformHandler.applyStatic(player, "");
+                    player.displayClientMessage(Component.translatable("bamboomod.wish.result.untransform").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
                 }
                 default -> LOGGER.warn("Unknown wish effect type {}", type);
             }
@@ -1190,6 +1219,11 @@ public final class WishManager {
                         giveItemInternal(player, skillBook, 1, null, random);
                     }
                 }
+                case "transform" -> {
+                    String entityStr = eff.args.has("entity") ? eff.args.get("entity").getAsString() : "";
+                    WishTransformHandler.applyStatic(player, entityStr);
+                }
+                case "untransform" -> WishTransformHandler.applyStatic(player, "");
                 default -> LOGGER.warn("Unknown wish effect type {} (internal)", type);
             }
         } catch (Exception ex) {

@@ -17,6 +17,7 @@ import net.minecraftforge.fml.common.Mod;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.capability.ColoredLightStorage;
 import ruby.bamboo.skill.SkillStorage;
+import ruby.bamboo.transform.TransformStorage;
 
 /**
  * Phase B: ColoredLight Capability 登録 + LevelChunk attach.
@@ -35,6 +36,12 @@ public final class BambooCapabilities {
 
     public static final ResourceLocation SKILL_ID =
             new ResourceLocation(BambooMod.MODID, "skill");
+
+    public static final Capability<TransformStorage> TRANSFORM =
+            CapabilityManager.get(new CapabilityToken<>() {});
+
+    public static final ResourceLocation TRANSFORM_ID =
+            new ResourceLocation(BambooMod.MODID, "transform");
 
     private BambooCapabilities() {
     }
@@ -75,6 +82,7 @@ public final class BambooCapabilities {
             if (!(event.getObject() instanceof Player)) {
                 return;
             }
+            attachTransform(event);
             SkillStorage storage = new SkillStorage();
             LazyOptional<SkillStorage> lazy = LazyOptional.of(() -> storage);
             ICapabilitySerializable<CompoundTag> provider = new ICapabilitySerializable<CompoundTag>() {
@@ -97,6 +105,31 @@ public final class BambooCapabilities {
                 }
             };
             event.addCapability(SKILL_ID, provider);
+        }
+
+        private static void attachTransform(AttachCapabilitiesEvent<Entity> event) {
+            TransformStorage storage = new TransformStorage();
+            LazyOptional<TransformStorage> lazy = LazyOptional.of(() -> storage);
+            ICapabilitySerializable<CompoundTag> provider = new ICapabilitySerializable<CompoundTag>() {
+                @Override
+                public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
+                    if (cap == TRANSFORM) {
+                        return lazy.cast();
+                    }
+                    return LazyOptional.empty();
+                }
+
+                @Override
+                public CompoundTag serializeNBT() {
+                    return storage.serializeNBT();
+                }
+
+                @Override
+                public void deserializeNBT(CompoundTag nbt) {
+                    storage.deserializeNBT(nbt);
+                }
+            };
+            event.addCapability(TRANSFORM_ID, provider);
         }
     }
 }
