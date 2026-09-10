@@ -80,5 +80,9 @@ public final class BambooNetwork {
                 TransformSyncPacket::encode,
                 TransformSyncPacket::decode,
                 TransformSyncPacket::handle);
+        CHANNEL.registerMessage(nextId(), TransformGlidePacket.class,
+                TransformGlidePacket::encode,
+                TransformGlidePacket::decode,
+                TransformGlidePacket::handle);
     }
 }

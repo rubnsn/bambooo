@@ -397,5 +397,7 @@
   "skill.bamboomod.sword.name": "剑术",
   "skill.bamboomod.shooting.name": "射击",
   "skill.bamboomod.anatomy.name": "解剖",
-  "skill.bamboomod.negotiation.name": "交涉"
+  "skill.bamboomod.negotiation.name": "交涉",
+  "message.bamboomod.glide_on": "滑翔开",
+  "message.bamboomod.glide_off": "滑翔关"
 }

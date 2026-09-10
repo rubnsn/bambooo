@@ -3,6 +3,7 @@ package ruby.bamboo.transform;
 import java.util.List;
 import java.util.UUID;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
@@ -28,6 +29,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingHealEvent;
@@ -83,17 +85,31 @@ public final class TransformTickHandler {
 
     private static void tickPlayer(ServerPlayer player, ServerLevel level, String id, TransformStorage s, long time) {
         Vec3 delta = player.getDeltaMovement();
-        // 疑似滑空 (エリトラなし)
-        if (TransformRegistry.GLIDE.contains(id) && !player.onGround() && !player.isInWater()
-                && !player.isInLava() && !player.isFallFlying() && delta.y < -0.2D) {
+        // 疑似滑空 (エリトラなし。地上でOFF・空中スペースでトグルした glideOn が true のときのみ)
+        if (player.onGround() || player.isInWater() || player.isInLava() || player.isFallFlying()) {
+            s.setGlideOn(false);
+        } else if (s.isGlideOn() && TransformRegistry.GLIDE.contains(id) && delta.y < -0.2D) {
             player.setDeltaMovement(delta.x * 0.98D, delta.y * 0.6D, delta.z * 0.98D);
             player.fallDistance *= 0.7F;
         }
-        // クモの登攀 (壁押し+前進で上昇)
+        // クモの登攀 (バニラクモ準拠: 壁接触で上昇。サーバー側 zza は常に0のため使わない。
+        // スニークで抑制し、静止・下降を可能にする)
         if ((id.equals("minecraft:spider") || id.equals("minecraft:cave_spider"))
-                && player.horizontalCollision && player.zza > 0.1F && !player.isInWater()) {
-            player.setDeltaMovement(delta.x, 0.25D, delta.z);
+                && player.horizontalCollision && !player.isCrouching() && !player.isInWater()
+                && !player.isInLava() && !player.isFallFlying() && !player.isPassenger()
+                && !player.isCreative() && !player.isSpectator()) {
+            player.setDeltaMovement(delta.x, Math.max(delta.y, 0.25D), delta.z);
             player.fallDistance = 0F;
+        }
+        // クモの巣の減速無効 (move 内で消費される stuck 乗数を tick 終了時に上書きする)
+        if ((id.equals("minecraft:spider") || id.equals("minecraft:cave_spider"))
+                && isInCobweb(player)) {
+            player.makeStuckInBlock(net.minecraft.world.level.block.Blocks.COBWEB.defaultBlockState(),
+                    new Vec3(1.0D, 1.0D, 1.0D));
+        }
+        // アレイの引き寄せ (周囲3ブロックのアイテム・経験値)
+        if (id.equals("minecraft:allay")) {
+            magnetPull(player, 3.0D);
         }
         // ホグリンは沈む
         if (id.equals("minecraft:hoglin") && player.isInWater()) {
@@ -144,6 +160,22 @@ public final class TransformTickHandler {
         if (id.equals("minecraft:turtle") && player.isInWater()) {
             player.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, 60, 0, false, false, true));
         }
+        // エンダーマンの水没デバフ (頭まで潜ると近くのランダムな地上へショートワープ)
+        if (id.equals("minecraft:enderman") && player.isEyeInFluid(FluidTags.WATER)) {
+            long now = level.getGameTime();
+            if (now >= s.getEnderCd()) {
+                s.setEnderCd(now + 40L);
+                var random = player.getRandom();
+                for (int i = 0; i < 8; i++) {
+                    double nx = player.getX() + (random.nextDouble() - 0.5D) * 16D;
+                    double ny = player.getY() + random.nextInt(9) - 4;
+                    double nz = player.getZ() + (random.nextDouble() - 0.5D) * 16D;
+                    if (player.randomTeleport(nx, ny, nz, true)) {
+                        break;
+                    }
+                }
+            }
+        }
         // ウォーデンの盲目
         if (id.equals("minecraft:warden") && time % 200 == 0) {
             player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 260, 0, false, false, true));
@@ -162,6 +194,53 @@ public final class TransformTickHandler {
         }
         // 動的速度 (地上/水中で切替)
         dynamicSpeed(player, id);
+    }
+
+    private static boolean isInCobweb(ServerPlayer player) {
+        var level = player.serverLevel();
+        BlockPos feet = player.blockPosition();
+        BlockPos eye = BlockPos.containing(player.getEyePosition());
+        return level.getBlockState(feet).is(net.minecraft.world.level.block.Blocks.COBWEB)
+                || level.getBlockState(eye).is(net.minecraft.world.level.block.Blocks.COBWEB);
+    }
+
+    private static boolean isSeedItem(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(net.minecraft.world.item.Items.WHEAT_SEEDS)
+                || stack.is(net.minecraft.world.item.Items.MELON_SEEDS)
+                || stack.is(net.minecraft.world.item.Items.PUMPKIN_SEEDS)
+                || stack.is(net.minecraft.world.item.Items.BEETROOT_SEEDS)
+                || stack.is(net.minecraft.world.item.Items.TORCHFLOWER_SEEDS);
+    }
+
+    private static boolean isPlantItem(net.minecraft.world.item.ItemStack stack) {
+        if (stack.is(net.minecraft.tags.ItemTags.FLOWERS)) {
+            return true;
+        }
+        return stack.is(net.minecraft.world.item.Items.GRASS)
+                || stack.is(net.minecraft.world.item.Items.TALL_GRASS)
+                || stack.is(net.minecraft.world.item.Items.FERN)
+                || stack.is(net.minecraft.world.item.Items.LARGE_FERN);
+    }
+
+    private static void magnetPull(ServerPlayer player, double radius) {
+        ServerLevel level = player.serverLevel();
+        Vec3 center = player.position().add(0D, 1.0D, 0D);
+        for (var item : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                player.getBoundingBox().inflate(radius))) {
+            if (item.isRemoved() || item.hasPickUpDelay()) {
+                continue;
+            }
+            Vec3 to = center.subtract(item.position()).normalize().scale(0.35D);
+            item.setDeltaMovement(item.getDeltaMovement().add(to));
+        }
+        for (var orb : level.getEntitiesOfClass(net.minecraft.world.entity.ExperienceOrb.class,
+                player.getBoundingBox().inflate(radius))) {
+            if (orb.isRemoved()) {
+                continue;
+            }
+            Vec3 to = center.subtract(orb.position()).normalize().scale(0.35D);
+            orb.setDeltaMovement(orb.getDeltaMovement().add(to));
+        }
     }
 
     private static void dynamicSpeed(ServerPlayer player, String id) {
@@ -227,6 +306,14 @@ public final class TransformTickHandler {
         if (hunger > 1.0D) {
             player.getFoodData().addExhaustion((float) ((hunger - 1.0D) * 1.0D));
         }
+        // ヤギの跳躍力
+        if (id.equals("minecraft:goat")) {
+            player.addEffect(new MobEffectInstance(MobEffects.JUMP, 60, 0, false, false, true));
+        }
+        // ラヴェジャーの無敵時間は半減 (近似: 上限を詰める)
+        if (id.equals("minecraft:ravager") && player.invulnerableTime > 10) {
+            player.invulnerableTime = 10;
+        }
         // ピグリン系の採掘バフは BreakSpeed 側、攻撃バフは Hurt 側
     }
 
@@ -240,13 +327,19 @@ public final class TransformTickHandler {
         boolean livestock = id.equals("minecraft:pig") || id.equals("minecraft:cow")
                 || id.equals("minecraft:sheep") || id.equals("minecraft:rabbit")
                 || id.equals("minecraft:chicken");
-        boolean illager = id.equals("minecraft:evoker") || id.equals("minecraft:vindicator")
-                || id.equals("minecraft:pillager") || id.equals("minecraft:silverfish");
+        boolean tiny = id.equals("minecraft:endermite") || id.equals("minecraft:silverfish")
+                || id.equals("minecraft:chicken") || id.equals("minecraft:rabbit");
+        boolean golemFoe = id.equals("minecraft:evoker") || id.equals("minecraft:vindicator")
+                || id.equals("minecraft:pillager") || id.equals("minecraft:silverfish")
+                || id.equals("minecraft:ravager");
         boolean endermite = id.equals("minecraft:endermite");
         for (Mob mob : mobs) {
-            if (mob instanceof Wolf wolf && livestock && wolf.getTarget() == null) {
+            if (mob instanceof Wolf wolf && (livestock || tiny) && wolf.getTarget() == null) {
                 wolf.setTarget(player);
-            } else if (mob instanceof IronGolem golem && illager && golem.getTarget() == null) {
+            } else if (mob instanceof net.minecraft.world.entity.animal.Fox fox && tiny
+                    && fox.getTarget() == null) {
+                fox.setTarget(player);
+            } else if (mob instanceof IronGolem golem && golemFoe && golem.getTarget() == null) {
                 golem.setTarget(player);
             } else if (mob instanceof EnderMan ender && endermite && ender.getTarget() == null) {
                 ender.setTarget(player);
@@ -308,6 +401,23 @@ public final class TransformTickHandler {
             event.setCanceled(true);
             return;
         }
+        // 飛行系の落下無効
+        if (TransformRegistry.FALL_IMMUNE.contains(id)
+                && event.getSource().is(DamageTypeTags.IS_FALL)) {
+            event.setCanceled(true);
+            player.fallDistance = 0F;
+            return;
+        }
+        // シュルカーの飛び道具軽減 (一律1軽減)
+        if (id.equals("minecraft:shulker")
+                && event.getSource().is(DamageTypeTags.IS_PROJECTILE)) {
+            amount = Math.max(0F, amount - 1.0F);
+        }
+        // クモ系は炎上ダメージ2倍
+        if ((id.equals("minecraft:spider") || id.equals("minecraft:cave_spider"))
+                && event.getSource().is(DamageTypeTags.IS_FIRE)) {
+            amount = amount * 2.0F;
+        }
         // ガストの跳ね返り自傷は大ダメージ
         if (id.equals("minecraft:ghast") && event.getSource().getEntity() == player) {
             amount = amount * 3.0F;
@@ -316,6 +426,19 @@ public final class TransformTickHandler {
 
         // エンダーマンの被弾テレポート
         if (id.equals("minecraft:enderman")) {
+            TransformHelper.get(player).ifPresent(s -> {
+                long now = player.serverLevel().getGameTime();
+                if (now >= s.getEnderCd()) {
+                    s.setEnderCd(now + 60L);
+                    player.randomTeleport(player.getX() + (player.getRandom().nextDouble() - 0.5D) * 16D,
+                            player.getY() + player.getRandom().nextInt(8) - 4, player.getZ()
+                                    + (player.getRandom().nextDouble() - 0.5D) * 16D,
+                            true);
+                }
+            });
+        }
+        // シュルカーの被弾テレポート (エンダーマンと同条件。Cdは共有で足りる)
+        if (id.equals("minecraft:shulker")) {
             TransformHelper.get(player).ifPresent(s -> {
                 long now = player.serverLevel().getGameTime();
                 if (now >= s.getEnderCd()) {
@@ -489,6 +612,14 @@ public final class TransformTickHandler {
         if (id.equals("minecraft:parrot") && stack.is(net.minecraft.world.item.Items.COOKIE)) {
             player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
         }
+        // ネコ系: 魚は2倍回復
+        if ((id.equals("minecraft:cat") || id.equals("minecraft:ocelot"))
+                && stack.is(net.minecraft.tags.ItemTags.FISHES)) {
+            var food = stack.getFoodProperties(player);
+            if (food != null) {
+                player.getFoodData().eat(food.getNutrition(), food.getSaturationModifier());
+            }
+        }
         // ヒツジの毛刈り回復
         if (id.equals("minecraft:sheep") && stack.getFoodProperties(player) != null) {
             TransformHelper.get(player).ifPresent(s -> {
@@ -643,6 +774,19 @@ public final class TransformTickHandler {
     }
 
     @SubscribeEvent
+    public static void onMount(EntityMountEvent event) {
+        if (!event.isMounting() || event.getLevel().isClientSide()) {
+            return;
+        }
+        // ウマ変身者は他の動物に騎乗できない
+        if (event.getEntityMounting() instanceof ServerPlayer player
+                && TransformHelper.resolvedId(player).equals("minecraft:horse")
+                && event.getEntityBeingMounted() instanceof net.minecraft.world.entity.animal.Animal) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
     public static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
@@ -704,6 +848,35 @@ public final class TransformTickHandler {
                     }
                 }
             });
+            event.setCanceled(true);
+            return;
+        }
+        // オウム・ニワトリ: 種を食べる
+        if ((id.equals("minecraft:parrot") || id.equals("minecraft:chicken"))
+                && isSeedItem(stack)) {
+            if (!creative) {
+                stack.shrink(1);
+            }
+            player.getFoodData().eat(1, 0.2F);
+            event.setCanceled(true);
+            return;
+        }
+        // ウシ・ヤギ: 草花を食べる
+        if ((id.equals("minecraft:cow") || id.equals("minecraft:goat"))
+                && isPlantItem(stack)) {
+            if (!creative) {
+                stack.shrink(1);
+            }
+            player.getFoodData().eat(1, 0.3F);
+            event.setCanceled(true);
+            return;
+        }
+        // パンダ: 竹を食べる
+        if (id.equals("minecraft:panda") && stack.is(net.minecraft.world.item.Items.BAMBOO)) {
+            if (!creative) {
+                stack.shrink(1);
+            }
+            player.getFoodData().eat(2, 0.4F);
             event.setCanceled(true);
             return;
         }

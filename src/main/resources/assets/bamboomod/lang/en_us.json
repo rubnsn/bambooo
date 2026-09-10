@@ -441,5 +441,7 @@
   "screen.bamboomod.fishing_minigame": "Fishing",
   "block.bamboomod.windmill": "Windmill",
   "block.bamboomod.windmill_cloth": "Windmill (Cloth)",
-  "block.bamboomod.waterwheel": "Waterwheel"
+  "block.bamboomod.waterwheel": "Waterwheel",
+  "message.bamboomod.glide_on": "Glide ON",
+  "message.bamboomod.glide_off": "Glide OFF"
 }

@@ -19,12 +19,11 @@ import net.minecraftforge.registries.ForgeRegistries;
  */
 public final class TransformRegistry {
 
-    /** 描画方式。TRUE=真モデル / GROUND=併用・足接地 / FLOAT=併用・頭胸高さ浮遊 / HEAD=頭部のみ。 */
+    /** 描画方式。TRUE=真モデル / GROUND=併用・足接地 / FLOAT=併用・頭胸高さ浮遊。 */
     public enum RenderMode {
         TRUE,
         HYBRID_GROUND,
-        HYBRID_FLOAT,
-        HEAD
+        HYBRID_FLOAT
     }
 
     public record RaceConfig(RenderMode mode, float yOff, float scale) {
@@ -42,6 +41,8 @@ public final class TransformRegistry {
     public static final Set<String> GOLD_SCALE = new HashSet<>();
     /** 疑似滑空できる種。 */
     public static final Set<String> GLIDE = new HashSet<>();
+    /** 落下ダメージを受けない種 (飛行系)。 */
+    public static final Set<String> FALL_IMMUNE = new HashSet<>();
     /** 火・溶岩ダメージを受けない種。 */
     public static final Set<String> FIRE_IMMUNE = new HashSet<>();
     /** 冠水で痛がる種。 */
@@ -118,8 +119,8 @@ public final class TransformRegistry {
         race("minecraft:turtle", RenderMode.HYBRID_GROUND, 0F, 1F);
         race("minecraft:hoglin", RenderMode.HYBRID_GROUND, 0F, 1F);
         race("minecraft:zoglin", RenderMode.HYBRID_GROUND, 0F, 1F);
-        race("minecraft:slime", RenderMode.HYBRID_GROUND, 0F, 0.7F);
-        race("minecraft:magma_cube", RenderMode.HYBRID_GROUND, 0F, 0.7F);
+        race("minecraft:slime", RenderMode.HYBRID_GROUND, 0F, 1F);
+        race("minecraft:magma_cube", RenderMode.HYBRID_GROUND, 0F, 1F);
         race("minecraft:strider", RenderMode.HYBRID_GROUND, 0F, 1F);
         race("minecraft:chicken", RenderMode.HYBRID_GROUND, 0F, 1F);
         race("minecraft:rabbit", RenderMode.HYBRID_GROUND, 0F, 1F);
@@ -140,10 +141,10 @@ public final class TransformRegistry {
         race("minecraft:axolotl", RenderMode.HYBRID_FLOAT, 1.0F, 1F);
         race("minecraft:frog", RenderMode.HYBRID_FLOAT, 0.6F, 1F);
         race("minecraft:dolphin", RenderMode.HYBRID_FLOAT, 1.0F, 1F);
-        // ===== 頭部のみ =====
-        race("minecraft:shulker", RenderMode.HEAD, 1.25F, 0.9F);
-        race("minecraft:warden", RenderMode.HEAD, 1.25F, 0.7F);
-        race("minecraft:ravager", RenderMode.HEAD, 1.2F, 0.7F);
+        // ===== 併用・足接地 =====
+        race("minecraft:shulker", RenderMode.HYBRID_GROUND, 0F, 0.8F);
+        race("minecraft:warden", RenderMode.HYBRID_GROUND, 0F, 0.5F);
+        race("minecraft:ravager", RenderMode.HYBRID_GROUND,0F, 0.55F);
 
         // ===== 能力グループ =====
         Collections.addAll(SUN_BURN, "minecraft:zombie", "minecraft:husk", "minecraft:drowned",
@@ -153,8 +154,13 @@ public final class TransformRegistry {
         Collections.addAll(XBOW_FREE, "minecraft:pillager");
         Collections.addAll(GOLD_SCALE, "minecraft:piglin", "minecraft:piglin_brute");
         Collections.addAll(GLIDE, "minecraft:phantom", "minecraft:bee", "minecraft:parrot",
-                "minecraft:bat", "minecraft:chicken");
-        Collections.addAll(FIRE_IMMUNE, "minecraft:blaze", "minecraft:magma_cube", "minecraft:strider");
+                "minecraft:bat", "minecraft:chicken", "minecraft:blaze", "minecraft:ghast",
+                "minecraft:vex", "minecraft:allay");
+        Collections.addAll(FALL_IMMUNE, "minecraft:phantom", "minecraft:bee", "minecraft:parrot",
+                "minecraft:bat", "minecraft:chicken", "minecraft:blaze", "minecraft:ghast",
+                "minecraft:vex", "minecraft:allay");
+        Collections.addAll(FIRE_IMMUNE, "minecraft:blaze", "minecraft:magma_cube", "minecraft:strider",
+                "minecraft:warden");
         Collections.addAll(WATER_HURT, "minecraft:blaze", "minecraft:magma_cube", "minecraft:strider");
         Collections.addAll(AQUATIC, "minecraft:guardian", "minecraft:elder_guardian", "minecraft:squid",
                 "minecraft:glow_squid", "minecraft:axolotl", "minecraft:frog", "minecraft:dolphin");

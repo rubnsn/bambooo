@@ -338,12 +338,12 @@
   "bamboomod.wish.result.transform.turtle": "その甲羅、とっても重くて硬そうね！",
   "bamboomod.wish.result.transform.hoglin": "泳ぐのがとても苦手そうね。",
   "bamboomod.wish.result.transform.zoglin": "えーと、見た目の違うゾンビってことでしょ？",
-  "bamboomod.wish.result.transform.ravager": "……あら、ちょっと間違えたかしら？",
+  "bamboomod.wish.result.transform.ravager": "あなたの……その見た目だけは強そうね。",
   "bamboomod.wish.result.transform.snow_golem": "もはや生物か怪しいわね、キズを直したかったら雪でも食べることね。",
   "bamboomod.wish.result.transform.slime": "うわぁ、ネバネバしてそう……。",
   "bamboomod.wish.result.transform.magma_cube": "スライムみたいだけどあなたは水が苦手そうね。",
-  "bamboomod.wish.result.transform.warden": "う～ん、あなたとの相性が良くないみたいね。頭だけ変えといてあげたわ。くすくす",
-  "bamboomod.wish.result.transform.shulker": "一生動けないわよ？ま、私の好意で行動可能にしておいてあげる",
+  "bamboomod.wish.result.transform.warden": "暗闇で生活することになるけど……。ま、あなたの望みだしね？",
+  "bamboomod.wish.result.transform.shulker": "あの箱に引きこもってる生物ね。特別に動けるようにしておいたわ。",
   "bamboomod.wish.result.transform.guardian": "水中でのみ生きたいのかしら？ま、私の好意で地上でも行動可能にしておいてあげる",
   "bamboomod.wish.result.transform.elder_guardian": "水中でのみ生きたいのかしら？ま、私の好意で地上でも行動可能にしておいてあげる",
   "bamboomod.wish.result.transform.squid": "水中でのみ生きたいのかしら？ま、私の好意で地上でも行動可能にしておいてあげる",
@@ -441,5 +441,7 @@
   "screen.bamboomod.fishing_minigame": "釣り",
   "block.bamboomod.windmill": "風車",
   "block.bamboomod.windmill_cloth": "風車(布張り)",
-  "block.bamboomod.waterwheel": "水車"
+  "block.bamboomod.waterwheel": "水車",
+  "message.bamboomod.glide_on": "滑空ON",
+  "message.bamboomod.glide_off": "滑空OFF"
 }

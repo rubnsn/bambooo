@@ -20,6 +20,8 @@ public class TransformStorage implements INBTSerializable<CompoundTag> {
     private String lastFood = "";
     private long lastFoodTick = -1000L;
     private boolean sheared = false;
+    /** 滑空のトグル状態 (true = 滑空有効。地上でOFF・空中スペースで反転)。 */
+    private boolean glideOn = false;
 
     public String getEntityId() {
         return entityId != null ? entityId : "";
@@ -29,6 +31,7 @@ public class TransformStorage implements INBTSerializable<CompoundTag> {
         this.entityId = id != null ? id : "";
         this.creeperFuse = -1;
         this.sheared = false;
+        this.glideOn = false;
     }
 
     public boolean isHuman() {
@@ -108,6 +111,14 @@ public class TransformStorage implements INBTSerializable<CompoundTag> {
         sheared = v;
     }
 
+    public boolean isGlideOn() {
+        return glideOn;
+    }
+
+    public void setGlideOn(boolean v) {
+        glideOn = v;
+    }
+
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
@@ -121,6 +132,7 @@ public class TransformStorage implements INBTSerializable<CompoundTag> {
         tag.putString("last_food", lastFood);
         tag.putLong("last_food_tick", lastFoodTick);
         tag.putBoolean("sheared", sheared);
+        tag.putBoolean("glide_on", glideOn);
         return tag;
     }
 
@@ -136,5 +148,6 @@ public class TransformStorage implements INBTSerializable<CompoundTag> {
         lastFood = tag.contains("last_food") ? tag.getString("last_food") : "";
         lastFoodTick = tag.contains("last_food_tick") ? tag.getLong("last_food_tick") : -1000L;
         sheared = tag.contains("sheared") && tag.getBoolean("sheared");
+        glideOn = tag.contains("glide_on") && tag.getBoolean("glide_on");
     }
 }
