@@ -8,6 +8,7 @@
   ],
   "client": [
     "vanilla.ModelBlockRendererMixin",
+    "vanilla.ItemStackEatMixin",
     "sodium.SodiumBlockRendererMixin"
   ],
   "minVersion": "0.8",

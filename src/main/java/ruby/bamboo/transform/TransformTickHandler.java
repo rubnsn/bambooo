@@ -204,24 +204,6 @@ public final class TransformTickHandler {
                 || level.getBlockState(eye).is(net.minecraft.world.level.block.Blocks.COBWEB);
     }
 
-    private static boolean isSeedItem(net.minecraft.world.item.ItemStack stack) {
-        return stack.is(net.minecraft.world.item.Items.WHEAT_SEEDS)
-                || stack.is(net.minecraft.world.item.Items.MELON_SEEDS)
-                || stack.is(net.minecraft.world.item.Items.PUMPKIN_SEEDS)
-                || stack.is(net.minecraft.world.item.Items.BEETROOT_SEEDS)
-                || stack.is(net.minecraft.world.item.Items.TORCHFLOWER_SEEDS);
-    }
-
-    private static boolean isPlantItem(net.minecraft.world.item.ItemStack stack) {
-        if (stack.is(net.minecraft.tags.ItemTags.FLOWERS)) {
-            return true;
-        }
-        return stack.is(net.minecraft.world.item.Items.GRASS)
-                || stack.is(net.minecraft.world.item.Items.TALL_GRASS)
-                || stack.is(net.minecraft.world.item.Items.FERN)
-                || stack.is(net.minecraft.world.item.Items.LARGE_FERN);
-    }
-
     private static void magnetPull(ServerPlayer player, double radius) {
         ServerLevel level = player.serverLevel();
         Vec3 center = player.position().add(0D, 1.0D, 0D);
@@ -573,6 +555,12 @@ public final class TransformTickHandler {
         if (stack.isEmpty()) {
             return;
         }
+        // 非食料の摂取は長押し化 (食料相当32tick)。食制限より先に適用。
+        TransformEatHelper.Pending pending = TransformEatHelper.serverPeek(player);
+        if (pending != null && stack.is(pending.item())) {
+            event.setDuration(TransformEatHelper.EAT_DURATION);
+            return;
+        }
         var food = stack.getFoodProperties(player);
         if (food == null) {
             return;
@@ -603,6 +591,37 @@ public final class TransformTickHandler {
             return;
         }
         var stack = event.getItem();
+        // 非食料の摂取完了 (長押し食べの効果適用・1個消費。中断時はStop側で破棄のため来ない)
+        TransformEatHelper.Pending pending = TransformEatHelper.serverTake(player);
+        if (pending != null && stack.is(pending.item())) {
+            TransformEatHelper.EatDef def = pending.def();
+            if (!player.getAbilities().instabuild) {
+                var result = stack.copy();
+                result.shrink(1);
+                event.setResultStack(result);
+            }
+            if (def.nutrition() > 0) {
+                player.getFoodData().eat(def.nutrition(), def.saturation());
+            }
+            if (def.heal() > 0) {
+                player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + def.heal()));
+            }
+            if (def.honeyRoll() && player.getRandom().nextInt(10) == 0) {
+                for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                    var inv = player.getInventory().getItem(i);
+                    if (inv.is(net.minecraft.world.item.Items.GLASS_BOTTLE)) {
+                        inv.shrink(1);
+                        var honey = new net.minecraft.world.item.ItemStack(
+                                net.minecraft.world.item.Items.HONEY_BOTTLE);
+                        if (!player.getInventory().add(honey)) {
+                            player.drop(honey, false);
+                        }
+                        break;
+                    }
+                }
+            }
+            return;
+        }
         // 腐肉の記録
         if (stack.is(net.minecraft.world.item.Items.ROTTEN_FLESH)) {
             long now = player.serverLevel().getGameTime();
@@ -628,6 +647,45 @@ public final class TransformTickHandler {
                 }
             });
         }
+    }
+
+    @SubscribeEvent
+    public static void onUseStop(LivingEntityUseItemEvent.Stop event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        // 長押し食べの中断は不消費で破棄
+        TransformEatHelper.serverClear(player);
+    }
+
+    @SubscribeEvent
+    public static void onUseTick(LivingEntityUseItemEvent.Tick event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        TransformEatHelper.Pending pending = TransformEatHelper.serverPeek(player);
+        if (pending == null || !event.getItem().is(pending.item())) {
+            return;
+        }
+        // 非食料はバニラの shouldTrigger (残量<=本来duration-7) が発火しないため自前で出す。
+        // 食料相当32tickのリズム (残り25以降・4tick毎) に合わせる。
+        // 完了時のまとめバーストは client の trigger が出すのでサーバは出さない。
+        int remaining = event.getDuration();
+        if (remaining > TransformEatHelper.EAT_DURATION - 7 || remaining % 4 != 0) {
+            return;
+        }
+        ServerLevel level = player.serverLevel();
+        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                net.minecraft.sounds.SoundEvents.GENERIC_EAT,
+                net.minecraft.sounds.SoundSource.PLAYERS, 0.5F,
+                0.9F + player.getRandom().nextFloat() * 0.2F);
+        Vec3 look = player.getLookAngle();
+        level.sendParticles(
+                new net.minecraft.core.particles.ItemParticleOption(
+                        net.minecraft.core.particles.ParticleTypes.ITEM, event.getItem()),
+                player.getX() + look.x * 0.6D, player.getEyeY() - 0.15D,
+                player.getZ() + look.z * 0.6D,
+                5, 0.15D, 0.15D, 0.15D, 0.03D);
     }
 
     @SubscribeEvent
@@ -851,77 +909,17 @@ public final class TransformTickHandler {
             event.setCanceled(true);
             return;
         }
-        // オウム・ニワトリ: 種を食べる
-        if ((id.equals("minecraft:parrot") || id.equals("minecraft:chicken"))
-                && isSeedItem(stack)) {
-            if (!creative) {
-                stack.shrink(1);
+        // 非食料の摂取は長押し食べ (種/草花/竹/金属/雪/花)。道具系(バケツ・ハサミ)は即時のまま。
+        // 開始→Startで32tick化→Finishで効果。途中離しは不消費。
+        TransformEatHelper.EatDef eat = TransformEatHelper.match(id, stack, player);
+        if (eat != null) {
+            if (player.isUsingItem()) {
+                return;
             }
-            player.getFoodData().eat(1, 0.2F);
+            TransformEatHelper.serverPut(player, event.getHand(), stack, eat);
+            player.startUsingItem(event.getHand());
             event.setCanceled(true);
             return;
-        }
-        // ウシ・ヤギ: 草花を食べる
-        if ((id.equals("minecraft:cow") || id.equals("minecraft:goat"))
-                && isPlantItem(stack)) {
-            if (!creative) {
-                stack.shrink(1);
-            }
-            player.getFoodData().eat(1, 0.3F);
-            event.setCanceled(true);
-            return;
-        }
-        // パンダ: 竹を食べる
-        if (id.equals("minecraft:panda") && stack.is(net.minecraft.world.item.Items.BAMBOO)) {
-            if (!creative) {
-                stack.shrink(1);
-            }
-            player.getFoodData().eat(2, 0.4F);
-            event.setCanceled(true);
-            return;
-        }
-        // ゴーレム系: 金属・雪食い回復
-        if (id.equals("minecraft:iron_golem") && player.getHealth() < player.getMaxHealth()
-                && (stack.is(net.minecraft.world.item.Items.IRON_INGOT)
-                        || stack.is(net.minecraft.world.item.Items.COPPER_INGOT)
-                        || stack.is(net.minecraft.world.item.Items.GOLD_INGOT))) {
-            if (!creative) {
-                stack.shrink(1);
-            }
-            player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + 4.0F));
-            event.setCanceled(true);
-            return;
-        }
-        if (id.equals("minecraft:snow_golem") && player.getHealth() < player.getMaxHealth()
-                && stack.is(net.minecraft.world.item.Items.SNOW_BLOCK)) {
-            if (!creative) {
-                stack.shrink(1);
-            }
-            player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + 4.0F));
-            event.setCanceled(true);
-            return;
-        }
-        // ハチ: 花を食べる (+空ビンがあれば10%で蜂蜜)
-        if (id.equals("minecraft:bee") && stack.is(net.minecraft.tags.ItemTags.FLOWERS)) {
-            if (!creative) {
-                stack.shrink(1);
-            }
-            player.getFoodData().eat(2, 0.5F);
-            if (player.getRandom().nextInt(10) == 0) {
-                for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-                    var inv = player.getInventory().getItem(i);
-                    if (inv.is(net.minecraft.world.item.Items.GLASS_BOTTLE)) {
-                        inv.shrink(1);
-                        var honey = new net.minecraft.world.item.ItemStack(
-                                net.minecraft.world.item.Items.HONEY_BOTTLE);
-                        if (!player.getInventory().add(honey)) {
-                            player.drop(honey, false);
-                        }
-                        break;
-                    }
-                }
-            }
-            event.setCanceled(true);
         }
     }
 

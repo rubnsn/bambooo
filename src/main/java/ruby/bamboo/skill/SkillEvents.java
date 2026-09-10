@@ -19,6 +19,13 @@ public final class SkillEvents {
 
     @SubscribeEvent
     public static void onClone(PlayerEvent.Clone event) {
+        // 死亡時は旧entityがremove済みでCapが無効化されているため、読む前に復活させる
+        if (event.isWasDeath()) {
+            try {
+                event.getOriginal().reviveCaps();
+            } catch (Exception ignored) {
+            }
+        }
         event.getOriginal().getCapability(BambooCapabilities.SKILL).ifPresent(old -> {
             event.getEntity().getCapability(BambooCapabilities.SKILL).ifPresent(nu -> {
                 nu.deserializeNBT(old.serializeNBT());
