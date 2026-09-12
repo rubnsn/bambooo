@@ -15,6 +15,7 @@ import ruby.bamboo.item.BambooItem;
 import ruby.bamboo.item.BambooRodItem;
 import ruby.bamboo.item.ClimbingClawItem;
 import ruby.bamboo.item.CommonKatana;
+import ruby.bamboo.item.DaifugoItem;
 import ruby.bamboo.item.FirecrackerItem;
 import ruby.bamboo.item.FishingBaitItem;
 import ruby.bamboo.item.FoldingFan;
@@ -263,6 +264,10 @@ public final class BambooItems {
     /** ソリティア起動札 (右クリックでクロンダイクを開く。テクスチャ仮置き) */
     public static final RegistryObject<SolitaireItem> SOLITAIRE = register("solitaire",
             () -> new SolitaireItem(new Item.Properties().stacksTo(1)));
+
+    /** 大富豪札 (右クリックで参加・作成。テクスチャ仮置き) */
+    public static final RegistryObject<DaifugoItem> DAIFUGO = register("daifugo",
+            () -> new DaifugoItem(new Item.Properties().stacksTo(1)));
 
     private static <I extends Item> RegistryObject<I> register(String name, Supplier<? extends I> factory) {
         RegistryObject<I> item = BambooMod.ITEMS.register(name, factory);

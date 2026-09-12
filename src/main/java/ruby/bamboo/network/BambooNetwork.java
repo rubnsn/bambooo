@@ -88,5 +88,25 @@ public final class BambooNetwork {
                 SolitaireOpenPacket::encode,
                 SolitaireOpenPacket::decode,
                 SolitaireOpenPacket::handle);
+        CHANNEL.registerMessage(nextId(), DaifugoRoomPacket.class,
+                DaifugoRoomPacket::encode,
+                DaifugoRoomPacket::decode,
+                DaifugoRoomPacket::handle);
+        CHANNEL.registerMessage(nextId(), DaifugoActionPacket.class,
+                DaifugoActionPacket::encode,
+                DaifugoActionPacket::decode,
+                DaifugoActionPacket::handle);
+        CHANNEL.registerMessage(nextId(), DaifugoStartPacket.class,
+                DaifugoStartPacket::encode,
+                DaifugoStartPacket::decode,
+                DaifugoStartPacket::handle);
+        CHANNEL.registerMessage(nextId(), DaifugoLeavePacket.class,
+                DaifugoLeavePacket::encode,
+                DaifugoLeavePacket::decode,
+                DaifugoLeavePacket::handle);
+        CHANNEL.registerMessage(nextId(), DaifugoTributePacket.class,
+                DaifugoTributePacket::encode,
+                DaifugoTributePacket::decode,
+                DaifugoTributePacket::handle);
     }
 }
