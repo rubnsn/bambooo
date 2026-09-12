@@ -36,6 +36,12 @@ public final class SolitaireGame {
     private final List<List<Card>> foundations = new ArrayList<>(FOUNDATION_COUNT);
     private final List<List<Card>> tableau = new ArrayList<>(TABLEAU_COUNT);
 
+    /** 1回の山札めくり枚数。 */
+    private int drawCount = 1;
+    /** 山札回収の上限 (-1=無制限)。 */
+    private int maxRedeals = -1;
+    private int redealsUsed = 0;
+
     public SolitaireGame() {
         this(new Random());
     }
@@ -53,6 +59,7 @@ public final class SolitaireGame {
     public void newGame(Random random) {
         stock.clear();
         waste.clear();
+        redealsUsed = 0;
         foundations.forEach(List::clear);
         tableau.forEach(List::clear);
         List<Card> deck = new ArrayList<>(52);
@@ -77,6 +84,29 @@ public final class SolitaireGame {
 
     // ===== 参照 =====
 
+    /** めくり数・回収上限を設定する (newGame では維持される)。 */
+    public void setRules(int drawCount, int maxRedeals) {
+        this.drawCount = Math.max(1, drawCount);
+        this.maxRedeals = maxRedeals;
+    }
+
+    public int drawCount() {
+        return drawCount;
+    }
+
+    public int maxRedeals() {
+        return maxRedeals;
+    }
+
+    public int redealsUsed() {
+        return redealsUsed;
+    }
+
+    /** 残り回収回数 (-1=無制限)。 */
+    public int redealsLeft() {
+        return maxRedeals < 0 ? -1 : Math.max(0, maxRedeals - redealsUsed);
+    }
+
     public int stockCount() {
         return stock.size();
     }
@@ -87,6 +117,12 @@ public final class SolitaireGame {
 
     public Card wasteTop() {
         return topOf(waste);
+    }
+
+    /** 捨て札の見えている部分 (末尾=先頭)。表示用。操作できるのは先頭のみ。 */
+    public List<Card> wasteFan() {
+        int k = Math.min(drawCount, waste.size());
+        return Collections.unmodifiableList(waste.subList(waste.size() - k, waste.size()));
     }
 
     public int tableauSize(int col) {
@@ -128,18 +164,24 @@ public final class SolitaireGame {
 
     // ===== 山札 =====
 
-    /** 山札を1枚めくる。 */
+    /** 山札をめくる (残りが少なければあるだけ)。 */
     public boolean drawFromStock() {
         if (stock.isEmpty()) {
             return false;
         }
-        waste.add(stock.remove(stock.size() - 1).asFaceUp());
+        int n = Math.min(drawCount, stock.size());
+        for (int i = 0; i < n; i++) {
+            waste.add(stock.remove(stock.size() - 1).asFaceUp());
+        }
         return true;
     }
 
-    /** 捨て札を裏返して山札に戻す (無制限)。束ごと裏返すため先にめくった札が上に来る。 */
+    /** 捨て札を裏返して山札に戻す (上限付き)。束ごと裏返すため先にめくった札が上に来る。 */
     public boolean recycleStock() {
         if (!stock.isEmpty() || waste.isEmpty()) {
+            return false;
+        }
+        if (maxRedeals >= 0 && redealsUsed >= maxRedeals) {
             return false;
         }
         for (int i = waste.size() - 1; i >= 0; i--) {
@@ -147,6 +189,7 @@ public final class SolitaireGame {
             stock.add(new Card(c.suit(), c.rank(), false));
         }
         waste.clear();
+        redealsUsed++;
         return true;
     }
 

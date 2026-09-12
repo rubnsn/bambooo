@@ -1,5 +1,6 @@
 package ruby.bamboo.client.gui.trump;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -26,6 +27,10 @@ public class SolitaireScreen extends Screen {
     private static final int DOWN_GAP = 6;
     private static final int UP_GAP = 18;
     private static final int UP_GAP_MIN = 7;
+    /** 3枚めくり時の捨て札のずらし幅。 */
+    private static final int WASTE_FAN_DX = 12;
+    /** 難易度選択の1行高さ (ボタン20+説明)。 */
+    private static final int SELECT_ROW_H = 40;
 
     private static final int FELT = 0xFF0B3D2C;
     private static final int FELT_EDGE = 0xFF072A20;
@@ -37,6 +42,9 @@ public class SolitaireScreen extends Screen {
     private static final int TEXT_SUB = 0xFFB9C4A8;
 
     private final SolitaireGame game = new SolitaireGame();
+    private SolitaireDifficulty difficulty = SolitaireDifficulty.EASY;
+    /** true の間は盤面の上に難易度選択を重ね、盤面操作を受け付けない。 */
+    private boolean selecting = true;
 
     /** 持ち運び中の札 (持ち上げ時に場から取り除き済み)。先頭=末尾が一番上。 */
     private List<Card> held;
@@ -52,6 +60,10 @@ public class SolitaireScreen extends Screen {
     private int guiLeft;
     private int tableauTop;
     private int maxColH;
+    private int selectTopY;
+    private final List<Button> difficultyButtons = new ArrayList<>();
+    private Button newGameButton;
+    private Button backButton;
 
     private enum HeldFrom {
         WASTE, FOUNDATION, TABLEAU
@@ -66,6 +78,7 @@ public class SolitaireScreen extends Screen {
 
     public SolitaireScreen() {
         super(Component.translatable("screen.bamboomod.solitaire"));
+        game.setRules(difficulty.drawCount(), difficulty.maxRedeals());
     }
 
     @Override
@@ -80,11 +93,56 @@ public class SolitaireScreen extends Screen {
         guiLeft = (this.width - totalW) / 2;
         tableauTop = TOP_Y + CARD_H + TABLEAU_GAP_Y;
         maxColH = this.height - tableauTop - 30;
+        selectTopY = Math.max(48, this.height / 2 - 78);
         this.clearWidgets();
-        this.addRenderableWidget(Button.builder(
+        difficultyButtons.clear();
+        int cx = this.width / 2;
+        for (SolitaireDifficulty d : SolitaireDifficulty.values()) {
+            Button b = Button.builder(d.label(), btn -> startDifficulty(d))
+                    .bounds(cx - 110, selectTopY + d.ordinal() * SELECT_ROW_H, 220, 20)
+                    .build();
+            difficultyButtons.add(b);
+            this.addRenderableWidget(b);
+        }
+        int right = guiLeft + totalW;
+        newGameButton = Button.builder(
                 Component.translatable("screen.bamboomod.solitaire_new"), b -> newGame())
-                .bounds(guiLeft + totalW - 82, this.height - 24, 78, 20)
-                .build());
+                .bounds(right - 82, this.height - 24, 78, 20)
+                .build();
+        this.addRenderableWidget(newGameButton);
+        backButton = Button.builder(
+                Component.translatable("screen.bamboomod.solitaire_back"), b -> backToSelect())
+                .bounds(right - 164, this.height - 24, 78, 20)
+                .build();
+        this.addRenderableWidget(backButton);
+        refreshButtons();
+    }
+
+    private void refreshButtons() {
+        for (Button b : difficultyButtons) {
+            b.visible = selecting;
+        }
+        newGameButton.visible = !selecting;
+        backButton.visible = !selecting;
+    }
+
+    private void startDifficulty(SolitaireDifficulty d) {
+        difficulty = d;
+        game.setRules(d.drawCount(), d.maxRedeals());
+        game.newGame(new Random());
+        held = null;
+        heldSplit = false;
+        wasWon = false;
+        selecting = false;
+        refreshButtons();
+        click(0.9F);
+    }
+
+    private void backToSelect() {
+        held = null;
+        heldSplit = false;
+        selecting = true;
+        refreshButtons();
     }
 
     private void newGame() {
@@ -107,6 +165,12 @@ public class SolitaireScreen extends Screen {
 
     private int wasteX() {
         return columnX(1);
+    }
+
+    /** 捨て札の先頭 (操作対象) のx。3枚めくりは右にずれる。 */
+    private int wasteTopX() {
+        int k = game.wasteFan().size();
+        return wasteX() + Math.max(0, k - 1) * WASTE_FAN_DX;
     }
 
     private int foundationX(int f) {
@@ -181,7 +245,7 @@ public class SolitaireScreen extends Screen {
         if (inTopSlot(x, y, stockX())) {
             return new Hit(Target.STOCK, 0);
         }
-        if (inTopSlot(x, y, wasteX())) {
+        if (inRect(x, y, wasteTopX(), TOP_Y, CARD_W, CARD_H)) {
             return new Hit(Target.WASTE, 0);
         }
         for (int f = 0; f < SolitaireGame.FOUNDATION_COUNT; f++) {
@@ -203,6 +267,9 @@ public class SolitaireScreen extends Screen {
         if (super.mouseClicked(mouseX, mouseY, button)) {
             return true;
         }
+        if (selecting) {
+            return true;
+        }
         int x = (int) mouseX;
         int y = (int) mouseY;
         if (button == 1) {
@@ -218,9 +285,14 @@ public class SolitaireScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_R) {
-            newGame();
-            return true;
+        if (selecting) {
+            int idx = keyCode - GLFW.GLFW_KEY_1;
+            SolitaireDifficulty[] values = SolitaireDifficulty.values();
+            if (idx >= 0 && idx < values.length) {
+                startDifficulty(values[idx]);
+                return true;
+            }
+            return super.keyPressed(keyCode, scanCode, modifiers);
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
@@ -262,7 +334,7 @@ public class SolitaireScreen extends Screen {
                     held = List.of(game.removeWasteTop());
                     heldSplit = false;
                     heldFrom = HeldFrom.WASTE;
-                    grabFrom(x, y, wasteX(), TOP_Y);
+                    grabFrom(x, y, wasteTopX(), TOP_Y);
                     click(1.0F);
                 }
             }
@@ -461,19 +533,35 @@ public class SolitaireScreen extends Screen {
     @Override
     public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(gfx);
-        gfx.drawString(this.font, this.title.getString(), 8, 6, TEXT_MAIN, false);
+        gfx.drawString(this.font,
+                this.title.getString() + " / " + difficulty.label().getString(), 8, 6, TEXT_MAIN, false);
 
         Hit hover = held != null ? hitTest(mouseX, mouseY) : null;
         drawTopRow(gfx, hover);
         drawTableau(gfx, hover);
         drawHeld(gfx, mouseX, mouseY);
 
-        gfx.drawString(this.font, "左: もつ/おく  右・ダブルクリック: 組札へ  R: はじめから", 8, this.height - 18, TEXT_SUB, false);
+        gfx.drawString(this.font, Component.translatable("screen.bamboomod.solitaire_hint").getString(),
+                8, this.height - 18, TEXT_SUB, false);
 
-        if (game.isWon()) {
+        if (selecting) {
+            gfx.fill(0, 0, this.width, this.height, 0xC0000000);
+            gfx.drawCenteredString(this.font,
+                    Component.translatable("screen.bamboomod.solitaire_select").getString(),
+                    this.width / 2, selectTopY - 24, TEXT_MAIN);
+            for (SolitaireDifficulty d : SolitaireDifficulty.values()) {
+                gfx.drawCenteredString(this.font, d.desc().getString(),
+                        this.width / 2, selectTopY + d.ordinal() * SELECT_ROW_H + 23, TEXT_SUB);
+            }
+        }
+
+        if (game.isWon() && !selecting) {
             gfx.fill(0, 0, this.width, this.height, 0xA0000000);
-            gfx.drawCenteredString(this.font, "完成!", this.width / 2, this.height / 2 - 12, TEXT_MAIN);
-            gfx.drawCenteredString(this.font, "R またはボタンで新しいゲーム",
+            gfx.drawCenteredString(this.font,
+                    Component.translatable("screen.bamboomod.solitaire_win").getString(),
+                    this.width / 2, this.height / 2 - 12, TEXT_MAIN);
+            gfx.drawCenteredString(this.font,
+                    Component.translatable("screen.bamboomod.solitaire_win_sub").getString(),
                     this.width / 2, this.height / 2 + 6, TEXT_SUB);
         }
         super.render(gfx, mouseX, mouseY, partialTick);
@@ -488,15 +576,25 @@ public class SolitaireScreen extends Screen {
                     TrumpRank.ACE, TrumpSuit.SPADE, true);
             gfx.drawString(this.font, "×" + game.stockCount(),
                     stockX() + 2, TOP_Y + CARD_H + 3, TEXT_SUB, false);
-        } else if (!game.wasteEmpty()) {
-            gfx.drawCenteredString(this.font, "もどす", stockX() + CARD_W / 2, TOP_Y + CARD_H / 2 - 4,
-                    SLOT_HINT);
+        } else if (!game.wasteEmpty() && game.redealsLeft() != 0) {
+            gfx.drawCenteredString(this.font,
+                    Component.translatable("screen.bamboomod.solitaire_recycle").getString(),
+                    stockX() + CARD_W / 2, TOP_Y + CARD_H / 2 - 4, SLOT_HINT);
+            if (game.redealsLeft() > 0) {
+                gfx.drawCenteredString(this.font,
+                        Component.translatable("screen.bamboomod.solitaire_redeals",
+                                game.redealsLeft()).getString(),
+                        stockX() + CARD_W / 2, TOP_Y + CARD_H / 2 + 7, TEXT_SUB);
+            }
         }
-        // 捨て札
-        drawSlot(gfx, wasteX(), TOP_Y, hover != null && hover.target() == Target.WASTE);
-        Card waste = game.wasteTop();
-        if (waste != null) {
-            renderFace(gfx, wasteX(), TOP_Y, waste);
+        // 捨て札 (3枚めくりは直近を見せる。操作できるのは先頭のみ)
+        drawSlot(gfx, wasteX(), TOP_Y, false);
+        List<Card> fan = game.wasteFan();
+        for (int i = 0; i < fan.size(); i++) {
+            renderFace(gfx, wasteX() + i * WASTE_FAN_DX, TOP_Y, fan.get(i));
+        }
+        if (hover != null && hover.target() == Target.WASTE) {
+            drawFrame(gfx, wasteTopX(), TOP_Y, CARD_W, CARD_H, TARGET_LINE);
         }
         // 組札 (先頭札で判定。複数持ちでも先頭だけ置ける)
         for (int f = 0; f < SolitaireGame.FOUNDATION_COUNT; f++) {

@@ -446,5 +446,20 @@
   "message.bamboomod.glide_off": "Glide OFF",
   "item.bamboomod.solitaire": "Solitaire (Temp)",
   "screen.bamboomod.solitaire": "Solitaire",
-  "screen.bamboomod.solitaire_new": "New Game"
+  "screen.bamboomod.solitaire_new": "New Game",
+  "screen.bamboomod.solitaire_back": "Back to Select",
+  "screen.bamboomod.solitaire_select": "Select Difficulty",
+  "screen.bamboomod.solitaire_redeals": "%s left",
+  "screen.bamboomod.solitaire_easy": "Easy Mode",
+  "screen.bamboomod.solitaire_easy_desc": "Draw 1, unlimited redeals",
+  "screen.bamboomod.solitaire_normal": "Normal",
+  "screen.bamboomod.solitaire_normal_desc": "Draw 1, up to 3 redeals",
+  "screen.bamboomod.solitaire_hard": "Hard",
+  "screen.bamboomod.solitaire_hard_desc": "Draw 3, up to 3 redeals",
+  "screen.bamboomod.solitaire_hell": "Hell",
+  "screen.bamboomod.solitaire_hell_desc": "Draw 3, only 1 redeal",
+  "screen.bamboomod.solitaire_hint": "Left: hold/place  Right: to foundation  ESC: close",
+  "screen.bamboomod.solitaire_win": "Complete!",
+  "screen.bamboomod.solitaire_win_sub": "New game with the button",
+  "screen.bamboomod.solitaire_recycle": "Recycle"
 }
