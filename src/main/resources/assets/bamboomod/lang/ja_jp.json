@@ -443,5 +443,8 @@
   "block.bamboomod.windmill_cloth": "風車(布張り)",
   "block.bamboomod.waterwheel": "水車",
   "message.bamboomod.glide_on": "滑空ON",
-  "message.bamboomod.glide_off": "滑空OFF"
+  "message.bamboomod.glide_off": "滑空OFF",
+  "item.bamboomod.solitaire": "ソリティア(仮)",
+  "screen.bamboomod.solitaire": "ソリティア",
+  "screen.bamboomod.solitaire_new": "新しいゲーム"
 }

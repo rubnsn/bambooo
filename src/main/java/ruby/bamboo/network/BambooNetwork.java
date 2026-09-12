@@ -84,5 +84,9 @@ public final class BambooNetwork {
                 TransformGlidePacket::encode,
                 TransformGlidePacket::decode,
                 TransformGlidePacket::handle);
+        CHANNEL.registerMessage(nextId(), SolitaireOpenPacket.class,
+                SolitaireOpenPacket::encode,
+                SolitaireOpenPacket::decode,
+                SolitaireOpenPacket::handle);
     }
 }

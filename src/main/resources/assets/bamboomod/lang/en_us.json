@@ -443,5 +443,8 @@
   "block.bamboomod.windmill_cloth": "Windmill (Cloth)",
   "block.bamboomod.waterwheel": "Waterwheel",
   "message.bamboomod.glide_on": "Glide ON",
-  "message.bamboomod.glide_off": "Glide OFF"
+  "message.bamboomod.glide_off": "Glide OFF",
+  "item.bamboomod.solitaire": "Solitaire (Temp)",
+  "screen.bamboomod.solitaire": "Solitaire",
+  "screen.bamboomod.solitaire_new": "New Game"
 }

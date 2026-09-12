@@ -27,6 +27,7 @@ import ruby.bamboo.item.Rawrice;
 import ruby.bamboo.item.Sack;
 import ruby.bamboo.item.ShurikenItem;
 import ruby.bamboo.item.SkillBookItem;
+import ruby.bamboo.item.SolitaireItem;
 import ruby.bamboo.item.StatusBookItem;
 import ruby.bamboo.item.Straw;
 
@@ -256,6 +257,12 @@ public final class BambooItems {
         }
         return List.copyOf(list);
     }
+
+    // ===== ミニゲーム (テスト用) =====
+
+    /** ソリティア起動札 (右クリックでクロンダイクを開く。テクスチャ仮置き) */
+    public static final RegistryObject<SolitaireItem> SOLITAIRE = register("solitaire",
+            () -> new SolitaireItem(new Item.Properties().stacksTo(1)));
 
     private static <I extends Item> RegistryObject<I> register(String name, Supplier<? extends I> factory) {
         RegistryObject<I> item = BambooMod.ITEMS.register(name, factory);
