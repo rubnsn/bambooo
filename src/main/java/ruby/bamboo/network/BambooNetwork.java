@@ -116,5 +116,33 @@ public final class BambooNetwork {
                 DaifugoRulesPacket::encode,
                 DaifugoRulesPacket::decode,
                 DaifugoRulesPacket::handle);
+        CHANNEL.registerMessage(nextId(), BlackjackOpenPacket.class,
+                BlackjackOpenPacket::encode,
+                BlackjackOpenPacket::decode,
+                BlackjackOpenPacket::handle);
+        CHANNEL.registerMessage(nextId(), BlackjackBetPacket.class,
+                BlackjackBetPacket::encode,
+                BlackjackBetPacket::decode,
+                BlackjackBetPacket::handle);
+        CHANNEL.registerMessage(nextId(), BlackjackSettlePacket.class,
+                BlackjackSettlePacket::encode,
+                BlackjackSettlePacket::decode,
+                BlackjackSettlePacket::handle);
+        CHANNEL.registerMessage(nextId(), BlackjackCashoutPacket.class,
+                BlackjackCashoutPacket::encode,
+                BlackjackCashoutPacket::decode,
+                BlackjackCashoutPacket::handle);
+        CHANNEL.registerMessage(nextId(), BlackjackAbandonPacket.class,
+                BlackjackAbandonPacket::encode,
+                BlackjackAbandonPacket::decode,
+                BlackjackAbandonPacket::handle);
+        CHANNEL.registerMessage(nextId(), BlackjackBalancePacket.class,
+                BlackjackBalancePacket::encode,
+                BlackjackBalancePacket::decode,
+                BlackjackBalancePacket::handle);
+        CHANNEL.registerMessage(nextId(), BlackjackInsurancePacket.class,
+                BlackjackInsurancePacket::encode,
+                BlackjackInsurancePacket::decode,
+                BlackjackInsurancePacket::handle);
     }
 }

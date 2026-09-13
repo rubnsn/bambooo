@@ -32,6 +32,7 @@ import ruby.bamboo.item.SkillBookItem;
 import ruby.bamboo.item.SolitaireItem;
 import ruby.bamboo.item.StatusBookItem;
 import ruby.bamboo.item.Straw;
+import ruby.bamboo.item.BlackjackItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -273,6 +274,10 @@ public final class BambooItems {
     /** フリーセル起動札 (右クリックでフリーセルを開く。テクスチャ仮置き) */
     public static final RegistryObject<FreeCellItem> FREECELL = register("freecell",
             () -> new FreeCellItem(new Item.Properties().stacksTo(1)));
+
+    /** ブラックジャック起動札 (右クリックで開く。テクスチャ仮置き) */
+    public static final RegistryObject<BlackjackItem> BLACKJACK = register("blackjack",
+            () -> new BlackjackItem(new Item.Properties().stacksTo(1)));
 
     private static <I extends Item> RegistryObject<I> register(String name, Supplier<? extends I> factory) {
         RegistryObject<I> item = BambooMod.ITEMS.register(name, factory);
