@@ -1,6 +1,7 @@
 package ruby.bamboo;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -17,6 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.common.loot.IGlobalLootModifier;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.DistExecutor;
@@ -39,6 +41,7 @@ import ruby.bamboo.core.init.BambooBlocks;
 import ruby.bamboo.core.init.BambooEnchantments;
 import ruby.bamboo.core.init.BambooEntities;
 import ruby.bamboo.core.init.BambooItems;
+import ruby.bamboo.core.init.BambooLootModifiers;
 import ruby.bamboo.core.init.BambooMenus;
 import ruby.bamboo.core.init.BambooParticles;
 import ruby.bamboo.core.init.SpringFluids;
@@ -94,6 +97,9 @@ public class BambooMod {
     /** Fluid 用 DeferredRegister (温泉) */
     public static final DeferredRegister<Fluid> FLUIDS = DeferredRegister
             .create(ForgeRegistries.FLUIDS, MODID);
+    /** GlobalLootModifier codec 用 (草ドロップ等。1.20.1に組込forge:add_itemは無いため自前登録) */
+    public static final DeferredRegister<Codec<? extends IGlobalLootModifier>> LOOT_MODIFIER_SERIALIZERS = DeferredRegister
+            .create(ForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, MODID);
 
     /** 囲炉裏レシピの Serializer */
     public static final RegistryObject<RecipeSerializer<BambooCampfireRecipe>> CAMPFIRE_SERIALIZER = RECIPE_SERIALIZERS
@@ -177,6 +183,7 @@ public class BambooMod {
         ENCHANTMENTS.register(modEventBus);
         FLUID_TYPES.register(modEventBus);
         FLUIDS.register(modEventBus);
+        LOOT_MODIFIER_SERIALIZERS.register(modEventBus);
 
         // コンテンツ登録 (DeferredRegisterへの登録は静的初期化時に実行される)
         BambooBlocks.init();
@@ -186,6 +193,7 @@ public class BambooMod {
         BambooParticles.init();
         BambooEntities.init();
         BambooEnchantments.init();
+        BambooLootModifiers.init();
 
         // レシピ登録 (FMLCommonSetupEvent で実行)
         BambooRecipes.register(modEventBus);
