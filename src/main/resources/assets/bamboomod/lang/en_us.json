@@ -283,6 +283,8 @@
   "bamboomod.wish.fallback.pain": "You feel a slight pain...",
   "bamboomod.wish.fallback.xp": "You feel your experience drain a little...",
   "bamboomod.wish.fallback.iron": "Not bad, I guess.",
+  "bamboomod.wish.fail.luck": "A tremendous fortune smiles upon you!",
+  "bamboomod.wish.fail.miss": "...or so it seemed, but it was just your imagination.",
   "bamboomod.wish.greed.line": "That... might be a bit too greedy, don't you think?",
   "bamboomod.wish.result.overenchant": "A divine blessing... a power beyond limits dwells within!",
   "bamboomod.wish.result.death": "If that is what you wish for...",

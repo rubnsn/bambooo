@@ -53,7 +53,8 @@ public class WishRequestPacket {
             }
             raw = raw.replaceAll("\\p{Cntrl}", "");
             BambooMod.LOGGER.info("Wish received from {}: '{}'", player.getName().getString(), raw);
-            WishManager.resolveAndExecute(player, raw);
+            boolean wand = WishEventHandler.pollWand(player.getUUID());
+            WishManager.resolveAndExecute(player, raw, wand);
         });
         ctx.get().setPacketHandled(true);
     }

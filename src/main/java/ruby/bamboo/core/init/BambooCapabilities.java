@@ -16,6 +16,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.capability.ColoredLightStorage;
+import ruby.bamboo.core.wish.WishStorage;
 import ruby.bamboo.skill.SkillStorage;
 import ruby.bamboo.transform.TransformStorage;
 
@@ -42,6 +43,12 @@ public final class BambooCapabilities {
 
     public static final ResourceLocation TRANSFORM_ID =
             new ResourceLocation(BambooMod.MODID, "transform");
+
+    public static final Capability<WishStorage> WISH =
+            CapabilityManager.get(new CapabilityToken<>() {});
+
+    public static final ResourceLocation WISH_ID =
+            new ResourceLocation(BambooMod.MODID, "wish");
 
     private BambooCapabilities() {
     }
@@ -83,6 +90,7 @@ public final class BambooCapabilities {
                 return;
             }
             attachTransform(event);
+            attachWish(event);
             SkillStorage storage = new SkillStorage();
             LazyOptional<SkillStorage> lazy = LazyOptional.of(() -> storage);
             ICapabilitySerializable<CompoundTag> provider = new ICapabilitySerializable<CompoundTag>() {
@@ -130,6 +138,31 @@ public final class BambooCapabilities {
                 }
             };
             event.addCapability(TRANSFORM_ID, provider);
+        }
+
+        private static void attachWish(AttachCapabilitiesEvent<Entity> event) {
+            WishStorage storage = new WishStorage();
+            LazyOptional<WishStorage> lazy = LazyOptional.of(() -> storage);
+            ICapabilitySerializable<CompoundTag> provider = new ICapabilitySerializable<CompoundTag>() {
+                @Override
+                public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
+                    if (cap == WISH) {
+                        return lazy.cast();
+                    }
+                    return LazyOptional.empty();
+                }
+
+                @Override
+                public CompoundTag serializeNBT() {
+                    return storage.serializeNBT();
+                }
+
+                @Override
+                public void deserializeNBT(CompoundTag nbt) {
+                    storage.deserializeNBT(nbt);
+                }
+            };
+            event.addCapability(WISH_ID, provider);
         }
     }
 }

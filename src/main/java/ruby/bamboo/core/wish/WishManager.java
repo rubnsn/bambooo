@@ -101,6 +101,15 @@ public final class WishManager {
     }
 
     public static void resolveAndExecute(ServerPlayer player, String rawInput) {
+        resolveAndExecute(player, rawInput, false);
+    }
+
+    /**
+     * 願いの解釈と実行。カウント抽選は発動時(WishEventHandler)で済ませているため、
+     * ここでは成功時にカウント+1するのみ。fallback(水湧き等)はノーカン。
+     * 杖由来(fromWand)はカウント対象外。
+     */
+    public static void resolveAndExecute(ServerPlayer player, String rawInput, boolean fromWand) {
         if (player == null) return;
         // 願い叫びを全員にブロードキャスト（システムメッセージ風）
         String shoutRaw = rawInput == null ? "" : rawInput.trim().replaceAll("\\p{Cntrl}", "");
@@ -138,7 +147,7 @@ public final class WishManager {
         }
         if (!priorityHits.isEmpty()) {
             WishEntry chosen = weightedRandom(priorityHits, random);
-            executeEntry(player, chosen, random);
+            executeEntry(player, chosen, random, fromWand);
             return;
         }
 
@@ -152,7 +161,7 @@ public final class WishManager {
         }
         if (!hits.isEmpty()) {
             WishEntry chosen = weightedRandom(hits, random);
-            executeEntry(player, chosen, random);
+            executeEntry(player, chosen, random, fromWand);
             return;
         }
 
@@ -160,7 +169,7 @@ public final class WishManager {
         WishEntry approx = findClosestApproximate(normalized, random);
         if (approx != null) {
             LOGGER.info("Wish approximate matched {} for '{}' (distance minimal)", approx.id, normalized);
-            executeEntry(player, approx, random);
+            executeEntry(player, approx, random, fromWand);
             return;
         }
 
@@ -170,6 +179,7 @@ public final class WishManager {
             summonEntityType(player, hitType, 1);
             Component name = hitType.getDescription();
             player.displayClientMessage(Component.translatable("bamboomod.wish.result.summon", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            markSucceeded(player, fromWand);
             return;
         }
 
@@ -190,6 +200,7 @@ public final class WishManager {
                     Component name = tmp.getHoverName();
                     player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
                 }
+                markSucceeded(player, fromWand);
                 return;
             }
             // 近似も含めてアイテムが見つからなかった場合はエントリの近似再検索を試みず即フォールバック（アイテム語が完全に外れている）
@@ -203,6 +214,7 @@ public final class WishManager {
             boolean ok = teleportToBiome(player, biomeMatch.toString(), random);
             if (ok) {
                 player.displayClientMessage(Component.translatable("bamboomod.wish.result.biome").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                markSucceeded(player, fromWand);
             } else {
                 player.displayClientMessage(Component.translatable("bamboomod.wish.result.biome_notfound").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
             }
@@ -210,12 +222,12 @@ public final class WishManager {
         }
 
         // 4.6 vague category random (「武器！」「アイテム！」など不正確な願いはカテゴリからランダム)
-        if (handleCategoryRandom(player, normalized, random)) {
+        if (handleCategoryRandom(player, normalized, random, fromWand)) {
             return;
         }
 
         // 4.7 loose random char match (完全マッチしなかったら正確性を捨ててランダムな1文字が一致したらその願いを叶える)
-        if (tryRandomCharWish(player, normalized, random)) {
+        if (tryRandomCharWish(player, normalized, random, fromWand)) {
             return;
         }
 
@@ -228,6 +240,14 @@ public final class WishManager {
             if ("punishment".equalsIgnoreCase(eff.type)) return true;
         }
         return false;
+    }
+
+    /** 成功時のみカウント増加。fallback・杖由来は呼ばないこと。 */
+    private static void markSucceeded(ServerPlayer player, boolean fromWand) {
+        if (fromWand) {
+            return;
+        }
+        WishHelper.increment(player);
     }
 
     private static String extractItemSearchTerm(String normalizedInput) {
@@ -333,75 +353,71 @@ public final class WishManager {
         return prev[m];
     }
 
-    private static boolean handleCategoryRandom(ServerPlayer player, String normalized, RandomSource random) {
+    private static boolean handleCategoryRandom(ServerPlayer player, String normalized, RandomSource random, boolean fromWand) {
+        Runnable action = findCategoryAction(player, normalized, random);
+        if (action == null) {
+            return false;
+        }
+        action.run();
+        markSucceeded(player, fromWand);
+        return true;
+    }
+
+    private static Runnable findCategoryAction(ServerPlayer player, String normalized, RandomSource random) {
         // 正規化済み入力はひらがな/小文字化済み。句読点は除去せず contains で判定するため、lang基準の正確な名前を要求する意図に沿う
         // ただし末尾の「！」「!」等は無視してカテゴリ判定する
         String stripped = normalized.replaceAll("[\\p{Punct}！。、]+$", "").trim();
         stripped = stripped.replaceAll("^[\\p{Punct}！。、]+", "").trim();
-        if (stripped.isEmpty()) return false;
+        if (stripped.isEmpty()) return null;
 
         // サブカテゴリを優先（「剣」「斧」等が含まれていればトップカテゴリより細分化）
         // 剣: けん/剣/そーど/sword
         if (containsAny(normalized, "けん", "剣", "そーど", "sword")) {
             // 武器 剣 のようにトップカテゴリと併記でもここで拾われる
-            giveRandomSword(player, random);
-            return true;
+            return () -> giveRandomSword(player, random);
         }
         if (containsAny(normalized, "おの", "斧", "あっくす", "axe")) {
-            giveRandomAxe(player, random);
-            return true;
+            return () -> giveRandomAxe(player, random);
         }
         if (containsAny(normalized, "つるはし", "ぴっける", "pickaxe", "pick")) {
-            giveRandomPickaxe(player, random);
-            return true;
+            return () -> giveRandomPickaxe(player, random);
         }
         if (containsAny(normalized, "しゃべる", "シャベル", "shovel")) {
             // WishNormalizerで シャベル→しゃべる に変換されるため両方カバー
-            giveRandomShovel(player, random);
-            return true;
+            return () -> giveRandomShovel(player, random);
         }
         if (containsAny(normalized, "くわ", "鍬", "hoe")) {
-            giveRandomHoe(player, random);
-            return true;
+            return () -> giveRandomHoe(player, random);
         }
         if (containsAny(normalized, "ゆみ", "弓", "bow") && !containsAny(normalized, "くろすぼう", "crossbow")) {
             // 弓はクロスボウと区別
-            giveRandomBow(player, random);
-            return true;
+            return () -> giveRandomBow(player, random);
         }
         if (containsAny(normalized, "くろすぼう", "crossbow")) {
-            giveRandomCrossbow(player, random);
-            return true;
+            return () -> giveRandomCrossbow(player, random);
         }
         if (containsAny(normalized, "とらいでんと", "trident")) {
-            giveRandomTrident(player, random);
-            return true;
+            return () -> giveRandomTrident(player, random);
         }
         if (containsAny(normalized, "つりざお", "釣り竿", "つり", "fishing", "rod")) {
-            giveRandomFishingRod(player, random);
-            return true;
+            return () -> giveRandomFishingRod(player, random);
         }
         // 防具部位: 防具 頭 のようにトップ + 部位で指定、部位単体でも可
         if (containsAny(normalized, "へるめっと", "ヘルメット", "かぶと", "兜", "あたま", "頭", "helmet", "helm")) {
             // 「防具 頭」でも「頭」単体でもヘルメット
-            giveRandomHelmet(player, random);
-            return true;
+            return () -> giveRandomHelmet(player, random);
         }
         if (containsAny(normalized, "ちぇすとぷれーと", "チェストプレート", "むね", "胸", "chestplate", "chest")) {
-            giveRandomChestplate(player, random);
-            return true;
+            return () -> giveRandomChestplate(player, random);
         }
         if (containsAny(normalized, "れぎんす", "レギンス", "leggings", "れっぎんす")) {
-            giveRandomLeggings(player, random);
-            return true;
+            return () -> giveRandomLeggings(player, random);
         }
         if (containsAny(normalized, "ぶーつ", "ブーツ", "boots", "くつ", "靴")) {
-            giveRandomBoots(player, random);
-            return true;
+            return () -> giveRandomBoots(player, random);
         }
         if (containsAny(normalized, "たて", "盾", "shield")) {
-            giveRandomShield(player, random);
-            return true;
+            return () -> giveRandomShield(player, random);
         }
         if (containsAny(normalized, "しょもつ", "書物", "えんちゃんと", "エンチャント", "ほん", "本", "ぶっく", "book")) {
             // 「道具 書物」や「本」単体はエンチャント本、ただし「本」が単独のときのみ厳密に（1文字のため誤爆防止で長さチェック）
@@ -409,35 +425,29 @@ public final class WishManager {
             boolean isBookAlone = tmpStripped.equals("ほん") || tmpStripped.equals("本") || tmpStripped.equals("ぶっく") || tmpStripped.equals("book");
             boolean isBookCompound = containsAny(normalized, "しょもつ", "書物", "えんちゃんと");
             if (isBookAlone || isBookCompound || (containsAny(normalized, "ほん", "本") && stripped.length() <= 3)) {
-                giveRandomEnchantedBook(player, random);
-                return true;
+                return () -> giveRandomEnchantedBook(player, random);
             }
         }
         // トップカテゴリ（部位指定なし）
         if (stripped.equals("ぶき") || stripped.equals("武器") || stripped.equals("weapon")) {
-            giveRandomWeapon(player, random);
-            return true;
+            return () -> giveRandomWeapon(player, random);
         }
         if (stripped.equals("あいてむ") || stripped.equals("item")) {
-            giveRandomItem(player, random);
-            return true;
+            return () -> giveRandomItem(player, random);
         }
         if (containsAny(stripped, "ぼうぐ", "防具", "armor", "armour")) {
             // 部位なしの「防具！」は全防具からランダム、部位ありは上で既に処理済み
             if (!containsAny(normalized, "あたま", "頭", "へるめっと", "helmet", "むね", "胸", "ちぇすと", "れぎんす", "ぶーつ", "たて", "盾")) {
-                giveRandomArmor(player, random);
-                return true;
+                return () -> giveRandomArmor(player, random);
             }
         }
         if (stripped.equals("どうぐ") || stripped.equals("道具") || stripped.equals("tool")) {
-            giveRandomTool(player, random);
-            return true;
+            return () -> giveRandomTool(player, random);
         }
         if (containsAny(stripped, "たべもの", "食べ物", "food", "しょくひん", "食品")) {
-            giveRandomFood(player, random);
-            return true;
+            return () -> giveRandomFood(player, random);
         }
-        return false;
+        return null;
     }
 
     private static boolean containsAny(String s, String... keywords) {
@@ -450,7 +460,7 @@ public final class WishManager {
         return false;
     }
 
-    private static boolean tryRandomCharWish(ServerPlayer player, String normalized, RandomSource random) {
+    private static boolean tryRandomCharWish(ServerPlayer player, String normalized, RandomSource random, boolean fromWand) {
         if (normalized == null || normalized.isEmpty()) return false;
         String stripped = normalized.replaceAll("\\s+", "");
         if (stripped.isEmpty()) return false;
@@ -490,7 +500,7 @@ public final class WishManager {
         if (candidates.isEmpty()) return false;
         WishEntry chosen = candidates.get(random.nextInt(candidates.size()));
         LOGGER.info("Wish random char '{}' (from '{}') matched {} (pattern '{}')", charStr, normalized, chosen.id, chosen.pattern);
-        executeEntry(player, chosen, random);
+        executeEntry(player, chosen, random, fromWand);
         return true;
     }
 
@@ -762,7 +772,7 @@ public final class WishManager {
         }
     }
 
-    private static void executeEntry(ServerPlayer player, WishEntry entry, RandomSource random) {
+    private static void executeEntry(ServerPlayer player, WishEntry entry, RandomSource random, boolean fromWand) {
         LOGGER.info("Wish matched {} for {}: '{}' -> {}", entry.id, player.getName().getString(), entry.pattern, entry.effects.size());
         boolean hasOver = false;
         boolean hasPunishment = false;
@@ -920,6 +930,9 @@ public final class WishManager {
             player.displayClientMessage(Component.translatable(entry.message).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
         } else {
             player.displayClientMessage(Component.translatable("bamboomod.wish.result.generic").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+        }
+        if (!transformFailed) {
+            markSucceeded(player, fromWand);
         }
     }
 
