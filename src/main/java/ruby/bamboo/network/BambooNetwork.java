@@ -88,6 +88,10 @@ public final class BambooNetwork {
                 SolitaireOpenPacket::encode,
                 SolitaireOpenPacket::decode,
                 SolitaireOpenPacket::handle);
+        CHANNEL.registerMessage(nextId(), FreeCellOpenPacket.class,
+                FreeCellOpenPacket::encode,
+                FreeCellOpenPacket::decode,
+                FreeCellOpenPacket::handle);
         CHANNEL.registerMessage(nextId(), DaifugoRoomPacket.class,
                 DaifugoRoomPacket::encode,
                 DaifugoRoomPacket::decode,

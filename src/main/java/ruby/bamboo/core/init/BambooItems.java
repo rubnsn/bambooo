@@ -19,6 +19,7 @@ import ruby.bamboo.item.DaifugoItem;
 import ruby.bamboo.item.FirecrackerItem;
 import ruby.bamboo.item.FishingBaitItem;
 import ruby.bamboo.item.FoldingFan;
+import ruby.bamboo.item.FreeCellItem;
 import ruby.bamboo.item.GardenSpadeItem;
 import ruby.bamboo.item.ItemMagnetItem;
 import ruby.bamboo.item.LureItem;
@@ -268,6 +269,10 @@ public final class BambooItems {
     /** 大富豪札 (右クリックで参加・作成。テクスチャ仮置き) */
     public static final RegistryObject<DaifugoItem> DAIFUGO = register("daifugo",
             () -> new DaifugoItem(new Item.Properties().stacksTo(1)));
+
+    /** フリーセル起動札 (右クリックでフリーセルを開く。テクスチャ仮置き) */
+    public static final RegistryObject<FreeCellItem> FREECELL = register("freecell",
+            () -> new FreeCellItem(new Item.Properties().stacksTo(1)));
 
     private static <I extends Item> RegistryObject<I> register(String name, Supplier<? extends I> factory) {
         RegistryObject<I> item = BambooMod.ITEMS.register(name, factory);
