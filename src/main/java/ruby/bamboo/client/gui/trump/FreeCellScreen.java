@@ -6,10 +6,12 @@ import java.util.Random;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
+import ruby.bamboo.client.gui.ChatOverlay;
 import ruby.bamboo.client.gui.trump.FreeCellGame.Card;
 
 /**
@@ -36,6 +38,8 @@ public class FreeCellScreen extends Screen {
     private static final int TEXT_SUB = 0xFFB9C4A8;
 
     private final FreeCellGame game = new FreeCellGame();
+    /** 共通チャットオーバーレイ (Tで開く。画面は切り替えない)。 */
+    private final ChatOverlay chat = new ChatOverlay();
 
     /** 持ち運び中の札 (持ち上げ時に場から取り除き済み)。先頭が一番下。 */
     private List<Card> held;
@@ -87,6 +91,19 @@ public class FreeCellScreen extends Screen {
                 .bounds(right - 82, this.height - 24, 78, 20)
                 .build();
         this.addRenderableWidget(newGameButton);
+        EditBox chatBox = chat.attach(this.font, this.width, this.height);
+        this.addRenderableWidget(chatBox);
+        if (chat.isOpen()) {
+            this.setFocused(chatBox);
+            chatBox.setFocused(true);
+        }
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        // チャット入力中は下段ボタンを隠す (入力欄と被るため)
+        newGameButton.visible = !chat.isOpen();
     }
 
     private void newGame() {
@@ -187,8 +204,27 @@ public class FreeCellScreen extends Screen {
     // ===== 入力 =====
 
     @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (chat.keyPressed(this, keyCode, scanCode, modifiers)) {
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char c, int modifiers) {
+        if (chat.charTyped(c, modifiers)) {
+            return true;
+        }
+        return super.charTyped(c, modifiers);
+    }
+
+    @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (super.mouseClicked(mouseX, mouseY, button)) {
+            return true;
+        }
+        if (chat.isOpen()) {
             return true;
         }
         int x = (int) mouseX;
@@ -439,6 +475,7 @@ public class FreeCellScreen extends Screen {
                     Component.translatable("screen.bamboomod.freecell_win_sub").getString(),
                     this.width / 2, this.height / 2 + 6, TEXT_SUB);
         }
+        chat.renderLog(gfx, this.font, this.width, this.height);
         super.render(gfx, mouseX, mouseY, partialTick);
     }
 

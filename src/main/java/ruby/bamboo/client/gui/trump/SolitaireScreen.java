@@ -6,11 +6,13 @@ import java.util.Random;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import org.lwjgl.glfw.GLFW;
+import ruby.bamboo.client.gui.ChatOverlay;
 import ruby.bamboo.client.gui.trump.SolitaireGame.Card;
 
 /**
@@ -45,6 +47,8 @@ public class SolitaireScreen extends Screen {
     private SolitaireDifficulty difficulty = SolitaireDifficulty.EASY;
     /** true の間は盤面の上に難易度選択を重ね、盤面操作を受け付けない。 */
     private boolean selecting = true;
+    /** 共通チャットオーバーレイ (Tで開く。画面は切り替えない)。 */
+    private final ChatOverlay chat = new ChatOverlay();
 
     /** 持ち運び中の札 (持ち上げ時に場から取り除き済み)。先頭=末尾が一番上。 */
     private List<Card> held;
@@ -115,7 +119,21 @@ public class SolitaireScreen extends Screen {
                 .bounds(right - 164, this.height - 24, 78, 20)
                 .build();
         this.addRenderableWidget(backButton);
+        EditBox chatBox = chat.attach(this.font, this.width, this.height);
+        this.addRenderableWidget(chatBox);
+        if (chat.isOpen()) {
+            this.setFocused(chatBox);
+            chatBox.setFocused(true);
+        }
         refreshButtons();
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        // チャット入力中は下段ボタンを隠す (入力欄と被るため)
+        newGameButton.visible = !selecting && !chat.isOpen();
+        backButton.visible = !selecting && !chat.isOpen();
     }
 
     private void refreshButtons() {
@@ -270,6 +288,9 @@ public class SolitaireScreen extends Screen {
         if (selecting) {
             return true;
         }
+        if (chat.isOpen()) {
+            return true;
+        }
         int x = (int) mouseX;
         int y = (int) mouseY;
         if (button == 1) {
@@ -285,6 +306,9 @@ public class SolitaireScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (chat.keyPressed(this, keyCode, scanCode, modifiers)) {
+            return true;
+        }
         if (selecting) {
             int idx = keyCode - GLFW.GLFW_KEY_1;
             SolitaireDifficulty[] values = SolitaireDifficulty.values();
@@ -295,6 +319,14 @@ public class SolitaireScreen extends Screen {
             return super.keyPressed(keyCode, scanCode, modifiers);
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char c, int modifiers) {
+        if (chat.charTyped(c, modifiers)) {
+            return true;
+        }
+        return super.charTyped(c, modifiers);
     }
 
     private long lastLeftClick;
@@ -564,6 +596,7 @@ public class SolitaireScreen extends Screen {
                     Component.translatable("screen.bamboomod.solitaire_win_sub").getString(),
                     this.width / 2, this.height / 2 + 6, TEXT_SUB);
         }
+        chat.renderLog(gfx, this.font, this.width, this.height);
         super.render(gfx, mouseX, mouseY, partialTick);
     }
 

@@ -5,7 +5,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import org.lwjgl.glfw.GLFW;
+import ruby.bamboo.client.gui.ChatOverlay;
 import ruby.bamboo.daifugo.DaifugoRoom;
 import ruby.bamboo.daifugo.DaifugoSnapshot;
 import ruby.bamboo.network.BambooNetwork;
@@ -31,11 +31,8 @@ public class DaifugoLobbyScreen extends Screen {
     private Button startButton;
     private Button leaveButton;
     private final Button[] ruleButtons = new Button[RULE_KEYS.length];
-    /** オーバーレイのチャット入力 (Tで開く。画面は切り替えない)。 */
-    private EditBox chatBox;
-    private boolean chatMode = false;
-    /** 開くきっかけのTキー自体のchar入力を1文字だけ捨てる。 */
-    private boolean eatOpenChar = false;
+    /** 共通チャットオーバーレイ (Tで開く。画面は切り替えない)。 */
+    private final ChatOverlay chat = new ChatOverlay();
 
     public DaifugoLobbyScreen(DaifugoSnapshot snapshot) {
         super(Component.translatable("screen.bamboomod.daifugo_lobby"));
@@ -53,22 +50,7 @@ public class DaifugoLobbyScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (chatMode) {
-            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
-                sendChatMessage();
-                return true;
-            }
-            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-                setChatMode(false);
-                return true;
-            }
-            return super.keyPressed(keyCode, scanCode, modifiers);
-        }
-        // Tでチャット入力を重ねて開く (ロビー画面は残る)
-        if (this.minecraft != null && this.minecraft.options.keyChat.matches(keyCode, scanCode)) {
-            setChatMode(true);
-            // このTキーによるchar入力 ('t') は入力欄に入れない
-            eatOpenChar = true;
+        if (chat.keyPressed(this, keyCode, scanCode, modifiers)) {
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
@@ -76,37 +58,10 @@ public class DaifugoLobbyScreen extends Screen {
 
     @Override
     public boolean charTyped(char c, int modifiers) {
-        if (eatOpenChar) {
-            eatOpenChar = false;
+        if (chat.charTyped(c, modifiers)) {
             return true;
         }
         return super.charTyped(c, modifiers);
-    }
-
-    private void setChatMode(boolean on) {
-        chatMode = on;
-        if (chatBox != null) {
-            chatBox.visible = on;
-            chatBox.setFocused(on);
-            if (on) {
-                chatBox.setValue("");
-                this.setFocused(chatBox);
-            }
-        }
-    }
-
-    /** バニラの署名付き送信で送る (/始まりはコマンド)。 */
-    private void sendChatMessage() {
-        String msg = chatBox != null ? chatBox.getValue().trim() : "";
-        setChatMode(false);
-        if (msg.isEmpty() || this.minecraft == null || this.minecraft.player == null) {
-            return;
-        }
-        if (msg.startsWith("/")) {
-            this.minecraft.player.connection.sendCommand(msg.substring(1));
-        } else {
-            this.minecraft.player.connection.sendChat(msg);
-        }
     }
 
     @Override
@@ -136,14 +91,9 @@ public class DaifugoLobbyScreen extends Screen {
             ruleButtons[i] = rule;
             this.addRenderableWidget(rule);
         }
-        String draft = chatBox != null ? chatBox.getValue() : "";
-        chatBox = new EditBox(this.font, 4, this.height - 28, this.width - 8, 20,
-                Component.empty());
-        chatBox.setMaxLength(256);
-        chatBox.setValue(draft);
-        chatBox.visible = chatMode;
+        EditBox chatBox = chat.attach(this.font, this.width, this.height);
         this.addRenderableWidget(chatBox);
-        if (chatMode) {
+        if (chat.isOpen()) {
             this.setFocused(chatBox);
             chatBox.setFocused(true);
         }
@@ -179,10 +129,10 @@ public class DaifugoLobbyScreen extends Screen {
         super.tick();
         boolean owner = snapshot.mySeat == snapshot.ownerSeat;
         // チャット入力中は下段ボタンを隠し、ルール切替を無効化する
-        startButton.visible = owner && !chatMode;
-        leaveButton.visible = !chatMode;
+        startButton.visible = owner && !chat.isOpen();
+        leaveButton.visible = !chat.isOpen();
         for (int i = 0; i < ruleButtons.length; i++) {
-            ruleButtons[i].active = owner && !chatMode;
+            ruleButtons[i].active = owner && !chat.isOpen();
             ruleButtons[i].setMessage(ruleLabel(i, ruleValue(i)));
         }
     }
@@ -202,11 +152,15 @@ public class DaifugoLobbyScreen extends Screen {
                     : seatName(s, i));
             gfx.drawCenteredString(this.font, line, this.width / 2, y + i * 14, 0xFFFFFFFF);
         }
-        int logY = this.height - 110;
-        for (int i = 0; i < snapshot.log.size(); i++) {
-            gfx.drawString(this.font, DaifugoScreens.logLine(snapshot.log.get(i)),
+        // 参加ログは左下のチャット欄と被らないよう上へずらす (直近のみ)
+        int logCount = Math.min(4, snapshot.log.size());
+        int logY = this.height - 190;
+        for (int i = 0; i < logCount; i++) {
+            gfx.drawString(this.font,
+                    DaifugoScreens.logLine(snapshot.log.get(snapshot.log.size() - logCount + i)),
                     10, logY + i * 10, 0xFFB9C4A8, false);
         }
+        chat.renderLog(gfx, this.font, this.width, this.height);
         super.render(gfx, mouseX, mouseY, partialTick);
     }
 
