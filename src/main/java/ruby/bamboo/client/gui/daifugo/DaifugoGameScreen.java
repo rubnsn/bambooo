@@ -14,6 +14,7 @@ import ruby.bamboo.client.gui.trump.TrumpRank;
 import ruby.bamboo.client.gui.trump.TrumpSuit;
 import ruby.bamboo.daifugo.DaifugoCard;
 import ruby.bamboo.daifugo.DaifugoRoom;
+import ruby.bamboo.daifugo.DaifugoRules;
 import ruby.bamboo.daifugo.DaifugoSnapshot;
 import ruby.bamboo.network.BambooNetwork;
 import ruby.bamboo.network.DaifugoActionPacket;
@@ -40,6 +41,8 @@ public class DaifugoGameScreen extends Screen {
     private Button passButton;
     private Button leaveButton;
     private Button tributeButton;
+    private Button declareTripleButton;
+    private Button declareStairsButton;
 
     public DaifugoGameScreen(DaifugoSnapshot snapshot) {
         super(Component.translatable("screen.bamboomod.daifugo_game"));
@@ -81,7 +84,26 @@ public class DaifugoGameScreen extends Screen {
             return false;
         }
         DaifugoSnapshot.SeatView me = seat(snapshot.mySeat);
-        return snapshot.turnSeat == snapshot.mySeat && me != null && me.roundRank() < 0;
+        return snapshot.turnSeat == snapshot.mySeat && me != null && me.roundRank() < 0
+                && !isPassedOut(snapshot.mySeat);
+    }
+
+    /** スルーパス後の出場停止 (流れ待ち)。 */
+    private boolean isPassedOut(int idx) {
+        return idx >= 0 && idx < snapshot.passedOut.size()
+                && snapshot.passedOut.get(idx) != 0;
+    }
+
+    /** [X,JK,JK] のリード選択中 (3枚組/階段の宣言がいる)。 */
+    private boolean isDualLeadSelected() {
+        if (!myTurn() || !snapshot.table.isEmpty() || selected.size() != 3) {
+            return false;
+        }
+        List<DaifugoCard> cards = new ArrayList<>(3);
+        for (int id : selected) {
+            cards.add(DaifugoCard.fromId(id));
+        }
+        return DaifugoRules.isValidSet(cards) && DaifugoRules.isStairs(cards);
     }
 
     private DaifugoSnapshot.SeatView seat(int idx) {
@@ -114,10 +136,24 @@ public class DaifugoGameScreen extends Screen {
                 b -> BambooNetwork.CHANNEL.sendToServer(new DaifugoTributePacket(new ArrayList<>(selected))))
                 .bounds(w / 2 - 75, h / 2 - 44, 150, 20)
                 .build();
+        declareTripleButton = Button.builder(
+                Component.translatable("screen.bamboomod.daifugo_declare_triple"),
+                b -> BambooNetwork.CHANNEL.sendToServer(
+                        new DaifugoActionPacket(new ArrayList<>(selected), false)))
+                .bounds(w - 260, h - 52, 120, 20)
+                .build();
+        declareStairsButton = Button.builder(
+                Component.translatable("screen.bamboomod.daifugo_declare_stairs"),
+                b -> BambooNetwork.CHANNEL.sendToServer(
+                        new DaifugoActionPacket(new ArrayList<>(selected), true)))
+                .bounds(w - 134, h - 52, 120, 20)
+                .build();
         this.addRenderableWidget(playButton);
         this.addRenderableWidget(passButton);
         this.addRenderableWidget(leaveButton);
         this.addRenderableWidget(tributeButton);
+        this.addRenderableWidget(declareTripleButton);
+        this.addRenderableWidget(declareStairsButton);
     }
 
     @Override
@@ -127,6 +163,8 @@ public class DaifugoGameScreen extends Screen {
         passButton.visible = isPlaying();
         playButton.active = myTurn() && !selected.isEmpty();
         passButton.active = myTurn() && !snapshot.table.isEmpty();
+        declareTripleButton.visible = isDualLeadSelected();
+        declareStairsButton.visible = isDualLeadSelected();
         tributeButton.visible = isTribute() && myOwed() > 0;
         tributeButton.active = selected.size() == myOwed();
     }
@@ -172,6 +210,9 @@ public class DaifugoGameScreen extends Screen {
         if (snapshot.jback) {
             head += "  " + Component.translatable("screen.bamboomod.daifugo_jback").getString();
         }
+        if (snapshot.tableStairs && !snapshot.table.isEmpty()) {
+            head += "  " + Component.translatable("screen.bamboomod.daifugo_stairs").getString();
+        }
         if (!snapshot.lockSuits.isEmpty()) {
             StringBuilder badge = new StringBuilder("  ");
             for (int suit : snapshot.lockSuits) {
@@ -193,6 +234,13 @@ public class DaifugoGameScreen extends Screen {
             gfx.drawCenteredString(this.font,
                     Component.translatable("screen.bamboomod.daifugo_turn").getString(),
                     this.width / 2, this.height - 92, 0xFFFFE08A);
+        }
+        if (isPlaying() && isPassedOut(snapshot.mySeat)
+                && seat(snapshot.mySeat) != null
+                && seat(snapshot.mySeat).roundRank() < 0) {
+            gfx.drawCenteredString(this.font,
+                    Component.translatable("screen.bamboomod.daifugo_passedout_wait").getString(),
+                    this.width / 2, this.height - 92, 0xFFB9C4A8);
         }
         if (isRoundEnd()) {
             drawRoundEnd(gfx);
@@ -225,6 +273,9 @@ public class DaifugoGameScreen extends Screen {
             if (idx == snapshot.ownerSeat) {
                 name += Component.translatable("screen.bamboomod.daifugo_owner").getString();
             }
+            if (isPassedOut(idx)) {
+                name += " (" + Component.translatable("screen.bamboomod.daifugo_passedout").getString() + ")";
+            }
             gfx.drawString(this.font, trim(name, 18), x + 4, y + 4, 0xFFFFFFFF, false);
             gfx.drawString(this.font, "×" + s.handCount(), x + 4, y + 15, 0xFFB9C4A8, false);
             if (s.roundRank() >= 0) {
@@ -248,9 +299,17 @@ public class DaifugoGameScreen extends Screen {
     private void drawTable(GuiGraphics gfx) {
         int n = snapshot.table.size();
         int cy = this.height / 2 - 56;
-        String info = snapshot.tableSeat >= 0 && seat(snapshot.tableSeat) != null
-                ? seatName(snapshot.tableSeat) + "  (" + n + ")"
-                : Component.translatable("screen.bamboomod.daifugo_lead").getString();
+        String info;
+        if (n == 0) {
+            info = Component.translatable("screen.bamboomod.daifugo_lead").getString();
+        } else if (snapshot.tableStairs) {
+            info = seatName(snapshot.tableSeat) + "  (" + n + " "
+                    + Component.translatable("screen.bamboomod.daifugo_stairs").getString() + ")";
+        } else {
+            info = snapshot.tableSeat >= 0 && seat(snapshot.tableSeat) != null
+                    ? seatName(snapshot.tableSeat) + "  (" + n + ")"
+                    : Component.translatable("screen.bamboomod.daifugo_lead").getString();
+        }
         gfx.drawCenteredString(this.font, info, this.width / 2, cy - 14, 0xFFB9C4A8);
         if (n == 0) {
             int x = this.width / 2 - CARD_W / 2;

@@ -25,13 +25,17 @@ public class DaifugoSnapshot {
     public List<Integer> hand = List.of();
     public List<Integer> table = List.of();
     public int tableSeat = -1;
+    /** 場の役種 (階段=true)。 */
+    public boolean tableStairs = false;
     public int turnSeat = -1;
+    /** 出場停止 (スルーパス後。席順、1=パス済み)。 */
+    public List<Integer> passedOut = List.of(0, 0, 0, 0);
     public boolean revolution;
     /** Jバック場 (場にJがあり実効序列が裏返っている)。 */
     public boolean jback;
-    /** ルール設定 (部屋主が開始前に変更。既定全ON)。 */
+    /** ルール設定 (部屋主が開始前に変更。Jバックのみ既定OFFで競技準拠)。 */
     public boolean ruleEightCut = true;
-    public boolean ruleJBack = true;
+    public boolean ruleJBack = false;
     public boolean ruleSuitLock = true;
     public boolean ruleSpe3 = true;
     public boolean ruleMiyako = true;

@@ -11,9 +11,11 @@ import ruby.bamboo.daifugo.DaifugoManager;
 
 /**
  * C→S 大富豪の着手 (空配列=パス)。
+ * stairs は [X,JK,JK] リード時の宣言 (true=階段)。
  */
 public class DaifugoActionPacket {
     public List<Integer> cards = new ArrayList<>();
+    public boolean stairs = false;
 
     public DaifugoActionPacket() {
     }
@@ -22,8 +24,14 @@ public class DaifugoActionPacket {
         this.cards = cards;
     }
 
+    public DaifugoActionPacket(List<Integer> cards, boolean stairs) {
+        this.cards = cards;
+        this.stairs = stairs;
+    }
+
     public static void encode(DaifugoActionPacket msg, FriendlyByteBuf buf) {
         buf.writeVarIntArray(msg.cards.stream().mapToInt(Integer::intValue).toArray());
+        buf.writeBoolean(msg.stairs);
     }
 
     public static DaifugoActionPacket decode(FriendlyByteBuf buf) {
@@ -31,6 +39,7 @@ public class DaifugoActionPacket {
         for (int id : buf.readVarIntArray()) {
             msg.cards.add(id);
         }
+        msg.stairs = buf.readBoolean();
         return msg;
     }
 
@@ -38,7 +47,7 @@ public class DaifugoActionPacket {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
             if (player != null && player.getServer() != null) {
-                DaifugoManager.action(player.getServer(), player, msg.cards);
+                DaifugoManager.action(player.getServer(), player, msg.cards, msg.stairs);
             }
         });
         ctx.get().setPacketHandled(true);

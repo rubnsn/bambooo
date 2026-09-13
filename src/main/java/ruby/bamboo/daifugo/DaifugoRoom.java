@@ -10,19 +10,22 @@ import java.util.UUID;
 import ruby.bamboo.client.gui.trump.TrumpRank;
 
 /**
- * 大富豪の部屋 (純粋状態機械、MC非依存)。
+ * 大富豪の部屋 (純粋状態機械、MC非依存、日本大富豪連盟の競技ルールに準拠)。
  * 4人制・ endless 回戦 (得点なし、まったり用)。
  * 固定: 献上 (下位→上位は最強札を自動、上位のお返しは手選び。
  * 大貧民→大富豪2枚・貧民→富豪1枚、大富豪→大貧民2枚・富豪→貧民1枚)、
- * 革命 (4枚以上。8切りOFFでも8の4枚出しは革命だけ起きる)・
- * 反則上がり (最下位固定。J・8は対応ルールON時のみ対象)。
- * 切替可 (部屋主が開始前に設定、既定全ON): 8切り・イレブンバック・
- * スートロック・スペ3抜き・都落ち。
+ * 革命 (同一ランク4枚以上。8切りOFFでも8の4枚出しは革命だけ起きる)・
+ * 反則上がり (最下位固定。J・8は対応ルールON時のみ対象。スペ3単騎・階段中8除外・
+ * 反則2人目は1人目より上位)・階段 (同一スート連番3枚以上、固定の基本役)・
+ * シックス/最強階段の即流し・スルーパス禁止・ブラインド2枚 (全員13枚)。
+ * 切替可 (部屋主が開始前に設定、Jバックのみ既定OFF): 8切り・Jバック・
+ * スートロック・スペ3抜き・都落ち。Jバックは連盟ルールにないローカル要素。
  * 詳細: イレブンバックはJが出た時その場限りで裏返す (単複不問。フォローでは剥がれず
- * 場が流れれば戻る。強弱・縛りに特権なし)。スートロックは場と同一スート多重集合で
- * 継続したときのみ成立 (リードでは付かない。ジョーカーは適応)。スペ3抜きは
- * ジョーカーを倒して流し・リード。都落ちは前大富豪が先頭で上がれなかった時点で
- * 即敗北・最下位固定。
+ * 場が流れれば戻る。強弱・縛りに特権なし、階段は対象外)。スートロックは場と同一
+ * スート (多重集合) で継続したときのみ成立 (リードでは付かない。ジョーカー含みでは
+ * 新規発生せず、縛りスートのみなら維持)。スペ3抜きはジョーカー単騎を倒して
+ * 流し・リード。都落ちは前大富豪が先頭で上がれなかった時点で即敗北・最下位固定
+ * (反則者がいれば繰り上がる)。
  * 54枚 (ジョーカー2枚)。13枚ずつ配り、余り2枚は3♦保持者へ。
  * 初戦は3♦保持者、2戦目以降は前戦の大貧民がリード。
  */
@@ -33,7 +36,7 @@ public class DaifugoRoom {
 
     public enum PlayResult {
         OK, NOT_TURN, NOT_PLAYING, FINISHED, BAD_SELECT, BAD_COUNT, TOO_WEAK, SUIT_LOCK,
-        NO_PASS_ON_LEAD
+        NO_PASS_ON_LEAD, PASSED_OUT
     }
 
     public static class Seat {
@@ -56,7 +59,7 @@ public class DaifugoRoom {
     }
 
     public interface CpuChooser {
-        List<Integer> choose(int seat, CpuBrain.View view, List<Integer> hand);
+        CpuBrain.Play choose(int seat, CpuBrain.View view, List<Integer> hand);
     }
 
     public static final int SEATS = 4;
@@ -79,6 +82,10 @@ public class DaifugoRoom {
     public final int[] roundRank = new int[SEATS];
     public final boolean[] finished = new boolean[SEATS];
     public final boolean[] violated = new boolean[SEATS];
+    /** 反則した順番 (finishOrder上の位置。後の反則ほど上位)。 */
+    public final int[] violatedAt = new int[SEATS];
+    /** スルーパス後の出場停止 (流れで解除)。 */
+    public boolean[] passedOut = new boolean[SEATS];
     public final List<Integer> finishOrder = new ArrayList<>();
     /** 前戦の順位 (献上用)。 */
     public final int[] prevRank = new int[SEATS];
@@ -90,21 +97,23 @@ public class DaifugoRoom {
     public final int[] tributeTarget = new int[SEATS];
     public final List<Integer> table = new ArrayList<>();
     public int tableSeat = -1;
+    /** 場の役種 (階段=true)。フォローは同役種で受ける。 */
+    public boolean tableStairs = false;
     public int turnSeat = -1;
     public boolean revolution = false;
     /** Jバック場 (裏返し中)。フォローでは剥がれず、流れでのみ解除。 */
     public boolean jbackActive = false;
     /** スートロック (素札スートの多重集合整列列。null=なし)。 */
     public List<Integer> lockSuits = null;
-    // ===== ルール設定 (部屋主が開始前に変更可。デフォルト全ON) =====
-    // 固定: 献上・革命 (4枚以上)・反則上がり。切替可: 8切り・Jバック・
+    // ===== ルール設定 (部屋主が開始前に変更可。Jバックのみ既定OFFで競技準拠) =====
+    // 固定: 献上・革命 (同一ランク4枚以上)・反則上がり・階段・シックス/最強階段・
+    // スルーパス禁止・ブラインド。切替可: 8切り・Jバック・
     // スートロック・スペ3抜き・都落ち。8切りOFFでも8の4枚出しは革命だけ起きる。
     public boolean ruleEightCut = true;
-    public boolean ruleJBack = true;
+    public boolean ruleJBack = false;
     public boolean ruleSuitLock = true;
     public boolean ruleSpe3 = true;
     public boolean ruleMiyako = true;
-    public int passes = 0;
     public int lastPlaySeat = -1;
     public int prevDaifugo = -1;
     public final List<DaifugoSnapshot.LogEntry> log = new ArrayList<>();
@@ -119,6 +128,7 @@ public class DaifugoRoom {
             hands.add(new ArrayList<>());
             roundRank[i] = -1;
             prevRank[i] = -1;
+            violatedAt[i] = -1;
         }
     }
 
@@ -272,38 +282,40 @@ public class DaifugoRoom {
             deck.add(i);
         }
         Collections.shuffle(deck, random);
+        // ブラインド2枚 (ジョーカー以外) を除き、13枚ずつ配る (連盟 §10・§80)。
+        List<Integer> rest = new ArrayList<>(DaifugoCard.DECK_SIZE);
+        int blind = 0;
+        for (int id : deck) {
+            if (blind < 2 && id < DaifugoCard.JOKER_A_ID) {
+                blind++;
+                continue;
+            }
+            rest.add(id);
+        }
         for (int i = 0; i < SEATS; i++) {
             hands.get(i).clear();
             roundRank[i] = -1;
             finished[i] = false;
             violated[i] = false;
+            violatedAt[i] = -1;
             miyakoForced[i] = false;
         }
         finishOrder.clear();
         table.clear();
+        tableStairs = false;
         revolution = false;
         jbackActive = false;
         lockSuits = null;
-        passes = 0;
+        passedOut = new boolean[SEATS];
         tableSeat = -1;
         lastPlaySeat = -1;
         cpuTimer = 0;
         turnTimer = 0;
         for (int i = 0; i < SEATS; i++) {
             for (int k = 0; k < 13; k++) {
-                hands.get(i).add(deck.get(i * 13 + k));
+                hands.get(i).add(rest.get(i * 13 + k));
             }
         }
-        // 余り2枚は3♦保持者へ
-        int holder = 0;
-        for (int i = 0; i < SEATS; i++) {
-            if (hands.get(i).contains(DIA_THREE_ID)) {
-                holder = i;
-                break;
-            }
-        }
-        hands.get(holder).add(deck.get(52));
-        hands.get(holder).add(deck.get(53));
         sortHands();
         tributeTimer = 0;
         for (int i = 0; i < SEATS; i++) {
@@ -331,21 +343,27 @@ public class DaifugoRoom {
             if (daihinmin >= 0) {
                 starter = daihinmin;
             } else {
-                starter = diamondThreeHolder();
+                starter = leadSeat();
             }
         } else {
-            starter = diamondThreeHolder();
+            starter = leadSeat();
         }
         turnSeat = starter;
         state = State.PLAYING;
         addLog("log.bamboomod.daifugo_roundstart", String.valueOf(round), seats[starter].displayName());
     }
 
-    /** 3♦保持者 (いなければ0)。 */
-    private int diamondThreeHolder() {
-        for (int i = 0; i < SEATS; i++) {
-            if (hands.get(i).contains(DIA_THREE_ID)) {
-                return i;
+    /**
+     * 初戦の開始者。3♦保持者だが、ブラインドで除外されることがあるため
+     * 3♣→3♥→3♠→0席の順でフォールバックする。
+     */
+    private int leadSeat() {
+        int[] cands = {DIA_THREE_ID, 3 * 13 + 2, 1 * 13 + 2, 0 * 13 + 2};
+        for (int id : cands) {
+            for (int i = 0; i < SEATS; i++) {
+                if (hands.get(i).contains(id)) {
+                    return i;
+                }
             }
         }
         return 0;
@@ -462,7 +480,8 @@ public class DaifugoRoom {
     private int nextActive(int from) {
         for (int k = 1; k <= SEATS; k++) {
             int i = (from + k) % SEATS;
-            if (!finished[i]) {
+            // 上がり済みとスルーパス後の出場停止は飛ばす
+            if (!finished[i] && !passedOut[i]) {
                 return i;
             }
         }
@@ -491,6 +510,14 @@ public class DaifugoRoom {
     }
 
     public PlayResult playCards(int seat, List<Integer> ids) {
+        return playCards(seat, ids, false);
+    }
+
+    /**
+     * 着手。declaredStairs は [X,JK,JK] リード時の宣言 (true=階段。連盟 §21)。
+     * フォロー時は場の役種で自動確定するため無視される。
+     */
+    public PlayResult playCards(int seat, List<Integer> ids, boolean declaredStairs) {
         if (state != State.PLAYING) {
             return PlayResult.NOT_PLAYING;
         }
@@ -506,6 +533,10 @@ public class DaifugoRoom {
             doPass(seat);
             return PlayResult.OK;
         }
+        // スルーパス禁止: パス済みは場が流れるまで出せない (連盟 §16)。
+        if (!table.isEmpty() && passedOut[seat]) {
+            return PlayResult.PASSED_OUT;
+        }
         List<Integer> hand = hands.get(seat);
         if (!hand.containsAll(ids) || ids.size() != new java.util.HashSet<>(ids).size()) {
             return PlayResult.BAD_SELECT;
@@ -514,7 +545,9 @@ public class DaifugoRoom {
         for (int id : ids) {
             play.add(DaifugoCard.fromId(id));
         }
-        if (!DaifugoRules.isValidSet(play)) {
+        boolean validSet = DaifugoRules.isValidSet(play);
+        boolean stairsShape = DaifugoRules.isStairs(play);
+        if (!validSet && !stairsShape) {
             return PlayResult.BAD_SELECT;
         }
         List<DaifugoCard> tableCards = new ArrayList<>(table.size());
@@ -524,11 +557,22 @@ public class DaifugoRoom {
         // Jバックに縛りの特権なし。場と同一多重集合でなければ縛り拒否。
         // 比べる序列は現在の実効序列 (Jバック場なら裏返し中)。
         boolean eff = DaifugoRules.effectiveRevolution(jbackActive, revolution);
-        if (!table.isEmpty()) {
+        final boolean stairsPlay;
+        if (table.isEmpty()) {
+            // 両読み ([X,JK,JK]) は宣言で確定。それ以外は形で自動確定。
+            if (validSet && stairsShape) {
+                stairsPlay = declaredStairs;
+            } else {
+                stairsPlay = stairsShape;
+            }
+        } else {
             if (play.size() != table.size()) {
                 return PlayResult.BAD_COUNT;
             }
-            if (!DaifugoRules.beats(tableCards, play, eff, ruleSpe3)) {
+            // フォローは場と同役種 (連盟 §25)。両読み札も場の役種で読む。
+            stairsPlay = tableStairs;
+            if (!DaifugoRules.beats(tableCards, play, eff, ruleSpe3, tableStairs,
+                    stairsPlay)) {
                 return PlayResult.TOO_WEAK;
             }
             if (!DaifugoRules.satisfiesLock(play, lockSuits)) {
@@ -545,56 +589,92 @@ public class DaifugoRoom {
         }
         // 反則上がり (出し切り + 役札) は最下位固定。場は変わらない。
         // 最強札は実効序列で判定 (革命中の2上がりは適法)。
-        // J・8は対応ルールON時のみ反則 (OFFなら通常札)。
-        if (hand.isEmpty()
-                && DaifugoRules.isViolationFinish(play, eff, ruleEightCut, ruleJBack)) {
+        // J・8は対応ルールON時のみ反則 (OFFなら通常札)。スペ3単騎・階段中8除外。
+        if (hand.isEmpty() && DaifugoRules.isViolationFinish(play, eff, ruleEightCut,
+                ruleJBack, ruleSpe3, stairsPlay)) {
             violated[seat] = true;
+            violatedAt[seat] = finishOrder.size();
             addLog("log.bamboomod.daifugo_violation", seats[seat].displayName());
             finishSeat(seat);
             if (state == State.PLAYING) {
-                turnSeat = nextActive(seat);
                 turnTimer = 0;
+                if (!checkOutFlow()) {
+                    turnSeat = nextActive(seat);
+                }
             }
             return PlayResult.OK;
         }
         table.clear();
         table.addAll(ids);
+        tableStairs = stairsPlay;
         tableSeat = seat;
         lastPlaySeat = seat;
-        passes = 0;
         turnTimer = 0;
         // 縛りは場にカードがあるときのみ成立。リードでは付かない。
-        // フォローの素札多重集合が場と完全一致で継続した場合に立つ (OFFなら不成立)。
+        // ジョーカー含みでは新規発生しない (連盟 §57補足)。
+        // 既存の縛りはフォローが充足した時点で維持される (場流れでのみ解除)。
         List<Integer> playSuits = DaifugoRules.plainSuits(play);
-        if (ruleSuitLock && !wasEmpty && !fieldSuits.isEmpty() && !playSuits.isEmpty()
-                && DaifugoRules.lockMatch(fieldSuits, playSuits,
-                        DaifugoRules.jokerCount(play))) {
-            lockSuits = new ArrayList<>(fieldSuits);
-        } else {
+        if (!ruleSuitLock || wasEmpty) {
             lockSuits = null;
+        } else if (lockSuits == null && DaifugoRules.jokerCount(play) == 0
+                && !fieldSuits.isEmpty() && !playSuits.isEmpty()
+                && DaifugoRules.lockMatch(fieldSuits, playSuits, 0)) {
+            lockSuits = new ArrayList<>(fieldSuits);
         }
         if (hand.isEmpty()) {
             finishSeat(seat);
             if (state == State.PLAYING) {
-                turnSeat = nextActive(seat);
+                turnTimer = 0;
+                if (!checkOutFlow()) {
+                    turnSeat = nextActive(seat);
+                }
             }
             return PlayResult.OK;
         }
         // スペ3抜き: 場を流してリードを取り直す (Jバックも解除)
         if (spe3) {
             table.clear();
+            tableStairs = false;
             tableSeat = -1;
             lockSuits = null;
             jbackActive = false;
+            passedOut = new boolean[SEATS];
             return PlayResult.OK;
         }
-        if (ruleEightCut && DaifugoRules.containsEight(play)) {
+        // シックスカード: 革命も起こして即流し (連盟 §22条の2・§48)
+        if (DaifugoRules.isSixCard(play)) {
+            revolution = !revolution;
+            addLog("log.bamboomod.daifugo_six", seats[seat].displayName());
+            addLog("log.bamboomod.daifugo_revolution", seats[seat].displayName());
             table.clear();
+            tableStairs = false;
             tableSeat = -1;
             lockSuits = null;
             jbackActive = false;
+            passedOut = new boolean[SEATS];
+            return PlayResult.OK;
+        }
+        // 最強階段: 即流し (連盟 §38条の2)。革命状態は変わらない。
+        if (DaifugoRules.isSuperStairs(play, eff)) {
+            addLog("log.bamboomod.daifugo_superstairs", seats[seat].displayName());
+            table.clear();
+            tableStairs = false;
+            tableSeat = -1;
+            lockSuits = null;
+            jbackActive = false;
+            passedOut = new boolean[SEATS];
+            return PlayResult.OK;
+        }
+        // 8切り: 階段以外の8のみ構成 (JK代用を含む)。4枚以上は革命も起こる。
+        if (ruleEightCut && !stairsPlay
+                && DaifugoRules.effectiveRank(play) == TrumpRank.EIGHT.ordinal()) {
+            table.clear();
+            tableStairs = false;
+            tableSeat = -1;
+            lockSuits = null;
+            jbackActive = false;
+            passedOut = new boolean[SEATS];
             addLog("log.bamboomod.daifugo_cut", seats[seat].displayName());
-            // 8切り4枚以上は革命も起こる
             if (DaifugoRules.isRevolution(play)) {
                 revolution = !revolution;
                 addLog("log.bamboomod.daifugo_revolution", seats[seat].displayName());
@@ -603,40 +683,67 @@ public class DaifugoRoom {
         }
         // Jバック: J含み手が出たら、その場が流れるまで裏返し継続 (単複・方向不問)。
         // 強弱・縛りに特権なし。フォローでは剥がれない。OFFならJは通常札。
-        if (ruleJBack && DaifugoRules.effectiveRank(play) == TrumpRank.JACK.ordinal()
+        // 階段は対象外 (連盟外ローカル)。
+        if (ruleJBack && !stairsPlay
+                && DaifugoRules.effectiveRank(play) == TrumpRank.JACK.ordinal()
                 && !jbackActive) {
             jbackActive = true;
             addLog("log.bamboomod.daifugo_jback", seats[seat].displayName());
         }
+        // 革命は同一ランク4枚以上 (階段を除く)。
         if (DaifugoRules.isRevolution(play)) {
             revolution = !revolution;
             addLog("log.bamboomod.daifugo_revolution", seats[seat].displayName());
         }
-        turnSeat = nextActive(seat);
+        if (!checkOutFlow()) {
+            turnSeat = nextActive(seat);
+        }
         return PlayResult.OK;
     }
 
     private void doPass(int seat) {
-        passes++;
+        // スルーパス禁止: パスした者は場が流れるまで出場停止 (連盟 §16)。
+        passedOut[seat] = true;
         addLog("log.bamboomod.daifugo_pass", seats[seat].displayName());
-        int others = 0;
-        for (int i = 0; i < SEATS; i++) {
-            if (!finished[i] && i != lastPlaySeat) {
-                others++;
-            }
-        }
-        if (passes >= others) {
-            table.clear();
-            tableSeat = -1;
-            lockSuits = null;
-            jbackActive = false;
-            passes = 0;
-            addLog("log.bamboomod.daifugo_flow");
-            turnSeat = !finished[lastPlaySeat] ? lastPlaySeat : nextActive(lastPlaySeat);
-            turnTimer = 0;
+        if (checkOutFlow()) {
             return;
         }
         turnSeat = nextActive(seat);
+        turnTimer = 0;
+    }
+
+    /**
+     * 即流し判定。リード以外の未上がり者が全員パス済みなら場を流す (連盟 §17)。
+     * 流したら true (turnSeat は再設定済み)。
+     */
+    private boolean checkOutFlow() {
+        if (table.isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < SEATS; i++) {
+            if (!finished[i] && i != lastPlaySeat && !passedOut[i]) {
+                return false;
+            }
+        }
+        flowField();
+        return true;
+    }
+
+    /** 場流し。場を空けて直前のリードに先手を与える (連盟 §17-18)。 */
+    private void flowField() {
+        clearField(!finished[lastPlaySeat] ? lastPlaySeat : nextActive(lastPlaySeat));
+        addLog("log.bamboomod.daifugo_flow");
+    }
+
+    /** 場のクリア (切断・特殊流し共通)。先手は指定席。 */
+    private void clearField(int starter) {
+        table.clear();
+        tableStairs = false;
+        tableSeat = -1;
+        lockSuits = null;
+        jbackActive = false;
+        passedOut = new boolean[SEATS];
+        turnSeat = starter;
         turnTimer = 0;
     }
 
@@ -680,7 +787,19 @@ public class DaifugoRoom {
             }
         }
         List<Integer> ordered = new ArrayList<>(finishOrder);
-        ordered.sort(Comparator.comparingInt(s -> violated[s] ? 2 : miyakoForced[s] ? 1 : 0));
+        // 通常 < 都落ち < 反則。反則が複数なら後の反則ほど上位
+        // (最初が最下位・2番目が貧民。連盟 §62)。
+        ordered.sort((a, b) -> {
+            int ga = violated[a] ? 2 : miyakoForced[a] ? 1 : 0;
+            int gb = violated[b] ? 2 : miyakoForced[b] ? 1 : 0;
+            if (ga != gb) {
+                return ga - gb;
+            }
+            if (ga == 2) {
+                return violatedAt[b] - violatedAt[a];
+            }
+            return 0;
+        });
         for (int i = 0; i < ordered.size(); i++) {
             int s = ordered.get(i);
             roundRank[s] = i;
@@ -713,12 +832,12 @@ public class DaifugoRoom {
                             jbackActive,
                             lockSuits == null ? List.of() : List.copyOf(lockSuits),
                             handCounts(), roundRank.clone(), round,
-                            ruleEightCut, ruleJBack, ruleSpe3);
-                    List<Integer> play = chooser.choose(turnSeat, view,
+                            ruleEightCut, ruleJBack, ruleSpe3, tableStairs);
+                    CpuBrain.Play play = chooser.choose(turnSeat, view,
                             List.copyOf(hands.get(turnSeat)));
-                    if (playCards(turnSeat, play) != PlayResult.OK) {
+                    if (playCards(turnSeat, play.ids(), play.stairs()) != PlayResult.OK) {
                         if (table.isEmpty()) {
-                            playCards(turnSeat, List.of(lowestSingle()));
+                            playCards(turnSeat, List.of(lowestSingle()), false);
                         } else {
                             doPass(turnSeat);
                         }
@@ -817,7 +936,13 @@ public class DaifugoRoom {
         snap.hand = List.copyOf(hands.get(seat));
         snap.table = List.copyOf(table);
         snap.tableSeat = tableSeat;
+        snap.tableStairs = tableStairs;
         snap.turnSeat = turnSeat;
+        List<Integer> out = new ArrayList<>(SEATS);
+        for (boolean p : passedOut) {
+            out.add(p ? 1 : 0);
+        }
+        snap.passedOut = out;
         snap.revolution = revolution;
         snap.lockSuits = lockSuits == null ? List.of() : List.copyOf(lockSuits);
         snap.jback = jbackActive;

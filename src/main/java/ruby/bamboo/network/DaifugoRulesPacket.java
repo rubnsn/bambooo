@@ -12,7 +12,7 @@ import ruby.bamboo.daifugo.DaifugoManager;
  */
 public class DaifugoRulesPacket {
     public boolean eightCut = true;
-    public boolean jback = true;
+    public boolean jback = false;
     public boolean suitLock = true;
     public boolean spe3 = true;
     public boolean miyako = true;

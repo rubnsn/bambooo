@@ -114,8 +114,9 @@ public final class DaifugoManager {
         }
     }
 
-    /** 着手 (空配列=パス)。 */
-    public static void action(MinecraftServer server, ServerPlayer player, List<Integer> ids) {
+    /** 着手 (空配列=パス)。stairs は [X,JK,JK] リード時の宣言。 */
+    public static void action(MinecraftServer server, ServerPlayer player, List<Integer> ids,
+            boolean stairs) {
         DaifugoRoom room = roomOf(player.getUUID());
         if (room == null) {
             return;
@@ -124,7 +125,7 @@ public final class DaifugoManager {
         if (idx < 0 || room.seats[idx].cpuControlled()) {
             return;
         }
-        DaifugoRoom.PlayResult result = room.playCards(idx, ids);
+        DaifugoRoom.PlayResult result = room.playCards(idx, ids, stairs);
         if (result == DaifugoRoom.PlayResult.OK) {
             broadcast(server, room);
             return;
@@ -135,6 +136,7 @@ public final class DaifugoManager {
             case TOO_WEAK -> "screen.bamboomod.daifugo_reject_weak";
             case SUIT_LOCK -> "screen.bamboomod.daifugo_reject_lock";
             case NO_PASS_ON_LEAD -> "screen.bamboomod.daifugo_reject_pass";
+            case PASSED_OUT -> "screen.bamboomod.daifugo_reject_passed";
             case NOT_TURN, FINISHED -> "screen.bamboomod.daifugo_reject_turn";
             default -> null;
         };
@@ -172,11 +174,14 @@ public final class DaifugoManager {
             return;
         }
         for (DaifugoRoom room : List.copyOf(ROOMS.values())) {
-            if (room.tick(RANDOM, (seat, view, hand) -> CpuBrain.choosePlay(view, hand,
-                    room.seats[seat].cpu >= 0
-                            ? CpuBrain.Personality.values()[room.seats[seat].cpu]
-                            : CpuBrain.Personality.CREEPER,
-                    RANDOM))) {
+            if (room.tick(RANDOM, (seat, view, hand) -> {
+                CpuBrain.Play play = CpuBrain.choosePlay(view, hand,
+                        room.seats[seat].cpu >= 0
+                                ? CpuBrain.Personality.values()[room.seats[seat].cpu]
+                                : CpuBrain.Personality.CREEPER,
+                        RANDOM);
+                return play;
+            })) {
                 broadcast(server, room);
             }
         }
