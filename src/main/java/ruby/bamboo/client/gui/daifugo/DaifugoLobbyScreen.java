@@ -8,16 +8,27 @@ import ruby.bamboo.daifugo.DaifugoRoom;
 import ruby.bamboo.daifugo.DaifugoSnapshot;
 import ruby.bamboo.network.BambooNetwork;
 import ruby.bamboo.network.DaifugoLeavePacket;
+import ruby.bamboo.network.DaifugoRulesPacket;
 import ruby.bamboo.network.DaifugoStartPacket;
 
 /**
  * 大富豪のロビー。参加受付メンバーの一覧・開始 (オーナー)・退出。
+ * ローカルルール5種はオーナーが開始前に切替可 (既定全ON)。
  */
 public class DaifugoLobbyScreen extends Screen {
+    private static final String[] RULE_KEYS = {
+            "screen.bamboomod.daifugo_rule_eight",
+            "screen.bamboomod.daifugo_rule_jback",
+            "screen.bamboomod.daifugo_rule_lock",
+            "screen.bamboomod.daifugo_rule_spe3",
+            "screen.bamboomod.daifugo_rule_miyako",
+    };
+
     private DaifugoSnapshot snapshot;
 
     private Button startButton;
     private Button leaveButton;
+    private final Button[] ruleButtons = new Button[RULE_KEYS.length];
 
     public DaifugoLobbyScreen(DaifugoSnapshot snapshot) {
         super(Component.translatable("screen.bamboomod.daifugo_lobby"));
@@ -52,12 +63,50 @@ public class DaifugoLobbyScreen extends Screen {
                 .build();
         this.addRenderableWidget(startButton);
         this.addRenderableWidget(leaveButton);
+        for (int i = 0; i < RULE_KEYS.length; i++) {
+            final int idx = i;
+            Button rule = Button.builder(ruleLabel(idx, true), b -> toggleRule(idx))
+                    .bounds(cx - 155 + (i % 2) * 160, 120 + (i / 2) * 22, 150, 20)
+                    .build();
+            ruleButtons[i] = rule;
+            this.addRenderableWidget(rule);
+        }
+    }
+
+    private boolean ruleValue(int idx) {
+        return switch (idx) {
+            case 0 -> snapshot.ruleEightCut;
+            case 1 -> snapshot.ruleJBack;
+            case 2 -> snapshot.ruleSuitLock;
+            case 3 -> snapshot.ruleSpe3;
+            default -> snapshot.ruleMiyako;
+        };
+    }
+
+    private Component ruleLabel(int idx, boolean value) {
+        return Component.translatable(RULE_KEYS[idx]).append(value ? ": ON" : ": OFF");
+    }
+
+    /** オーナーが1つ反転させた全5値を送る (非オーナーはボタン無効のため届かない)。 */
+    private void toggleRule(int idx) {
+        boolean[] v = {
+                snapshot.ruleEightCut, snapshot.ruleJBack, snapshot.ruleSuitLock,
+                snapshot.ruleSpe3, snapshot.ruleMiyako,
+        };
+        v[idx] = !v[idx];
+        BambooNetwork.CHANNEL.sendToServer(
+                new DaifugoRulesPacket(v[0], v[1], v[2], v[3], v[4]));
     }
 
     @Override
     public void tick() {
         super.tick();
-        startButton.visible = snapshot.mySeat == snapshot.ownerSeat;
+        boolean owner = snapshot.mySeat == snapshot.ownerSeat;
+        startButton.visible = owner;
+        for (int i = 0; i < ruleButtons.length; i++) {
+            ruleButtons[i].active = owner;
+            ruleButtons[i].setMessage(ruleLabel(i, ruleValue(i)));
+        }
     }
 
     @Override

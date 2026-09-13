@@ -467,6 +467,12 @@
   "screen.bamboomod.daifugo_game": "Daifugo",
   "screen.bamboomod.daifugo_start": "Start",
   "screen.bamboomod.daifugo_leave": "Leave",
+
+  "screen.bamboomod.daifugo_rule_eight": "8-Cut",
+  "screen.bamboomod.daifugo_rule_jback": "J-Back",
+  "screen.bamboomod.daifugo_rule_lock": "Suit Lock",
+  "screen.bamboomod.daifugo_rule_spe3": "Spade-3 Strip",
+  "screen.bamboomod.daifugo_rule_miyako": "Miyako",
   "screen.bamboomod.daifugo_play": "Play",
   "screen.bamboomod.daifugo_pass": "Pass",
   "screen.bamboomod.daifugo_waiting": "Waiting for players... 4 required (CPU fills)",

@@ -102,6 +102,18 @@ public final class DaifugoManager {
         broadcast(server, room);
     }
 
+    /** ローカルルール設定 (開始前ロビーの部屋主のみ。成功時だけ配信)。 */
+    public static void rules(MinecraftServer server, ServerPlayer player, boolean eightCut,
+            boolean jback, boolean suitLock, boolean spe3, boolean miyako) {
+        DaifugoRoom room = roomOf(player.getUUID());
+        if (room == null) {
+            return;
+        }
+        if (room.setRules(player.getUUID(), eightCut, jback, suitLock, spe3, miyako)) {
+            broadcast(server, room);
+        }
+    }
+
     /** 着手 (空配列=パス)。 */
     public static void action(MinecraftServer server, ServerPlayer player, List<Integer> ids) {
         DaifugoRoom room = roomOf(player.getUUID());

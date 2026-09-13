@@ -108,5 +108,9 @@ public final class BambooNetwork {
                 DaifugoTributePacket::encode,
                 DaifugoTributePacket::decode,
                 DaifugoTributePacket::handle);
+        CHANNEL.registerMessage(nextId(), DaifugoRulesPacket.class,
+                DaifugoRulesPacket::encode,
+                DaifugoRulesPacket::decode,
+                DaifugoRulesPacket::handle);
     }
 }

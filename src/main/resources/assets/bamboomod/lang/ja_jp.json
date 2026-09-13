@@ -467,6 +467,12 @@
   "screen.bamboomod.daifugo_game": "大富豪",
   "screen.bamboomod.daifugo_start": "開始する",
   "screen.bamboomod.daifugo_leave": "退出する",
+
+  "screen.bamboomod.daifugo_rule_eight": "8切り",
+  "screen.bamboomod.daifugo_rule_jback": "Jバック",
+  "screen.bamboomod.daifugo_rule_lock": "スート縛り",
+  "screen.bamboomod.daifugo_rule_spe3": "スペ3抜き",
+  "screen.bamboomod.daifugo_rule_miyako": "都落ち",
   "screen.bamboomod.daifugo_play": "出す",
   "screen.bamboomod.daifugo_pass": "パス",
   "screen.bamboomod.daifugo_waiting": "参加受付中… 4人必須 (不足はCPU)",

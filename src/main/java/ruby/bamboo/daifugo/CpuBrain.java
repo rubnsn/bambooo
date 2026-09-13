@@ -24,7 +24,10 @@ public final class CpuBrain {
             List<Integer> lockSuits,
             int[] handCounts,
             int[] roundRanks,
-            int round) {
+            int round,
+            boolean ruleEightCut,
+            boolean ruleJBack,
+            boolean ruleSpe3) {
     }
 
     private CpuBrain() {
@@ -52,7 +55,8 @@ public final class CpuBrain {
             if (!DaifugoRules.satisfiesLock(play, view.lockSuits())) {
                 continue;
             }
-            if (table.isEmpty() || DaifugoRules.beats(table, play, effNow)) {
+            if (table.isEmpty()
+                    || DaifugoRules.beats(table, play, effNow, view.ruleSpe3())) {
                 legal.add(play);
             }
         }
@@ -62,8 +66,8 @@ public final class CpuBrain {
         // 反則上がり回避 (他に手がある限り。全階級共通。ゾンビは3割でやらかす)
         List<List<DaifugoCard>> ok = new ArrayList<>();
         for (List<DaifugoCard> play : legal) {
-            boolean violation = play.size() == hand.size()
-                    && DaifugoRules.isViolationFinish(play, effNow);
+            boolean violation = play.size() == hand.size() && DaifugoRules
+                    .isViolationFinish(play, effNow, view.ruleEightCut(), view.ruleJBack());
             if (!violation) {
                 ok.add(play);
             }
@@ -183,7 +187,8 @@ public final class CpuBrain {
                             || personality == Personality.ENDERMAN || personality == Personality.VILLAGER)) {
                 s -= 5.0; // ジョーカー温存
             }
-            if (DaifugoRules.containsEight(play) && personality != Personality.SKELETON) {
+            if (DaifugoRules.containsEight(play) && personality != Personality.SKELETON
+                    && view.ruleEightCut()) {
                 s += 3.0; // 8切りで主導権
             }
             s += revolutionBonus(play, hand, view, personality, effNow);
@@ -207,8 +212,10 @@ public final class CpuBrain {
             return 0.0;
         }
         // 出した後は場=この手。下地反転+Jバック場化での実効序列で損得評価。
+        // JバックOFFならJ含みでも裏返しは起きない。
         boolean newActive = view.jbackActive()
-                || DaifugoRules.effectiveRank(play) == TrumpRank.JACK.ordinal();
+                || (view.ruleJBack()
+                        && DaifugoRules.effectiveRank(play) == TrumpRank.JACK.ordinal());
         boolean newEff = DaifugoRules.effectiveRevolution(newActive, !view.revolution());
         return switch (personality) {
             case CREEPER -> 8.0;
@@ -220,7 +227,8 @@ public final class CpuBrain {
     private static double jBackBonus(List<DaifugoCard> play, List<DaifugoCard> hand,
             View view, Personality personality, boolean effNow) {
         // J含み手で未裏返しの場に挑む (裏返し方向によらず)。新実効序列での損得で評価。
-        if (DaifugoRules.effectiveRank(play) != TrumpRank.JACK.ordinal()
+        // OFFならJは通常札のため評価しない。
+        if (!view.ruleJBack() || DaifugoRules.effectiveRank(play) != TrumpRank.JACK.ordinal()
                 || view.jbackActive()) {
             return 0.0;
         }

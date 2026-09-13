@@ -29,6 +29,12 @@ public class DaifugoSnapshot {
     public boolean revolution;
     /** Jバック場 (場にJがあり実効序列が裏返っている)。 */
     public boolean jback;
+    /** ルール設定 (部屋主が開始前に変更。既定全ON)。 */
+    public boolean ruleEightCut = true;
+    public boolean ruleJBack = true;
+    public boolean ruleSuitLock = true;
+    public boolean ruleSpe3 = true;
+    public boolean ruleMiyako = true;
     /** スートロック (素札スートの多重集合整列列。空=なし)。 */
     public List<Integer> lockSuits = List.of();
     public List<LogEntry> log = List.of();

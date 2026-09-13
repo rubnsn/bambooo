@@ -12,15 +12,17 @@ import ruby.bamboo.client.gui.trump.TrumpRank;
 /**
  * 大富豪の部屋 (純粋状態機械、MC非依存)。
  * 4人制・ endless 回戦 (得点なし、まったり用)。
- * 採用ルール: 献上 (下位→上位は最強札を自動、上位→下位のお返しは手選び。
+ * 固定: 献上 (下位→上位は最強札を自動、上位のお返しは手選び。
  * 大貧民→大富豪2枚・貧民→富豪1枚、大富豪→大貧民2枚・富豪→貧民1枚)、
- * 革命・イレブンバック (Jが出た時その場限りで裏返す。単複不問。フォローでは剥がれず
- * 場が流れれば戻る。強弱・縛りに特権なし)・
- * スートロック (場と同一スート多重集合で継続したときのみ成立。リードでは付かない。
- * 2枚以上は完全一致、ジョーカーは適応・素札だけの出しでは解除)・
- * 8切り (4枚以上は革命も)・スペ3抜き (ジョーカーを倒して流し・リード)・
- * 都落ち (前大富豪が先頭で上がれなかった時点で即敗北・最下位固定)・
- * 反則上がり(最下位固定)。
+ * 革命 (4枚以上。8切りOFFでも8の4枚出しは革命だけ起きる)・
+ * 反則上がり (最下位固定。J・8は対応ルールON時のみ対象)。
+ * 切替可 (部屋主が開始前に設定、既定全ON): 8切り・イレブンバック・
+ * スートロック・スペ3抜き・都落ち。
+ * 詳細: イレブンバックはJが出た時その場限りで裏返す (単複不問。フォローでは剥がれず
+ * 場が流れれば戻る。強弱・縛りに特権なし)。スートロックは場と同一スート多重集合で
+ * 継続したときのみ成立 (リードでは付かない。ジョーカーは適応)。スペ3抜きは
+ * ジョーカーを倒して流し・リード。都落ちは前大富豪が先頭で上がれなかった時点で
+ * 即敗北・最下位固定。
  * 54枚 (ジョーカー2枚)。13枚ずつ配り、余り2枚は3♦保持者へ。
  * 初戦は3♦保持者、2戦目以降は前戦の大貧民がリード。
  */
@@ -94,6 +96,14 @@ public class DaifugoRoom {
     public boolean jbackActive = false;
     /** スートロック (素札スートの多重集合整列列。null=なし)。 */
     public List<Integer> lockSuits = null;
+    // ===== ルール設定 (部屋主が開始前に変更可。デフォルト全ON) =====
+    // 固定: 献上・革命 (4枚以上)・反則上がり。切替可: 8切り・Jバック・
+    // スートロック・スペ3抜き・都落ち。8切りOFFでも8の4枚出しは革命だけ起きる。
+    public boolean ruleEightCut = true;
+    public boolean ruleJBack = true;
+    public boolean ruleSuitLock = true;
+    public boolean ruleSpe3 = true;
+    public boolean ruleMiyako = true;
     public int passes = 0;
     public int lastPlaySeat = -1;
     public int prevDaifugo = -1;
@@ -461,6 +471,25 @@ public class DaifugoRoom {
 
     // ===== 着手 =====
 
+    /**
+     * ルール設定の変更。開始前ロビーで部屋主のみ可。成功時 true。
+     */
+    public boolean setRules(UUID senderId, boolean eightCut, boolean jback,
+            boolean suitLock, boolean spe3, boolean miyako) {
+        if (state != State.LOBBY || senderId == null) {
+            return false;
+        }
+        if (seatOf(senderId) != ownerSeat) {
+            return false;
+        }
+        ruleEightCut = eightCut;
+        ruleJBack = jback;
+        ruleSuitLock = suitLock;
+        ruleSpe3 = spe3;
+        ruleMiyako = miyako;
+        return true;
+    }
+
     public PlayResult playCards(int seat, List<Integer> ids) {
         if (state != State.PLAYING) {
             return PlayResult.NOT_PLAYING;
@@ -499,7 +528,7 @@ public class DaifugoRoom {
             if (play.size() != table.size()) {
                 return PlayResult.BAD_COUNT;
             }
-            if (!DaifugoRules.beats(tableCards, play, eff)) {
+            if (!DaifugoRules.beats(tableCards, play, eff, ruleSpe3)) {
                 return PlayResult.TOO_WEAK;
             }
             if (!DaifugoRules.satisfiesLock(play, lockSuits)) {
@@ -509,14 +538,16 @@ public class DaifugoRoom {
         boolean wasEmpty = table.isEmpty();
         List<Integer> fieldSuits = DaifugoRules.plainSuits(tableCards);
         hand.removeAll(ids);
-        boolean spe3 = table.size() == 1 && table.get(0) >= DaifugoCard.JOKER_A_ID
+        boolean spe3 = ruleSpe3 && table.size() == 1 && table.get(0) >= DaifugoCard.JOKER_A_ID
                 && play.size() == 1 && play.get(0).spadeThree();
         if (spe3) {
             addLog("log.bamboomod.daifugo_spe3", seats[seat].displayName());
         }
         // 反則上がり (出し切り + 役札) は最下位固定。場は変わらない。
         // 最強札は実効序列で判定 (革命中の2上がりは適法)。
-        if (hand.isEmpty() && DaifugoRules.isViolationFinish(play, eff)) {
+        // J・8は対応ルールON時のみ反則 (OFFなら通常札)。
+        if (hand.isEmpty()
+                && DaifugoRules.isViolationFinish(play, eff, ruleEightCut, ruleJBack)) {
             violated[seat] = true;
             addLog("log.bamboomod.daifugo_violation", seats[seat].displayName());
             finishSeat(seat);
@@ -533,9 +564,9 @@ public class DaifugoRoom {
         passes = 0;
         turnTimer = 0;
         // 縛りは場にカードがあるときのみ成立。リードでは付かない。
-        // フォローの素札多重集合が場と完全一致で継続した場合に立つ。
+        // フォローの素札多重集合が場と完全一致で継続した場合に立つ (OFFなら不成立)。
         List<Integer> playSuits = DaifugoRules.plainSuits(play);
-        if (!wasEmpty && !fieldSuits.isEmpty() && !playSuits.isEmpty()
+        if (ruleSuitLock && !wasEmpty && !fieldSuits.isEmpty() && !playSuits.isEmpty()
                 && DaifugoRules.lockMatch(fieldSuits, playSuits,
                         DaifugoRules.jokerCount(play))) {
             lockSuits = new ArrayList<>(fieldSuits);
@@ -557,7 +588,7 @@ public class DaifugoRoom {
             jbackActive = false;
             return PlayResult.OK;
         }
-        if (DaifugoRules.containsEight(play)) {
+        if (ruleEightCut && DaifugoRules.containsEight(play)) {
             table.clear();
             tableSeat = -1;
             lockSuits = null;
@@ -571,8 +602,9 @@ public class DaifugoRoom {
             return PlayResult.OK;
         }
         // Jバック: J含み手が出たら、その場が流れるまで裏返し継続 (単複・方向不問)。
-        // 強弱・縛りに特権なし。フォローでは剥がれない。
-        if (DaifugoRules.effectiveRank(play) == TrumpRank.JACK.ordinal() && !jbackActive) {
+        // 強弱・縛りに特権なし。フォローでは剥がれない。OFFならJは通常札。
+        if (ruleJBack && DaifugoRules.effectiveRank(play) == TrumpRank.JACK.ordinal()
+                && !jbackActive) {
             jbackActive = true;
             addLog("log.bamboomod.daifugo_jback", seats[seat].displayName());
         }
@@ -613,8 +645,8 @@ public class DaifugoRoom {
         finishOrder.add(seat);
         addLog("log.bamboomod.daifugo_finish", seats[seat].displayName(),
                 String.valueOf(finishOrder.size()));
-        // 都落ち: 前大富豪が先頭で上がれなかった場合、その場で敗北・最下位固定
-        if (finishOrder.size() == 1 && prevDaifugo >= 0 && seat != prevDaifugo
+        // 都落ち: 前大富豪が先頭で上がれなかった場合、その場で敗北・最下位固定 (OFFなら通常進行)
+        if (ruleMiyako && finishOrder.size() == 1 && prevDaifugo >= 0 && seat != prevDaifugo
                 && !finished[prevDaifugo]) {
             forceMiyako(prevDaifugo);
         }
@@ -680,7 +712,8 @@ public class DaifugoRoom {
                     CpuBrain.View view = new CpuBrain.View(List.copyOf(table), revolution,
                             jbackActive,
                             lockSuits == null ? List.of() : List.copyOf(lockSuits),
-                            handCounts(), roundRank.clone(), round);
+                            handCounts(), roundRank.clone(), round,
+                            ruleEightCut, ruleJBack, ruleSpe3);
                     List<Integer> play = chooser.choose(turnSeat, view,
                             List.copyOf(hands.get(turnSeat)));
                     if (playCards(turnSeat, play) != PlayResult.OK) {
@@ -788,6 +821,11 @@ public class DaifugoRoom {
         snap.revolution = revolution;
         snap.lockSuits = lockSuits == null ? List.of() : List.copyOf(lockSuits);
         snap.jback = jbackActive;
+        snap.ruleEightCut = ruleEightCut;
+        snap.ruleJBack = ruleJBack;
+        snap.ruleSuitLock = ruleSuitLock;
+        snap.ruleSpe3 = ruleSpe3;
+        snap.ruleMiyako = ruleMiyako;
         snap.log = List.copyOf(log);
         List<Integer> owed = new ArrayList<>(SEATS);
         for (int owedCount : tributeOwed) {

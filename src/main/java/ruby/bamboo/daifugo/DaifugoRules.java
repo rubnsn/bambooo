@@ -70,16 +70,17 @@ public final class DaifugoRules {
     }
 
     /**
-     * table へのフォロー可否 (同枚数・より強い)。単体ジョーカーには単体スペ3のみ。
+     * table へのフォロー可否 (同枚数・より強い)。単体ジョーカーには単体スペ3のみ
+     * (spe3Enabled が false ならジョーカー単騎は倒せない)。
      * 比べる序列は呼び出し側が渡す (部屋の現在実効序列)。
      */
     public static boolean beats(List<DaifugoCard> table, List<DaifugoCard> play,
-            boolean effRevolution) {
+            boolean effRevolution, boolean spe3Enabled) {
         if (!isValidSet(play) || play.size() != table.size()) {
             return false;
         }
         if (table.size() == 1 && table.get(0).joker()) {
-            return play.size() == 1 && play.get(0).spadeThree();
+            return spe3Enabled && play.size() == 1 && play.get(0).spadeThree();
         }
         // J含み手も特権なし。現在の実効序列で比べる (革命中のJは弱い)。
         return playPower(play, effRevolution) > playPower(table, effRevolution);
@@ -156,16 +157,18 @@ public final class DaifugoRules {
 
     /**
      * 反則上がり (手札を出し切る手に最強札/J/8/ジョーカー(実物) を含む)。
-     * 最強札は実効序列で変わる (通常=2、革命中=3)。J・8・ジョーカーは序列によらず対象。
+     * 最強札は実効序列で変わる (通常=2、革命中=3)。J・8は対応ルールON時のみ対象
+     * (OFFなら通常札のため適法)。ジョーカー・最強札は常に反則。
      * 実効ランクで判定するため、ジョーカーを該当札として使った場合も反則。
      */
-    public static boolean isViolationFinish(List<DaifugoCard> cards, boolean revolution) {
+    public static boolean isViolationFinish(List<DaifugoCard> cards, boolean revolution,
+            boolean eightCut, boolean jback) {
         int eff = effectiveRank(cards);
         int strongest = revolution ? TrumpRank.THREE.ordinal() : TrumpRank.TWO.ordinal();
         return containsJoker(cards)
                 || eff == strongest
-                || eff == TrumpRank.JACK.ordinal()
-                || eff == TrumpRank.EIGHT.ordinal();
+                || (jback && eff == TrumpRank.JACK.ordinal())
+                || (eightCut && eff == TrumpRank.EIGHT.ordinal());
     }
 
     /**
