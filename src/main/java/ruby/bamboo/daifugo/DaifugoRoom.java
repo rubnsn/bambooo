@@ -24,8 +24,8 @@ import ruby.bamboo.client.gui.trump.TrumpRank;
  * 場が流れれば戻る。強弱・縛りに特権なし、階段は対象外)。スートロックは場と同一
  * スート (多重集合) で継続したときのみ成立 (リードでは付かない。ジョーカー含みでは
  * 新規発生せず、縛りスートのみなら維持)。スペ3抜きはジョーカー単騎を倒して
- * 流し・リード。都落ちは前大富豪が先頭で上がれなかった時点で即敗北・最下位固定
- * (反則者がいれば繰り上がる)。
+ * 流し・リード。都落ちは前大富豪が有効な上がりとして先頭で上がれなかった場合
+ * (反則上がりは数えない) に即敗北・最下位固定 (反則者がいれば繰り上がる)。
  * 54枚 (ジョーカー2枚)。13枚ずつ配り、余り2枚は3♦保持者へ。
  * 初戦は3♦保持者、2戦目以降は前戦の大貧民がリード。
  */
@@ -99,6 +99,10 @@ public class DaifugoRoom {
     public int tableSeat = -1;
     /** 場の役種 (階段=true)。フォローは同役種で受ける。 */
     public boolean tableStairs = false;
+    /** 演出用: 直前の特殊流し札。 */
+    public List<Integer> fxCards = List.of();
+    /** 演出用: 特殊流しの種別 (""=なし)。 */
+    public String fxKey = "";
     public int turnSeat = -1;
     public boolean revolution = false;
     /** Jバック場 (裏返し中)。フォローでは剥がれず、流れでのみ解除。 */
@@ -122,6 +126,7 @@ public class DaifugoRoom {
     private int stateTimer = 0;
     private int turnTimer = 0;
     private int tributeTimer = 0;
+    private int pulseTimer = 0;
 
     public DaifugoRoom() {
         for (int i = 0; i < SEATS; i++) {
@@ -306,6 +311,8 @@ public class DaifugoRoom {
         revolution = false;
         jbackActive = false;
         lockSuits = null;
+        fxCards = List.of();
+        fxKey = "";
         passedOut = new boolean[SEATS];
         tableSeat = -1;
         lastPlaySeat = -1;
@@ -590,11 +597,23 @@ public class DaifugoRoom {
         // 反則上がり (出し切り + 役札) は最下位固定。場は変わらない。
         // 最強札は実効序列で判定 (革命中の2上がりは適法)。
         // J・8は対応ルールON時のみ反則 (OFFなら通常札)。スペ3単騎・階段中8除外。
-        if (hand.isEmpty() && DaifugoRules.isViolationFinish(play, eff, ruleEightCut,
-                ruleJBack, ruleSpe3, stairsPlay)) {
+        // 反則名を表示する (何による反則か)。
+        DaifugoRules.Violation violation = DaifugoRules.violationKind(play, eff,
+                ruleEightCut, ruleJBack, ruleSpe3, stairsPlay);
+        if (hand.isEmpty() && violation != DaifugoRules.Violation.NONE) {
             violated[seat] = true;
             violatedAt[seat] = finishOrder.size();
-            addLog("log.bamboomod.daifugo_violation", seats[seat].displayName());
+            String who = seats[seat].displayName();
+            switch (violation) {
+                case JOKER -> addLog("log.bamboomod.daifugo_violation_joker", who);
+                case STRONGEST -> addLog("log.bamboomod.daifugo_violation_strongest", who,
+                        eff ? "3" : "2");
+                case EIGHT -> addLog("log.bamboomod.daifugo_violation_eight", who);
+                case JACK -> addLog("log.bamboomod.daifugo_violation_jack", who);
+                case SPE3 -> addLog("log.bamboomod.daifugo_violation_spe3", who);
+                default -> {
+                }
+            }
             finishSeat(seat);
             if (state == State.PLAYING) {
                 turnTimer = 0;
@@ -610,6 +629,9 @@ public class DaifugoRoom {
         tableSeat = seat;
         lastPlaySeat = seat;
         turnTimer = 0;
+        // 前の特殊流し演出は新しい出しで消える
+        fxCards = List.of();
+        fxKey = "";
         // 縛りは場にカードがあるときのみ成立。リードでは付かない。
         // ジョーカー含みでは新規発生しない (連盟 §57補足)。
         // 既存の縛りはフォローが充足した時点で維持される (場流れでのみ解除)。
@@ -633,6 +655,8 @@ public class DaifugoRoom {
         }
         // スペ3抜き: 場を流してリードを取り直す (Jバックも解除)
         if (spe3) {
+            fxCards = List.copyOf(ids);
+            fxKey = "spe3";
             table.clear();
             tableStairs = false;
             tableSeat = -1;
@@ -644,6 +668,8 @@ public class DaifugoRoom {
         // シックスカード: 革命も起こして即流し (連盟 §22条の2・§48)
         if (DaifugoRules.isSixCard(play)) {
             revolution = !revolution;
+            fxCards = List.copyOf(ids);
+            fxKey = "six";
             addLog("log.bamboomod.daifugo_six", seats[seat].displayName());
             addLog("log.bamboomod.daifugo_revolution", seats[seat].displayName());
             table.clear();
@@ -656,6 +682,8 @@ public class DaifugoRoom {
         }
         // 最強階段: 即流し (連盟 §38条の2)。革命状態は変わらない。
         if (DaifugoRules.isSuperStairs(play, eff)) {
+            fxCards = List.copyOf(ids);
+            fxKey = "superstairs";
             addLog("log.bamboomod.daifugo_superstairs", seats[seat].displayName());
             table.clear();
             tableStairs = false;
@@ -668,6 +696,8 @@ public class DaifugoRoom {
         // 8切り: 階段以外の8のみ構成 (JK代用を含む)。4枚以上は革命も起こる。
         if (ruleEightCut && !stairsPlay
                 && DaifugoRules.effectiveRank(play) == TrumpRank.EIGHT.ordinal()) {
+            fxCards = List.copyOf(ids);
+            fxKey = "cut";
             table.clear();
             tableStairs = false;
             tableSeat = -1;
@@ -731,6 +761,9 @@ public class DaifugoRoom {
 
     /** 場流し。場を空けて直前のリードに先手を与える (連盟 §17-18)。 */
     private void flowField() {
+        // 演出用に流れる札を残す
+        fxCards = List.copyOf(table);
+        fxKey = "flow";
         clearField(!finished[lastPlaySeat] ? lastPlaySeat : nextActive(lastPlaySeat));
         addLog("log.bamboomod.daifugo_flow");
     }
@@ -752,9 +785,10 @@ public class DaifugoRoom {
         finishOrder.add(seat);
         addLog("log.bamboomod.daifugo_finish", seats[seat].displayName(),
                 String.valueOf(finishOrder.size()));
-        // 都落ち: 前大富豪が先頭で上がれなかった場合、その場で敗北・最下位固定 (OFFなら通常進行)
-        if (ruleMiyako && finishOrder.size() == 1 && prevDaifugo >= 0 && seat != prevDaifugo
-                && !finished[prevDaifugo]) {
+        // 都落ち: 有効な上がりとして最初に上がった者が前大富豪でない場合。
+        // 反則上がりは有効な上がりに数えないため都落ちを発生させない (§65)。
+        if (ruleMiyako && !violated[seat] && isFirstValidFinish(seat) && prevDaifugo >= 0
+                && seat != prevDaifugo && !finished[prevDaifugo]) {
             forceMiyako(prevDaifugo);
         }
         if (finishOrder.size() == SEATS - 1) {
@@ -767,6 +801,16 @@ public class DaifugoRoom {
             }
             endRound();
         }
+    }
+
+    /** 有効 (非反則) 上がりの第1号か。反則上がりは数えない。 */
+    private boolean isFirstValidFinish(int seat) {
+        for (int s : finishOrder) {
+            if (s != seat && !violated[s]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** 都落ちの強制敗北。残り手札を破棄して即脱落、最下位に固定する。 */
@@ -815,6 +859,12 @@ public class DaifugoRoom {
 
     /** 状態が変わったら true (Manager が配信する)。 */
     public boolean tick(Random random, CpuChooser chooser) {
+        // 制限時間表示のため、対戦中は1秒ごとに配信する
+        pulseTimer++;
+        boolean pulse = pulseTimer >= 20 && state != State.LOBBY;
+        if (pulse) {
+            pulseTimer = 0;
+        }
         if (state == State.PLAYING) {
             if (finished[turnSeat]) {
                 turnSeat = nextActive(turnSeat);
@@ -844,7 +894,7 @@ public class DaifugoRoom {
                     }
                     return true;
                 }
-                return false;
+                return pulse;
             }
             turnTimer++;
             if (turnTimer >= AFK_TICKS) {
@@ -856,7 +906,7 @@ public class DaifugoRoom {
                 }
                 return true;
             }
-            return false;
+            return pulse;
         }
         if (state == State.ROUND_END) {
             stateTimer++;
@@ -886,9 +936,9 @@ public class DaifugoRoom {
                     }
                 }
             }
-            return acted;
+            return acted || pulse;
         }
-        return false;
+        return pulse;
     }
 
     private int[] handCounts() {
@@ -914,6 +964,18 @@ public class DaifugoRoom {
     }
 
     // ===== 配信 =====
+
+    /** 自分の番の残りtick (人間番のみ。CPU番・番外は-1)。 */
+    private int turnLimit() {
+        if (state != State.PLAYING || turnSeat < 0 || finished[turnSeat]) {
+            return -1;
+        }
+        Seat s = seats[turnSeat];
+        if (s == null || s.cpuControlled()) {
+            return -1;
+        }
+        return AFK_TICKS - turnTimer;
+    }
 
     public DaifugoSnapshot snapshotFor(int seat) {
         DaifugoSnapshot snap = new DaifugoSnapshot();
@@ -946,6 +1008,11 @@ public class DaifugoRoom {
         snap.revolution = revolution;
         snap.lockSuits = lockSuits == null ? List.of() : List.copyOf(lockSuits);
         snap.jback = jbackActive;
+        snap.fxCards = List.copyOf(fxCards);
+        snap.fxKey = fxKey;
+        snap.turnLimit = turnLimit();
+        snap.tributeLimit = state == State.TRIBUTE ? TRIBUTE_TIMEOUT - tributeTimer : -1;
+        snap.roundEndLimit = state == State.ROUND_END ? ROUND_END_DELAY - stateTimer : -1;
         snap.ruleEightCut = ruleEightCut;
         snap.ruleJBack = ruleJBack;
         snap.ruleSuitLock = ruleSuitLock;

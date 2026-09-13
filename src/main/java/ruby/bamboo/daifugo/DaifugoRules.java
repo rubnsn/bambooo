@@ -46,7 +46,7 @@ public final class DaifugoRules {
         return false;
     }
 
-    /** 同一実効ランクの1-6枚 (5枚以上はジョーカー埋め必須、素ジョーカー複数は不可)。 */
+    /** 同一実効ランクの1-6枚 (5枚以上はジョーカー埋め必須)。 */
     public static boolean isValidSet(List<DaifugoCard> cards) {
         if (cards.isEmpty() || cards.size() > 6) {
             return false;
@@ -62,8 +62,11 @@ public final class DaifugoRules {
                 return false;
             }
         }
-        // ジョーカーのみの複数枚は役なし
-        return eff != -2 || cards.size() == 1;
+        if (eff != -2) {
+            return true;
+        }
+        // ジョーカーのみ: 単騎かペアのみ有効 (連盟 §20)。実効-1=最強。
+        return cards.size() <= 2;
     }
 
     public static int playPower(List<DaifugoCard> cards, boolean revolution) {
@@ -282,6 +285,14 @@ public final class DaifugoRules {
     }
 
     /**
+     * 反則上がりの種別。表示名用。NONE=適法。
+     * 複数に該当する手は上から優先 (ジョーカー→最強札→8→J→スペ3)。
+     */
+    public enum Violation {
+        NONE, JOKER, STRONGEST, EIGHT, JACK, SPE3
+    }
+
+    /**
      * 反則上がり (連盟 §60-61)。
      * 通常時: 2を含む手・8切り成立の8出し・ジョーカーを1枚でも含む手・スペ3単騎。
      * 革命時: 3を含むすべての最終手 (ペア・階段を含む)。
@@ -290,22 +301,39 @@ public final class DaifugoRules {
      * 階段中のJはJバック (連盟外ローカル) の対象外。
      * 実効ランクで判定するため、ジョーカーを該当札として使った場合も反則。
      */
-    public static boolean isViolationFinish(List<DaifugoCard> cards, boolean revolution,
+    public static Violation violationKind(List<DaifugoCard> cards, boolean revolution,
             boolean eightCut, boolean jback, boolean spe3, boolean asStairs) {
         if (containsJoker(cards)) {
-            return true;
+            return Violation.JOKER;
         }
-        if (asStairs) {
-            // 最強解釈に禁則札 (通常2・革命3) を含むか。JKは上部で確定済み。
-            int forbidden = revolution ? TrumpRank.THREE.ordinal() : TrumpRank.TWO.ordinal();
-            return stairHasRank(cards, forbidden);
+        if (!asStairs) {
+            int eff = effectiveRank(cards);
+            int strongest = revolution ? TrumpRank.THREE.ordinal() : TrumpRank.TWO.ordinal();
+            if (eff == strongest) {
+                return Violation.STRONGEST;
+            }
+            if (eightCut && eff == TrumpRank.EIGHT.ordinal()) {
+                return Violation.EIGHT;
+            }
+            if (jback && eff == TrumpRank.JACK.ordinal()) {
+                return Violation.JACK;
+            }
+            if (spe3 && cards.size() == 1 && cards.get(0).spadeThree()) {
+                return Violation.SPE3;
+            }
+            return Violation.NONE;
         }
-        int eff = effectiveRank(cards);
-        int strongest = revolution ? TrumpRank.THREE.ordinal() : TrumpRank.TWO.ordinal();
-        boolean spe3Single = spe3 && cards.size() == 1 && cards.get(0).spadeThree();
-        return eff == strongest || spe3Single
-                || (jback && eff == TrumpRank.JACK.ordinal())
-                || (eightCut && eff == TrumpRank.EIGHT.ordinal());
+        int forbidden = revolution ? TrumpRank.THREE.ordinal() : TrumpRank.TWO.ordinal();
+        if (stairHasRank(cards, forbidden)) {
+            return Violation.STRONGEST;
+        }
+        return Violation.NONE;
+    }
+
+    public static boolean isViolationFinish(List<DaifugoCard> cards, boolean revolution,
+            boolean eightCut, boolean jback, boolean spe3, boolean asStairs) {
+        return violationKind(cards, revolution, eightCut, jback, spe3, asStairs)
+                != Violation.NONE;
     }
 
     /** 階段の最強解釈に指定ランク (number()) を含むか。 */
@@ -354,6 +382,10 @@ public final class DaifugoRules {
         }
         if (firstJoker != null) {
             out.add(List.of(firstJoker));
+        }
+        // ジョーカーペア (連盟 §20)。2のペアにも勝つ最強ペア。
+        if (jokers.size() >= 2) {
+            out.add(List.of(jokers.get(0), jokers.get(1)));
         }
         // 階段 (同一スート連番3枚以上、代表形。別解釈の重複は除く)
         Map<Integer, Map<Integer, DaifugoCard>> suitPos = new java.util.TreeMap<>();

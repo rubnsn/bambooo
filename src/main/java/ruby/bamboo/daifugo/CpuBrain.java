@@ -193,6 +193,8 @@ public final class CpuBrain {
             s += revolutionBonus(cand, hand, view, personality, effNow);
             s += jBackBonus(cand, hand, view, personality, effNow);
             s += flowBonus(cand, personality, effNow);
+            s -= leadJokerWaste(cand, personality, effNow);
+            s -= spe3LeadWaste(cand, view, personality);
             if (personality == Personality.SKELETON && random.nextFloat() < 0.3f) {
                 s = random.nextDouble() * 10.0;
             }
@@ -223,6 +225,11 @@ public final class CpuBrain {
         // 温存: A/2/ジョーカー級で受けるのはもったいない (場が弱いときはパス)
         if ((personality == Personality.ENDERMAN || personality == Personality.VILLAGER)
                 && cheapestPower >= 11 && tablePower <= 6) {
+            return null;
+        }
+        // 村人JK温存: 弱い場にジョーカーを切らずに降りる (スルー後は流れ待ち)
+        if (personality == Personality.VILLAGER && cheapest != null
+                && DaifugoRules.containsJoker(cheapest.cards()) && tablePower <= 4) {
             return null;
         }
         if (personality == Personality.ZOMBIE) {
@@ -279,6 +286,39 @@ public final class CpuBrain {
     private static boolean isCutPlay(Cand cand, View view) {
         return view.ruleEightCut() && !cand.stairs() && DaifugoRules
                 .effectiveRank(cand.cards()) == TrumpRank.EIGHT.ordinal();
+    }
+
+    /**
+     * リードでのジョーカー無駄遣いを抑える (村人>エンダーマン)。
+     * 革命・シックス・最強階段に昇格する手は有益なので対象外。
+     */
+    private static double leadJokerWaste(Cand cand, Personality personality, boolean eff) {
+        int jk = DaifugoRules.jokerCount(cand.cards());
+        if (jk == 0) {
+            return 0.0;
+        }
+        if (DaifugoRules.isSixCard(cand.cards()) || DaifugoRules.isRevolution(cand.cards())
+                || DaifugoRules.isSuperStairs(cand.cards(), eff)) {
+            return 0.0;
+        }
+        return switch (personality) {
+            case VILLAGER -> 12.0 * jk;
+            case ENDERMAN -> 8.0 * jk;
+            default -> 0.0;
+        };
+    }
+
+    /** 単騎スペ3のリードは温存する (ジョーカー返し用。村人>エンダーマン)。 */
+    private static double spe3LeadWaste(Cand cand, View view, Personality personality) {
+        List<DaifugoCard> play = cand.cards();
+        if (!view.ruleSpe3() || play.size() != 1 || !play.get(0).spadeThree()) {
+            return 0.0;
+        }
+        return switch (personality) {
+            case VILLAGER -> 6.0;
+            case ENDERMAN -> 3.0;
+            default -> 0.0;
+        };
     }
 
     private static double revolutionBonus(Cand cand, List<DaifugoCard> hand,

@@ -49,6 +49,11 @@ public class DaifugoRoomPacket {
         buf.writeBoolean(s.tableStairs);
         buf.writeInt(s.turnSeat);
         buf.writeVarIntArray(s.passedOut.stream().mapToInt(Integer::intValue).toArray());
+        buf.writeVarIntArray(s.fxCards.stream().mapToInt(Integer::intValue).toArray());
+        buf.writeUtf(s.fxKey, 32);
+        buf.writeInt(s.turnLimit);
+        buf.writeInt(s.tributeLimit);
+        buf.writeInt(s.roundEndLimit);
         buf.writeBoolean(s.revolution);
         buf.writeBoolean(s.jback);
         buf.writeBoolean(s.ruleEightCut);
@@ -104,6 +109,15 @@ public class DaifugoRoomPacket {
             passedOut.add(n);
         }
         s.passedOut = passedOut;
+        List<Integer> fxCards = new ArrayList<>();
+        for (int id : buf.readVarIntArray()) {
+            fxCards.add(id);
+        }
+        s.fxCards = fxCards;
+        s.fxKey = buf.readUtf(32);
+        s.turnLimit = buf.readInt();
+        s.tributeLimit = buf.readInt();
+        s.roundEndLimit = buf.readInt();
         s.revolution = buf.readBoolean();
         s.jback = buf.readBoolean();
         s.ruleEightCut = buf.readBoolean();

@@ -2,8 +2,10 @@ package ruby.bamboo.client.gui.daifugo;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import org.lwjgl.glfw.GLFW;
 import ruby.bamboo.daifugo.DaifugoRoom;
 import ruby.bamboo.daifugo.DaifugoSnapshot;
 import ruby.bamboo.network.BambooNetwork;
@@ -29,6 +31,11 @@ public class DaifugoLobbyScreen extends Screen {
     private Button startButton;
     private Button leaveButton;
     private final Button[] ruleButtons = new Button[RULE_KEYS.length];
+    /** オーバーレイのチャット入力 (Tで開く。画面は切り替えない)。 */
+    private EditBox chatBox;
+    private boolean chatMode = false;
+    /** 開くきっかけのTキー自体のchar入力を1文字だけ捨てる。 */
+    private boolean eatOpenChar = false;
 
     public DaifugoLobbyScreen(DaifugoSnapshot snapshot) {
         super(Component.translatable("screen.bamboomod.daifugo_lobby"));
@@ -42,6 +49,64 @@ public class DaifugoLobbyScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (chatMode) {
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+                sendChatMessage();
+                return true;
+            }
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                setChatMode(false);
+                return true;
+            }
+            return super.keyPressed(keyCode, scanCode, modifiers);
+        }
+        // Tでチャット入力を重ねて開く (ロビー画面は残る)
+        if (this.minecraft != null && this.minecraft.options.keyChat.matches(keyCode, scanCode)) {
+            setChatMode(true);
+            // このTキーによるchar入力 ('t') は入力欄に入れない
+            eatOpenChar = true;
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char c, int modifiers) {
+        if (eatOpenChar) {
+            eatOpenChar = false;
+            return true;
+        }
+        return super.charTyped(c, modifiers);
+    }
+
+    private void setChatMode(boolean on) {
+        chatMode = on;
+        if (chatBox != null) {
+            chatBox.visible = on;
+            chatBox.setFocused(on);
+            if (on) {
+                chatBox.setValue("");
+                this.setFocused(chatBox);
+            }
+        }
+    }
+
+    /** バニラの署名付き送信で送る (/始まりはコマンド)。 */
+    private void sendChatMessage() {
+        String msg = chatBox != null ? chatBox.getValue().trim() : "";
+        setChatMode(false);
+        if (msg.isEmpty() || this.minecraft == null || this.minecraft.player == null) {
+            return;
+        }
+        if (msg.startsWith("/")) {
+            this.minecraft.player.connection.sendCommand(msg.substring(1));
+        } else {
+            this.minecraft.player.connection.sendChat(msg);
+        }
     }
 
     @Override
@@ -70,6 +135,17 @@ public class DaifugoLobbyScreen extends Screen {
                     .build();
             ruleButtons[i] = rule;
             this.addRenderableWidget(rule);
+        }
+        String draft = chatBox != null ? chatBox.getValue() : "";
+        chatBox = new EditBox(this.font, 4, this.height - 28, this.width - 8, 20,
+                Component.empty());
+        chatBox.setMaxLength(256);
+        chatBox.setValue(draft);
+        chatBox.visible = chatMode;
+        this.addRenderableWidget(chatBox);
+        if (chatMode) {
+            this.setFocused(chatBox);
+            chatBox.setFocused(true);
         }
     }
 
@@ -102,9 +178,11 @@ public class DaifugoLobbyScreen extends Screen {
     public void tick() {
         super.tick();
         boolean owner = snapshot.mySeat == snapshot.ownerSeat;
-        startButton.visible = owner;
+        // チャット入力中は下段ボタンを隠し、ルール切替を無効化する
+        startButton.visible = owner && !chatMode;
+        leaveButton.visible = !chatMode;
         for (int i = 0; i < ruleButtons.length; i++) {
-            ruleButtons[i].active = owner;
+            ruleButtons[i].active = owner && !chatMode;
             ruleButtons[i].setMessage(ruleLabel(i, ruleValue(i)));
         }
     }

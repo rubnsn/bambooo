@@ -7,8 +7,15 @@ import java.util.Set;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.FormattedCharSequence;
+import org.lwjgl.glfw.GLFW;
+import ruby.bamboo.client.handler.ClientChatLog;
 import ruby.bamboo.client.gui.trump.TrumpCardRenderer;
 import ruby.bamboo.client.gui.trump.TrumpRank;
 import ruby.bamboo.client.gui.trump.TrumpSuit;
@@ -32,10 +39,20 @@ public class DaifugoGameScreen extends Screen {
     private static final int HAND_PITCH = 22;
     private static final int TABLE_PITCH = 40;
     private static final int SELECT_UP = 8;
+    /** カードが飛んでくる演出の長さ (tick)。 */
+    private static final int FLY_LEN = 12;
+    /** 特殊流し演出の長さ (tick)。 */
+    private static final int FX_LEN = 60;
 
     private DaifugoSnapshot snapshot;
     private final Set<Integer> selected = new LinkedHashSet<>();
     private final List<int[]> hitRects = new ArrayList<>();
+    private int flyTicks = 0;
+    private int flySeat = -1;
+    /** 飛来中に下に残す旧場札 (重なってから消える)。 */
+    private List<Integer> prevTableCards = List.of();
+    private String lastFxKey = "";
+    private int fxTicks = 0;
 
     private Button playButton;
     private Button passButton;
@@ -43,15 +60,77 @@ public class DaifugoGameScreen extends Screen {
     private Button tributeButton;
     private Button declareTripleButton;
     private Button declareStairsButton;
+    /** オーバーレイのチャット入力 (Tで開く。画面は切り替えない)。 */
+    private EditBox chatBox;
+    private boolean chatMode = false;
+    /** 開くきっかけのTキー自体のchar入力を1文字だけ捨てる。 */
+    private boolean eatOpenChar = false;
 
     public DaifugoGameScreen(DaifugoSnapshot snapshot) {
         super(Component.translatable("screen.bamboomod.daifugo_game"));
         this.snapshot = snapshot;
+        this.lastFxKey = snapshot.fxKey;
     }
 
     public void update(DaifugoSnapshot snapshot) {
+        DaifugoSnapshot old = this.snapshot;
+        boolean tableChanged = !snapshot.table.equals(old.table);
+        if (!snapshot.fxKey.isEmpty() && !snapshot.fxKey.equals(lastFxKey)) {
+            // 特殊流し (8切り/スペ3/シックス/最強階段/流れ): 札と見出しを残す
+            lastFxKey = snapshot.fxKey;
+            fxTicks = FX_LEN;
+            playFxSound(snapshot.fxKey);
+        } else if (tableChanged && !snapshot.table.isEmpty()) {
+            // 通常の出し: 旧場札を残したまま、出した席から場へ飛んでくる
+            prevTableCards = new ArrayList<>(old.table);
+            flyTicks = FLY_LEN;
+            flySeat = snapshot.tableSeat;
+            playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.8F);
+        } else if (tableChanged) {
+            prevTableCards = List.of();
+        }
+        if (snapshot.fxKey.isEmpty()) {
+            lastFxKey = "";
+        }
+        if (snapshot.revolution != old.revolution) {
+            playSound(SoundEvents.PLAYER_LEVELUP, 0.9F, 0.7F);
+        }
+        // 反則上がりは場が変わらないためログで検出する
+        for (DaifugoSnapshot.LogEntry e : snapshot.log) {
+            if (e.key().contains("violation") && !containsLog(old.log, e)) {
+                playSound(SoundEvents.VILLAGER_NO, 1.0F, 0.9F);
+                break;
+            }
+        }
         this.snapshot = snapshot;
         selected.retainAll(snapshot.hand);
+    }
+
+    private static boolean containsLog(List<DaifugoSnapshot.LogEntry> log,
+            DaifugoSnapshot.LogEntry e) {
+        for (DaifugoSnapshot.LogEntry o : log) {
+            if (o.key().equals(e.key()) && o.args().equals(e.args())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void playSound(SoundEvent sound, float pitch, float volume) {
+        if (this.minecraft != null) {
+            this.minecraft.getSoundManager().play(
+                    SimpleSoundInstance.forUI(sound, pitch, volume));
+        }
+    }
+
+    private void playFxSound(String key) {
+        switch (key) {
+            case "cut" -> playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.1F, 0.8F);
+            case "spe3" -> playSound(SoundEvents.SHIELD_BLOCK, 1.0F, 0.9F);
+            case "six", "superstairs" ->
+                    playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0F, 0.8F);
+            default -> playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 0.7F, 0.5F);
+        }
     }
 
     @Override
@@ -110,6 +189,16 @@ public class DaifugoGameScreen extends Screen {
         return idx >= 0 && idx < snapshot.seats.size() ? snapshot.seats.get(idx) : null;
     }
 
+    /** tick残りを秒表示 (切り上げ)。 */
+    private static int ceilSec(int ticks) {
+        return (ticks + 19) / 20;
+    }
+
+    private String timeoutText(int ticks) {
+        return Component.translatable("screen.bamboomod.daifugo_timeout",
+                String.valueOf(ceilSec(ticks))).getString();
+    }
+
     @Override
     protected void init() {
         this.clearWidgets();
@@ -154,19 +243,98 @@ public class DaifugoGameScreen extends Screen {
         this.addRenderableWidget(tributeButton);
         this.addRenderableWidget(declareTripleButton);
         this.addRenderableWidget(declareStairsButton);
+        String draft = chatBox != null ? chatBox.getValue() : "";
+        chatBox = new EditBox(this.font, 4, h - 28, w - 8, 20, Component.empty());
+        chatBox.setMaxLength(256);
+        chatBox.setValue(draft);
+        chatBox.visible = chatMode;
+        this.addRenderableWidget(chatBox);
+        if (chatMode) {
+            this.setFocused(chatBox);
+            chatBox.setFocused(true);
+        }
     }
 
     @Override
     public void tick() {
         super.tick();
-        playButton.visible = isPlaying();
-        passButton.visible = isPlaying();
+        if (flyTicks > 0) {
+            flyTicks--;
+            if (flyTicks == 0) {
+                // 飛来完了で旧場札を消す (重なってから消える)
+                prevTableCards = List.of();
+            }
+        }
+        if (fxTicks > 0) {
+            fxTicks--;
+        }
+        // チャット入力中は下段ボタンを隠す (入力欄と被るため)
+        playButton.visible = isPlaying() && !chatMode;
+        passButton.visible = isPlaying() && !chatMode;
         playButton.active = myTurn() && !selected.isEmpty();
         passButton.active = myTurn() && !snapshot.table.isEmpty();
-        declareTripleButton.visible = isDualLeadSelected();
-        declareStairsButton.visible = isDualLeadSelected();
+        declareTripleButton.visible = isDualLeadSelected() && !chatMode;
+        declareStairsButton.visible = isDualLeadSelected() && !chatMode;
         tributeButton.visible = isTribute() && myOwed() > 0;
         tributeButton.active = selected.size() == myOwed();
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (chatMode) {
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+                sendChatMessage();
+                return true;
+            }
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                setChatMode(false);
+                return true;
+            }
+            return super.keyPressed(keyCode, scanCode, modifiers);
+        }
+        // Tでチャット入力を重ねて開く (大富豪画面は残る)
+        if (this.minecraft != null && this.minecraft.options.keyChat.matches(keyCode, scanCode)) {
+            setChatMode(true);
+            // このTキーによるchar入力 ('t') は入力欄に入れない
+            eatOpenChar = true;
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char c, int modifiers) {
+        if (eatOpenChar) {
+            eatOpenChar = false;
+            return true;
+        }
+        return super.charTyped(c, modifiers);
+    }
+
+    private void setChatMode(boolean on) {
+        chatMode = on;
+        if (chatBox != null) {
+            chatBox.visible = on;
+            chatBox.setFocused(on);
+            if (on) {
+                chatBox.setValue("");
+                this.setFocused(chatBox);
+            }
+        }
+    }
+
+    /** バニラの署名付き送信で送る (/始まりはコマンド)。 */
+    private void sendChatMessage() {
+        String msg = chatBox != null ? chatBox.getValue().trim() : "";
+        setChatMode(false);
+        if (msg.isEmpty() || this.minecraft == null || this.minecraft.player == null) {
+            return;
+        }
+        if (msg.startsWith("/")) {
+            this.minecraft.player.connection.sendCommand(msg.substring(1));
+        } else {
+            this.minecraft.player.connection.sendChat(msg);
+        }
     }
 
     @Override
@@ -174,7 +342,8 @@ public class DaifugoGameScreen extends Screen {
         if (super.mouseClicked(mouseX, mouseY, button)) {
             return true;
         }
-        if (button != 0 || isRoundEnd()) {
+        // チャット入力中は札選択しない (入力欄への click は上部で処理済み)
+        if (chatMode || button != 0 || isRoundEnd()) {
             return false;
         }
         int x = (int) mouseX;
@@ -195,7 +364,9 @@ public class DaifugoGameScreen extends Screen {
 
     @Override
     public void renderBackground(GuiGraphics gfx) {
-        gfx.fill(0, 0, this.width, this.height, 0xFF0B3D2C);
+        // 革命中はマットを赤っぽくする
+        gfx.fill(0, 0, this.width, this.height,
+                snapshot.revolution ? 0xFF5A1A12 : 0xFF0B3D2C);
     }
 
     @Override
@@ -227,13 +398,18 @@ public class DaifugoGameScreen extends Screen {
 
         drawOthers(gfx);
         drawTable(gfx);
-        drawHand(gfx);
+        drawFx(gfx);
         drawLog(gfx);
+        drawChatLog(gfx);
 
         if (myTurn()) {
             gfx.drawCenteredString(this.font,
                     Component.translatable("screen.bamboomod.daifugo_turn").getString(),
                     this.width / 2, this.height - 92, 0xFFFFE08A);
+            if (snapshot.turnLimit >= 0) {
+                gfx.drawCenteredString(this.font, timeoutText(snapshot.turnLimit),
+                        this.width / 2, this.height - 81, 0xFFB9C4A8);
+            }
         }
         if (isPlaying() && isPassedOut(snapshot.mySeat)
                 && seat(snapshot.mySeat) != null
@@ -246,8 +422,10 @@ public class DaifugoGameScreen extends Screen {
             drawRoundEnd(gfx);
         }
         if (isTribute()) {
+            // お返し選択時は手札に暗いマスクをかけないよう、先に暗転する
             drawTribute(gfx);
         }
+        drawHand(gfx);
         super.render(gfx, mouseX, mouseY, partialTick);
     }
 
@@ -277,7 +455,11 @@ public class DaifugoGameScreen extends Screen {
                 name += " (" + Component.translatable("screen.bamboomod.daifugo_passedout").getString() + ")";
             }
             gfx.drawString(this.font, trim(name, 18), x + 4, y + 4, 0xFFFFFFFF, false);
-            gfx.drawString(this.font, "×" + s.handCount(), x + 4, y + 15, 0xFFB9C4A8, false);
+            String count = "×" + s.handCount();
+            if (idx == snapshot.turnSeat && snapshot.turnLimit >= 0) {
+                count += " " + timeoutText(snapshot.turnLimit);
+            }
+            gfx.drawString(this.font, count, x + 4, y + 15, 0xFFB9C4A8, false);
             if (s.roundRank() >= 0) {
                 gfx.drawString(this.font,
                         Component.translatable("screen.bamboomod.daifugo_rank" + s.roundRank())
@@ -318,8 +500,26 @@ public class DaifugoGameScreen extends Screen {
             return;
         }
         int x0 = this.width / 2 - ((n - 1) * TABLE_PITCH + CARD_W) / 2;
+        // 飛来中は旧場札を下に残す (新札が重なってから消える)
+        if (flyTicks > 0 && !prevTableCards.isEmpty()) {
+            int pn = prevTableCards.size();
+            int px0 = this.width / 2 - ((pn - 1) * TABLE_PITCH + CARD_W) / 2;
+            for (int i = 0; i < pn; i++) {
+                renderCard(gfx, px0 + i * TABLE_PITCH, cy, prevTableCards.get(i));
+            }
+        }
         for (int i = 0; i < n; i++) {
-            renderCard(gfx, x0 + i * TABLE_PITCH, cy, snapshot.table.get(i));
+            int tx = x0 + i * TABLE_PITCH;
+            int ty = cy;
+            if (flyTicks > 0) {
+                // 出した席から場へ飛んでくる (ease-out)
+                float t = 1.0F - flyTicks / (float) FLY_LEN;
+                float e = 1.0F - (1.0F - t) * (1.0F - t);
+                int[] src = seatPos(flySeat);
+                tx = (int) (src[0] - CARD_W / 2 + (tx - (src[0] - CARD_W / 2)) * e);
+                ty = (int) (src[1] + (cy - src[1]) * e);
+            }
+            renderCard(gfx, tx, ty, snapshot.table.get(i));
         }
         if (!snapshot.lockSuits.isEmpty()) {
             StringBuilder badge = new StringBuilder();
@@ -332,6 +532,50 @@ public class DaifugoGameScreen extends Screen {
             gfx.drawCenteredString(this.font, badge.toString(),
                     this.width / 2, cy + CARD_H + 4, 0xFFFFE08A);
         }
+    }
+
+    /** 特殊流しの残像 (流した札+見出しをしばらく残す)。場が空のときのみ。 */
+    private void drawFx(GuiGraphics gfx) {
+        if (fxTicks <= 0 || lastFxKey.isEmpty() || snapshot.fxCards.isEmpty()
+                || !snapshot.table.isEmpty()) {
+            return;
+        }
+        int n = snapshot.fxCards.size();
+        int cy = this.height / 2 - 56;
+        String label = switch (lastFxKey) {
+            case "cut" -> Component.translatable("screen.bamboomod.daifugo_fx_cut").getString();
+            case "spe3" -> Component.translatable("screen.bamboomod.daifugo_fx_spe3").getString();
+            case "six" -> Component.translatable("screen.bamboomod.daifugo_fx_six").getString();
+            case "superstairs" ->
+                    Component.translatable("screen.bamboomod.daifugo_fx_superstairs").getString();
+            default -> Component.translatable("log.bamboomod.daifugo_flow").getString();
+        };
+        gfx.drawCenteredString(this.font, label, this.width / 2, cy + CARD_H + 4, 0xFFFFE08A);
+        int x0 = this.width / 2 - ((n - 1) * TABLE_PITCH + CARD_W) / 2;
+        for (int i = 0; i < n; i++) {
+            renderCard(gfx, x0 + i * TABLE_PITCH, cy, snapshot.fxCards.get(i));
+        }
+    }
+
+    /** 演出の飛び元 (席パネル中央。drawOthers と同じ配置)。 */
+    private int[] seatPos(int seat) {
+        if (seat == snapshot.mySeat) {
+            return new int[]{this.width / 2, this.height - 66};
+        }
+        List<Integer> others = new ArrayList<>(4);
+        for (int i = 0; i < DaifugoRoom.SEATS; i++) {
+            if (i != snapshot.mySeat && seat(i) != null) {
+                others.add(i);
+            }
+        }
+        int pw = 120;
+        int x0 = this.width / 2 - (others.size() * (pw + 8) - 8) / 2;
+        for (int k = 0; k < others.size(); k++) {
+            if (others.get(k) == seat) {
+                return new int[]{x0 + k * (pw + 8) + pw / 2, 20 + 18};
+            }
+        }
+        return new int[]{this.width / 2, this.height / 2};
     }
 
     private void drawHand(GuiGraphics gfx) {
@@ -355,20 +599,41 @@ public class DaifugoGameScreen extends Screen {
         }
     }
 
+    /** 対戦ログ (右側の中段に右寄せ)。 */
     private void drawLog(GuiGraphics gfx) {
         int count = Math.min(5, snapshot.log.size());
         int base = snapshot.log.size() - count;
+        int y0 = this.height / 2 - 10;
         for (int i = 0; i < count; i++) {
-            gfx.drawString(this.font, DaifugoScreens.logLine(snapshot.log.get(base + i)),
-                    8, this.height - 24 - (count - 1 - i) * 10, 0xFFB9C4A8, false);
+            String line = DaifugoScreens.logLine(snapshot.log.get(base + i));
+            gfx.drawString(this.font, line,
+                    this.width - 8 - this.font.width(line), y0 + i * 10, 0xFFB9C4A8, false);
+        }
+    }
+
+    /** 受信チャット (中段左側)。 */
+    private void drawChatLog(GuiGraphics gfx) {
+        List<FormattedCharSequence> wrapped = new ArrayList<>();
+        for (Component c : ClientChatLog.recent()) {
+            wrapped.addAll(this.font.split(c, 220));
+        }
+        int show = Math.min(8, wrapped.size());
+        int y0 = this.height / 2 - show * 10 / 2;
+        for (int i = 0; i < show; i++) {
+            gfx.drawString(this.font, wrapped.get(wrapped.size() - show + i),
+                    8, y0 + i * 10, 0xFFFFFFFF, true);
         }
     }
 
     private void drawRoundEnd(GuiGraphics gfx) {
         gfx.fill(0, 0, this.width, this.height, 0xA0000000);
-        gfx.drawCenteredString(this.font,
-                Component.translatable("screen.bamboomod.daifugo_roundend",
-                        String.valueOf(snapshot.round)).getString(),
+        String title = Component.translatable("screen.bamboomod.daifugo_roundend",
+                String.valueOf(snapshot.round)).getString();
+        if (snapshot.roundEndLimit >= 0) {
+            title += " " + Component.translatable("screen.bamboomod.daifugo_nextround",
+                    String.valueOf(ceilSec(snapshot.roundEndLimit))).getString();
+        }
+        gfx.drawCenteredString(this.font, title,
                 this.width / 2, this.height / 2 - 52, 0xFFFFE9B0);
         List<DaifugoSnapshot.SeatView> order = seatsByRank();
         for (int i = 0; i < order.size(); i++) {
@@ -389,6 +654,9 @@ public class DaifugoGameScreen extends Screen {
                 ? Component.translatable("screen.bamboomod.daifugo_tribute_choose",
                         String.valueOf(myOwed())).getString()
                 : Component.translatable("screen.bamboomod.daifugo_tribute_wait").getString();
+        if (myOwed() > 0 && snapshot.tributeLimit >= 0) {
+            sub += " " + timeoutText(snapshot.tributeLimit);
+        }
         gfx.drawCenteredString(this.font, sub, this.width / 2, this.height / 2 - 62, 0xFFB9C4A8);
     }
 

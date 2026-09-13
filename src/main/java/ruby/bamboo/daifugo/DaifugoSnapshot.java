@@ -30,6 +30,14 @@ public class DaifugoSnapshot {
     public int turnSeat = -1;
     /** 出場停止 (スルーパス後。席順、1=パス済み)。 */
     public List<Integer> passedOut = List.of(0, 0, 0, 0);
+    /** 演出用: 直前の特殊流し札 (8切り/スペ3/シックス/最強階段/流れ)。 */
+    public List<Integer> fxCards = List.of();
+    /** 演出用: 特殊流しの種別 (""=なし、cut/spe3/six/superstairs/flow)。 */
+    public String fxKey = "";
+    /** 制限時間の残りtick (-1=なし)。AFK・お返し・次戦用。 */
+    public int turnLimit = -1;
+    public int tributeLimit = -1;
+    public int roundEndLimit = -1;
     public boolean revolution;
     /** Jバック場 (場にJがあり実効序列が裏返っている)。 */
     public boolean jback;
