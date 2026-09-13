@@ -394,7 +394,7 @@ public class DaifugoGameScreen extends Screen {
             gfx.fill(x, y, x + pw, y + ph, 0xA0083125);
             int line = idx == snapshot.turnSeat ? 0xFFFFE08A : 0xFF8A6D3B;
             frame(gfx, x, y, pw, ph, line);
-            String name = s.cpu() >= 0 ? DaifugoScreens.cpuName(s.name()) : s.name();
+            String name = DaifugoScreens.seatName(s);
             if (idx == snapshot.ownerSeat) {
                 name += Component.translatable("screen.bamboomod.daifugo_owner").getString();
             }
@@ -417,7 +417,7 @@ public class DaifugoGameScreen extends Screen {
                         Component.translatable("screen.bamboomod.daifugo_rank" + s.prevRank())
                                 .getString(),
                         x + 4, y + 25, 0xFFB9C4A8, false);
-            } else if (!s.connected()) {
+            } else if (!s.connected() && s.cpu() < 0) {
                 gfx.drawString(this.font,
                         Component.translatable("screen.bamboomod.daifugo_off").getString(),
                         x + 4, y + 25, 0xFF888888, false);
@@ -607,7 +607,7 @@ public class DaifugoGameScreen extends Screen {
     }
 
     private String displayName(DaifugoSnapshot.SeatView s) {
-        return s.cpu() >= 0 ? DaifugoScreens.cpuName(s.name()) : s.name();
+        return DaifugoScreens.seatName(s);
     }
 
     private String seatName(int idx) {

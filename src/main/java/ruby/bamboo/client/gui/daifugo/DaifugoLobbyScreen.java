@@ -165,7 +165,7 @@ public class DaifugoLobbyScreen extends Screen {
     }
 
     private String seatName(DaifugoSnapshot.SeatView s, int idx) {
-        String name = s.cpu() >= 0 ? DaifugoScreens.cpuName(s.name()) : s.name();
+        String name = DaifugoScreens.seatName(s);
         if (!s.connected()) {
             name += Component.translatable("screen.bamboomod.daifugo_off").getString();
         }

@@ -186,6 +186,8 @@ public class DaifugoRoom {
             return -1;
         }
         seats[idx].connected = true;
+        // 代打CPU化していた席は人間操作に戻す (切断時は元々 -1 のため無害)
+        seats[idx].cpu = -1;
         addLog("log.bamboomod.daifugo_back", seats[idx].name);
         return idx;
     }
@@ -203,16 +205,22 @@ public class DaifugoRoom {
         return humanCount() == 0;
     }
 
-    /** 戦闘中退出。席は純粋CPU化。解散が必要なら true。 */
+    /**
+     * 戦闘中退出。席は確保したまま代打CPU化し、大富豪札の再使用で同じ部屋に
+     * 復帰できる (playerId を残すため seatOf/rejoin が効く)。
+     * 接続中の人間がいなくなれば解散のため true。
+     */
     public boolean leaveInGame(int idx) {
         addLog("log.bamboomod.daifugo_leave", seats[idx].name);
-        seats[idx].playerId = null;
         seats[idx].cpu = CpuBrain.Personality.CREEPER.ordinal();
-        seats[idx].connected = true;
+        seats[idx].connected = false;
         if (ownerSeat == idx) {
-            ownerSeat = firstHumanSeat();
+            ownerSeat = firstActiveHumanSeat();
+            if (ownerSeat < 0) {
+                ownerSeat = firstHumanSeat();
+            }
         }
-        return humanCount() == 0;
+        return activeHumanCount() == 0;
     }
 
     public void setDisconnected(UUID playerId) {
@@ -228,6 +236,26 @@ public class DaifugoRoom {
     private int firstHumanSeat() {
         for (int i = 0; i < SEATS; i++) {
             if (seats[i] != null && seats[i].isHuman()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** 接続中の人間席の数 (代打CPU化した退出者は数えない)。 */
+    private int activeHumanCount() {
+        int n = 0;
+        for (Seat s : seats) {
+            if (s != null && s.isHuman() && s.connected) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    private int firstActiveHumanSeat() {
+        for (int i = 0; i < SEATS; i++) {
+            if (seats[i] != null && seats[i].isHuman() && seats[i].connected) {
                 return i;
             }
         }

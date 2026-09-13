@@ -62,7 +62,10 @@ public final class DaifugoManager {
         return room;
     }
 
-    /** 退出 (ロビー=席削除、対戦中=CPU化)。席に人間がいなくなれば解散。 */
+    /**
+     * 退出 (ロビー=席削除、対戦中=席確保のまま代打CPU化し同じ部屋に復帰可)。
+     * 席に接続中の人間がいなくなれば解散。
+     */
     public static void leave(MinecraftServer server, ServerPlayer player) {
         DaifugoRoom room = roomOf(player.getUUID());
         if (room == null) {
@@ -76,10 +79,14 @@ public final class DaifugoManager {
         boolean disband;
         if (room.state == DaifugoRoom.State.LOBBY) {
             disband = room.removeLobbyMember(idx);
+            PLAYER_ROOM.remove(player.getUUID());
         } else {
             disband = room.leaveInGame(idx);
+            // 対戦中の退出は対応付けを残す (再入場で joinOrCreate→rejoin するため)
+            if (disband) {
+                PLAYER_ROOM.remove(player.getUUID());
+            }
         }
-        PLAYER_ROOM.remove(player.getUUID());
         if (disband) {
             ROOMS.remove(room.roomId);
         } else {

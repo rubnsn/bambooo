@@ -16,6 +16,22 @@ public final class DaifugoScreens {
                 + " (CPU)";
     }
 
+    /**
+     * 席の基本表示名。純粋CPU席 (接続中) は訳名、人間退出後の代打席
+     * (cpu>=0・切断中) は「人間名 (代打CPU)」、人間席はそのままの名前。
+     * 切断・部屋主の接尾辞は呼び出し側で付ける。
+     */
+    public static String seatName(DaifugoSnapshot.SeatView s) {
+        if (s.cpu() >= 0 && s.connected()) {
+            return cpuName(s.name());
+        }
+        if (s.cpu() >= 0) {
+            return s.name()
+                    + Component.translatable("screen.bamboomod.daifugo_sub").getString();
+        }
+        return s.name();
+    }
+
     public static String logLine(DaifugoSnapshot.LogEntry e) {
         return Component.translatable(e.key(), (Object[]) e.args().toArray(new String[0])).getString();
     }
