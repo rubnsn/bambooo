@@ -22,6 +22,7 @@ import ruby.bamboo.item.FoldingFan;
 import ruby.bamboo.item.FreeCellItem;
 import ruby.bamboo.item.GardenSpadeItem;
 import ruby.bamboo.item.ItemMagnetItem;
+import ruby.bamboo.item.KakezikuItem;
 import ruby.bamboo.item.LureItem;
 import ruby.bamboo.item.NinjaBraceletItem;
 import ruby.bamboo.item.PaddyFieldHoeItem;
@@ -32,6 +33,7 @@ import ruby.bamboo.item.SkillBookItem;
 import ruby.bamboo.item.SolitaireItem;
 import ruby.bamboo.item.StatusBookItem;
 import ruby.bamboo.item.Straw;
+import ruby.bamboo.item.ZabutonItem;
 import ruby.bamboo.item.BlackjackItem;
 
 import java.util.ArrayList;
@@ -43,6 +45,7 @@ import ruby.bamboo.item.arrow.BambooArrowItem;
 import ruby.bamboo.item.arrow.ExplodeArrowItem;
 import ruby.bamboo.item.arrow.LightArrowItem;
 import ruby.bamboo.item.arrow.TorchArrowItem;
+import ruby.bamboo.entity.ZabutonColor;
 import ruby.bamboo.skill.SkillType;
 
 /**
@@ -138,6 +141,28 @@ public final class BambooItems {
     /** 手裏剣腕輪 (旧 NinjaBracelet。耐久384、即射+クール20tick) */
     public static final RegistryObject<NinjaBraceletItem> NINJA_BRACELET = register("ninja_bracelet",
             () -> new NinjaBraceletItem(new Item.Properties().durability(384)));
+
+    // ===== 座布団・掛け軸 (旧 zabuton/kakeziku) =====
+
+    /**
+     * 座布団 16色 (旧 Zabuton meta0-15 → 独立アイテム化)。
+     * リスト順 = ZabutonColor 順 (BLACK..WHITE、旧 damage 順踏襲)。
+     */
+    public static final List<RegistryObject<ZabutonItem>> ZABUTONS = createZabutons();
+
+    private static List<RegistryObject<ZabutonItem>> createZabutons() {
+        List<RegistryObject<ZabutonItem>> list = new ArrayList<>();
+        for (ZabutonColor color : ZabutonColor.values()) {
+            RegistryObject<ZabutonItem> ro = register("zabuton_" + color.registryName(),
+                    () -> new ZabutonItem(color, new Item.Properties()));
+            list.add(ro);
+        }
+        return List.copyOf(list);
+    }
+
+    /** 掛け軸 (旧 kakeziku。壁掛け Entity、24柄ランダム) */
+    public static final RegistryObject<KakezikuItem> KAKEZIKU = register("kakeziku",
+            () -> new KakezikuItem(new Item.Properties()));
 
     // ===== かんしゃく玉 (旧 ItemFirecracker meta0-2 → 独立アイテム化 + sticky追加) =====
 

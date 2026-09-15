@@ -593,5 +593,22 @@
   "log.bamboomod.daifugo_tribute": "%s's tribute to %s: %s cards",
   "log.bamboomod.daifugo_giveback": "%s's giveback to %s: %s cards",
   "log.bamboomod.daifugo_cpu": "%s disconnected. Sub: %s",
-  "log.bamboomod.daifugo_back": "%s returned"
+  "log.bamboomod.daifugo_back": "%s returned",
+  "item.bamboomod.zabuton_black": "Black Zabuton",
+  "item.bamboomod.zabuton_red": "Red Zabuton",
+  "item.bamboomod.zabuton_green": "Green Zabuton",
+  "item.bamboomod.zabuton_brown": "Brown Zabuton",
+  "item.bamboomod.zabuton_blue": "Blue Zabuton",
+  "item.bamboomod.zabuton_purple": "Purple Zabuton",
+  "item.bamboomod.zabuton_cyan": "Cyan Zabuton",
+  "item.bamboomod.zabuton_light_gray": "Light Gray Zabuton",
+  "item.bamboomod.zabuton_gray": "Gray Zabuton",
+  "item.bamboomod.zabuton_pink": "Pink Zabuton",
+  "item.bamboomod.zabuton_lime": "Lime Zabuton",
+  "item.bamboomod.zabuton_yellow": "Yellow Zabuton",
+  "item.bamboomod.zabuton_light_blue": "Light Blue Zabuton",
+  "item.bamboomod.zabuton_magenta": "Magenta Zabuton",
+  "item.bamboomod.zabuton_orange": "Orange Zabuton",
+  "item.bamboomod.zabuton_white": "White Zabuton",
+  "item.bamboomod.kakeziku": "Hanging Scroll"
 }

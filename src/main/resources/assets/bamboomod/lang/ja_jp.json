@@ -593,5 +593,22 @@
   "log.bamboomod.daifugo_tribute": "%sが%sに%s枚献上",
   "log.bamboomod.daifugo_giveback": "%sが%sに%s枚返した",
   "log.bamboomod.daifugo_cpu": "%sは切断中。代打は%s",
-  "log.bamboomod.daifugo_back": "%sが復帰しました"
+  "log.bamboomod.daifugo_back": "%sが復帰しました",
+  "item.bamboomod.zabuton_black": "黒座布団",
+  "item.bamboomod.zabuton_red": "赤座布団",
+  "item.bamboomod.zabuton_green": "緑座布団",
+  "item.bamboomod.zabuton_brown": "茶座布団",
+  "item.bamboomod.zabuton_blue": "青座布団",
+  "item.bamboomod.zabuton_purple": "紫座布団",
+  "item.bamboomod.zabuton_cyan": "水座布団",
+  "item.bamboomod.zabuton_light_gray": "薄灰座布団",
+  "item.bamboomod.zabuton_gray": "灰座布団",
+  "item.bamboomod.zabuton_pink": "桃座布団",
+  "item.bamboomod.zabuton_lime": "黄緑座布団",
+  "item.bamboomod.zabuton_yellow": "黄座布団",
+  "item.bamboomod.zabuton_light_blue": "空座布団",
+  "item.bamboomod.zabuton_magenta": "赤紫座布団",
+  "item.bamboomod.zabuton_orange": "橙座布団",
+  "item.bamboomod.zabuton_white": "白座布団",
+  "item.bamboomod.kakeziku": "掛け軸"
 }

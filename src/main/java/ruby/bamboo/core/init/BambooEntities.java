@@ -12,8 +12,10 @@ import ruby.bamboo.entity.ChairEntity;
 import ruby.bamboo.entity.FirecrackerEntity;
 import ruby.bamboo.entity.FishingBobberEntity;
 import ruby.bamboo.entity.KaginawaHookEntity;
+import ruby.bamboo.entity.KakezikuEntity;
 import ruby.bamboo.entity.ShurikenEntity;
 import ruby.bamboo.entity.WindEntity;
+import ruby.bamboo.entity.ZabutonEntity;
 import ruby.bamboo.entity.arrow.BambooArrowEntity;
 import ruby.bamboo.entity.arrow.ExplodeArrowEntity;
 import ruby.bamboo.entity.arrow.LightArrowEntity;
@@ -129,6 +131,30 @@ public final class BambooEntities {
                     .clientTrackingRange(64)
                     .updateInterval(2)
                     .build("fishing_bobber"));
+
+    /**
+     * 座布団 (旧 EntityZabuton + EntityThrowZabuton)。1.0x0.125、搭乗・投擲対応。
+     * 16色は EntityData の色で切り替え、Item は色ごとに登録。
+     */
+    public static final RegistryObject<EntityType<ZabutonEntity>> ZABUTON = BambooMod.ENTITY_TYPES.register(
+            "zabuton",
+            () -> EntityType.Builder.<ZabutonEntity>of(ZabutonEntity::new, MobCategory.MISC)
+                    .sized(1.0F, 0.125F)
+                    .clientTrackingRange(10)
+                    .updateInterval(1)
+                    .build("zabuton"));
+
+    /**
+     * 掛け軸 (旧 EntityKakeziku)。HangingEntity 継承、24柄ランダム。
+     * 幅1・高さ2-3のため初期サイズは 1x1、setDirection で再計算される。
+     */
+    public static final RegistryObject<EntityType<KakezikuEntity>> KAKEZIKU = BambooMod.ENTITY_TYPES.register(
+            "kakeziku",
+            () -> EntityType.Builder.<KakezikuEntity>of(KakezikuEntity::new, MobCategory.MISC)
+                    .sized(1.0F, 1.0F)
+                    .clientTrackingRange(10)
+                    .updateInterval(1)
+                    .build("kakeziku"));
 
     private static <T extends AbstractArrow> RegistryObject<EntityType<T>> registerArrow(
             String name, EntityType.EntityFactory<T> factory) {

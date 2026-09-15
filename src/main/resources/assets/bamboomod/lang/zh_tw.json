@@ -592,5 +592,22 @@
   "log.bamboomod.daifugo_tribute": "%s 向%s進貢%s張",
   "log.bamboomod.daifugo_giveback": "%s 向%s回贈%s張",
   "log.bamboomod.daifugo_cpu": "%s 斷開連接。替補：%s",
-  "log.bamboomod.daifugo_back": "%s 回來了"
+  "log.bamboomod.daifugo_back": "%s 回來了",
+  "item.bamboomod.zabuton_black": "黑坐墊",
+  "item.bamboomod.zabuton_red": "紅坐墊",
+  "item.bamboomod.zabuton_green": "綠坐墊",
+  "item.bamboomod.zabuton_brown": "棕坐墊",
+  "item.bamboomod.zabuton_blue": "藍坐墊",
+  "item.bamboomod.zabuton_cyan": "青坐墊",
+  "item.bamboomod.zabuton_light_gray": "淺灰坐墊",
+  "item.bamboomod.zabuton_gray": "灰坐墊",
+  "item.bamboomod.zabuton_pink": "粉坐墊",
+  "item.bamboomod.zabuton_lime": "黃綠坐墊",
+  "item.bamboomod.zabuton_yellow": "黃坐墊",
+  "item.bamboomod.zabuton_light_blue": "天藍坐墊",
+  "item.bamboomod.zabuton_magenta": "品紅坐墊",
+  "item.bamboomod.zabuton_orange": "橙坐墊",
+  "item.bamboomod.zabuton_purple": "紫坐墊",
+  "item.bamboomod.zabuton_white": "白坐墊",
+  "item.bamboomod.kakeziku": "掛軸"
 }

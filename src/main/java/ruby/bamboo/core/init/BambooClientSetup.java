@@ -46,10 +46,12 @@ import ruby.bamboo.client.renderer.DolphinCompanionRenderer;
 import ruby.bamboo.client.renderer.FirecrackerRenderer;
 import ruby.bamboo.client.renderer.FishingBobberRenderer;
 import ruby.bamboo.client.renderer.KaginawaHookRenderer;
+import ruby.bamboo.client.renderer.KakezikuRenderer;
 import ruby.bamboo.client.renderer.LlamaCompanionRenderer;
 import ruby.bamboo.client.renderer.MiniatureBlockRenderer;
 import ruby.bamboo.client.renderer.ShurikenRenderer;
 import ruby.bamboo.client.renderer.WindRenderer;
+import ruby.bamboo.client.renderer.ZabutonRenderer;
 import ruby.bamboo.core.config.SpringConfig;
 import ruby.bamboo.gui.CampfireScreen;
 import ruby.bamboo.gui.MillStoneScreen;
@@ -232,6 +234,14 @@ public final class BambooClientSetup {
             EntityRenderers.register(BambooEntities.FISHING_BOBBER.get(),
                     FishingBobberRenderer::new);
 
+            // 座布団 — 色tint箱モデル (旧 RenderZabuton 相当)
+            EntityRenderers.register(BambooEntities.ZABUTON.get(),
+                    ZabutonRenderer::new);
+
+            // 掛け軸 — 壁掛け柄UV切替 (旧 RenderKakeziku 相当)
+            EntityRenderers.register(BambooEntities.KAKEZIKU.get(),
+                    KakezikuRenderer::new);
+
             // 竹弓の引き絞りモデル (pull/pulling override)。バニラは Items.BOW にしか
             // 登録されないため、独自 BowItem 継承クラスには自前で登録が必要。
             registerBambooBowModelProperties();
@@ -380,5 +390,10 @@ public final class BambooClientSetup {
         event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return MapleLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.MAPLE_CARPET.get().asItem() });
         event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return GinkgoLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.GINKGO_CARPET.get().asItem() });
         event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return HinokiLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.HINOKI_CARPET.get().asItem() });
+        // 座布団16色 — 旧 ItemZabuton#getColorFromItemstack 相当。各色アイテムに固定色を乗算
+        for (var zabuton : BambooItems.ZABUTONS) {
+            int color = 0xFF000000 | zabuton.get().getColor().rgb;
+            event.register((stack, tintIndex) -> color, new Item[] { zabuton.get().asItem() });
+        }
     }
 }
