@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "attached=false": { "model": "bamboomod:block/flower_bed" },
+    "attached=true": { "model": "bamboomod:block/flower_bed" }
+  }
+}
