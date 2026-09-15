@@ -1,0 +1,1 @@
+{"id": "wish/transform_parrot", "pattern": "オウムになりたい|transformation parrot", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.parrot", "effect": {"type": "transform", "entity": "minecraft:parrot"}}

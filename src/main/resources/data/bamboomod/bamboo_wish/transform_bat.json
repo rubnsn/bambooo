@@ -1,0 +1,1 @@
+{"id": "wish/transform_bat", "pattern": "コウモリになりたい|transformation bat", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.bat", "effect": {"type": "transform", "entity": "minecraft:bat"}}

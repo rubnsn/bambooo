@@ -1,0 +1,1 @@
+{"id": "wish/transform_creeper", "pattern": "クリーパーになりたい|transformation creeper", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.creeper", "effect": {"type": "transform", "entity": "minecraft:creeper"}}

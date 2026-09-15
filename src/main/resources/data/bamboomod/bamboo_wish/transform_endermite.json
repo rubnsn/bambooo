@@ -1,0 +1,1 @@
+{"id": "wish/transform_endermite", "pattern": "エンダーマイトになりたい|transformation endermite", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.endermite", "effect": {"type": "transform", "entity": "minecraft:endermite"}}

@@ -1,0 +1,1 @@
+{"id": "wish/transform_dolphin", "pattern": "イルカになりたい|transformation dolphin", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.dolphin", "effect": {"type": "transform", "entity": "minecraft:dolphin"}}

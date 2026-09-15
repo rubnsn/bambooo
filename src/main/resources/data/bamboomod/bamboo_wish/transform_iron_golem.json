@@ -1,0 +1,1 @@
+{"id": "wish/transform_iron_golem", "pattern": "アイアンゴーレムになりたい|transformation iron golem", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.iron_golem", "effect": {"type": "transform", "entity": "minecraft:iron_golem"}}

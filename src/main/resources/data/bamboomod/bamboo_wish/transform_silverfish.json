@@ -1,0 +1,1 @@
+{"id": "wish/transform_silverfish", "pattern": "シルバーフィッシュになりたい|transformation silverfish", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.silverfish", "effect": {"type": "transform", "entity": "minecraft:silverfish"}}

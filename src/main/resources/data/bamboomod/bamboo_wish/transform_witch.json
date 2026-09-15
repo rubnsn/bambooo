@@ -1,0 +1,1 @@
+{"id": "wish/transform_witch", "pattern": "ウィッチになりたい|transformation witch", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.witch", "effect": {"type": "transform", "entity": "minecraft:witch"}}

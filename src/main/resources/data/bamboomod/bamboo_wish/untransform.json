@@ -1,0 +1,1 @@
+{"id": "wish/untransform", "pattern": "人間になりたい|transformation human", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.untransform", "effect": {"type": "untransform"}}

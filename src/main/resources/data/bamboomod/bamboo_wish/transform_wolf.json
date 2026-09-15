@@ -1,0 +1,1 @@
+{"id": "wish/transform_wolf", "pattern": "オオカミになりたい|transformation wolf", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.wolf", "effect": {"type": "transform", "entity": "minecraft:wolf"}}

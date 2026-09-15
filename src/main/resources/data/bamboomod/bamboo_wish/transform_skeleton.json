@@ -1,0 +1,1 @@
+{"id": "wish/transform_skeleton", "pattern": "(?<!ウィザー)スケルトンになりたい|transformation skeleton", "match": "regex", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.skeleton", "effect": {"type": "transform", "entity": "minecraft:skeleton"}}

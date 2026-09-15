@@ -1,0 +1,1 @@
+{"id": "wish/transform_turtle", "pattern": "カメになりたい|transformation turtle", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.turtle", "effect": {"type": "transform", "entity": "minecraft:turtle"}}

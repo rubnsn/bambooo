@@ -1,0 +1,1 @@
+{"id": "wish/transform_pig", "pattern": "ブタになりたい|transformation pig(?![a-z_ ])", "match": "regex", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.pig", "effect": {"type": "transform", "entity": "minecraft:pig"}}

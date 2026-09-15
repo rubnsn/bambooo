@@ -1,0 +1,1 @@
+{"id": "wish/transform_villager", "pattern": "村人になりたい|transformation villager", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.villager", "effect": {"type": "transform", "entity": "minecraft:villager"}}

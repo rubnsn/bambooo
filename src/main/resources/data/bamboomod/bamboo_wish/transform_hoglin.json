@@ -1,0 +1,1 @@
+{"id": "wish/transform_hoglin", "pattern": "ホグリンになりたい|transformation hoglin", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.hoglin", "effect": {"type": "transform", "entity": "minecraft:hoglin"}}

@@ -1,0 +1,1 @@
+{"id": "wish/transform_piglin_brute", "pattern": "ピグリンブルートになりたい|transformation piglin brute", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.piglin_brute", "effect": {"type": "transform", "entity": "minecraft:piglin_brute"}}

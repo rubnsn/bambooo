@@ -1,0 +1,1 @@
+{"id": "wish/transform_cat", "pattern": "ネコになりたい|transformation cat", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.cat", "effect": {"type": "transform", "entity": "minecraft:cat"}}

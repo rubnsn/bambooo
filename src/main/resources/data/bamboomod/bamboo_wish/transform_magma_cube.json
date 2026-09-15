@@ -1,0 +1,1 @@
+{"id": "wish/transform_magma_cube", "pattern": "マグマキューブになりたい|transformation magma cube", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.magma_cube", "effect": {"type": "transform", "entity": "minecraft:magma_cube"}}

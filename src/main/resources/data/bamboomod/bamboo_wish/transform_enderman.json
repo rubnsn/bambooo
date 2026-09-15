@@ -1,0 +1,1 @@
+{"id": "wish/transform_enderman", "pattern": "エンダーマンになりたい|transformation enderman", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.enderman", "effect": {"type": "transform", "entity": "minecraft:enderman"}}

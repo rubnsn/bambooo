@@ -1,0 +1,1 @@
+{"id": "wish/transform_squid", "pattern": "(?<!ヒカリ)イカになりたい|transformation squid", "match": "regex", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.squid", "effect": {"type": "transform", "entity": "minecraft:squid"}}

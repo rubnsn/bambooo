@@ -1,0 +1,1 @@
+{"id": "wish/transform_cave_spider", "pattern": "洞窟グモになりたい|transformation cave spider", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.cave_spider", "effect": {"type": "transform", "entity": "minecraft:cave_spider"}}

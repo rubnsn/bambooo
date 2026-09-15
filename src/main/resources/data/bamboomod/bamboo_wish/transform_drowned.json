@@ -1,0 +1,1 @@
+{"id": "wish/transform_drowned", "pattern": "ドラウンドになりたい|transformation drowned", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.drowned", "effect": {"type": "transform", "entity": "minecraft:drowned"}}

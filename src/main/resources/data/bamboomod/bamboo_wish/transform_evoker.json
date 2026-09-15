@@ -1,0 +1,1 @@
+{"id": "wish/transform_evoker", "pattern": "エヴォーカーになりたい|transformation evoker", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.evoker", "effect": {"type": "transform", "entity": "minecraft:evoker"}}

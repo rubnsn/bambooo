@@ -1,0 +1,1 @@
+{"id": "wish/transform_zombified_piglin", "pattern": "ゾンビピグリンになりたい|transformation zombified piglin", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.zombified_piglin", "effect": {"type": "transform", "entity": "minecraft:zombified_piglin"}}

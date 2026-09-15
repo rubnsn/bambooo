@@ -1,0 +1,1 @@
+{"id": "wish/transform_spider", "pattern": "クモになりたい|transformation spider", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.spider", "effect": {"type": "transform", "entity": "minecraft:spider"}}

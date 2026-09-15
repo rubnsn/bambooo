@@ -1,0 +1,1 @@
+{"id": "wish/transform_guardian", "pattern": "(?<!エルダー)ガーディアンになりたい|transformation guardian", "match": "regex", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.guardian", "effect": {"type": "transform", "entity": "minecraft:guardian"}}

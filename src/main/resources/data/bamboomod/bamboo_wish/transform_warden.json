@@ -1,0 +1,1 @@
+{"id": "wish/transform_warden", "pattern": "ウォーデンになりたい|transformation warden", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.warden", "effect": {"type": "transform", "entity": "minecraft:warden"}}

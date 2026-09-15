@@ -1,0 +1,1 @@
+{"id": "wish/transform_pillager", "pattern": "ピリジャーになりたい|transformation pillager", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.pillager", "effect": {"type": "transform", "entity": "minecraft:pillager"}}

@@ -14,6 +14,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.capability.ColoredLightStorage;
+import ruby.bamboo.transform.TransformStorage;
 
 /**
  * Phase B: ColoredLight Attachment 登録 + BEホッパー連携 (RegisterCapabilitiesEvent)。
@@ -37,6 +38,18 @@ public final class BambooCapabilities {
     /** 旧 capability ID 互換用に維持 (Attachment 登録名と同一)。 */
     public static final ResourceLocation COLORED_LIGHT_ID =
             ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "colored_light");
+
+    /**
+     * 変身状態の Player Attachment。master 仕様 (Clone/ログイン/リスポーン維持)
+     * のため serialize + copyOnDeath で永続化する (INBTSerializable 経由)。
+     */
+    public static final Supplier<AttachmentType<TransformStorage>> TRANSFORM =
+            ATTACHMENTS.register("transform",
+                    () -> AttachmentType.serializable(TransformStorage::new).copyOnDeath().build());
+
+    /** 旧 capability ID 互換用に維持 (Attachment 登録名と同一)。 */
+    public static final ResourceLocation TRANSFORM_ID =
+            ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "transform");
 
     private BambooCapabilities() {
     }

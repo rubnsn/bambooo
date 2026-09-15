@@ -1,0 +1,1 @@
+{"id": "wish/transform_panda", "pattern": "パンダになりたい|transformation panda", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.panda", "effect": {"type": "transform", "entity": "minecraft:panda"}}

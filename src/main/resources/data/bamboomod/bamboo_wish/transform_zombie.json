@@ -1,0 +1,1 @@
+{"id": "wish/transform_zombie", "pattern": "(?<!ムラビト)(?<!村人)ゾンビになりたい|transformation zombie(?![a-z_ ])", "match": "regex", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.zombie", "effect": {"type": "transform", "entity": "minecraft:zombie"}}

@@ -1,0 +1,1 @@
+{"id": "wish/transform_axolotl", "pattern": "ウーパールーパーになりたい|transformation axolotl", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.axolotl", "effect": {"type": "transform", "entity": "minecraft:axolotl"}}

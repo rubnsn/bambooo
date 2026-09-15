@@ -1,0 +1,1 @@
+{"id": "wish/transform_snow_golem", "pattern": "スノウゴーレムになりたい|transformation snow golem", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.snow_golem", "effect": {"type": "transform", "entity": "minecraft:snow_golem"}}
