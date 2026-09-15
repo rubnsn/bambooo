@@ -1,0 +1,28 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "kakeziku",
+  "pattern": [
+    "YYY",
+    "X#X",
+    "XXX"
+  ],
+  "key": {
+    "Y": {
+      "item": "minecraft:stick"
+    },
+    "X": {
+      "item": "minecraft:paper"
+    },
+    "#": {
+      "item": "minecraft:black_dye"
+    }
+  },
+  "result": {
+    "id": "bamboomod:kakeziku",
+    "count": 1
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}
