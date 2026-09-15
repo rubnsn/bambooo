@@ -14,6 +14,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import ruby.bamboo.client.gui.ChatOverlay;
 import ruby.bamboo.client.gui.trump.TrumpCardRenderer;
+import ruby.bamboo.client.handler.ClientDaifugoHandler;
 import ruby.bamboo.client.gui.trump.TrumpRank;
 import ruby.bamboo.client.gui.trump.TrumpSuit;
 import ruby.bamboo.daifugo.DaifugoCard;
@@ -132,6 +133,14 @@ public class DaifugoGameScreen extends Screen {
         return false;
     }
 
+    @Override
+    public void onClose() {
+        // ESCで閉じても退出扱い (代打CPU化・札使用で復帰)。開き直しは抑える。
+        BambooNetwork.CHANNEL.sendToServer(new DaifugoLeavePacket());
+        ClientDaifugoHandler.noteClosed();
+        super.onClose();
+    }
+
     private boolean isRoundEnd() {
         return snapshot.state == DaifugoRoom.State.ROUND_END.ordinal();
     }
@@ -209,6 +218,7 @@ public class DaifugoGameScreen extends Screen {
         leaveButton = Button.builder(Component.translatable("screen.bamboomod.daifugo_leave"),
                 b -> {
                     BambooNetwork.CHANNEL.sendToServer(new DaifugoLeavePacket());
+                    ClientDaifugoHandler.noteClosed();
                     if (this.minecraft != null) {
                         this.minecraft.setScreen(null);
                     }

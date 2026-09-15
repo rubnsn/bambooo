@@ -7,6 +7,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
+import ruby.bamboo.client.handler.ClientDaifugoHandler;
 import ruby.bamboo.daifugo.DaifugoManager;
 
 /**
@@ -25,6 +28,10 @@ public class DaifugoItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
         if (!level.isClientSide && player instanceof ServerPlayer sp && sp.getServer() != null) {
             DaifugoManager.joinOrCreate(sp.getServer(), sp);
+        } else if (level.isClientSide) {
+            // 再開指示 (ESC等で閉じた後の自動オープン抑止を解除する)
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
+                    () -> () -> ClientDaifugoHandler.expectOpen());
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
     }

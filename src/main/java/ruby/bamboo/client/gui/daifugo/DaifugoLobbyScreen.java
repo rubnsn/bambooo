@@ -6,6 +6,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import ruby.bamboo.client.gui.ChatOverlay;
+import ruby.bamboo.client.handler.ClientDaifugoHandler;
 import ruby.bamboo.daifugo.DaifugoRoom;
 import ruby.bamboo.daifugo.DaifugoSnapshot;
 import ruby.bamboo.network.BambooNetwork;
@@ -49,6 +50,14 @@ public class DaifugoLobbyScreen extends Screen {
     }
 
     @Override
+    public void onClose() {
+        // ESCで閉じたらロビーからも抜ける (再参加は札使用)。開き直しは抑える。
+        BambooNetwork.CHANNEL.sendToServer(new DaifugoLeavePacket());
+        ClientDaifugoHandler.noteClosed();
+        super.onClose();
+    }
+
+    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (chat.keyPressed(this, keyCode, scanCode, modifiers)) {
             return true;
@@ -75,6 +84,7 @@ public class DaifugoLobbyScreen extends Screen {
         leaveButton = Button.builder(Component.translatable("screen.bamboomod.daifugo_leave"),
                 b -> {
                     BambooNetwork.CHANNEL.sendToServer(new DaifugoLeavePacket());
+                    ClientDaifugoHandler.noteClosed();
                     if (this.minecraft != null) {
                         this.minecraft.setScreen(null);
                     }
