@@ -1,10 +1,13 @@
 package ruby.bamboo.crafting.cooking;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -86,5 +89,26 @@ public final class CookingManager {
     /** 登録済み全レシピ (デバッグ用) */
     public static List<CookingRecipe> getRecipes() {
         return RECIPES;
+    }
+
+    /**
+     * 持ちアイテムを出力するレシピの材料の種類数 (最大値)。なければ0。
+     * スキル成長率・料理回復用。
+     */
+    public static int countDistinctIngredients(ItemStack output) {
+        int best = 0;
+        for (CookingRecipe r : RECIPES) {
+            if (!ItemStack.isSameItem(r.output(), output)) {
+                continue;
+            }
+            Set<Item> kinds = new HashSet<>();
+            for (ItemStack ing : r.ingredients()) {
+                if (!ing.isEmpty()) {
+                    kinds.add(ing.getItem());
+                }
+            }
+            best = Math.max(best, kinds.size());
+        }
+        return best;
     }
 }

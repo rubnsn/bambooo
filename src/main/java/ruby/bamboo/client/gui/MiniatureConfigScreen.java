@@ -3,6 +3,7 @@ package ruby.bamboo.client.gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -48,7 +49,7 @@ public class MiniatureConfigScreen extends Screen {
         this.addRenderableWidget(CycleButton.onOffBuilder(MiniatureConfig.CLIENT.particleEnabled.get())
                 .withInitialValue(MiniatureConfig.CLIENT.particleEnabled.get())
                 .displayOnlyValue()
-                .withTooltip(v -> net.minecraft.client.gui.components.Tooltip.create(Component.translatable("bamboomod.config.miniature.particle.enabled.tooltip")))
+                .withTooltip(v -> Tooltip.create(Component.translatable("bamboomod.config.miniature.particle.enabled.tooltip")))
                 .create(leftX, yL, colW, h, Component.translatable("bamboomod.config.miniature.particle.enabled"),
                         (btn, val) -> MiniatureConfig.CLIENT.particleEnabled.set(val)));
         yL += gap;
@@ -129,7 +130,7 @@ public class MiniatureConfigScreen extends Screen {
             if (next > max) next = min;
             setter.accept(next);
             b.setMessage(Component.literal(label.getString() + ": " + next));
-        }).bounds(x, y, w, h).tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("クリックで " + min + "〜" + max + " を循環"))).build();
+        }).bounds(x, y, w, h).tooltip(Tooltip.create(Component.literal("クリックで " + min + "〜" + max + " を循環"))).build();
     }
 
     private Button createChoicesButton(Component label, String current, String[] choices, java.util.function.Consumer<String> setter, int x, int y, int w, int h) {
@@ -145,7 +146,7 @@ public class MiniatureConfigScreen extends Screen {
             String next = choices[(idx + 1) % choices.length];
             setter.accept(next);
             b.setMessage(Component.literal(label.getString() + ": " + next));
-        }).bounds(x, y, w, h).tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("クリックで " + String.join("/", choices) + " を循環"))).build();
+        }).bounds(x, y, w, h).tooltip(Tooltip.create(Component.literal("クリックで " + String.join("/", choices) + " を循環"))).build();
     }
 
     private Button createDoubleButton(Component label, double current, double min, double max, double step, java.util.function.DoubleConsumer setter, int x, int y, int w, int h) {
@@ -161,7 +162,7 @@ public class MiniatureConfigScreen extends Screen {
             if (next > max + 1e-9) next = min;
             setter.accept(next);
             b.setMessage(Component.literal(label.getString() + ": " + String.format("%.2f", next)));
-        }).bounds(x, y, w, h).tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("クリックで " + min + "〜" + max + " を " + step + " 刻みで循環"))).build();
+        }).bounds(x, y, w, h).tooltip(Tooltip.create(Component.literal("クリックで " + min + "〜" + max + " を " + step + " 刻みで循環"))).build();
     }
 
     @Override

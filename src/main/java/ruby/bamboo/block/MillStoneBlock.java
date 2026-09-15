@@ -6,6 +6,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import ruby.bamboo.block.entity.MillStoneBlockEntity;
+import ruby.bamboo.core.init.BambooBlockEntities;
 
 /**
  * 石臼 (旧 MillStone の移植)。
@@ -67,7 +69,7 @@ public class MillStoneBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(GRIND_MOTION).add(GRINDING);
     }
@@ -102,10 +104,10 @@ public class MillStoneBlock extends BaseEntityBlock {
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
             BlockEntityType<T> type) {
         if (level.isClientSide) {
-            return createTickerHelper(type, ruby.bamboo.core.init.BambooBlockEntities.MILL_STONE_BE.get(),
+            return createTickerHelper(type, BambooBlockEntities.MILL_STONE_BE.get(),
                     MillStoneBlockEntity::tick);
         }
-        return createTickerHelper(type, ruby.bamboo.core.init.BambooBlockEntities.MILL_STONE_BE.get(),
+        return createTickerHelper(type, BambooBlockEntities.MILL_STONE_BE.get(),
                 MillStoneBlockEntity::tick);
     }
 

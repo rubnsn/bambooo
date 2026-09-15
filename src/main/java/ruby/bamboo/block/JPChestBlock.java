@@ -2,21 +2,26 @@ package ruby.bamboo.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
+import ruby.bamboo.block.entity.JPChestBlockEntity;
 
 /**
  * 和風チェスト (旧 JPChest)。
@@ -38,7 +43,7 @@ public class JPChestBlock extends BaseEntityBlock {
         return CODEC;
     }
 
-    public static final net.minecraft.world.level.block.state.properties.DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     public JPChestBlock() {
         super(Properties.of()
@@ -64,7 +69,7 @@ public class JPChestBlock extends BaseEntityBlock {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
-        if (level.getBlockEntity(pos) instanceof ruby.bamboo.block.entity.JPChestBlockEntity chest) {
+        if (level.getBlockEntity(pos) instanceof JPChestBlockEntity chest) {
             player.openMenu(chest);
         }
         return InteractionResult.CONSUME;
@@ -78,16 +83,16 @@ public class JPChestBlock extends BaseEntityBlock {
     }
 
     @Override
-    public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new ruby.bamboo.block.entity.JPChestBlockEntity(pos, state);
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new JPChestBlockEntity(pos, state);
     }
 
     /** 破壊時に中身をドロップする (バニラ ChestBlock.onRemove 相当) */
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock())) {
-            if (level.getBlockEntity(pos) instanceof ruby.bamboo.block.entity.JPChestBlockEntity chest) {
-                net.minecraft.world.Containers.dropContents(level, pos, chest);
+            if (level.getBlockEntity(pos) instanceof JPChestBlockEntity chest) {
+                Containers.dropContents(level, pos, chest);
                 level.updateNeighbourForOutputSignal(pos, this);
             }
             super.onRemove(state, level, pos, newState, movedByPiston);
@@ -95,7 +100,7 @@ public class JPChestBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FACING);
     }

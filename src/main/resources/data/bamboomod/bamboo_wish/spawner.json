@@ -1,0 +1,11 @@
+{
+  "id": "wish/spawner",
+  "pattern": "繧ｹ繝昴リ繝ｼ|縺吶⊃縺ｪ繝ｼ|繧ｹ繝昴・繝翫・|spawner",
+  "match": "regex",
+  "priority": false,
+  "weight": 1,
+  "message": "bamboomod.wish.result.spawner",
+  "effect": {
+    "type": "give_spawner"
+  }
+}

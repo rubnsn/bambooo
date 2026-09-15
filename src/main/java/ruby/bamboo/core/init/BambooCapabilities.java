@@ -14,6 +14,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.capability.ColoredLightStorage;
+import ruby.bamboo.core.wish.WishStorage;
 
 /**
  * Phase B: ColoredLight Attachment 登録 + BEホッパー連携 (RegisterCapabilitiesEvent)。
@@ -37,6 +38,19 @@ public final class BambooCapabilities {
     /** 旧 capability ID 互換用に維持 (Attachment 登録名と同一)。 */
     public static final ResourceLocation COLORED_LIGHT_ID =
             ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "colored_light");
+
+    /**
+     * 願い成功回数の保存 (Player Attachment、永続化あり・死亡時も維持)。
+     * 旧 Forge Capability + LazyOptional + Clone コピーを、
+     * {@code AttachmentType.serializable(...).copyOnDeath()} に置換。
+     */
+    public static final Supplier<AttachmentType<WishStorage>> WISH =
+            ATTACHMENTS.register("wish",
+                    () -> AttachmentType.serializable(WishStorage::new).copyOnDeath().build());
+
+    /** 旧 capability ID 互換用に維持 (Attachment 登録名と同一)。 */
+    public static final ResourceLocation WISH_ID =
+            ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "wish");
 
     private BambooCapabilities() {
     }

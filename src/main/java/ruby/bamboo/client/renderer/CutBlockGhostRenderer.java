@@ -19,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -75,7 +76,7 @@ public class CutBlockGhostRenderer {
         if (bhr.getType() != HitResult.Type.BLOCK) return;
         BlockPos hitPos = bhr.getBlockPos();
         Direction face = bhr.getDirection();
-        net.minecraft.world.phys.Vec3 hitVec = bhr.getLocation();
+        Vec3 hitVec = bhr.getLocation();
         CutBlockEntity.CutBlockData data = CutBlockEntity.readFromStack(held);
         if (data.state().isAir()) return;
 
@@ -125,7 +126,7 @@ public class CutBlockGhostRenderer {
         float maxZ = bounds[5] / 16f;
 
         PoseStack poseStack = event.getPoseStack();
-        net.minecraft.world.phys.Vec3 cam = event.getCamera().getPosition();
+        Vec3 cam = event.getCamera().getPosition();
         poseStack.pushPose();
         poseStack.translate(placePos.getX() - cam.x, placePos.getY() - cam.y, placePos.getZ() - cam.z);
 

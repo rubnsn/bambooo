@@ -1,8 +1,10 @@
 package ruby.bamboo.compat.jei;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
-import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
@@ -10,18 +12,22 @@ import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
-import java.util.List;
-
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.level.block.Blocks;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.core.init.BambooBlocks;
 import ruby.bamboo.core.init.BambooItems;
 import ruby.bamboo.core.init.BambooMenus;
-import ruby.bamboo.crafting.cooking.BambooCampfireRecipe;
-import ruby.bamboo.crafting.grind.BambooGrindRecipe;
+import ruby.bamboo.gui.CampfireMenu;
 import ruby.bamboo.gui.CampfireScreen;
+import ruby.bamboo.gui.MillStoneMenu;
 import ruby.bamboo.gui.MillStoneScreen;
 
 @JeiPlugin
@@ -85,14 +91,13 @@ public class BambooJeiPlugin implements IModPlugin {
     public void registerRecipes(IRecipeRegistration registration) {
         var minecraft = Minecraft.getInstance();
         // JEI専用カットブロックレシピ (レベル未依存で生成可能。JEI 19 は RecipeHolder で渡す)
-        List<net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.CraftingRecipe>> cutJei = List.of();
+        List<RecipeHolder<CraftingRecipe>> cutJei = List.of();
         try {
-            List<net.minecraft.world.item.crafting.CraftingRecipe> dummies = CutBlockJeiRecipes.createJeiRecipes();
-            BambooMod.LOGGER.info("CutBlock JEI dummy recipes generated: {}", dummies.size());
-            java.util.List<net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.CraftingRecipe>> holders = new java.util.ArrayList<>();
+            List<CraftingRecipe> dummies = CutBlockJeiRecipes.createJeiRecipes();
+            List<RecipeHolder<CraftingRecipe>> holders = new ArrayList<>();
             int idx = 0;
             for (var dummy : dummies) {
-                holders.add(new net.minecraft.world.item.crafting.RecipeHolder<>(
+                holders.add(new RecipeHolder<>(
                         ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "jei_cut_dummy_" + (idx++)), dummy));
             }
             cutJei = List.copyOf(holders);
@@ -110,7 +115,6 @@ public class BambooJeiPlugin implements IModPlugin {
             // JEI表示専用 — CRAFTINGへの二重登録はDecoder(12)の原因のためcut_blockのみに
             if (!cutJei.isEmpty()) {
                 registration.addRecipes(CutBlockCategory.TYPE, cutJei);
-                BambooMod.LOGGER.info("CutBlock JEI recipes registered to cut_block only (server fallback): {}", cutJei.size());
             }
             return;
         }
@@ -119,7 +123,6 @@ public class BambooJeiPlugin implements IModPlugin {
         registration.addRecipes(MillstoneCategory.TYPE, mgr.getAllRecipesFor(BambooMod.MILLSTONE_RECIPE_TYPE.get()));
         if (!cutJei.isEmpty()) {
             registration.addRecipes(CutBlockCategory.TYPE, cutJei);
-            BambooMod.LOGGER.info("CutBlock JEI recipes registered to cut_block only: {}", cutJei.size());
         }
     }
 
@@ -128,7 +131,7 @@ public class BambooJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(BambooBlocks.CAMPFIRE.get()), CampfireCategory.TYPE);
         registration.addRecipeCatalyst(new ItemStack(BambooBlocks.MILLSTONE.get()), MillstoneCategory.TYPE);
         // カットブロック専用カテゴリの触媒は作業台のみ（左ペインに透明カットブロックが出ないように）
-        registration.addRecipeCatalyst(new ItemStack(net.minecraft.world.level.block.Blocks.CRAFTING_TABLE), CutBlockCategory.TYPE);
+        registration.addRecipeCatalyst(new ItemStack(Blocks.CRAFTING_TABLE), CutBlockCategory.TYPE);
     }
 
     @Override
@@ -143,9 +146,9 @@ public class BambooJeiPlugin implements IModPlugin {
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         // 囲炉裏: 0-8 素材 (3x3) → プレイヤーINV 11-46 (36スロット)
-        registration.addRecipeTransferHandler(ruby.bamboo.gui.CampfireMenu.class, BambooMenus.CAMPFIRE.get(), CampfireCategory.TYPE, 0, 9, 11, 36);
+        registration.addRecipeTransferHandler(CampfireMenu.class, BambooMenus.CAMPFIRE.get(), CampfireCategory.TYPE, 0, 9, 11, 36);
         // 石臼: 0 入力1 → プレイヤーINV 3-38 (36スロット)
-        registration.addRecipeTransferHandler(ruby.bamboo.gui.MillStoneMenu.class, BambooMenus.MILL_STONE.get(), MillstoneCategory.TYPE, 0, 1, 3, 36);
+        registration.addRecipeTransferHandler(MillStoneMenu.class, BambooMenus.MILL_STONE.get(), MillstoneCategory.TYPE, 0, 1, 3, 36);
     }
 
     @Override
@@ -155,9 +158,31 @@ public class BambooJeiPlugin implements IModPlugin {
             var ingredientManager = runtime.getIngredientManager();
             var empty = new ItemStack(BambooBlocks.CUT_BLOCK.get());
             ingredientManager.removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, List.of(empty));
-            BambooMod.LOGGER.info("Hid empty cut_block from JEI ingredient list");
         } catch (Exception e) {
             BambooMod.LOGGER.warn("Failed to hide empty cut_block from JEI", e);
+        }
+        // 温泉水 (source/flowing) はバケツ化せず BlockItem 無しのため JEI の流体リストから隠す
+        try {
+            var ingredientManager = runtime.getIngredientManager();
+            List<FluidStack> fluids = new ArrayList<>();
+            try {
+                fluids.add(new FluidStack(BambooMod.SPRING_WATER_SOURCE.get(),
+                        FluidType.BUCKET_VOLUME));
+            } catch (Exception e) {
+                BambooMod.LOGGER.warn("Failed to resolve spring_water source for JEI hide", e);
+            }
+            try {
+                fluids.add(new FluidStack(BambooMod.SPRING_WATER_FLOWING.get(),
+                        FluidType.BUCKET_VOLUME));
+            } catch (Exception e) {
+                BambooMod.LOGGER.warn("Failed to resolve spring_water flowing for JEI hide", e);
+            }
+            if (!fluids.isEmpty()) {
+                ingredientManager.removeIngredientsAtRuntime(NeoForgeTypes.FLUID_STACK, fluids);
+                BambooMod.LOGGER.info("Hid spring_water fluids from JEI ingredient list");
+            }
+        } catch (Exception e) {
+            BambooMod.LOGGER.warn("Failed to hide spring_water from JEI", e);
         }
     }
 }

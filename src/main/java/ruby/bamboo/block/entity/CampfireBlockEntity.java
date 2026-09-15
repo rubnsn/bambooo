@@ -5,12 +5,18 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -41,7 +47,7 @@ import ruby.bamboo.gui.CampfireMenu;
  * <li>BakeType (NONE/ATHER/MEAT/FISH) を結果スロットから判定し BER 描画に使用</li>
  * </ul>
  */
-public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer, net.minecraft.world.MenuProvider {
+public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
 
     /** 焼き種別 (旧 TileCampfire.BakeType) */
     public enum BakeType {
@@ -307,7 +313,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     }
 
     /** レシピブック用: StackedContents への充填 */
-    public void fillStackedContents(net.minecraft.world.entity.player.StackedContents helper) {
+    public void fillStackedContents(StackedContents helper) {
         for (int i = 0; i < 9; i++) {
             ItemStack s = items.get(i);
             if (!s.isEmpty()) helper.accountStack(s);
@@ -405,7 +411,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
 
     @Override
     public ItemStack removeItem(int index, int count) {
-        ItemStack taken = net.minecraft.world.ContainerHelper.removeItem(items, index, count);
+        ItemStack taken = ContainerHelper.removeItem(items, index, count);
         if (!taken.isEmpty()) {
             setChanged();
         }
@@ -414,7 +420,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
 
     @Override
     public ItemStack removeItemNoUpdate(int index) {
-        return net.minecraft.world.ContainerHelper.takeItem(items, index);
+        return ContainerHelper.takeItem(items, index);
     }
 
     @Override
@@ -446,7 +452,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new CampfireMenu(containerId, playerInventory, this,
-                new net.minecraft.world.inventory.SimpleContainerData(2) {
+                new SimpleContainerData(2) {
             @Override
             public int get(int index) {
                 return switch (index) {
@@ -474,14 +480,14 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
         if (!nowCookingResult.isEmpty()) {
             tag.put("nowItem", nowCookingResult.saveOptional(registries));
         }
-        net.minecraft.world.ContainerHelper.saveAllItems(tag, items, registries);
+        ContainerHelper.saveAllItems(tag, items, registries);
     }
 
     @Override
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         this.items = NonNullList.withSize(11, ItemStack.EMPTY);
-        net.minecraft.world.ContainerHelper.loadAllItems(tag, this.items, registries);
+        ContainerHelper.loadAllItems(tag, this.items, registries);
         if (tag.contains("fuel")) {
             this.fuel = tag.getInt("fuel");
         }
@@ -512,15 +518,15 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
     }
 
     @Override
-    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
         CompoundTag tag = new CompoundTag();
         writeSyncData(tag);
-        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this, (be, registries) -> tag);
+        return ClientboundBlockEntityDataPacket.create(this, (be, registries) -> tag);
     }
 
     @Override
-    public void onDataPacket(net.minecraft.network.Connection net,
-            net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
+    public void onDataPacket(Connection net,
+            ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
         readSyncData(pkt.getTag());
     }
 

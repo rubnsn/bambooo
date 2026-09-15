@@ -4,16 +4,23 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -40,7 +47,7 @@ import ruby.bamboo.gui.MillStoneMenu;
  * <li>クライアントでは roll 角を tick 毎に加算して滑らかに回転 + ITEM_CRACK パーティクル</li>
  * </ul>
  */
-public class MillStoneBlockEntity extends BlockEntity implements WorldlyContainer, net.minecraft.world.MenuProvider {
+public class MillStoneBlockEntity extends BlockEntity implements WorldlyContainer, MenuProvider {
 
     /** 旧 MAX_GRINDTIME = 400tick (=20秒) */
     public static final int MAX_GRINDTIME = 400;
@@ -136,7 +143,7 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
     }
 
     /** RecipeManager用: StackedContentsへの充填 (レシピブックのフィルタ判定) */
-    public void fillStackedContents(net.minecraft.world.entity.player.StackedContents helper) {
+    public void fillStackedContents(StackedContents helper) {
         ItemStack s = items.get(0);
         if (!s.isEmpty()) helper.accountStack(s);
     }
@@ -199,7 +206,7 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
      * 出力スロットの空き・同種マージ・スタック上限まで確認する。
      */
     private boolean canStoreResult(BambooGrindRecipe recipe) {
-        ItemStack output = recipe.getResultItem(level != null ? level.registryAccess() : net.minecraft.core.RegistryAccess.EMPTY);
+        ItemStack output = recipe.getResultItem(level != null ? level.registryAccess() : RegistryAccess.EMPTY);
         // BambooGrindRecipeはresultを直接保持
         ItemStack slot1 = items.get(1);
         ItemStack slot2 = items.get(2);
@@ -338,7 +345,7 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
 
     @Override
     public ItemStack removeItem(int index, int count) {
-        ItemStack taken = net.minecraft.world.ContainerHelper.removeItem(items, index, count);
+        ItemStack taken = ContainerHelper.removeItem(items, index, count);
         if (!taken.isEmpty()) {
             setChanged();
         }
@@ -347,7 +354,7 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
 
     @Override
     public ItemStack removeItemNoUpdate(int index) {
-        return net.minecraft.world.ContainerHelper.takeItem(items, index);
+        return ContainerHelper.takeItem(items, index);
     }
 
     @Override
@@ -379,7 +386,7 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new MillStoneMenu(containerId, playerInventory, this,
-                new net.minecraft.world.inventory.SimpleContainerData(3) {
+                new SimpleContainerData(3) {
             @Override
             public int get(int index) {
                 return switch (index) {
@@ -418,14 +425,14 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
         tag.putInt("grindTime", grindTime);
         tag.putString("grindItemName",
                 BuiltInRegistries.ITEM.getKey(grindingItem == null ? Items.AIR : grindingItem).toString());
-        net.minecraft.world.ContainerHelper.saveAllItems(tag, items, registries);
+        ContainerHelper.saveAllItems(tag, items, registries);
     }
 
     @Override
     public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         this.items = NonNullList.withSize(3, ItemStack.EMPTY);
-        net.minecraft.world.ContainerHelper.loadAllItems(tag, this.items, registries);
+        ContainerHelper.loadAllItems(tag, this.items, registries);
         if (tag.contains("grindTime")) {
             this.grindTime = tag.getInt("grindTime");
         }
@@ -451,15 +458,15 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
     }
 
     @Override
-    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
         CompoundTag tag = new CompoundTag();
         writeSyncData(tag);
-        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this, (be, registries) -> tag);
+        return ClientboundBlockEntityDataPacket.create(this, (be, registries) -> tag);
     }
 
     @Override
-    public void onDataPacket(net.minecraft.network.Connection net,
-            net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
+    public void onDataPacket(Connection net,
+            ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
         readSyncData(pkt.getTag());
     }
 

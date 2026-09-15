@@ -4,11 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import ruby.bamboo.core.init.BambooBlockEntities;
@@ -170,8 +177,8 @@ public class BambooPotBlockEntity extends BlockEntity {
             // 旧1スロットからの移行（ContainerHelper形式）
             // 互換: 旧は NonNullList 1件を ContainerHelper.saveAllItems で保存
             try {
-                net.minecraft.core.NonNullList<ItemStack> old = net.minecraft.core.NonNullList.withSize(1, ItemStack.EMPTY);
-                net.minecraft.world.ContainerHelper.loadAllItems(tag, old, registries);
+                NonNullList<ItemStack> old = NonNullList.withSize(1, ItemStack.EMPTY);
+                ContainerHelper.loadAllItems(tag, old, registries);
                 if (!old.get(0).isEmpty()) {
                     plants.add(new PlantEntry(old.get(0), 0f, 0f, 0.35f, false));
                 }
@@ -217,8 +224,8 @@ public class BambooPotBlockEntity extends BlockEntity {
     }
 
     @Override
-    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this,
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this,
                 (be, registries) -> {
                     CompoundTag tag = new CompoundTag();
                     if (be instanceof BambooPotBlockEntity pot) {
@@ -239,7 +246,7 @@ public class BambooPotBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void onDataPacket(net.minecraft.network.Connection connection, net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
         CompoundTag tag = pkt.getTag();
         plants.clear();
         if (tag.contains("Plants", Tag.TAG_LIST)) {
@@ -259,9 +266,9 @@ public class BambooPotBlockEntity extends BlockEntity {
     // ホッパー無効: capabilityを公開しない (旧 Forge getCapability 委譲オーバーライドは削除。
     // ホッパー連携が必要になった場合は BambooCapabilities.registerCaps へ追加すること)。
 
-    public void dropAllContents(net.minecraft.world.level.Level lvl, BlockPos p) {
+    public void dropAllContents(Level lvl, BlockPos p) {
         for (PlantEntry e : plants) {
-            net.minecraft.world.Containers.dropItemStack(lvl, p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5, e.stack);
+            Containers.dropItemStack(lvl, p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5, e.stack);
         }
         plants.clear();
     }

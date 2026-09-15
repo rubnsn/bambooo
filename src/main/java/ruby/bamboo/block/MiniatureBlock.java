@@ -1,5 +1,6 @@
 package ruby.bamboo.block;
 
+import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.core.BlockPos;
@@ -7,22 +8,30 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
@@ -46,8 +55,11 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.block.state.properties.RedstoneSide;
+import net.minecraft.world.level.block.state.properties.WallSide;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -215,7 +227,7 @@ public class MiniatureBlock extends BaseEntityBlock {
     }
 
     @Override
-    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, net.minecraft.world.level.material.FluidState fluid) {
+    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
         if (level.getBlockEntity(pos) instanceof MiniatureBlockEntity be) {
             if (!be.isEmpty()) {
                 // クワ右クリック経由の許可フラグがある場合のみ外枠破壊を許可
@@ -345,9 +357,9 @@ public class MiniatureBlock extends BaseEntityBlock {
             Vec3 eye = player.getEyePosition(1.0f);
             Vec3 look = player.getViewVector(1.0f);
             Vec3 end = eye.add(look.scale(reach));
-            return level.clip(new net.minecraft.world.level.ClipContext(eye, end,
-                    net.minecraft.world.level.ClipContext.Block.OUTLINE,
-                    net.minecraft.world.level.ClipContext.Fluid.NONE, player));
+            return level.clip(new ClipContext(eye, end,
+                    ClipContext.Block.OUTLINE,
+                    ClipContext.Fluid.NONE, player));
         } catch (Exception e) {
             return null;
         }
@@ -399,7 +411,7 @@ public class MiniatureBlock extends BaseEntityBlock {
             }
         }
         ItemStack held = player.getMainHandItem();
-        if (drop && level instanceof net.minecraft.server.level.ServerLevel slevel) {
+        if (drop && level instanceof ServerLevel slevel) {
             // バニラ準拠: ドロップ + 経験値 + 統計 + ツール耐久
             var drops = Block.getDrops(inner, slevel, bePos, be, player, held);
             for (ItemStack st : drops) {
@@ -415,13 +427,13 @@ public class MiniatureBlock extends BaseEntityBlock {
             // 必要なら後で対応。現状は try-catch で握りつぶし (ドロップ自体は getDrops で完結)。
             // 統計
             try {
-                player.awardStat(net.minecraft.stats.Stats.BLOCK_MINED.get(inner.getBlock()));
-                if (otherState != null) player.awardStat(net.minecraft.stats.Stats.BLOCK_MINED.get(otherState.getBlock()));
+                player.awardStat(Stats.BLOCK_MINED.get(inner.getBlock()));
+                if (otherState != null) player.awardStat(Stats.BLOCK_MINED.get(otherState.getBlock()));
             } catch (Exception e) {}
             // ツール耐久 (バニラ準拠: 正しいツールでなくても消耗するものは消耗)
             if (!player.isCreative() && !held.isEmpty() && held.isDamageableItem()) {
                 try {
-                    held.hurtAndBreak(1, player, net.minecraft.world.entity.EquipmentSlot.MAINHAND);
+                    held.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
                 } catch (Exception e) {}
             }
             // サウンド/パーティクル — ミニチュア内では通常パーティクル(2001)はサイズに対して大きすぎるため抑止。
@@ -545,7 +557,7 @@ public class MiniatureBlock extends BaseEntityBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
         // ピックブロック: ミニチュア自身を返す (中身保持)。内部セルを指していればそのブロックを返す仕様もあるが、簡易ではミニチュアを返す。
         ItemStack stack = new ItemStack(this);
         if (level.getBlockEntity(pos) instanceof MiniatureBlockEntity be) {
@@ -564,7 +576,7 @@ public class MiniatureBlock extends BaseEntityBlock {
     // ===== Interaction =====
 
     @Override
-    public net.minecraft.world.ItemInteractionResult useItemOn(net.minecraft.world.item.ItemStack useStack, BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.BlockHitResult hit) {
+    public ItemInteractionResult useItemOn(ItemStack useStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (level.isClientSide) {
             return ItemInteractionResult.SUCCESS;
         }
@@ -574,12 +586,12 @@ public class MiniatureBlock extends BaseEntityBlock {
         ItemStack held = player.getItemInHand(hand);
         // 0) クワ右クリックで本体回収 (唯一の回収手段。中身ありでは外枠は絶対に壊れないため)
         // 空でも回収可。クリエは消費なし。
-        if (!held.isEmpty() && held.getItem() instanceof net.minecraft.world.item.HoeItem) {
+        if (!held.isEmpty() && held.getItem() instanceof HoeItem) {
             ItemStack stack = new ItemStack(this);
             CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
             tag.putInt(MiniatureBlockEntity.TAG_SIZE, be.getSize());
             if (!be.isEmpty()) {
-                net.minecraft.nbt.CompoundTag bet = new net.minecraft.nbt.CompoundTag();
+                CompoundTag bet = new CompoundTag();
                 be.writeSyncData(bet);
                 tag.put(BLOCK_ENTITY_TAG, bet);
             }
@@ -594,7 +606,7 @@ public class MiniatureBlock extends BaseEntityBlock {
             } finally {
                 ALLOW_HOE_REMOVAL.set(false);
             }
-            level.playSound(null, pos, net.minecraft.sounds.SoundEvents.ITEM_PICKUP, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+            level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0f, 1.0f);
             return ItemInteractionResult.SUCCESS;
         }
         int size = be.getSize();
@@ -635,7 +647,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                 if (toggled.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) {
                     try {
                         var half = toggled.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF);
-                        BlockPos otherPos = half == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER
+                        BlockPos otherPos = half == DoubleBlockHalf.LOWER
                                 ? targetPos.above() : targetPos.below();
                         if (be.isInRange(otherPos.getX(), otherPos.getY(), otherPos.getZ())) {
                             BlockState other = be.getCell(otherPos);
@@ -732,7 +744,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                         updateInnerConnections(pickupPos, be, level, pos);
                         be.rebuildShapeCache();
                         level.sendBlockUpdated(pos, state, state, 3);
-                        level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_FILL, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+                        level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS, 1.0f, 1.0f);
                         handleBucketExchange(player, hand, held, new ItemStack(Items.WATER_BUCKET));
                         return ItemInteractionResult.SUCCESS;
                     }
@@ -750,7 +762,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                             level.sendBlockUpdated(pos, state, state, 3);
                         }
                         be.rebuildShapeCache();
-                        level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_FILL, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+                        level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS, 1.0f, 1.0f);
                         handleBucketExchange(player, hand, held, new ItemStack(isLava ? Items.LAVA_BUCKET : Items.WATER_BUCKET));
                         return ItemInteractionResult.SUCCESS;
                     }
@@ -764,7 +776,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                         updateInnerConnections(targetPos, be, level, pos);
                         be.rebuildShapeCache();
                         level.sendBlockUpdated(pos, state, state, 3);
-                        level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+                        level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
                         handleBucketExchange(player, hand, held, new ItemStack(Items.BUCKET));
                         return ItemInteractionResult.SUCCESS;
                     }
@@ -773,7 +785,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                         updateInnerConnections(hitPos, be, level, pos);
                         be.rebuildShapeCache();
                         level.sendBlockUpdated(pos, state, state, 3);
-                        level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+                        level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
                         handleBucketExchange(player, hand, held, new ItemStack(Items.BUCKET));
                         return ItemInteractionResult.SUCCESS;
                     }
@@ -799,7 +811,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                     } else {
                         level.sendBlockUpdated(pos, state, state, 3);
                     }
-                    level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BUCKET_EMPTY, net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+                    level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
                     handleBucketExchange(player, hand, held, new ItemStack(Items.BUCKET));
                     return ItemInteractionResult.SUCCESS;
                 }
@@ -852,7 +864,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                     MiniatureFakeLevelReader fake = new MiniatureFakeLevelReader(be, level, pos);
                     Direction[] preferred = ctx != null ? ctx.getNearestLookingDirections() : new Direction[]{hit.getDirection()};
                     boolean isWallClick = hit.getDirection().getAxis().isHorizontal();
-                    boolean isStandingWallItem = blockItem instanceof net.minecraft.world.item.StandingAndWallBlockItem;
+                    boolean isStandingWallItem = blockItem instanceof StandingAndWallBlockItem;
                     if (isStandingWallItem && isWallClick) {
                         // 壁クリック時は壁変種を優先（床があっても壁付け）
                         BlockState wallFixed = tryWallVariant(block, blockItem, fake, placePos, preferred);
@@ -1025,7 +1037,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                     if (half == DoubleBlockHalf.UPPER) {
                         BlockPos below = n.below();
                         if (!be.isInRange(below.getX(), below.getY(), below.getZ()) || be.getCell(below).isAir()) {
-                            be.setCell(n, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+                            be.setCell(n, Blocks.AIR.defaultBlockState());
                             validCheck(be, n, player);
                             continue;
                         }
@@ -1036,7 +1048,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                 BlockPos bePos = be.getBlockPos();
                 if (outerLevel != null && bePos != null) {
                     if (!canSurviveInside(ns, n, be, outerLevel, bePos)) {
-                        be.setCell(n, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+                        be.setCell(n, Blocks.AIR.defaultBlockState());
                         validCheck(be, n, player);
                     }
                 }
@@ -1206,9 +1218,9 @@ public class MiniatureBlock extends BaseEntityBlock {
         else if (block == Blocks.REDSTONE_WALL_TORCH) standing = Blocks.REDSTONE_TORCH;
         else {
             // StandingAndWallBlockItem の wallBlock をリフレクションで取得
-            if (item instanceof net.minecraft.world.item.StandingAndWallBlockItem) {
+            if (item instanceof StandingAndWallBlockItem) {
                 try {
-                    var f = net.minecraft.world.item.StandingAndWallBlockItem.class.getDeclaredField("wallBlock");
+                    var f = StandingAndWallBlockItem.class.getDeclaredField("wallBlock");
                     f.setAccessible(true);
                     Object wb = f.get(item);
                     if (wb instanceof Block b) wall = b;
@@ -1264,7 +1276,7 @@ public class MiniatureBlock extends BaseEntityBlock {
             try {
                 return outerLevel.getBlockState(outerPos);
             } catch (Exception e) {
-                return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+                return Blocks.AIR.defaultBlockState();
             }
         }
     }
@@ -1338,8 +1350,8 @@ public class MiniatureBlock extends BaseEntityBlock {
                         if (heightProp != null && ns.hasProperty(heightProp)) {
                             var curH = ns.getValue(heightProp);
                             var want = shouldConnectCross(getSupportState(pos.relative(dir), be, outerLevel, bePos))
-                                    ? net.minecraft.world.level.block.state.properties.WallSide.LOW
-                                    : net.minecraft.world.level.block.state.properties.WallSide.NONE;
+                                    ? WallSide.LOW
+                                    : WallSide.NONE;
                             if (curH != want) {
                                 ns = ns.setValue(heightProp, want);
                             }
@@ -1355,7 +1367,7 @@ public class MiniatureBlock extends BaseEntityBlock {
             for (Direction dir : Direction.Plane.HORIZONTAL) {
                 BlockPos nPos = pos.relative(dir);
                 BlockState nState = getSupportState(nPos, be, outerLevel, bePos);
-                net.minecraft.world.level.block.state.properties.RedstoneSide side = getRedstoneSideFor(nPos, nState, be, outerLevel, bePos, dir);
+                RedstoneSide side = getRedstoneSideFor(nPos, nState, be, outerLevel, bePos, dir);
                 var prop = getRedstoneProperty(dir);
                 if (prop != null && ns.hasProperty(prop)) {
                     var cur = ns.getValue(prop);
@@ -1385,17 +1397,17 @@ public class MiniatureBlock extends BaseEntityBlock {
         return false;
     }
 
-    private net.minecraft.world.level.block.state.properties.BooleanProperty getCrossProperty(Direction dir) {
+    private BooleanProperty getCrossProperty(Direction dir) {
         return switch (dir) {
-            case NORTH -> net.minecraft.world.level.block.state.properties.BlockStateProperties.NORTH;
-            case SOUTH -> net.minecraft.world.level.block.state.properties.BlockStateProperties.SOUTH;
-            case EAST -> net.minecraft.world.level.block.state.properties.BlockStateProperties.EAST;
-            case WEST -> net.minecraft.world.level.block.state.properties.BlockStateProperties.WEST;
+            case NORTH -> BlockStateProperties.NORTH;
+            case SOUTH -> BlockStateProperties.SOUTH;
+            case EAST -> BlockStateProperties.EAST;
+            case WEST -> BlockStateProperties.WEST;
             default -> null;
         };
     }
 
-    private net.minecraft.world.level.block.state.properties.EnumProperty<net.minecraft.world.level.block.state.properties.WallSide> getWallHeightProperty(
+    private EnumProperty<WallSide> getWallHeightProperty(
             Direction dir) {
         return switch (dir) {
             case NORTH -> WallBlock.NORTH_WALL;
@@ -1406,7 +1418,7 @@ public class MiniatureBlock extends BaseEntityBlock {
         };
     }
 
-    private net.minecraft.world.level.block.state.properties.EnumProperty<net.minecraft.world.level.block.state.properties.RedstoneSide> getRedstoneProperty(
+    private EnumProperty<RedstoneSide> getRedstoneProperty(
             Direction dir) {
         return switch (dir) {
             case NORTH -> RedStoneWireBlock.NORTH;
@@ -1417,21 +1429,21 @@ public class MiniatureBlock extends BaseEntityBlock {
         };
     }
 
-    private net.minecraft.world.level.block.state.properties.RedstoneSide getRedstoneSideFor(BlockPos nPos,
+    private RedstoneSide getRedstoneSideFor(BlockPos nPos,
             BlockState nState, MiniatureBlockEntity be, Level outerLevel, BlockPos bePos, Direction dir) {
         if (nState.getBlock() instanceof RedStoneWireBlock) {
-            return net.minecraft.world.level.block.state.properties.RedstoneSide.SIDE;
+            return RedstoneSide.SIDE;
         }
         BlockPos upPos = nPos.above();
         BlockState upState = getSupportState(upPos, be, outerLevel, bePos);
         if (upState.getBlock() instanceof RedStoneWireBlock) {
             if (!nState.isAir() && nState.canOcclude()) {
-                return net.minecraft.world.level.block.state.properties.RedstoneSide.UP;
+                return RedstoneSide.UP;
             }
         }
         BlockPos downPos = nPos.below();
         // 下にワイヤがあって固体を介して接続する場合も考慮するが簡易では NONE
-        return net.minecraft.world.level.block.state.properties.RedstoneSide.NONE;
+        return RedstoneSide.NONE;
     }
 
     // ===== 骨粉 (ミニチュア内) =====
@@ -1444,7 +1456,7 @@ public class MiniatureBlock extends BaseEntityBlock {
             for (Property<?> prop : innerState.getProperties()) {
                 if (prop.getName().equals("age") && prop instanceof IntegerProperty ip) {
                     int age = innerState.getValue(ip);
-                    int max = java.util.Collections.max(ip.getPossibleValues());
+                    int max = Collections.max(ip.getPossibleValues());
                     if (age < max) {
                         // バニラ骨粉は +2〜5 程度だが、ミニチュアでは確実に成長させるため +1〜2
                         int add = 1 + level.getRandom().nextInt(2);
@@ -1483,7 +1495,7 @@ public class MiniatureBlock extends BaseEntityBlock {
                 if ((prop.getName().equals("age") || prop.getName().equals("growth"))
                         && prop instanceof IntegerProperty ip) {
                     int v = innerState.getValue(ip);
-                    int max = java.util.Collections.max(ip.getPossibleValues());
+                    int max = Collections.max(ip.getPossibleValues());
                     if (v < max) {
                         be.setCell(innerPos, innerState.setValue(ip, Math.min(max, v + 1)));
                         return true;
@@ -1499,47 +1511,47 @@ public class MiniatureBlock extends BaseEntityBlock {
         Block log;
         Block leaves;
         // mod苗木の対応付け
-        if (sapling == ruby.bamboo.core.init.BambooBlocks.SAKURA_SAPLING.get()
-                || sapling == net.minecraft.world.level.block.Blocks.OAK_SAPLING) {
+        if (sapling == BambooBlocks.SAKURA_SAPLING.get()
+                || sapling == Blocks.OAK_SAPLING) {
             // 桜は特別、他は桜苗木ではないので OAK 判定は後段へ
         }
-        if (sapling == ruby.bamboo.core.init.BambooBlocks.SAKURA_SAPLING.get()) {
-            log = ruby.bamboo.core.init.BambooBlocks.SAKURA_LOG.get();
-            leaves = ruby.bamboo.core.init.BambooBlocks.SAKURA_LEAVES.get();
-        } else if (sapling == ruby.bamboo.core.init.BambooBlocks.MAPLE_SAPLING.get()) {
-            log = ruby.bamboo.core.init.BambooBlocks.MAPLE_LOG.get();
-            leaves = ruby.bamboo.core.init.BambooBlocks.MAPLE_LEAVES.get();
-        } else if (sapling == ruby.bamboo.core.init.BambooBlocks.GINKGO_SAPLING.get()) {
-            log = ruby.bamboo.core.init.BambooBlocks.GINKGO_LOG.get();
-            leaves = ruby.bamboo.core.init.BambooBlocks.GINKGO_LEAVES.get();
-        } else if (sapling == ruby.bamboo.core.init.BambooBlocks.HINOKI_SAPLING.get()) {
-            log = ruby.bamboo.core.init.BambooBlocks.HINOKI_LOG.get();
-            leaves = ruby.bamboo.core.init.BambooBlocks.HINOKI_LEAVES.get();
-        } else if (sapling == net.minecraft.world.level.block.Blocks.OAK_SAPLING) {
-            log = net.minecraft.world.level.block.Blocks.OAK_LOG;
-            leaves = net.minecraft.world.level.block.Blocks.OAK_LEAVES;
-        } else if (sapling == net.minecraft.world.level.block.Blocks.BIRCH_SAPLING) {
-            log = net.minecraft.world.level.block.Blocks.BIRCH_LOG;
-            leaves = net.minecraft.world.level.block.Blocks.BIRCH_LEAVES;
-        } else if (sapling == net.minecraft.world.level.block.Blocks.SPRUCE_SAPLING) {
-            log = net.minecraft.world.level.block.Blocks.SPRUCE_LOG;
-            leaves = net.minecraft.world.level.block.Blocks.SPRUCE_LEAVES;
-        } else if (sapling == net.minecraft.world.level.block.Blocks.JUNGLE_SAPLING) {
-            log = net.minecraft.world.level.block.Blocks.JUNGLE_LOG;
-            leaves = net.minecraft.world.level.block.Blocks.JUNGLE_LEAVES;
-        } else if (sapling == net.minecraft.world.level.block.Blocks.ACACIA_SAPLING) {
-            log = net.minecraft.world.level.block.Blocks.ACACIA_LOG;
-            leaves = net.minecraft.world.level.block.Blocks.ACACIA_LEAVES;
-        } else if (sapling == net.minecraft.world.level.block.Blocks.DARK_OAK_SAPLING) {
-            log = net.minecraft.world.level.block.Blocks.DARK_OAK_LOG;
-            leaves = net.minecraft.world.level.block.Blocks.DARK_OAK_LEAVES;
-        } else if (sapling == net.minecraft.world.level.block.Blocks.CHERRY_SAPLING) {
-            log = net.minecraft.world.level.block.Blocks.CHERRY_LOG;
-            leaves = net.minecraft.world.level.block.Blocks.CHERRY_LEAVES;
+        if (sapling == BambooBlocks.SAKURA_SAPLING.get()) {
+            log = BambooBlocks.SAKURA_LOG.get();
+            leaves = BambooBlocks.SAKURA_LEAVES.get();
+        } else if (sapling == BambooBlocks.MAPLE_SAPLING.get()) {
+            log = BambooBlocks.MAPLE_LOG.get();
+            leaves = BambooBlocks.MAPLE_LEAVES.get();
+        } else if (sapling == BambooBlocks.GINKGO_SAPLING.get()) {
+            log = BambooBlocks.GINKGO_LOG.get();
+            leaves = BambooBlocks.GINKGO_LEAVES.get();
+        } else if (sapling == BambooBlocks.HINOKI_SAPLING.get()) {
+            log = BambooBlocks.HINOKI_LOG.get();
+            leaves = BambooBlocks.HINOKI_LEAVES.get();
+        } else if (sapling == Blocks.OAK_SAPLING) {
+            log = Blocks.OAK_LOG;
+            leaves = Blocks.OAK_LEAVES;
+        } else if (sapling == Blocks.BIRCH_SAPLING) {
+            log = Blocks.BIRCH_LOG;
+            leaves = Blocks.BIRCH_LEAVES;
+        } else if (sapling == Blocks.SPRUCE_SAPLING) {
+            log = Blocks.SPRUCE_LOG;
+            leaves = Blocks.SPRUCE_LEAVES;
+        } else if (sapling == Blocks.JUNGLE_SAPLING) {
+            log = Blocks.JUNGLE_LOG;
+            leaves = Blocks.JUNGLE_LEAVES;
+        } else if (sapling == Blocks.ACACIA_SAPLING) {
+            log = Blocks.ACACIA_LOG;
+            leaves = Blocks.ACACIA_LEAVES;
+        } else if (sapling == Blocks.DARK_OAK_SAPLING) {
+            log = Blocks.DARK_OAK_LOG;
+            leaves = Blocks.DARK_OAK_LEAVES;
+        } else if (sapling == Blocks.CHERRY_SAPLING) {
+            log = Blocks.CHERRY_LOG;
+            leaves = Blocks.CHERRY_LEAVES;
         } else {
             // 未対応の苗木は汎用オークで代用
-            log = net.minecraft.world.level.block.Blocks.OAK_LOG;
-            leaves = net.minecraft.world.level.block.Blocks.OAK_LEAVES;
+            log = Blocks.OAK_LOG;
+            leaves = Blocks.OAK_LEAVES;
         }
         int size = be.getSize();
         // 必要高さ: 幹4 + 葉1 = 5。苗木位置 y から y+5 が範囲内かつ空であること

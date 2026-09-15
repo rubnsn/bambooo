@@ -6,6 +6,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -61,7 +62,7 @@ public class AndonBlock extends Block {
      */
     @Override
     public BlockState updateShape(BlockState state, Direction dir, BlockState neighborState,
-            net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+            LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
         if (dir == Direction.DOWN) {
             return state.setValue(ON_GROUND, !level.isEmptyBlock(pos.below()));
         }

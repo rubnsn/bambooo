@@ -18,7 +18,10 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -45,7 +48,7 @@ import ruby.bamboo.core.init.BambooBlockEntities;
  * 横スライド描画を実現している。本移植は sakura準拠 7種 (shoji 3種+husuma+glass2種+yukimi) を踏襲する。
  * 透過3種は translucent、他は solid/cutout 相当だが RenderType は BambooClientSetup で付与する。
  */
-public class SlideDoorBlock extends DoorBlock implements net.minecraft.world.level.block.EntityBlock {
+public class SlideDoorBlock extends DoorBlock implements EntityBlock {
 
     public static final BooleanProperty MIRROR = BooleanProperty.create("mirror");
     public static final BooleanProperty MOVED = BooleanProperty.create("moved");
@@ -259,7 +262,7 @@ public class SlideDoorBlock extends DoorBlock implements net.minecraft.world.lev
     }
 
     @Override
-    public BlockState rotate(BlockState state, net.minecraft.world.level.block.Rotation rot) {
+    public BlockState rotate(BlockState state, Rotation rot) {
         if (state.getValue(OPEN)) {
             return state;
         }
@@ -267,7 +270,7 @@ public class SlideDoorBlock extends DoorBlock implements net.minecraft.world.lev
     }
 
     @Override
-    public BlockState mirror(BlockState state, net.minecraft.world.level.block.Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         if (state.getValue(OPEN)) {
             return state;
         }

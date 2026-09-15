@@ -1,17 +1,29 @@
 package ruby.bamboo.item;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.HoeItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.neoforged.neoforge.common.ItemAbilities;
 import ruby.bamboo.core.init.BambooBlocks;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * 田んぼクワ (sakura PaddyFieldHoe の移植)。
@@ -43,7 +55,7 @@ public class PaddyFieldHoeItem extends HoeItem {
                     || block == Blocks.FARMLAND;
             // また、ForgeのToolActionでも判定 (他mod互換) — getToolModifiedStateが非nullなら耕せる
             if (!isTillable) {
-                var toolState = state.getToolModifiedState(context, net.neoforged.neoforge.common.ItemAbilities.HOE_TILL, false);
+                var toolState = state.getToolModifiedState(context, ItemAbilities.HOE_TILL, false);
                 if (toolState != null) {
                     isTillable = true;
                 }
@@ -54,15 +66,21 @@ public class PaddyFieldHoeItem extends HoeItem {
                 if (!level.isClientSide) {
                     level.setBlock(pos, BambooBlocks.PADDY_FIELD.get().defaultBlockState(), 11);
                     // sakura: level.setBlockState(pos, PADDY_FIELD.default)
-                    level.gameEvent(net.minecraft.world.level.gameevent.GameEvent.BLOCK_CHANGE, pos,
-                            net.minecraft.world.level.gameevent.GameEvent.Context.of(player, BambooBlocks.PADDY_FIELD.get().defaultBlockState()));
+                    level.gameEvent(GameEvent.BLOCK_CHANGE, pos,
+                            GameEvent.Context.of(player, BambooBlocks.PADDY_FIELD.get().defaultBlockState()));
                     if (player != null) {
-                        context.getItemInHand().hurtAndBreak(1, player, context.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND ? net.minecraft.world.entity.EquipmentSlot.MAINHAND : net.minecraft.world.entity.EquipmentSlot.OFFHAND);
+                        context.getItemInHand().hurtAndBreak(1, player, context.getHand() == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
                     }
                 }
                 return InteractionResult.sidedSuccess(level.isClientSide);
             }
         }
         return InteractionResult.PASS;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("tooltip.bamboomod.paddy_field_hoe").withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.translatable("tooltip.bamboomod.paddy_field.bucket").withStyle(ChatFormatting.AQUA));
     }
 }
