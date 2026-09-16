@@ -1,0 +1,11 @@
+{
+  "type": "bamboomod:millstone",
+  "category": "misc",
+  "ingredient": {
+    "item": "minecraft:sand"
+  },
+  "count": 1,
+  "result": {
+    "item": "minecraft:clay_ball"
+  }
+}

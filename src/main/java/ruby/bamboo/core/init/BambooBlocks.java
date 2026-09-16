@@ -184,14 +184,16 @@ public final class BambooBlocks {
     public static final RegistryObject<BambooBlock> BAMBOO = registerNoItem("bamboo",
             () -> new BambooBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.PLANT).sound(SoundType.BAMBOO)
-                    .strength(0.5f).randomTicks().noOcclusion().dynamicShape()
+                    // 旧 setHardness(0.75F)/setResistance(1F)。適正ツールは mineable/axe タグ側
+                    .strength(0.75F, 1.0F).randomTicks().noOcclusion().dynamicShape()
                     .offsetType(BlockBehaviour.OffsetType.XZ)));
 
     /** たけのこ (旧 bamboo_shoot / shoot) */
     public static final RegistryObject<BambooShootBlock> BAMBOO_SHOOT = register("bamboo_shoot",
             () -> new BambooShootBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.PLANT).sound(SoundType.CROP)
-                    .strength(0.0f).randomTicks().noCollission().instabreak()));
+                    // 旧 setHardness(0.05F)。適正ツールは mineable/hoe タグ側
+                    .strength(0.05F).randomTicks().noCollission()));
 
     /** 稲 (旧 rice_plant) */
     public static final RegistryObject<RicePlantBlock> RICE_PLANT = registerNoItem("rice_plant",

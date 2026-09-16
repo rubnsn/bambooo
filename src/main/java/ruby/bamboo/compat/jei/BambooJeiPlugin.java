@@ -107,10 +107,10 @@ public class BambooJeiPlugin implements IModPlugin {
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
         // クリック領域: GUIテクスチャ上の矢印/炉部分をクリックでJEIを開く
+        // ※投入スロット(80,9)には置かないこと。スロットと重ねるとクリックがJEIに奪われ
+        // レシピ表示が投入スロットに被ってアイテムの出し入れができなくなる
         registration.addRecipeClickArea(CampfireScreen.class, 90, 35, 23, 16, CampfireCategory.TYPE);
         registration.addRecipeClickArea(MillStoneScreen.class, 80, 28, 16, 16, MillstoneCategory.TYPE);
-        // 入力スロットクリックでも拾えるように追加
-        registration.addRecipeClickArea(MillStoneScreen.class, 80, 9, 16, 16, MillstoneCategory.TYPE);
     }
 
     @Override
