@@ -123,9 +123,11 @@ public class DaifugoGameScreen extends Screen {
 
     private void playFxSound(String key) {
         switch (key) {
-            case "cut" -> playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.1F, 0.8F);
+            // 場を流すだけの確定流しは8切りと同一SE
+            case "cut", "superstairs" ->
+                    playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.1F, 0.8F);
             case "spe3" -> playSound(SoundEvents.SHIELD_BLOCK, 1.0F, 0.9F);
-            case "six", "superstairs" ->
+            case "six" ->
                     playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0F, 0.8F);
             default -> playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 0.7F, 0.5F);
         }
