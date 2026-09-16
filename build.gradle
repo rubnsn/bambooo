@@ -186,6 +186,11 @@ repositories {
         name = "Progwml6"
         url = "https://dvs1.progwml6.com/files/maven/"
     }
+    // Modrinth maven (Jade用)
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
 
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
@@ -210,6 +215,12 @@ dependencies {
     compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
     compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
     runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
+
+    // Jade — JEI同様の任意連携。Bamboo単体でもbuild/動作する。
+    // プラグインクラス (compat.jade) はJade側のアノテーションスキャンでのみ読まれるため、
+    // Jade不在時はロードされず NoClassDefFoundError にならない (JEIプラグインと同方式)。
+    compileOnly fg.deobf("maven.modrinth:jade:${jade_version}")
+    runtimeOnly fg.deobf("maven.modrinth:jade:${jade_version}")
 
     // Embeddium (SodiumのForge移植) — 開発環境のみ (runClient軽量化用)。
     // runtimeOnlyのため配布jarに同梱されず、mods.toml依存追加も不要。

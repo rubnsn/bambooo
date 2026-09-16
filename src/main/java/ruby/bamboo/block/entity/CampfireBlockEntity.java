@@ -367,6 +367,22 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
         return getRatio(cookTime, maxCookTime, 100);
     }
 
+    /** 調理中かどうか (Jade表示用)。cookTimeはmaxからのカウントダウン式 */
+    public boolean isBurning() {
+        return isBurn;
+    }
+
+    /** 調理進捗0-100 (Jade表示用)。待機時は0 */
+    public int getCookProgress() {
+        if (!isBurn || maxCookTime <= 0) return 0;
+        return Math.round((float) (maxCookTime - cookTime) / maxCookTime * 100);
+    }
+
+    /** 調理中の結果品 (Jade表示用)。待機時はEMPTY */
+    public ItemStack getCookingResult() {
+        return nowCookingResult;
+    }
+
     private int getRatio(float a, float b, int scale) {
         return Math.round(a / b * scale);
     }
