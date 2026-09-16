@@ -70,56 +70,83 @@ public class WishJsonLoader extends SimpleJsonResourceReloadListener {
                 continue;
             }
 
+            // 複数エントリ形式 (transform.json 等): {"entries": [{...}, ...]}
+            if (obj.has("entries") && obj.get("entries").isJsonArray()) {
+                JsonArray entries = obj.getAsJsonArray("entries");
+                for (JsonElement ee : entries) {
+                    if (!ee.isJsonObject()) {
+                        continue;
+                    }
+                    try {
+                        WishEntry we = parseEntry(rl, ee.getAsJsonObject());
+                        if (we != null) {
+                            newEntries.add(we);
+                        }
+                    } catch (Exception ex) {
+                        LOGGER.error("Failed to parse wish json entry in {}", rl, ex);
+                    }
+                }
+                continue;
+            }
+
             try {
-                String id = obj.has("id") ? obj.get("id").getAsString() : rl.toString();
-                String pattern = obj.has("pattern") ? obj.get("pattern").getAsString() : "";
-                if (pattern.isEmpty()) {
-                    LOGGER.warn("Wish entry {} missing pattern, skipping", id);
-                    continue;
+                WishEntry we = parseEntry(rl, obj);
+                if (we != null) {
+                    newEntries.add(we);
                 }
-                String match = obj.has("match") ? obj.get("match").getAsString() : "contains";
-                boolean priority = obj.has("priority") && obj.get("priority").getAsBoolean();
-                int weight = obj.has("weight") ? obj.get("weight").getAsInt() : 1;
-                String message = obj.has("message") ? obj.get("message").getAsString() : null;
-                List<WishEffect> effects = new ArrayList<>();
-
-                if (obj.has("effect") && obj.get("effect").isJsonObject()) {
-                    JsonObject eobj = obj.getAsJsonObject("effect");
-                    String type = eobj.has("type") ? eobj.get("type").getAsString() : "";
-                    if (!type.isEmpty()) {
-                        JsonObject args = eobj.deepCopy();
-                        args.remove("type");
-                        effects.add(new WishEffect(type, args));
-                    }
-                } else if (obj.has("effects") && obj.get("effects").isJsonArray()) {
-                    JsonArray arr = obj.getAsJsonArray("effects");
-                    for (JsonElement ee : arr) {
-                        if (!ee.isJsonObject()) continue;
-                        JsonObject eobj = ee.getAsJsonObject();
-                        String type = eobj.has("type") ? eobj.get("type").getAsString() : "";
-                        if (type.isEmpty()) continue;
-                        JsonObject args = eobj.deepCopy();
-                        args.remove("type");
-                        effects.add(new WishEffect(type, args));
-                    }
-                } else {
-                    LOGGER.warn("Wish entry {} has no effect/effects", id);
-                    continue;
-                }
-
-                if (effects.isEmpty()) {
-                    LOGGER.warn("Wish entry {} has empty effects", id);
-                    continue;
-                }
-
-                WishEntry we = new WishEntry(id, pattern, match, priority, weight, message, effects);
-                newEntries.add(we);
             } catch (Exception ex) {
                 LOGGER.error("Failed to parse wish json {}", rl, ex);
             }
+            continue;
         }
 
         WishManager.setEntries(newEntries, newPrefixes);
         LOGGER.info("Loaded {} wish entries", newEntries.size());
+    }
+
+    /** 単一エントリの解析。entries 配列要素と単体ファイルで共用する。 */
+    private static WishEntry parseEntry(ResourceLocation rl, JsonObject obj) {
+        String id = obj.has("id") ? obj.get("id").getAsString() : rl.toString();
+        String pattern = obj.has("pattern") ? obj.get("pattern").getAsString() : "";
+        if (pattern.isEmpty()) {
+            LOGGER.warn("Wish entry {} missing pattern, skipping", id);
+            return null;
+        }
+        String match = obj.has("match") ? obj.get("match").getAsString() : "contains";
+        boolean priority = obj.has("priority") && obj.get("priority").getAsBoolean();
+        int weight = obj.has("weight") ? obj.get("weight").getAsInt() : 1;
+        String message = obj.has("message") ? obj.get("message").getAsString() : null;
+        List<WishEffect> effects = new ArrayList<>();
+
+        if (obj.has("effect") && obj.get("effect").isJsonObject()) {
+            JsonObject eobj = obj.getAsJsonObject("effect");
+            String type = eobj.has("type") ? eobj.get("type").getAsString() : "";
+            if (!type.isEmpty()) {
+                JsonObject args = eobj.deepCopy();
+                args.remove("type");
+                effects.add(new WishEffect(type, args));
+            }
+        } else if (obj.has("effects") && obj.get("effects").isJsonArray()) {
+            JsonArray arr = obj.getAsJsonArray("effects");
+            for (JsonElement ee : arr) {
+                if (!ee.isJsonObject()) continue;
+                JsonObject eobj = ee.getAsJsonObject();
+                String type = eobj.has("type") ? eobj.get("type").getAsString() : "";
+                if (type.isEmpty()) continue;
+                JsonObject args = eobj.deepCopy();
+                args.remove("type");
+                effects.add(new WishEffect(type, args));
+            }
+        } else {
+            LOGGER.warn("Wish entry {} has no effect/effects", id);
+            return null;
+        }
+
+        if (effects.isEmpty()) {
+            LOGGER.warn("Wish entry {} has empty effects", id);
+            return null;
+        }
+
+        return new WishEntry(id, pattern, match, priority, weight, message, effects);
     }
 }

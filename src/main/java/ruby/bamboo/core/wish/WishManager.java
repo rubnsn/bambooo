@@ -1,10 +1,18 @@
 package ruby.bamboo.core.wish;
 
 import com.mojang.logging.LogUtils;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.function.Predicate;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -19,12 +27,27 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.Llama;
+import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.EnchantedBookItem;
+import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
@@ -35,15 +58,15 @@ import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.registries.BuiltInRegistries;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import ruby.bamboo.core.config.WishConfig;
+import ruby.bamboo.entity.companion.DolphinCompanionEntity;
+import ruby.bamboo.entity.companion.LlamaCompanionEntity;
 import ruby.bamboo.util.WishBiomeSearch;
 import ruby.bamboo.util.WishEntitySearch;
 import ruby.bamboo.util.WishItemSearch;
 import ruby.bamboo.util.WishNormalizer;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 願いの解釈と実行。常時サーバ側で実行。
@@ -74,6 +97,15 @@ public final class WishManager {
     }
 
     public static void resolveAndExecute(ServerPlayer player, String rawInput) {
+        resolveAndExecute(player, rawInput, false);
+    }
+
+    /**
+     * 願いの解釈と実行。カウント抽選は発動時 (WishEventHandler) で済ませてあるため、
+     * ここでは成功時にカウント+1するのみ。fallback (水湧き等) はノーカン。
+     * 杖由来 (fromWand) はカウント対象外。
+     */
+    public static void resolveAndExecute(ServerPlayer player, String rawInput, boolean fromWand) {
         if (player == null) return;
         // 願い叫びを全員にブロードキャスト（システムメッセージ風）
         String shoutRaw = rawInput == null ? "" : rawInput.trim().replaceAll("\\p{Cntrl}", "");
@@ -111,7 +143,7 @@ public final class WishManager {
         }
         if (!priorityHits.isEmpty()) {
             WishEntry chosen = weightedRandom(priorityHits, random);
-            executeEntry(player, chosen, random);
+            executeEntry(player, chosen, random, fromWand);
             return;
         }
 
@@ -125,7 +157,7 @@ public final class WishManager {
         }
         if (!hits.isEmpty()) {
             WishEntry chosen = weightedRandom(hits, random);
-            executeEntry(player, chosen, random);
+            executeEntry(player, chosen, random, fromWand);
             return;
         }
 
@@ -133,7 +165,7 @@ public final class WishManager {
         WishEntry approx = findClosestApproximate(normalized, random);
         if (approx != null) {
             LOGGER.info("Wish approximate matched {} for '{}' (distance minimal)", approx.id, normalized);
-            executeEntry(player, approx, random);
+            executeEntry(player, approx, random, fromWand);
             return;
         }
 
@@ -143,6 +175,7 @@ public final class WishManager {
             summonEntityType(player, hitType, 1);
             Component name = hitType.getDescription();
             player.displayClientMessage(Component.translatable("bamboomod.wish.result.summon", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            markSucceeded(player, fromWand);
             return;
         }
 
@@ -163,6 +196,7 @@ public final class WishManager {
                     Component name = tmp.getHoverName();
                     player.displayClientMessage(Component.translatable("bamboomod.wish.result.item", name).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
                 }
+                markSucceeded(player, fromWand);
                 return;
             }
             // 近似も含めてアイテムが見つからなかった場合はエントリの近似再検索を試みず即フォールバック（アイテム語が完全に外れている）
@@ -176,6 +210,7 @@ public final class WishManager {
             boolean ok = teleportToBiome(player, biomeMatch.toString(), random);
             if (ok) {
                 player.displayClientMessage(Component.translatable("bamboomod.wish.result.biome").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                markSucceeded(player, fromWand);
             } else {
                 player.displayClientMessage(Component.translatable("bamboomod.wish.result.biome_notfound").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
             }
@@ -183,12 +218,12 @@ public final class WishManager {
         }
 
         // 4.6 vague category random (「武器！」「アイテム！」など不正確な願いはカテゴリからランダム)
-        if (handleCategoryRandom(player, normalized, random)) {
+        if (handleCategoryRandom(player, normalized, random, fromWand)) {
             return;
         }
 
         // 4.7 loose random char match (完全マッチしなかったら正確性を捨ててランダムな1文字が一致したらその願いを叶える)
-        if (tryRandomCharWish(player, normalized, random)) {
+        if (tryRandomCharWish(player, normalized, random, fromWand)) {
             return;
         }
 
@@ -201,6 +236,14 @@ public final class WishManager {
             if ("punishment".equalsIgnoreCase(eff.type)) return true;
         }
         return false;
+    }
+
+    /** 成功時のみカウント増加。fallback・杖由来は呼ばないこと。 */
+    private static void markSucceeded(ServerPlayer player, boolean fromWand) {
+        if (fromWand) {
+            return;
+        }
+        WishHelper.increment(player);
     }
 
     private static String extractItemSearchTerm(String normalizedInput) {
@@ -306,75 +349,71 @@ public final class WishManager {
         return prev[m];
     }
 
-    private static boolean handleCategoryRandom(ServerPlayer player, String normalized, RandomSource random) {
+    private static boolean handleCategoryRandom(ServerPlayer player, String normalized, RandomSource random, boolean fromWand) {
+        Runnable action = findCategoryAction(player, normalized, random);
+        if (action == null) {
+            return false;
+        }
+        action.run();
+        markSucceeded(player, fromWand);
+        return true;
+    }
+
+    private static Runnable findCategoryAction(ServerPlayer player, String normalized, RandomSource random) {
         // 正規化済み入力はひらがな/小文字化済み。句読点は除去せず contains で判定するため、lang基準の正確な名前を要求する意図に沿う
         // ただし末尾の「！」「!」等は無視してカテゴリ判定する
         String stripped = normalized.replaceAll("[\\p{Punct}！。、]+$", "").trim();
         stripped = stripped.replaceAll("^[\\p{Punct}！。、]+", "").trim();
-        if (stripped.isEmpty()) return false;
+        if (stripped.isEmpty()) return null;
 
         // サブカテゴリを優先（「剣」「斧」等が含まれていればトップカテゴリより細分化）
         // 剣: けん/剣/そーど/sword
         if (containsAny(normalized, "けん", "剣", "そーど", "sword")) {
             // 武器 剣 のようにトップカテゴリと併記でもここで拾われる
-            giveRandomSword(player, random);
-            return true;
+            return () -> giveRandomSword(player, random);
         }
         if (containsAny(normalized, "おの", "斧", "あっくす", "axe")) {
-            giveRandomAxe(player, random);
-            return true;
+            return () -> giveRandomAxe(player, random);
         }
         if (containsAny(normalized, "つるはし", "ぴっける", "pickaxe", "pick")) {
-            giveRandomPickaxe(player, random);
-            return true;
+            return () -> giveRandomPickaxe(player, random);
         }
         if (containsAny(normalized, "しゃべる", "シャベル", "shovel")) {
             // WishNormalizerで シャベル→しゃべる に変換されるため両方カバー
-            giveRandomShovel(player, random);
-            return true;
+            return () -> giveRandomShovel(player, random);
         }
         if (containsAny(normalized, "くわ", "鍬", "hoe")) {
-            giveRandomHoe(player, random);
-            return true;
+            return () -> giveRandomHoe(player, random);
         }
         if (containsAny(normalized, "ゆみ", "弓", "bow") && !containsAny(normalized, "くろすぼう", "crossbow")) {
             // 弓はクロスボウと区別
-            giveRandomBow(player, random);
-            return true;
+            return () -> giveRandomBow(player, random);
         }
         if (containsAny(normalized, "くろすぼう", "crossbow")) {
-            giveRandomCrossbow(player, random);
-            return true;
+            return () -> giveRandomCrossbow(player, random);
         }
         if (containsAny(normalized, "とらいでんと", "trident")) {
-            giveRandomTrident(player, random);
-            return true;
+            return () -> giveRandomTrident(player, random);
         }
         if (containsAny(normalized, "つりざお", "釣り竿", "つり", "fishing", "rod")) {
-            giveRandomFishingRod(player, random);
-            return true;
+            return () -> giveRandomFishingRod(player, random);
         }
         // 防具部位: 防具 頭 のようにトップ + 部位で指定、部位単体でも可
         if (containsAny(normalized, "へるめっと", "ヘルメット", "かぶと", "兜", "あたま", "頭", "helmet", "helm")) {
             // 「防具 頭」でも「頭」単体でもヘルメット
-            giveRandomHelmet(player, random);
-            return true;
+            return () -> giveRandomHelmet(player, random);
         }
         if (containsAny(normalized, "ちぇすとぷれーと", "チェストプレート", "むね", "胸", "chestplate", "chest")) {
-            giveRandomChestplate(player, random);
-            return true;
+            return () -> giveRandomChestplate(player, random);
         }
         if (containsAny(normalized, "れぎんす", "レギンス", "leggings", "れっぎんす")) {
-            giveRandomLeggings(player, random);
-            return true;
+            return () -> giveRandomLeggings(player, random);
         }
         if (containsAny(normalized, "ぶーつ", "ブーツ", "boots", "くつ", "靴")) {
-            giveRandomBoots(player, random);
-            return true;
+            return () -> giveRandomBoots(player, random);
         }
         if (containsAny(normalized, "たて", "盾", "shield")) {
-            giveRandomShield(player, random);
-            return true;
+            return () -> giveRandomShield(player, random);
         }
         if (containsAny(normalized, "しょもつ", "書物", "えんちゃんと", "エンチャント", "ほん", "本", "ぶっく", "book")) {
             // 「道具 書物」や「本」単体はエンチャント本、ただし「本」が単独のときのみ厳密に（1文字のため誤爆防止で長さチェック）
@@ -382,35 +421,29 @@ public final class WishManager {
             boolean isBookAlone = tmpStripped.equals("ほん") || tmpStripped.equals("本") || tmpStripped.equals("ぶっく") || tmpStripped.equals("book");
             boolean isBookCompound = containsAny(normalized, "しょもつ", "書物", "えんちゃんと");
             if (isBookAlone || isBookCompound || (containsAny(normalized, "ほん", "本") && stripped.length() <= 3)) {
-                giveRandomEnchantedBook(player, random);
-                return true;
+                return () -> giveRandomEnchantedBook(player, random);
             }
         }
         // トップカテゴリ（部位指定なし）
         if (stripped.equals("ぶき") || stripped.equals("武器") || stripped.equals("weapon")) {
-            giveRandomWeapon(player, random);
-            return true;
+            return () -> giveRandomWeapon(player, random);
         }
         if (stripped.equals("あいてむ") || stripped.equals("item")) {
-            giveRandomItem(player, random);
-            return true;
+            return () -> giveRandomItem(player, random);
         }
         if (containsAny(stripped, "ぼうぐ", "防具", "armor", "armour")) {
             // 部位なしの「防具！」は全防具からランダム、部位ありは上で既に処理済み
             if (!containsAny(normalized, "あたま", "頭", "へるめっと", "helmet", "むね", "胸", "ちぇすと", "れぎんす", "ぶーつ", "たて", "盾")) {
-                giveRandomArmor(player, random);
-                return true;
+                return () -> giveRandomArmor(player, random);
             }
         }
         if (stripped.equals("どうぐ") || stripped.equals("道具") || stripped.equals("tool")) {
-            giveRandomTool(player, random);
-            return true;
+            return () -> giveRandomTool(player, random);
         }
         if (containsAny(stripped, "たべもの", "食べ物", "food", "しょくひん", "食品")) {
-            giveRandomFood(player, random);
-            return true;
+            return () -> giveRandomFood(player, random);
         }
-        return false;
+        return null;
     }
 
     private static boolean containsAny(String s, String... keywords) {
@@ -423,7 +456,7 @@ public final class WishManager {
         return false;
     }
 
-    private static boolean tryRandomCharWish(ServerPlayer player, String normalized, RandomSource random) {
+    private static boolean tryRandomCharWish(ServerPlayer player, String normalized, RandomSource random, boolean fromWand) {
         if (normalized == null || normalized.isEmpty()) return false;
         String stripped = normalized.replaceAll("\\s+", "");
         if (stripped.isEmpty()) return false;
@@ -463,7 +496,7 @@ public final class WishManager {
         if (candidates.isEmpty()) return false;
         WishEntry chosen = candidates.get(random.nextInt(candidates.size()));
         LOGGER.info("Wish random char '{}' (from '{}') matched {} (pattern '{}')", charStr, normalized, chosen.id, chosen.pattern);
-        executeEntry(player, chosen, random);
+        executeEntry(player, chosen, random, fromWand);
         return true;
     }
 
@@ -664,7 +697,7 @@ public final class WishManager {
         var enchLookup = player.serverLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
         java.util.List<Holder.Reference<Enchantment>> enchantments = enchLookup.listElements()
                 .filter(h -> !h.is(EnchantmentTags.CURSE)).toList();
-        ItemStack book = new ItemStack(net.minecraft.world.item.Items.ENCHANTED_BOOK);
+        ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
         if (!enchantments.isEmpty()) {
             var holder = enchantments.get(random.nextInt(enchantments.size()));
             int lvl = 1 + random.nextInt(holder.value().getMaxLevel());
@@ -737,7 +770,7 @@ public final class WishManager {
         }
     }
 
-    private static void executeEntry(ServerPlayer player, WishEntry entry, RandomSource random) {
+    private static void executeEntry(ServerPlayer player, WishEntry entry, RandomSource random, boolean fromWand) {
         LOGGER.info("Wish matched {} for {}: '{}' -> {}", entry.id, player.getName().getString(), entry.pattern, entry.effects.size());
         boolean hasOver = false;
         boolean hasPunishment = false;
@@ -750,6 +783,8 @@ public final class WishManager {
         String firstBiomeId = null;
         boolean hasTreasure = false;
         boolean hasRespawn = false;
+        boolean hasSpawner = false;
+        boolean hasRandomEgg = false;
         String firstTreasureLoot = null;
         for (WishEffect eff : entry.effects) {
             if (firstEffectType == null) firstEffectType = eff.type;
@@ -795,6 +830,13 @@ public final class WishManager {
                 hasTreasure = true;
                 if (eff.args.has("loot")) firstTreasureLoot = eff.args.get("loot").getAsString();
                 executeEffectInternal(player, eff, random);
+            } else if ("give_spawner".equalsIgnoreCase(eff.type)) {
+                // モンスタースポナー1個。中身はランダムで持ち運び不可、空は出ない。回収不可 (バニラ仕様)
+                hasSpawner = giveSpawnerInternal(player, random);
+            } else if ("give_random_egg".equalsIgnoreCase(eff.type) || "give_spawn_egg".equalsIgnoreCase(eff.type)) {
+                // スポーンエッグをランダム1種×count個 (既定10)。種類も持ち運び不可
+                int eggCount = eff.args.has("count") ? eff.args.get("count").getAsInt() : 10;
+                hasRandomEgg = giveRandomEggInternal(player, eggCount, random);
             } else {
                 executeEffectInternal(player, eff, random);
             }
@@ -814,6 +856,18 @@ public final class WishManager {
             }
         } else if (hasTreasure) {
             player.displayClientMessage(Component.translatable("bamboomod.wish.result.treasure").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+        } else if (hasSpawner) {
+            if (entry.message != null && !entry.message.isEmpty()) {
+                player.displayClientMessage(Component.translatable(entry.message).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            } else {
+                player.displayClientMessage(Component.translatable("bamboomod.wish.result.spawner").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            }
+        } else if (hasRandomEgg) {
+            if (entry.message != null && !entry.message.isEmpty()) {
+                player.displayClientMessage(Component.translatable(entry.message).withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            } else {
+                player.displayClientMessage(Component.translatable("bamboomod.wish.result.egg").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+            }
         } else if (firstBiomeId != null || "teleport_biome".equalsIgnoreCase(firstEffectType)) {
             // biome message handled inside teleportBiomeInternal (success/fail). If we reach here without message, show generic
             if (entry.message != null && !entry.message.isEmpty()) {
@@ -851,6 +905,7 @@ public final class WishManager {
         } else {
             player.displayClientMessage(Component.translatable("bamboomod.wish.result.generic").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
         }
+        markSucceeded(player, fromWand);
     }
 
     private static Component getEntityDisplayName(String entityId) {
@@ -949,6 +1004,21 @@ public final class WishManager {
                     spawnTreasureChest(player, loot, random);
                     player.displayClientMessage(Component.translatable("bamboomod.wish.result.treasure").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
                 }
+                case "give_spawner" -> {
+                    if (giveSpawnerInternal(player, random)) {
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.spawner").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    } else {
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.generic").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    }
+                }
+                case "give_random_egg", "give_spawn_egg" -> {
+                    int eggCount = eff.args.has("count") ? eff.args.get("count").getAsInt() : 10;
+                    if (giveRandomEggInternal(player, eggCount, random)) {
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.egg").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    } else {
+                        player.displayClientMessage(Component.translatable("bamboomod.wish.result.generic").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC), false);
+                    }
+                }
                 default -> LOGGER.warn("Unknown wish effect type {}", type);
             }
         } catch (Exception ex) {
@@ -1019,14 +1089,14 @@ public final class WishManager {
 
     private static boolean isToolForGuaranteedOverenchant(Item item) {
         // エンチャント本は除外
-        if (item instanceof net.minecraft.world.item.EnchantedBookItem) return false;
-        return item instanceof net.minecraft.world.item.TieredItem
-                || item instanceof net.minecraft.world.item.BowItem
-                || item instanceof net.minecraft.world.item.CrossbowItem
-                || item instanceof net.minecraft.world.item.TridentItem
-                || item instanceof net.minecraft.world.item.FishingRodItem
-                || item instanceof net.minecraft.world.item.ArmorItem
-                || item instanceof net.minecraft.world.item.ShieldItem;
+        if (item instanceof EnchantedBookItem) return false;
+        return item instanceof TieredItem
+                || item instanceof BowItem
+                || item instanceof CrossbowItem
+                || item instanceof TridentItem
+                || item instanceof FishingRodItem
+                || item instanceof ArmorItem
+                || item instanceof ShieldItem;
     }
 
     private static boolean tryOverEnchantDistinct(ItemStack stack, RandomSource random) {
@@ -1103,6 +1173,11 @@ public final class WishManager {
                     String loot = eff.args.has("loot") ? eff.args.get("loot").getAsString() : "";
                     if (loot.isEmpty() && eff.args.has("table")) loot = eff.args.get("table").getAsString();
                     spawnTreasureChest(player, loot, random);
+                }
+                case "give_spawner" -> giveSpawnerInternal(player, random);
+                case "give_random_egg", "give_spawn_egg" -> {
+                    int eggCount = eff.args.has("count") ? eff.args.get("count").getAsInt() : 10;
+                    giveRandomEggInternal(player, eggCount, random);
                 }
                 default -> LOGGER.warn("Unknown wish effect type {} (internal)", type);
             }
@@ -1218,18 +1293,18 @@ public final class WishManager {
                 }
                 horse.setOwnerUUID(player.getUUID());
             }
-            if (entity instanceof ruby.bamboo.entity.companion.DolphinCompanionEntity dolphin) {
+            if (entity instanceof DolphinCompanionEntity dolphin) {
                 dolphin.setOwnerUUID(player.getUUID());
                 dolphin.setPersistenceRequired();
             }
-            if (entity instanceof ruby.bamboo.entity.companion.LlamaCompanionEntity llama) {
+            if (entity instanceof LlamaCompanionEntity llama) {
                 llama.tameForPlayer(player);
-            } else if (entity instanceof net.minecraft.world.entity.animal.horse.Llama vanillaLlama) {
+            } else if (entity instanceof Llama vanillaLlama) {
                 // vanilla llama summoned via old friend entries? make chested
                 try { vanillaLlama.setChest(true); } catch (Exception ignored) {}
             }
             // ensure persistence for all summoned friends
-            if (entity instanceof net.minecraft.world.entity.Mob mob) {
+            if (entity instanceof Mob mob) {
                 mob.setPersistenceRequired();
             }
             level.addFreshEntity(entity);
@@ -1320,7 +1395,7 @@ public final class WishManager {
                     player.setYRot(targetYaw);
                     player.setYHeadRot(targetYaw);
                 } else {
-                    var set = java.util.EnumSet.noneOf(net.minecraft.world.entity.RelativeMovement.class);
+                    var set = EnumSet.noneOf(RelativeMovement.class);
                     player.teleportTo(targetLevel, targetVec.x, targetVec.y, targetVec.z, set, targetYaw, 0.0F);
                 }
                 current.playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
@@ -1351,7 +1426,7 @@ public final class WishManager {
             return false;
         }
         // predicate for Holder<Biome>
-        java.util.function.Predicate<Holder<Biome>> predicate = holder -> holder.is(key);
+        Predicate<Holder<Biome>> predicate = holder -> holder.is(key);
         // also support string matching via WishBiomeSearch normalization fallback
         BlockPos center = player.blockPosition();
         int radius = 6400;
@@ -1394,10 +1469,10 @@ public final class WishManager {
      * heightmap MOTION_BLOCKING_NO_LEAVES で地表を取得し、5x5 螺旋で探索。
      * 水上バイオームでも陸地が見つからなければ水面直上を返す。
      */
-    @org.jetbrains.annotations.Nullable
+    @Nullable
     private static BlockPos findSafeGround(ServerLevel level, BlockPos center) {
         // 陸地優先で探索
-        for (BlockPos pos : BlockPos.spiralAround(center, 2, net.minecraft.core.Direction.EAST, net.minecraft.core.Direction.SOUTH)) {
+        for (BlockPos pos : BlockPos.spiralAround(center, 2, Direction.EAST, Direction.SOUTH)) {
             BlockPos groundTop = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos);
             if (groundTop.getY() <= level.getMinBuildHeight()) continue;
             BlockPos feet = groundTop.above();
@@ -1411,7 +1486,7 @@ public final class WishManager {
             if (feetAir && headAir) return feet;
         }
         // 陸地が見つからなければ水上も許容して再探索
-        for (BlockPos pos : BlockPos.spiralAround(center, 2, net.minecraft.core.Direction.EAST, net.minecraft.core.Direction.SOUTH)) {
+        for (BlockPos pos : BlockPos.spiralAround(center, 2, Direction.EAST, Direction.SOUTH)) {
             BlockPos groundTop = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos);
             if (groundTop.getY() <= level.getMinBuildHeight()) continue;
             BlockPos feet = groundTop.above();
@@ -1429,6 +1504,107 @@ public final class WishManager {
         ResourceLocation found = WishBiomeSearch.findBest(normalizedQuery, player.serverLevel());
         if (found == null) return false;
         return teleportToBiome(player, found.toString(), random);
+    }
+
+    /**
+     * スポーンエッグを持つ全エンティティの (type, egg) ペアを収集する。
+     * スポナー・ランダムエッグ両方の抽選母集団。卵がある = スポナーに設定可能な生きたMobのため、空スポナーにならない。
+     * 1.21: ForgeSpawnEggItem は NeoForge に無いため、登録アイテム走査 + SpawnEggItem#getType で解決する。
+     */
+    private static List<EggPick> collectEggPicks() {
+        List<EggPick> out = new ArrayList<>();
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (!(item instanceof SpawnEggItem egg)) {
+                continue;
+            }
+            try {
+                EntityType<?> type = egg.getType(new ItemStack(egg));
+                if (type != null) {
+                    out.add(new EggPick(type, egg));
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return out;
+    }
+
+    private static final class EggPick {
+        final EntityType<?> type;
+        final Item egg;
+
+        EggPick(EntityType<?> type, Item egg) {
+            this.type = type;
+            this.egg = egg;
+        }
+    }
+
+    /**
+     * モンスタースポナーを1個だけ頭上に落とす。中身はランダムで持ち運び不可、空は出ない。
+     * 設置後はバニラ仕様で回収できない。
+     * @return 成功したら true
+     */
+    private static boolean giveSpawnerInternal(ServerPlayer player, RandomSource random) {
+        List<EggPick> picks = collectEggPicks();
+        if (picks.isEmpty()) {
+            LOGGER.warn("No spawn eggs registered, cannot grant spawner");
+            return false;
+        }
+        EggPick pick = picks.get(random.nextInt(picks.size()));
+        ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(pick.type);
+        if (key == null) return false;
+        ItemStack stack = new ItemStack(Blocks.SPAWNER, 1);
+        CompoundTag entityTag = new CompoundTag();
+        entityTag.putString("id", key.toString());
+        CompoundTag spawnData = new CompoundTag();
+        spawnData.put("entity", entityTag);
+        CompoundTag potEntity = new CompoundTag();
+        potEntity.putString("id", key.toString());
+        CompoundTag potData = new CompoundTag();
+        potData.put("entity", potEntity);
+        CompoundTag potential = new CompoundTag();
+        potential.put("data", potData);
+        potential.putInt("weight", 1);
+        ListTag potentials = new ListTag();
+        potentials.add(potential);
+        CompoundTag beTag = new CompoundTag();
+        beTag.put("SpawnData", spawnData);
+        beTag.put("SpawnPotentials", potentials);
+        beTag.putShort("SpawnCount", (short) 4);
+        beTag.putShort("SpawnRange", (short) 4);
+        beTag.putShort("Delay", (short) 20);
+        beTag.putShort("MinSpawnDelay", (short) 200);
+        beTag.putShort("MaxSpawnDelay", (short) 800);
+        beTag.putShort("MaxNearbyEntities", (short) 6);
+        beTag.putShort("RequiredPlayerRange", (short) 16);
+        CustomData.update(DataComponents.BLOCK_ENTITY_DATA, stack, beTag::merge);
+        dropStackOverhead(player, stack);
+        return true;
+    }
+
+    /**
+     * スポーンエッグをランダム1種×count個で頭上に落とす。種類も持ち運び不可。
+     * @return 成功したら true
+     */
+    private static boolean giveRandomEggInternal(ServerPlayer player, int count, RandomSource random) {
+        List<EggPick> picks = collectEggPicks();
+        if (picks.isEmpty()) {
+            LOGGER.warn("No spawn eggs registered, cannot grant random egg");
+            return false;
+        }
+        EggPick pick = picks.get(random.nextInt(picks.size()));
+        int c = Mth.clamp(count <= 0 ? 10 : count, 1, 64);
+        dropStackOverhead(player, new ItemStack(pick.egg, c));
+        return true;
+    }
+
+    /** アイテムスタックを頭上10ブロックに落とす (エンチャント無し・チャット無し)。 */
+    private static void dropStackOverhead(ServerPlayer player, ItemStack stack) {
+        ServerLevel level = player.serverLevel();
+        ItemEntity entity = new ItemEntity(level, player.getX(), player.getY() + 10, player.getZ(), stack);
+        entity.setDeltaMovement(0, 0, 0);
+        entity.setPickUpDelay(10);
+        level.addFreshEntity(entity);
+        level.playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, 1.0F);
     }
 
     private static void spawnTreasureChest(ServerPlayer player, String lootTableStr, RandomSource random) {
@@ -1489,7 +1665,7 @@ public final class WishManager {
             level.setBlock(target, chestState, 3);
             var be = level.getBlockEntity(target);
             if (be instanceof RandomizableContainerBlockEntity rc) {
-                rc.setLootTable(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, lootRL), random.nextLong());
+                rc.setLootTable(ResourceKey.create(Registries.LOOT_TABLE, lootRL), random.nextLong());
             }
             level.playSound(null, target, SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1.0F, 1.0F);
         } catch (Exception ex) {
@@ -1537,12 +1713,12 @@ public final class WishManager {
         }
         // 水中でなければ設置
         if (level.getBlockState(pos).canBeReplaced() || level.getBlockState(pos).isAir()) {
-            level.setBlock(pos, net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(), 3);
+            level.setBlock(pos, Blocks.WATER.defaultBlockState(), 3);
         } else {
             // 置けない場合は頭上に水バケツ的に水流を
             var above = player.blockPosition().above(2);
             if (level.getBlockState(above).canBeReplaced()) {
-                level.setBlock(above, net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(), 3);
+                level.setBlock(above, Blocks.WATER.defaultBlockState(), 3);
             }
         }
     }
@@ -1551,14 +1727,14 @@ public final class WishManager {
         ServerLevel level = player.serverLevel();
         var pos = player.blockPosition().above(10);
         // 上空10ブロックから壊れかけの金床を落下
-        var state = net.minecraft.world.level.block.Blocks.DAMAGED_ANVIL.defaultBlockState();
+        var state = Blocks.DAMAGED_ANVIL.defaultBlockState();
         // 可能なら CHIPPED/DAMAGED のいずれかランダムで壊れかけ感を出す
         if (player.getRandom().nextBoolean()) {
-            state = net.minecraft.world.level.block.Blocks.CHIPPED_ANVIL.defaultBlockState();
+            state = Blocks.CHIPPED_ANVIL.defaultBlockState();
         }
-        var falling = net.minecraft.world.entity.item.FallingBlockEntity.fall(level, pos, state);
+        var falling = FallingBlockEntity.fall(level, pos, state);
         falling.setHurtsEntities(2.0F, 40);
         level.addFreshEntity(falling);
-        level.playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.ANVIL_PLACE, net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 0.8F);
+        level.playSound(null, player.blockPosition(), SoundEvents.ANVIL_PLACE, SoundSource.BLOCKS, 1.0F, 0.8F);
     }
 }

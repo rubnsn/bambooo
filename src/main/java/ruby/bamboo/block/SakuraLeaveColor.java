@@ -7,27 +7,26 @@ import net.minecraft.world.item.DyeColor;
  * 桜の葉の色。旧 SakuraLeave.EnumLeave (1.10.2) の移植。
  * <p>
  * 旧8色 (SAKURA系4 + BROAD系4) は旧hexを維持し、欠落8色は染料色
- * (旧 {@code DyeColor#getTextureDiffuseColors} 相当。1.21 で削除されたため
- * {@link BambooPotColor} と同一のバニラ調hexを直書き) から採用。全16染料対応。
- * 幹は桜固定・maple等への分岐は廃止。petal は全色1 (桜の花びらのみ)。
+ * ({@code DyeColor#getTextureDiffuseColors}) から採用。全16染料対応。
+ * 幹は桜固定でmaple等への干渉は無い。petal は全色1 (桜の花びらのみ)。
  */
 public enum SakuraLeaveColor implements StringRepresentable {
     WHITE(DyeColor.WHITE, 0xFFFFFF, 1),
     ORANGE(DyeColor.ORANGE, 0xFFC600, 1),
     MAGENTA(DyeColor.MAGENTA, 0xF09090, 1),
-    LIGHT_BLUE(DyeColor.LIGHT_BLUE, 0x3AB3DA, 1),
+    LIGHT_BLUE(DyeColor.LIGHT_BLUE, dyeColor(DyeColor.LIGHT_BLUE), 1),
     YELLOW(DyeColor.YELLOW, 0xF5E600, 1),
-    LIME(DyeColor.LIME, 0x80C71F, 1),
+    LIME(DyeColor.LIME, dyeColor(DyeColor.LIME), 1),
     PINK(DyeColor.PINK, 0xFFC5CC, 1),
-    GRAY(DyeColor.GRAY, 0x474F52, 1),
-    LIGHT_GRAY(DyeColor.LIGHT_GRAY, 0x9D9D97, 1),
-    CYAN(DyeColor.CYAN, 0x169C9C, 1),
+    GRAY(DyeColor.GRAY, dyeColor(DyeColor.GRAY), 1),
+    LIGHT_GRAY(DyeColor.LIGHT_GRAY, dyeColor(DyeColor.LIGHT_GRAY), 1),
+    CYAN(DyeColor.CYAN, dyeColor(DyeColor.CYAN), 1),
     PURPLE(DyeColor.PURPLE, 0xFFC5FC, 1),
-    BLUE(DyeColor.BLUE, 0x3C44AA, 1),
-    BROWN(DyeColor.BROWN, 0x835432, 1),
+    BLUE(DyeColor.BLUE, dyeColor(DyeColor.BLUE), 1),
+    BROWN(DyeColor.BROWN, dyeColor(DyeColor.BROWN), 1),
     GREEN(DyeColor.GREEN, 0x3F9E55, 1),
     RED(DyeColor.RED, 0xC80010, 1),
-    BLACK(DyeColor.BLACK, 0x1D1D21, 1);
+    BLACK(DyeColor.BLACK, dyeColor(DyeColor.BLACK), 1);
 
     public final DyeColor dye;
     /** 葉・花びらの表示色 */
@@ -39,6 +38,11 @@ public enum SakuraLeaveColor implements StringRepresentable {
         this.dye = dye;
         this.color = color;
         this.petal = petal;
+    }
+
+    /** 旧版に無かった色は染料色から採用 */
+    private static int dyeColor(DyeColor dye) {
+        return dye.getTextureDiffuseColor() & 0xFFFFFF;
     }
 
     @Override

@@ -14,6 +14,7 @@ import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import ruby.bamboo.core.init.BambooBlockEntities;
 
 /**
  * 和風チェストの BlockEntity (旧 TileJPChest)。
@@ -31,7 +32,7 @@ public class JPChestBlockEntity extends BaseContainerBlockEntity {
     private NonNullList<ItemStack> items = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
 
     public JPChestBlockEntity(BlockPos pos, BlockState state) {
-        super(ruby.bamboo.core.init.BambooBlockEntities.JP_CHEST_BE.get(), pos, state);
+        super(BambooBlockEntities.JP_CHEST_BE.get(), pos, state);
     }
 
     // ===== Container 実装 =====

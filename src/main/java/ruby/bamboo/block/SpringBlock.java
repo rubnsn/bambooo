@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
@@ -73,8 +74,8 @@ public class SpringBlock extends Block {
             }
         } else if (level.isEmptyBlock(above)) {
             BlockState newState = BambooBlocks.SPRING_WATER.get().defaultBlockState()
-                    .setValue(net.minecraft.world.level.block.LiquidBlock.LEVEL, 1)
-                    .setValue(SpringWaterBlock.PARENT_DIR, net.minecraft.core.Direction.DOWN);
+                    .setValue(LiquidBlock.LEVEL, 1)
+                    .setValue(SpringWaterBlock.PARENT_DIR, Direction.DOWN);
             level.setBlock(above, newState, 3);
             level.scheduleTick(above, BambooBlocks.SPRING_WATER.get(), getWaterDelay());
         } else {

@@ -59,7 +59,8 @@ public class WishRequestPacket implements CustomPacketPayload {
             }
             raw = raw.replaceAll("\\p{Cntrl}", "");
             BambooMod.LOGGER.info("Wish received from {}: '{}'", player.getName().getString(), raw);
-            ruby.bamboo.core.wish.WishManager.resolveAndExecute(player, raw);
+            boolean wand = WishEventHandler.pollWand(player.getUUID());
+            ruby.bamboo.core.wish.WishManager.resolveAndExecute(player, raw, wand);
         });
     }
 

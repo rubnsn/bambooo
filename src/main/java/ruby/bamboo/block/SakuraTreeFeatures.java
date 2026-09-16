@@ -3,6 +3,7 @@ package ruby.bamboo.block;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import ruby.bamboo.BambooMod;
 
 /**
@@ -15,20 +16,20 @@ import ruby.bamboo.BambooMod;
  * (data/bamboomod/worldgen/configured_feature/) の JSON で定義する。
  * <ul>
  * <li>sakura: 標準 (幹4+1、葉球 半径2)</li>
- * <li>sakura_big: 大木 (幹6+2、葉球 半径3)</li>
+ * <li>sakura_big: 大木 (fancy型、旧GenSakuraBigTree相当、vanilla fancy_oak準拠)</li>
  * </ul>
  */
 public final class SakuraTreeFeatures {
 
     /** 標準の桜 */
-    public static final ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> SAKURA = create("sakura");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> SAKURA = create("sakura");
     /** 大木の桜 */
-    public static final ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> SAKURA_BIG = create("sakura_big");
+    public static final ResourceKey<ConfiguredFeature<?, ?>> SAKURA_BIG = create("sakura_big");
 
     private SakuraTreeFeatures() {
     }
 
-    private static ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> create(String name) {
+    private static ResourceKey<ConfiguredFeature<?, ?>> create(String name) {
         return ResourceKey.create(Registries.CONFIGURED_FEATURE,
                 ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, name));
     }

@@ -1,12 +1,17 @@
 package ruby.bamboo.item;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -14,11 +19,16 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import ruby.bamboo.gui.SackMenu;
@@ -104,7 +114,7 @@ public class Sack extends Item {
     public static void setContent(ItemStack sackStack, Item contentItem) {
         CompoundTag root = rootTag(sackStack);
         CompoundTag content = new CompoundTag();
-        content.putString("id", net.minecraft.core.registries.BuiltInRegistries.ITEM
+        content.putString("id", BuiltInRegistries.ITEM
                 .getKey(contentItem).toString());
         content.putInt("count", 0);
         root.put(TAG_CONTENT, content);
@@ -133,14 +143,14 @@ public class Sack extends Item {
     }
 
     private static Item findItem(String id) {
-        var registry = net.minecraft.core.registries.BuiltInRegistries.ITEM;
-        var key = net.minecraft.resources.ResourceLocation.tryParse(id);
+        var registry = BuiltInRegistries.ITEM;
+        var key = ResourceLocation.tryParse(id);
         return key == null ? null : registry.get(key);
     }
 
     /** 収容可能か (BlockItem のみ: sakura Fukuro 準拠) */
     public static boolean isStorage(ItemStack stack) {
-        return !stack.isEmpty() && stack.getItem() instanceof net.minecraft.world.item.BlockItem;
+        return !stack.isEmpty() && stack.getItem() instanceof BlockItem;
     }
 
     // ===== 外観 =====
@@ -249,7 +259,7 @@ public class Sack extends Item {
      * 種など「植える」BlockItem は 5x5 範囲へ一括試行 (旧仕様踏襲)。
      */
     @Override
-    public InteractionResult useOn(net.minecraft.world.item.context.UseOnContext context) {
+    public InteractionResult useOn(UseOnContext context) {
         Player player = context.getPlayer();
         Level level = context.getLevel();
         if (player == null) {
@@ -260,7 +270,7 @@ public class Sack extends Item {
             return InteractionResult.PASS;
         }
         Item content = findItem(getContentId(sackStack));
-        if (!(content instanceof net.minecraft.world.item.BlockItem blockItem)) {
+        if (!(content instanceof BlockItem blockItem)) {
             return InteractionResult.PASS;
         }
 
@@ -275,9 +285,9 @@ public class Sack extends Item {
         if (one.isEmpty()) {
             return InteractionResult.PASS;
         }
-        net.minecraft.world.item.context.UseOnContext subContext = new net.minecraft.world.item.context.UseOnContext(
+        UseOnContext subContext = new UseOnContext(
                 level, player, context.getHand(), one,
-                new net.minecraft.world.phys.BlockHitResult(context.getClickLocation(),
+                new BlockHitResult(context.getClickLocation(),
                         context.getClickedFace(), pos, context.isInside()));
         InteractionResult result = blockItem.useOn(subContext);
         if (result.consumesAction()) {
@@ -288,14 +298,14 @@ public class Sack extends Item {
     }
 
     /** 種系 (CropBlock 派生 = 耕地に植えるもの) を一括植え対象とみなす */
-    private static boolean isPlantable(net.minecraft.world.item.BlockItem blockItem) {
-        net.minecraft.world.level.block.Block block = blockItem.getBlock();
-        return block instanceof net.minecraft.world.level.block.CropBlock;
+    private static boolean isPlantable(BlockItem blockItem) {
+        Block block = blockItem.getBlock();
+        return block instanceof CropBlock;
     }
 
     /** 5x5 一括植え (旧 onItemUse の種処理相当) */
-    private static InteractionResult plantArea(net.minecraft.world.item.context.UseOnContext context,
-            net.minecraft.world.item.BlockItem blockItem, net.minecraft.core.BlockPos center) {
+    private static InteractionResult plantArea(UseOnContext context,
+            BlockItem blockItem, BlockPos center) {
         Level level = context.getLevel();
         Player player = context.getPlayer();
         ItemStack sackStack = context.getItemInHand();
@@ -316,9 +326,9 @@ public class Sack extends Item {
                 if (one.isEmpty()) {
                     break;
                 }
-                var hit = new net.minecraft.world.phys.BlockHitResult(context.getClickLocation(),
+                var hit = new BlockHitResult(context.getClickLocation(),
                         context.getClickedFace(), pos, context.isInside());
-                net.minecraft.world.item.context.UseOnContext subContext = new net.minecraft.world.item.context.UseOnContext(
+                UseOnContext subContext = new UseOnContext(
                         level, player, context.getHand(), one, hit);
                 InteractionResult r = blockItem.useOn(subContext);
                 if (r.consumesAction()) {
@@ -337,7 +347,7 @@ public class Sack extends Item {
 
     /** 設置成功後の共通後始末: count-- + 効果音 */
     private static void decrement(Level level, Player player, ItemStack sackStack,
-            net.minecraft.core.BlockPos pos) {
+            BlockPos pos) {
         int stored = getCount(sackStack);
         setCount(sackStack, stored - 1);
         level.playSound(null, pos, blockPlaceSound(stored), SoundSource.BLOCKS, 0.8F, 1.0F);
@@ -346,7 +356,7 @@ public class Sack extends Item {
         }
     }
 
-    private static net.minecraft.sounds.SoundEvent blockPlaceSound(int stored) {
+    private static SoundEvent blockPlaceSound(int stored) {
         return stored > 1 ? SoundEvents.STONE_PLACE : SoundEvents.ITEM_BREAK;
     }
 
@@ -369,7 +379,7 @@ public class Sack extends Item {
             return List.of();
         }
 
-        java.util.ArrayList<ItemStack> drops = new java.util.ArrayList<>();
+        ArrayList<ItemStack> drops = new ArrayList<>();
         while (count > 0) {
             int n = Math.min(count, content.getMaxStackSize(new ItemStack(content)));
             drops.add(new ItemStack(content, n));

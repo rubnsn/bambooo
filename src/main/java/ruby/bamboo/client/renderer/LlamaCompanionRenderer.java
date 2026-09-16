@@ -4,6 +4,7 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LlamaRenderer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.animal.horse.Llama;
 import ruby.bamboo.entity.companion.LlamaCompanionEntity;
 
 /**
@@ -16,7 +17,7 @@ public class LlamaCompanionRenderer extends LlamaRenderer {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(net.minecraft.world.entity.animal.horse.Llama entity) {
+    public ResourceLocation getTextureLocation(Llama entity) {
         return super.getTextureLocation(entity);
     }
 }

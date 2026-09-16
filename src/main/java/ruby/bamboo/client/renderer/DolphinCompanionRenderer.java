@@ -16,6 +16,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.animal.Dolphin;
 import net.minecraft.world.item.DyeColor;
+import net.neoforged.neoforge.client.event.RenderLivingEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import ruby.bamboo.entity.companion.DolphinCompanionEntity;
 
 /**
@@ -45,7 +47,7 @@ public class DolphinCompanionRenderer extends DolphinRenderer {
             super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
             return;
         }
-        if (net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.client.event.RenderLivingEvent.Pre<>(entity, this, partialTicks, poseStack, buffer, packedLight)).isCanceled()) return;
+        if (NeoForge.EVENT_BUS.post(new RenderLivingEvent.Pre<>(entity, this, partialTicks, poseStack, buffer, packedLight)).isCanceled()) return;
         // グレースケール白テクスチャに染料を乗算
         DyeColor dye = dolphin.getDolphinColor();
         int dyeColor = dye.getTextureDiffuseColor();
@@ -127,7 +129,7 @@ public class DolphinCompanionRenderer extends DolphinRenderer {
         if (this.shouldShowName(entity)) {
             this.renderNameTag(entity, entity.getDisplayName(), poseStack, buffer, packedLight, partialTicks);
         }
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.client.event.RenderLivingEvent.Post<>(entity, this, partialTicks, poseStack, buffer, packedLight));
+        NeoForge.EVENT_BUS.post(new RenderLivingEvent.Post<>(entity, this, partialTicks, poseStack, buffer, packedLight));
     }
 
     @Override

@@ -4,9 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -48,9 +50,9 @@ public class SlideDoorBlockRenderer implements BlockEntityRenderer<SlideDoorBloc
         // packedLight はスライド先の明るさで取り直す — tesselateBlock は内部で Level から取得するため明示渡し不要だが、
         // 移動ブロックでは chunk 用 translucent と moving 用 translucentMovingBlock を使い分ける必要がある。
         // ForgeHooksClient.renderPistonMovedBlocks と同等のループで透過を正しく保つ。
-        net.minecraft.client.resources.model.BakedModel model = this.blockRenderer.getBlockModel(state);
-        for (net.minecraft.client.renderer.RenderType chunkRt : model.getRenderTypes(state, RandomSource.create(state.getSeed(be.getBlockPos())), ModelData.EMPTY)) {
-            net.minecraft.client.renderer.RenderType movingRt = RenderTypeHelper.getMovingBlockRenderType(chunkRt);
+        BakedModel model = this.blockRenderer.getBlockModel(state);
+        for (RenderType chunkRt : model.getRenderTypes(state, RandomSource.create(state.getSeed(be.getBlockPos())), ModelData.EMPTY)) {
+            RenderType movingRt = RenderTypeHelper.getMovingBlockRenderType(chunkRt);
             VertexConsumer vc = bufferSource.getBuffer(movingRt);
             this.blockRenderer.getModelRenderer().tesselateBlock(be.getLevel(), model, state, be.getBlockPos(), poseStack, vc, false, RandomSource.create(), state.getSeed(be.getBlockPos()), packedOverlay, ModelData.EMPTY, chunkRt);
         }

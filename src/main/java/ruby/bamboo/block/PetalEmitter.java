@@ -5,17 +5,15 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import ruby.bamboo.client.particle.PetalWind;
 import ruby.bamboo.core.init.BambooParticles;
 
 /**
- * 花びらParticleを舞わせる葉の共通処理 (旧 SakuraLeave#randomDisplayTick 相当)。
+ * 花びらParticleを散らせる葉の共通化 (旧 SakuraLeave#randomDisplayTick 相当)。
  * <p>
  * 4樹種の葉 (Sakura/Maple/Ginkgo/Hinoki) の animateTick 重複を集約。
- * 発生条件は共通: 1/chance かつ直下が空気。
+ * 発生条件は共通: 1/chance (突風時は PetalWind で頻繁に) かつ直下が空気。
  * 桜のみ COLOR プロパティで色・種別を返す。
- * <p>
- * 1.21 注記: 旧 petal 1.20.1 の突風 {@code PetalWind} 依存は未移植のため外した。
- * 突風対応 (PetalWind.spawnChance/spawnExtra) が移植されたら emitPetals に再統合すること。
  */
 public interface PetalEmitter {
 
@@ -32,7 +30,7 @@ public interface PetalEmitter {
 
     /** animateTick 本体。各葉は super.animateTick() の後にこれを呼ぶ */
     default void emitPetals(BlockState state, Level level, BlockPos pos, RandomSource rand) {
-        if (rand.nextInt(petalChance()) != 0) {
+        if (rand.nextInt(PetalWind.spawnChance(petalChance(), level)) != 0) {
             return;
         }
         if (!level.getBlockState(pos.below()).isAir()) {
@@ -45,6 +43,10 @@ public interface PetalEmitter {
         SimpleParticleType petal = petalType(state);
         level.addParticle(petal,
                 pos.getX() + rand.nextDouble(), pos.getY(), pos.getZ() + rand.nextDouble(), r, g, b);
+        if (PetalWind.spawnExtra(rand, level)) {
+            level.addParticle(petal,
+                    pos.getX() + rand.nextDouble(), pos.getY(), pos.getZ() + rand.nextDouble(), r, g, b);
+        }
     }
 
     /** 固定単色葉用の種別解決 (旧 petal 番号→ParticleType) */

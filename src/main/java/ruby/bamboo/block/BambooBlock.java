@@ -4,6 +4,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -52,7 +54,7 @@ public class BambooBlock extends BushBlock implements BonemealableBlock {
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(AGE);
     }
 
@@ -214,7 +216,7 @@ public class BambooBlock extends BushBlock implements BonemealableBlock {
             if (belowState.is(this)) {
                 // 直下1段をドロップして消す (旧 dropBlockAsItem + AIR)
                 // bambooは BlockItem 無しのため asItem() は AIR になるので BambooItems.BAMBOO (素材) をドロップ
-                popResource(level, belowPos, new net.minecraft.world.item.ItemStack(BambooItems.BAMBOO.get()));
+                popResource(level, belowPos, new ItemStack(BambooItems.BAMBOO.get()));
                 level.setBlock(belowPos, Blocks.AIR.defaultBlockState(), 3);
             }
         }
@@ -255,7 +257,7 @@ public class BambooBlock extends BushBlock implements BonemealableBlock {
     }
 
     @Override
-    public BlockState getStateForPlacement(net.minecraft.world.item.context.BlockPlaceContext ctx) {
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
         BlockState state = super.getStateForPlacement(ctx);
         if (state != null && state.hasProperty(AGE)) {
             // 設置時のデフォルトは onPlace で 8+rand5 に上書きされるためここでは 10 のまま

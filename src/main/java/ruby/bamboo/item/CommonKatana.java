@@ -1,5 +1,7 @@
 package ruby.bamboo.item;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -20,9 +22,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import ruby.bamboo.entity.KaginawaHookEntity;
 import ruby.bamboo.network.KaginawaStateManager;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * 刀 (旧 CommonKatana の移植 → 鈎縄統合版)。
@@ -117,5 +123,29 @@ public class CommonKatana extends SwordItem {
     /** ドロップ率基底値 (特殊刀で上書き前提。現状は通常刀のみ) */
     public static float getDropRate() {
         return 0F;
+    }
+
+    /**
+     * クラフト容器枠 (麺切り用)。耐久が無いため消費せずそのまま返却する。
+     * <p>
+     * 1.21 でも容器返却はフィールド制 ({@code Item.Properties#craftRemainder}、
+     * {@code Item#getCraftingRemainingItem()} は final) のため自己参照できない。
+     * 代わりに ItemStack 敏感版 ({@code IItemExtension} 既定メソッド) を
+     * 上書きする。バニラ作業台は {@code Recipe#getRemainingItems} 経由で
+     * こちらが呼ばれる。囲炉裏は no-arg 版 (null→空扱い) のため対象外。
+     */
+    @Override
+    public boolean hasCraftingRemainingItem(ItemStack stack) {
+        return true;
+    }
+
+    @Override
+    public ItemStack getCraftingRemainingItem(ItemStack stack) {
+        return stack.copyWithCount(1);
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("tooltip.bamboomod.commonkatana.hook").withStyle(ChatFormatting.AQUA));
     }
 }
