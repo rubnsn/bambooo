@@ -373,7 +373,10 @@ public class DaifugoGameScreen extends Screen {
             drawTribute(gfx);
         }
         drawHand(gfx);
-        super.render(gfx, mouseX, mouseY, partialTick);
+        // super.render() は背景を再描画するため使わない (不透明マットで内容が埋もれる)。
+        for (var w : this.renderables) {
+            w.render(gfx, mouseX, mouseY, partialTick);
+        }
     }
 
     private void drawOthers(GuiGraphics gfx) {

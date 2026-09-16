@@ -76,9 +76,13 @@ public class WishScreen extends Screen {
 
     @Override
     public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(gfx, mouseX, mouseY, partialTicks);
+        // 1.21のrenderBackgroundは全画面blurになるため旧来の土背景のみにする
+        this.renderMenuBackground(gfx);
         gfx.drawCenteredString(this.font, this.title.copy().withStyle(ChatFormatting.GOLD), this.width / 2, this.height / 2 - 40, 0xFFFFFF);
-        super.render(gfx, mouseX, mouseY, partialTicks);
+        // super.render() は背景(blur+土)を再描画するため使わない。ウィジェットのみ直接描画。
+        for (var w : this.renderables) {
+            w.render(gfx, mouseX, mouseY, partialTicks);
+        }
     }
 
     @Override

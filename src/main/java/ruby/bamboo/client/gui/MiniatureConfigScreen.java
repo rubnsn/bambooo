@@ -167,10 +167,14 @@ public class MiniatureConfigScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partial) {
-        this.renderBackground(g, mouseX, mouseY, partial);
+        // 1.21のrenderBackgroundは全画面blurになるため旧来の土背景のみにする
+        this.renderMenuBackground(g);
         g.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
         g.drawCenteredString(this.font, Component.translatable("bamboomod.config.miniature.desc"), this.width / 2, 27, 0xA0A0A0);
-        super.render(g, mouseX, mouseY, partial);
+        // super.render() は背景(blur+土)を再描画するため使わない。ウィジェットのみ直接描画。
+        for (var w : this.renderables) {
+            w.render(g, mouseX, mouseY, partial);
+        }
     }
 
     @Override

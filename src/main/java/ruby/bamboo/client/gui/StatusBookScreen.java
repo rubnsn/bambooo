@@ -109,7 +109,8 @@ public class StatusBookScreen extends Screen {
 
     @Override
     public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(gfx, mouseX, mouseY, partialTick);
+        // 1.21のrenderBackgroundは全画面blur+土背景になるため旧来の土背景のみにする
+        this.renderMenuBackground(gfx);
         int bx = (this.width - BG_W) / 2;
         int by = bgTop();
         gfx.blit(BG, bx, by, 0, 0, BG_W, BG_H, BG_W, BG_H);
@@ -167,7 +168,10 @@ public class StatusBookScreen extends Screen {
                     x0, y, pw, 0xFF4A4038) + 8;
         }
         drawCenter(gfx, (page + 1) + " / " + pages(), by + BG_H - 12, 0xFF6A5A3A);
-        super.render(gfx, mouseX, mouseY, partialTick);
+        // super.render() は背景(blur+土)を再描画するため使わない。ウィジェットのみ直接描画。
+        for (var w : this.renderables) {
+            w.render(gfx, mouseX, mouseY, partialTick);
+        }
     }
 
     private void drawCenter(GuiGraphics gfx, String s, int y, int color) {

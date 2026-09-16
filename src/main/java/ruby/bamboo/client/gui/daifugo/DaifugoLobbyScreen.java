@@ -139,7 +139,8 @@ public class DaifugoLobbyScreen extends Screen {
 
     @Override
     public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(gfx, mouseX, mouseY, partialTick);
+        // 1.21のrenderBackgroundは全画面blurになるため旧来の土背景のみにする
+        this.renderMenuBackground(gfx);
         gfx.drawCenteredString(this.font, this.title.getString(), this.width / 2, 20, 0xFFFFE9B0);
         gfx.drawCenteredString(this.font,
                 Component.translatable("screen.bamboomod.daifugo_waiting").getString(),
@@ -161,7 +162,10 @@ public class DaifugoLobbyScreen extends Screen {
                     10, logY + i * 10, 0xFFB9C4A8, false);
         }
         chat.renderLog(gfx, this.font, this.width, this.height);
-        super.render(gfx, mouseX, mouseY, partialTick);
+        // super.render() は背景(blur+土)を再描画するため使わない。ウィジェットのみ直接描画。
+        for (var w : this.renderables) {
+            w.render(gfx, mouseX, mouseY, partialTick);
+        }
     }
 
     private String seatName(DaifugoSnapshot.SeatView s, int idx) {

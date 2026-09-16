@@ -597,7 +597,11 @@ public class SolitaireScreen extends Screen {
                     this.width / 2, this.height / 2 + 6, TEXT_SUB);
         }
         chat.renderLog(gfx, this.font, this.width, this.height);
-        super.render(gfx, mouseX, mouseY, partialTick);
+        // super.render() は背景を再描画するため使わない (不透明フェルトで内容が埋もれる)。
+        // ウィジェットのみ直接描画する (1.21 Screen.render の実体と同等)。
+        for (var w : this.renderables) {
+            w.render(gfx, mouseX, mouseY, partialTick);
+        }
     }
 
     private void drawTopRow(GuiGraphics gfx, Hit hover) {
