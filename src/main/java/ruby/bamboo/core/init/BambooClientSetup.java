@@ -362,5 +362,10 @@ public final class BambooClientSetup {
         event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.MAPLE_CARPET.get().asItem() });
         event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.GINKGO_CARPET.get().asItem() });
         event.register((stack, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR; }, new Item[] { BambooBlocks.HINOKI_CARPET.get().asItem() });
+        // 座布団16色 — 旧 ItemZabuton#getColorFromItemstack 相当。各色アイテムに固定色を乗算
+        for (var zabuton : BambooItems.ZABUTONS) {
+            int color = 0xFF000000 | zabuton.get().getColor().rgb;
+            event.register((stack, tintIndex) -> color, new Item[] { zabuton.get().asItem() });
+        }
     }
 }
