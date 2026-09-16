@@ -15,6 +15,8 @@ import ruby.bamboo.block.AndonBlock;
 import ruby.bamboo.block.BambooBlock;
 import ruby.bamboo.block.BambooPaneBlock;
 import ruby.bamboo.block.BambooShootBlock;
+import ruby.bamboo.block.BeanPlantBlock;
+import ruby.bamboo.block.FlowerBedBlock;
 import ruby.bamboo.block.IndLightBlock;
 import ruby.bamboo.block.KitunebiBlock;
 import ruby.bamboo.block.CampfireBlock;
@@ -28,9 +30,11 @@ import ruby.bamboo.block.JPChestBlock;
 import ruby.bamboo.block.MapleLeaveBlock;
 import ruby.bamboo.block.MapleLogBlock;
 import ruby.bamboo.block.MapleSaplingBlock;
+import ruby.bamboo.block.MillBlock;
 import ruby.bamboo.block.MillStoneBlock;
 import ruby.bamboo.block.PaddyFieldBlock;
 import ruby.bamboo.block.RicePlantBlock;
+import ruby.bamboo.block.TomatoPlantBlock;
 import ruby.bamboo.block.SakuraLeaveBlock;
 import ruby.bamboo.block.SakuraLogBlock;
 import ruby.bamboo.block.SakuraSaplingBlock;
@@ -121,6 +125,22 @@ public final class BambooBlocks {
             () -> new RicePlantBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.PLANT).sound(SoundType.CROP)
                     .strength(0.0f).randomTicks().noCollission().instabreak()));
+
+    /** トマト (旧 tomatoPlant)。種兼用アイテム tomato で植える */
+    public static final DeferredBlock<TomatoPlantBlock> TOMATO_PLANT = registerNoItem("tomato_plant",
+            () -> new TomatoPlantBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT).sound(SoundType.CROP)
+                    .strength(0.0f).randomTicks().noCollission().instabreak()));
+
+    /** 豆 (旧 beanPlant)。種兼用アイテム bean で植える */
+    public static final DeferredBlock<BeanPlantBlock> BEAN_PLANT = registerNoItem("bean_plant",
+            () -> new BeanPlantBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT).sound(SoundType.CROP)
+                    .strength(0.0f).randomTicks().noCollission().instabreak()));
+
+    /** 花壇 (スコップ変換のみで入手。クリエタブには出さない) */
+    public static final DeferredBlock<FlowerBedBlock> FLOWER_BED = registerNoCreative("flower_bed",
+            FlowerBedBlock::new);
 
     /** 田んぼ (旧 paddy_field / sakura PaddyField)。FarmlandBlock継承 + WATERLOGGED */
     public static final DeferredBlock<PaddyFieldBlock> PADDY_FIELD = register("paddy_field",
@@ -276,6 +296,26 @@ public final class BambooBlocks {
     public static final DeferredBlock<SpringWaterBlock> SPRING_WATER = registerNoItem("spring_water",
             () -> new SpringWaterBlock(BambooMod.SPRING_WATER_SOURCE.get(),
                     BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.WATER).noLootTable().noOcclusion()));
+
+    // ===== 風車・水車 (旧 EntityWindmill/EntityWaterwheel の Block+BE 移植) =====
+
+    /** 風車 (通常)。textures/entity/windmill.png */
+    public static final DeferredBlock<MillBlock> WINDMILL = register("windmill",
+            () -> new MillBlock(MillBlock.Type.WINDMILL, BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(1.0F)
+                    .noOcclusion().isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+
+    /** 風車 (布張り)。textures/entity/windmill_cloth.png */
+    public static final DeferredBlock<MillBlock> WINDMILL_CLOTH = register("windmill_cloth",
+            () -> new MillBlock(MillBlock.Type.WINDMILL_CLOTH, BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOL).sound(SoundType.WOOL).strength(1.0F)
+                    .noOcclusion().isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+
+    /** 水車。水に浸かると回転。textures/entity/waterwheel.png */
+    public static final DeferredBlock<MillBlock> WATERWHEEL = register("waterwheel",
+            () -> new MillBlock(MillBlock.Type.WATERWHEEL, BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD).sound(SoundType.WOOD).strength(1.0F)
+                    .noOcclusion().isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
 
     // ===== sakura無機能deco移植: 単独Block登録 21件 (EnumDecoration未拡張) =====
     // sakura_slab (sakura 32): PlayerFacingSlab相当だが今回は SlabBlock で SakuraPlank 流用
@@ -519,5 +559,15 @@ public final class BambooBlocks {
     private static <B extends Block> DeferredBlock<B> registerNoItem(String name,
             java.util.function.Supplier<? extends B> factory) {
         return BambooMod.BLOCKS.register(name, factory);
+    }
+
+    /**
+     * BlockItem は登録するがクリエタブには出さない (入手経路が変換・生成のみのブロック用)。
+     */
+    private static <B extends Block> DeferredBlock<B> registerNoCreative(String name,
+            java.util.function.Supplier<? extends B> factory) {
+        DeferredBlock<B> block = BambooMod.BLOCKS.register(name, factory);
+        BambooMod.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
+        return block;
     }
 }

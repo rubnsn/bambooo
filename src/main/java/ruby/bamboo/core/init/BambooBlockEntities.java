@@ -6,7 +6,9 @@ import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.entity.BambooPotBlockEntity;
 import ruby.bamboo.block.entity.CampfireBlockEntity;
 import ruby.bamboo.block.entity.CutBlockEntity;
+import ruby.bamboo.block.entity.FlowerBedBlockEntity;
 import ruby.bamboo.block.entity.JPChestBlockEntity;
+import ruby.bamboo.block.entity.MillBlockEntity;
 import ruby.bamboo.block.entity.MillStoneBlockEntity;
 import ruby.bamboo.block.entity.MiniatureBlockEntity;
 import ruby.bamboo.block.entity.SlideDoorBlockEntity;
@@ -73,6 +75,22 @@ public final class BambooBlockEntities {
     /** 竹鉢 (sakura BambooPot) */
     public static final Supplier<BlockEntityType<BambooPotBlockEntity>> BAMBOO_POT_BE = BambooMod.BLOCK_ENTITIES
             .register("bamboo_pot", () -> BlockEntityType.Builder.of(BambooPotBlockEntity::new, BambooBlocks.BAMBOO_POT.get()).build(null));
+
+    /** 風車・水車 (旧 EntityMill 系。単一BEを3ブロックで共用) */
+    public static final Supplier<BlockEntityType<MillBlockEntity>> MILL_BE = BambooMod.BLOCK_ENTITIES
+            .register(
+                    "mill",
+                    () -> BlockEntityType.Builder.of(MillBlockEntity::new,
+                            BambooBlocks.WINDMILL.get(), BambooBlocks.WINDMILL_CLOTH.get(),
+                            BambooBlocks.WATERWHEEL.get())
+                            .build(null));
+
+    /** 花壇 */
+    public static final Supplier<BlockEntityType<FlowerBedBlockEntity>> FLOWER_BED_BE = BambooMod.BLOCK_ENTITIES
+            .register(
+                    "flower_bed",
+                    () -> BlockEntityType.Builder.of(FlowerBedBlockEntity::new, BambooBlocks.FLOWER_BED.get())
+                            .build(null));
 
     /**
      * 静的初期化順序の保証用ダミー。BambooMod コンストラクタから呼ばれる。

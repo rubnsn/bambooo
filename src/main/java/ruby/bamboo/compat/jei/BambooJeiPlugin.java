@@ -161,6 +161,28 @@ public class BambooJeiPlugin implements IModPlugin {
         } catch (Exception e) {
             BambooMod.LOGGER.warn("Failed to hide empty cut_block from JEI", e);
         }
+        // スキル本13種 + 願いワンド (デバッグ用) はレシピ無しのため JEI から隠す
+        try {
+            var ingredientManager = runtime.getIngredientManager();
+            List<ItemStack> toHide = new ArrayList<>();
+            for (var ro : ruby.bamboo.core.init.BambooItems.SKILL_BOOKS) {
+                try {
+                    toHide.add(new ItemStack(ro.get()));
+                } catch (Exception e) {
+                    BambooMod.LOGGER.warn("Failed to resolve skill book for JEI hide", e);
+                }
+            }
+            try {
+                toHide.add(new ItemStack(ruby.bamboo.core.init.BambooItems.WISH_WAND.get()));
+            } catch (Exception e) {
+                BambooMod.LOGGER.warn("Failed to resolve wish_wand for JEI hide", e);
+            }
+            if (!toHide.isEmpty()) {
+                ingredientManager.removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, toHide);
+            }
+        } catch (Exception e) {
+            BambooMod.LOGGER.warn("Failed to hide skill books / wish_wand from JEI", e);
+        }
         // 温泉水 (source/flowing) はバケツ化せず BlockItem 無しのため JEI の流体リストから隠す
         try {
             var ingredientManager = runtime.getIngredientManager();

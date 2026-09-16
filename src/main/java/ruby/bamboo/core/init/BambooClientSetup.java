@@ -80,6 +80,11 @@ public final class BambooClientSetup {
             // 田んぼ -> 半ブロック(高さ8) + 水張り時は水色上面。water_stillテクスチャの半透明を正しく描画するため translucent
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.PADDY_FIELD.get(), RenderType.translucent());
 
+            // 花壇・トマト・豆 -> cutout (cross/フラットモデル)
+            cutout(BambooBlocks.FLOWER_BED.get());
+            cutout(BambooBlocks.TOMATO_PLANT.get());
+            cutout(BambooBlocks.BEAN_PLANT.get());
+
             // 石臼の BER 登録 (旧 TESR 相当)
             net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
                     BambooBlockEntities.MILL_STONE_BE.get(),
@@ -128,6 +133,16 @@ public final class BambooClientSetup {
                     BambooBlockEntities.BAMBOO_POT_BE.get(),
                     ruby.bamboo.block.entity.BambooPotBlockRenderer::new);
 
+            // 風車・水車の BER 登録 (羽根4枚、はみ出し描画)
+            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+                    BambooBlockEntities.MILL_BE.get(),
+                    ruby.bamboo.block.entity.MillBlockRenderer::new);
+
+            // 花壇の BER 登録 (天面植栽)
+            net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+                    BambooBlockEntities.FLOWER_BED_BE.get(),
+                    ruby.bamboo.block.entity.FlowerBedBlockRenderer::new);
+
             // 温泉水 — 半透明 (Phase B) — ブロックと流体両方をtranslucentに (バニラ水と同様)
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.SPRING_WATER.get(), RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(BambooMod.SPRING_WATER_SOURCE.get(), RenderType.translucent());
@@ -169,6 +184,22 @@ public final class BambooClientSetup {
                     ruby.bamboo.client.renderer.DolphinCompanionRenderer::new);
             net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.LLAMA_COMPANION.get(),
                     ruby.bamboo.client.renderer.LlamaCompanionRenderer::new);
+
+            // かんしゃく玉 — 球体レンダラ
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.FIRECRACKER.get(),
+                    ruby.bamboo.client.renderer.FirecrackerRenderer::new);
+
+            // 座布団 — 16色 EntityData で tint
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.ZABUTON.get(),
+                    ruby.bamboo.client.renderer.ZabutonRenderer::new);
+
+            // 掛け軸 — 壁掛け絵画レンダラ
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.KAKEZIKU.get(),
+                    ruby.bamboo.client.renderer.KakezikuRenderer::new);
+
+            // 釣りウキ
+            net.minecraft.client.renderer.entity.EntityRenderers.register(BambooEntities.FISHING_BOBBER.get(),
+                    ruby.bamboo.client.renderer.FishingBobberRenderer::new);
 
             // 竹弓の引き絞りモデル (pull/pulling override)。バニラは Items.BOW にしか
             // 登録されないため、独自 BowItem 継承クラスには自前で登録が必要。
@@ -226,9 +257,16 @@ public final class BambooClientSetup {
             if (tintIndex != 0) return 0xFFFFFF;
             try { return state.getValue(ruby.bamboo.block.BambooPotBlock.COLOR).color; } catch (Exception e) { return ruby.bamboo.block.BambooPotColor.BROWN.color; }
         }, BambooBlocks.BAMBOO_POT.get());
+        // 桜葉 COLOR 8色→16色 tint (桜色ベースを COLOR プロパティで乗算)
+        event.register((state, level, pos, tintIndex) -> {
+            try {
+                return state.getValue(ruby.bamboo.block.SakuraLeaveBlock.COLOR).color;
+            } catch (Exception e) {
+                return ruby.bamboo.block.SakuraLeaveBlock.PETAL_COLOR;
+            }
+        }, BambooBlocks.SAKURA_LEAVES.get());
         // 新葉の tint (broadleaf.png を色乗算)
-        event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR, BambooBlocks.MAPLE_LEAVES.get());
-        event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR, BambooBlocks.GINKGO_LEAVES.get());
+        event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR, BambooBlocks.MAPLE_LEAVES.get());        event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.GinkgoLeaveBlock.PETAL_COLOR, BambooBlocks.GINKGO_LEAVES.get());
         event.register((state, level, pos, tintIndex) -> ruby.bamboo.block.HinokiLeaveBlock.PETAL_COLOR, BambooBlocks.HINOKI_LEAVES.get());
         // 葉カーペット — 同じ broadleaf を葉と同じ色で tint (テクスチャ新規なし、流用)
         event.register((state, level, pos, tintIndex) -> { if (tintIndex != 0) return 0xFFFFFF; return ruby.bamboo.block.MapleLeaveBlock.PETAL_COLOR; }, BambooBlocks.MAPLE_CARPET.get());

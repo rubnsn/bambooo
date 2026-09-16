@@ -105,6 +105,44 @@ public final class BambooEntities {
                     .updateInterval(1)
                     .build("llama_companion"));
 
+    // ===== 回収分 (v0.5→1.21): かんしゃく玉・座布団・掛け軸・釣りウキ =====
+
+    /** かんしゃく玉 (0.25x0.25、追跡10) */
+    public static final Supplier<EntityType<ruby.bamboo.entity.FirecrackerEntity>> FIRECRACKER = BambooMod.ENTITY_TYPES.register(
+            "firecracker",
+            () -> EntityType.Builder.<ruby.bamboo.entity.FirecrackerEntity>of(ruby.bamboo.entity.FirecrackerEntity::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F)
+                    .clientTrackingRange(10)
+                    .updateInterval(2)
+                    .build("firecracker"));
+
+    /** 座布団 (1.0x0.125、搭乗・投擲マウント) */
+    public static final Supplier<EntityType<ruby.bamboo.entity.ZabutonEntity>> ZABUTON = BambooMod.ENTITY_TYPES.register(
+            "zabuton",
+            () -> EntityType.Builder.<ruby.bamboo.entity.ZabutonEntity>of(ruby.bamboo.entity.ZabutonEntity::new, MobCategory.MISC)
+                    .sized(1.0F, 0.125F)
+                    .clientTrackingRange(10)
+                    .updateInterval(1)
+                    .build("zabuton"));
+
+    /** 掛け軸 (HangingEntity系、壁掛け) */
+    public static final Supplier<EntityType<ruby.bamboo.entity.KakezikuEntity>> KAKEZIKU = BambooMod.ENTITY_TYPES.register(
+            "kakeziku",
+            () -> EntityType.Builder.<ruby.bamboo.entity.KakezikuEntity>of(ruby.bamboo.entity.KakezikuEntity::new, MobCategory.MISC)
+                    .sized(1.0F, 1.0F)
+                    .clientTrackingRange(10)
+                    .updateInterval(1)
+                    .build("kakeziku"));
+
+    /** 釣りウキ (0.25x0.25、追跡64) */
+    public static final Supplier<EntityType<ruby.bamboo.entity.FishingBobberEntity>> FISHING_BOBBER = BambooMod.ENTITY_TYPES.register(
+            "fishing_bobber",
+            () -> EntityType.Builder.<ruby.bamboo.entity.FishingBobberEntity>of(ruby.bamboo.entity.FishingBobberEntity::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F)
+                    .clientTrackingRange(64)
+                    .updateInterval(2)
+                    .build("fishing_bobber"));
+
     private static <T extends AbstractArrow> Supplier<EntityType<T>> registerArrow(
             String name, EntityType.EntityFactory<T> factory) {
         return BambooMod.ENTITY_TYPES.register(name,

@@ -142,6 +142,9 @@ public class BambooMod {
         modContainer.registerConfig(
                 net.neoforged.fml.config.ModConfig.Type.COMMON,
                 ruby.bamboo.core.config.WishConfig.COMMON_SPEC, "bamboomod-wish.toml");
+        modContainer.registerConfig(
+                net.neoforged.fml.config.ModConfig.Type.CLIENT,
+                ruby.bamboo.core.config.ColoredLightConfig.CLIENT_SPEC, "bamboomod-coloredlight.toml");
 
         // 登録順: BLOCKS/ITEMS を先に接続してから各初期化クラスで register 呼び出し
         BLOCKS.register(modEventBus);
@@ -156,6 +159,7 @@ public class BambooMod {
         FLUID_TYPES.register(modEventBus);
         FLUIDS.register(modEventBus);
         ruby.bamboo.core.init.BambooCapabilities.init(modEventBus);
+        ruby.bamboo.core.init.BambooLootModifiers.init(modEventBus);
 
         // コンテンツ登録 (DeferredRegisterへの登録は静的初期化時に実行される)
         BambooBlocks.init();

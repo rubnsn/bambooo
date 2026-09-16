@@ -1,6 +1,6 @@
 {
   "id": "wish/skill",
-  "pattern": "繧ｹ繧ｭ繝ｫ|縺吶″繧弓skill",
+  "pattern": "スキル|すきる|skill",
   "match": "regex",
   "priority": false,
   "weight": 1,
