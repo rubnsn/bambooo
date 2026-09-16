@@ -60,6 +60,14 @@ public class SolitaireScreen extends Screen {
     private int grabDX;
     private int grabDY;
     private boolean wasWon;
+    /** 配札演出の開始時刻 (0=なし)。段順 (行優先) に山札から各列へ飛ばす。 */
+    private long dealStart = 0;
+    /** 確定めくりの演出中一覧 (列・位置・札・開始)。 */
+    private final List<TableFlip> flips = new ArrayList<>();
+    /** 組札への飛行中一覧。 */
+    private final List<FoundationFly> foundationFlies = new ArrayList<>();
+    /** 山札めくりの飛行中一覧。 */
+    private final List<StockFly> stockFlies = new ArrayList<>();
 
     private int guiLeft;
     private int tableauTop;
@@ -131,6 +139,12 @@ public class SolitaireScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
+        // 終了しためくり演出・着地後に動いた組札飛行を掃除
+        flips.removeIf(f -> TrumpAnim.done(f.start(), TrumpAnim.FLIP_MS));
+        foundationFlies.removeIf(f -> TrumpAnim.done(f.start(), TrumpAnim.DEAL_FLY_MS)
+                || !f.card().equals(game.foundationTop(f.foundation())));
+        stockFlies.removeIf(f -> TrumpAnim.done(f.start(), TrumpAnim.DEAL_FLY_MS)
+                || !game.wasteFan().contains(f.card()));
         // チャット入力中は下段ボタンを隠す (入力欄と被るため)
         newGameButton.visible = !selecting && !chat.isOpen();
         backButton.visible = !selecting && !chat.isOpen();
@@ -148,6 +162,10 @@ public class SolitaireScreen extends Screen {
         difficulty = d;
         game.setRules(d.drawCount(), d.maxRedeals());
         game.newGame(new Random());
+        dealStart = TrumpAnim.now();
+        flips.clear();
+        foundationFlies.clear();
+        stockFlies.clear();
         held = null;
         heldSplit = false;
         wasWon = false;
@@ -159,12 +177,19 @@ public class SolitaireScreen extends Screen {
     private void backToSelect() {
         held = null;
         heldSplit = false;
+        flips.clear();
+        foundationFlies.clear();
+        stockFlies.clear();
         selecting = true;
         refreshButtons();
     }
 
     private void newGame() {
         game.newGame(new Random());
+        dealStart = TrumpAnim.now();
+        flips.clear();
+        foundationFlies.clear();
+        stockFlies.clear();
         held = null;
         heldSplit = false;
         wasWon = false;
@@ -246,9 +271,16 @@ public class SolitaireScreen extends Screen {
         return ys;
     }
 
-    /** 列内で y に掛かる一番上の札。空列・列より下は size()、列より上は -1。 */
+    /** 列内で y に掛かる一番上の札。空列は size()、列より上・最下札より下は -1。 */
     private int indexAt(int col, int y, int[] ys) {
         if (y < tableauTop) {
+            return -1;
+        }
+        if (ys.length == 0) {
+            return 0;
+        }
+        if (y >= ys[ys.length - 1] + CARD_H) {
+            // 最下札より下の余白は空振り (掴み・右クリック無効。置きは列判定で有効)
             return -1;
         }
         for (int i = ys.length - 1; i >= 0; i--) {
@@ -256,7 +288,7 @@ public class SolitaireScreen extends Screen {
                 return i;
             }
         }
-        return ys.length;
+        return -1;
     }
 
     private Hit hitTest(int x, int y) {
@@ -342,7 +374,7 @@ public class SolitaireScreen extends Screen {
         lastClickY = y;
         if (held != null) {
             // ダブルクリックは先頭札の組札への自動移動 (Win系ソリティアと同操作)。不可なら通常ドロップへ。
-            if (doubleClick && sendHeldToFoundation()) {
+            if (doubleClick && sendHeldToFoundation(x, y)) {
                 click(1.2F);
                 checkWin();
                 return;
@@ -354,7 +386,9 @@ public class SolitaireScreen extends Screen {
         switch (hit.target()) {
             case STOCK -> {
                 if (game.stockCount() > 0) {
+                    List<Card> beforeFan = List.copyOf(game.wasteFan());
                     game.drawFromStock();
+                    noteStockDraw(beforeFan);
                     click(0.9F);
                 } else if (game.recycleStock()) {
                     pageSound();
@@ -364,6 +398,7 @@ public class SolitaireScreen extends Screen {
                 Card top = game.wasteTop();
                 if (top != null) {
                     held = List.of(game.removeWasteTop());
+                    stockFlies.removeIf(f -> f.card().equals(top));
                     heldSplit = false;
                     heldFrom = HeldFrom.WASTE;
                     grabFrom(x, y, wasteTopX(), TOP_Y);
@@ -417,7 +452,7 @@ public class SolitaireScreen extends Screen {
                     game.placeBackOnFoundation(hit.index(), top);
                     if (held.size() == 1) {
                         if (heldFrom == HeldFrom.TABLEAU) {
-                            game.flipTableauTop(heldFromIndex);
+                             flipTop(heldFromIndex);
                         }
                         held = null;
                     } else {
@@ -432,7 +467,7 @@ public class SolitaireScreen extends Screen {
                 int col = hit.index();
                 if (heldFrom == HeldFrom.TABLEAU && col == heldFromIndex) {
                     if (heldSplit) {
-                        game.flipTableauTop(heldFromIndex);
+                        flipTop(heldFromIndex);
                     }
                     game.addTableauSequence(col, held);
                     held = null;
@@ -440,7 +475,7 @@ public class SolitaireScreen extends Screen {
                 } else if (game.canStackOnTableau(held.get(0), col)) {
                     game.addTableauSequence(col, held);
                     if (heldFrom == HeldFrom.TABLEAU) {
-                        game.flipTableauTop(heldFromIndex);
+                        flipTop(heldFromIndex);
                     }
                     held = null;
                     placed = true;
@@ -461,8 +496,8 @@ public class SolitaireScreen extends Screen {
         checkWin();
     }
 
-    /** 持ち札の先頭1枚を組札へ。複数持ちは残りを持ち続ける。成功時は持ち元場札の確定めくりも行う。 */
-    private boolean sendHeldToFoundation() {
+    /** 持ち札の先頭1枚を組札へ飛ばす。複数持ちは残りを持ち続ける。成功時は持ち元場札の確定めくりも行う。 */
+    private boolean sendHeldToFoundation(int sx, int sy) {
         if (held == null || held.isEmpty()) {
             return false;
         }
@@ -472,9 +507,10 @@ public class SolitaireScreen extends Screen {
             return false;
         }
         game.placeBackOnFoundation(f, top);
+        flyToFoundation(top, sx, sy, f);
         if (held.size() == 1) {
             if (heldFrom == HeldFrom.TABLEAU) {
-                game.flipTableauTop(heldFromIndex);
+                flipTop(heldFromIndex);
             }
             held = null;
         } else {
@@ -489,7 +525,7 @@ public class SolitaireScreen extends Screen {
             return;
         }
         if (heldFrom == HeldFrom.TABLEAU && heldSplit) {
-            game.flipTableauTop(heldFromIndex);
+            flipTop(heldFromIndex);
         }
         switch (heldFrom) {
             case WASTE -> game.addWasteTop(held.get(0));
@@ -501,7 +537,7 @@ public class SolitaireScreen extends Screen {
 
     private void rightClick(int x, int y) {
         if (held != null) {
-            if (sendHeldToFoundation()) {
+            if (sendHeldToFoundation(x, y)) {
                 click(1.2F);
             } else {
                 cancelHeld();
@@ -513,12 +549,27 @@ public class SolitaireScreen extends Screen {
         Hit hit = hitTest(x, y);
         boolean moved = false;
         if (hit.target() == Target.WASTE) {
+            Card top = game.wasteTop();
+            int dest = top == null ? -1 : game.findFoundationFor(top);
+            int srcX = wasteTopX();
             moved = game.moveWasteToFoundation();
+            if (moved && dest >= 0) {
+                stockFlies.removeIf(f -> f.card().equals(top));
+                flyToFoundation(top, srcX, TOP_Y, dest);
+            }
         } else if (hit.target() == Target.TABLEAU) {
             int col = hit.index();
             int[] ys = columnTops(col);
             if (indexAt(col, y, ys) == game.tableauSize(col) - 1 && game.tableauSize(col) > 0) {
+                Card before = topOrNull(col);
+                int dest = game.findFoundationFor(before);
                 moved = game.moveTableauToFoundation(col);
+                if (moved) {
+                    noteFlip(col, before);
+                    if (dest >= 0) {
+                        flyToFoundation(before, columnX(col), ys[ys.length - 1], dest);
+                    }
+                }
             }
         }
         if (moved) {
@@ -571,6 +622,8 @@ public class SolitaireScreen extends Screen {
         Hit hover = held != null ? hitTest(mouseX, mouseY) : null;
         drawTopRow(gfx, hover);
         drawTableau(gfx, hover);
+        // 組札行きは場札の上を飛ぶ (後に描く)
+        drawFoundationFlies(gfx);
         drawHeld(gfx, mouseX, mouseY);
 
         gfx.drawString(this.font, Component.translatable("screen.bamboomod.solitaire_hint").getString(),
@@ -624,7 +677,16 @@ public class SolitaireScreen extends Screen {
         drawSlot(gfx, wasteX(), TOP_Y, false);
         List<Card> fan = game.wasteFan();
         for (int i = 0; i < fan.size(); i++) {
-            renderFace(gfx, wasteX() + i * WASTE_FAN_DX, TOP_Y, fan.get(i));
+            Card card = fan.get(i);
+            float t = stockFlyT(card);
+            if (t < 1.0F) {
+                // 山札から伏せて飛び、扇位置への到着でめくる
+                TrumpAnim.renderTravel(gfx, this.font, stockX(), TOP_Y,
+                        wasteX() + i * WASTE_FAN_DX, TOP_Y,
+                        t, t, CARD_W, CARD_H, card.rank(), card.suit());
+            } else {
+                renderFace(gfx, wasteX() + i * WASTE_FAN_DX, TOP_Y, card);
+            }
         }
         if (hover != null && hover.target() == Target.WASTE) {
             drawFrame(gfx, wasteTopX(), TOP_Y, CARD_W, CARD_H, TARGET_LINE);
@@ -637,8 +699,14 @@ public class SolitaireScreen extends Screen {
             drawSlot(gfx, fx, TOP_Y, hover != null && hover.target() == Target.FOUNDATION
                     && hover.index() == f && legal);
             Card top = game.foundationTop(f);
-            if (top != null) {
+            if (top != null && foundationFlyT(f, top) >= 1.0F) {
                 renderFace(gfx, fx, TOP_Y, top);
+            } else if (top != null) {
+                // 飛行中は1つ下の札を残す (移動完了で切り替わる)
+                Card below = foundationBelow(f);
+                if (below != null) {
+                    renderFace(gfx, fx, TOP_Y, below);
+                }
             } else {
                 gfx.drawCenteredString(this.font, "A", fx + CARD_W / 2, TOP_Y + CARD_H / 2 - 4,
                         SLOT_HINT);
@@ -646,7 +714,28 @@ public class SolitaireScreen extends Screen {
         }
     }
 
+    /** 組札の先頭の1つ下 (飛行中の残像用。なければ null)。 */
+    private Card foundationBelow(int f) {
+        List<Card> pile = game.foundationPile(f);
+        int n = pile.size();
+        return n >= 2 ? pile.get(n - 2) : null;
+    }
+
+    /** 飛行中の組札行き (表のまま・場札の上を飛ぶ)。 */
+    private void drawFoundationFlies(GuiGraphics gfx) {
+        for (FoundationFly fly : foundationFlies) {
+            float t = TrumpAnim.progress(fly.start(), TrumpAnim.DEAL_FLY_MS);
+            if (t < 1.0F) {
+                TrumpAnim.renderTravel(gfx, this.font, fly.sx(), fly.sy(),
+                        foundationX(fly.foundation()), TOP_Y,
+                        t, 1.0F, CARD_W, CARD_H, fly.card().rank(), fly.card().suit());
+            }
+        }
+    }
+
     private void drawTableau(GuiGraphics gfx, Hit hover) {
+        // 飛び札は後描き (配札順の逆=山頂が一番上)。到着済みは通常通り。
+        List<Flying> flying = new ArrayList<>();
         for (int col = 0; col < SolitaireGame.TABLEAU_COUNT; col++) {
             int cx = columnX(col);
             int[] ys = columnTops(col);
@@ -664,11 +753,25 @@ public class SolitaireScreen extends Screen {
                     continue;
                 }
                 Card c = game.tableauCard(col, i);
-                if (!c.faceUp()) {
+                float t = dealStart == 0 ? 1.0F : TrumpAnim.progress(
+                        dealStart + (long) (i * SolitaireGame.TABLEAU_COUNT + col)
+                                * TrumpAnim.DEAL_GAP_MS,
+                        TrumpAnim.DEAL_FLY_MS);
+                if (t < 1.0F) {
+                    flying.add(new Flying(
+                            (long) i * SolitaireGame.TABLEAU_COUNT + col, t, cx, ys[i], c));
+                } else if (!c.faceUp()) {
                     TrumpCardRenderer.renderCard(gfx, this.font, cx, ys[i], CARD_W,
                             TrumpRank.ACE, TrumpSuit.SPADE, true);
                 } else {
-                    renderFace(gfx, cx, ys[i], c);
+                    float flip = flipProgress(col, i, c);
+                    if (flip < 1.0F) {
+                        // 確定めくり (その場で裏→表)
+                        TrumpAnim.renderTravel(gfx, this.font, cx, ys[i], cx, ys[i],
+                                1.0F, flip, CARD_W, CARD_H, c.rank(), c.suit());
+                    } else {
+                        renderFace(gfx, cx, ys[i], c);
+                    }
                 }
             }
             // 合法な置き場の列先頭を強調
@@ -680,6 +783,101 @@ public class SolitaireScreen extends Screen {
                 }
             }
         }
+        // 飛び札は配札順の逆に重ねる (山頂=最初に配った札が一番上。裏向き札は裏のまま)
+        flying.sort((a, b) -> Long.compare(b.order(), a.order()));
+        for (Flying f : flying) {
+            Card c = f.card();
+            TrumpAnim.renderTravel(gfx, this.font, stockX(), TOP_Y, f.x(), f.y(),
+                    f.t(), c.faceUp() ? TrumpAnim.dealFlip(f.t()) : 0.0F,
+                    CARD_W, CARD_H, c.rank(), c.suit());
+        }
+    }
+
+    /** 配札中の飛び札。 */
+    private record Flying(long order, float t, int x, int y, Card card) {
+    }
+
+    /** 確定めくりの演出。 */
+    private record TableFlip(int col, int index, Card card, long start) {
+    }
+
+    /** 組札への飛び札。 */
+    private record FoundationFly(Card card, int sx, int sy, int foundation, long start) {
+    }
+
+    /** 山札めくりの飛び札 (開始時刻に stagger 済み)。 */
+    private record StockFly(Card card, long start) {
+    }
+
+    /** 山札めくりの演出登録。今回めくった札だけ扇内位置順に stagger する。 */
+    private void noteStockDraw(List<Card> beforeFan) {
+        List<Card> fan = game.wasteFan();
+        long now = TrumpAnim.now();
+        for (int i = 0; i < fan.size(); i++) {
+            Card card = fan.get(i);
+            if (!beforeFan.contains(card)) {
+                stockFlies.add(new StockFly(card, now + (long) i * TrumpAnim.STOCK_GAP_MS));
+            }
+        }
+    }
+
+    /** 捨て札扇の飛行進行度。飛行中でなければ1 (確定表示)。 */
+    private float stockFlyT(Card card) {
+        for (StockFly f : stockFlies) {
+            if (f.card().equals(card)) {
+                return TrumpAnim.progress(f.start(), TrumpAnim.DEAL_FLY_MS);
+            }
+        }
+        return 1.0F;
+    }
+
+    private void flyToFoundation(Card card, int sx, int sy, int foundation) {
+        foundationFlies.add(new FoundationFly(card, sx, sy, foundation, TrumpAnim.now()));
+    }
+
+    /** 組札先頭の飛行進行度。飛行中でなければ1 (確定表示)。 */
+    private float foundationFlyT(int foundation, Card top) {
+        for (FoundationFly f : foundationFlies) {
+            if (f.foundation() == foundation && f.card().equals(top)) {
+                return TrumpAnim.progress(f.start(), TrumpAnim.DEAL_FLY_MS);
+            }
+        }
+        return 1.0F;
+    }
+
+    /**
+     * 配置コミット後の確定めくり。裏→表に変わったらめくり演出を登録する。
+     * game内発のめくり (右クリック自動移動) は呼び出し側で前後を渡す。
+     */
+    private void flipTop(int col) {
+        Card before = topOrNull(col);
+        game.flipTableauTop(col);
+        noteFlip(col, before);
+    }
+
+    private Card topOrNull(int col) {
+        int n = game.tableauSize(col);
+        return n > 0 ? game.tableauCard(col, n - 1) : null;
+    }
+
+    private void noteFlip(int col, Card before) {
+        Card top = topOrNull(col);
+        if (top != null && top.faceUp() && !top.equals(before)) {
+            flips.add(new TableFlip(col, game.tableauSize(col) - 1, top, TrumpAnim.now()));
+        }
+    }
+
+    /** 指定札のめくり進行度。演出対象外は1 (表確定)。 */
+    private float flipProgress(int col, int index, Card card) {
+        if (!card.faceUp()) {
+            return 1.0F;
+        }
+        for (TableFlip f : flips) {
+            if (f.col() == col && f.index() == index && f.card().equals(card)) {
+                return TrumpAnim.progress(f.start(), TrumpAnim.FLIP_MS);
+            }
+        }
+        return 1.0F;
     }
 
     private void renderFace(GuiGraphics gfx, int x, int y, Card card) {

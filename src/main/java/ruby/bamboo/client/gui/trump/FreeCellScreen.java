@@ -56,6 +56,10 @@ public class FreeCellScreen extends Screen {
     private int tableauTop;
     private int maxColH;
     private Button newGameButton;
+    /** 配札演出の開始時刻。段順 (行優先) に山から各列へ飛ばす。 */
+    private long dealStart = TrumpAnim.now();
+    /** 組札への飛行中一覧。 */
+    private final List<FoundationFly> foundationFlies = new ArrayList<>();
 
     private enum HeldFrom {
         FREECELL, FOUNDATION, TABLEAU
@@ -102,12 +106,17 @@ public class FreeCellScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
+        // 終了・着地後に動いた組札飛行を掃除
+        foundationFlies.removeIf(f -> TrumpAnim.done(f.start(), TrumpAnim.DEAL_FLY_MS)
+                || !f.card().equals(game.foundationTop(f.foundation())));
         // チャット入力中は下段ボタンを隠す (入力欄と被るため)
         newGameButton.visible = !chat.isOpen();
     }
 
     private void newGame() {
         game.newGame(new Random());
+        dealStart = TrumpAnim.now();
+        foundationFlies.clear();
         held = null;
         heldSplit = false;
         wasWon = false;
@@ -170,9 +179,16 @@ public class FreeCellScreen extends Screen {
         return ys;
     }
 
-    /** 列内で y に掛かる一番上の札。空列・列より下は size()、列より上は -1。 */
+    /** 列内で y に掛かる一番上の札。空列は size()、列より上・最下札より下は -1。 */
     private int indexAt(int col, int y, int[] ys) {
         if (y < tableauTop) {
+            return -1;
+        }
+        if (ys.length == 0) {
+            return 0;
+        }
+        if (y >= ys[ys.length - 1] + CARD_H) {
+            // 最下札より下の余白は空振り (掴み・右クリック無効。置きは列判定で有効)
             return -1;
         }
         for (int i = ys.length - 1; i >= 0; i--) {
@@ -180,7 +196,7 @@ public class FreeCellScreen extends Screen {
                 return i;
             }
         }
-        return ys.length;
+        return -1;
     }
 
     private Hit hitTest(int x, int y) {
@@ -253,7 +269,7 @@ public class FreeCellScreen extends Screen {
         lastClickY = y;
         if (held != null) {
             // ダブルクリックは先頭札の組札への自動移動。不可なら通常ドロップへ。
-            if (doubleClick && sendHeldToFoundation()) {
+            if (doubleClick && sendHeldToFoundation(x, y)) {
                 click(1.2F);
                 checkWin();
                 return;
@@ -365,8 +381,8 @@ public class FreeCellScreen extends Screen {
         checkWin();
     }
 
-    /** 持ち札の先頭1枚を組札へ。複数持ちは残りを持ち続ける。 */
-    private boolean sendHeldToFoundation() {
+    /** 持ち札の先頭1枚を組札へ飛ばす。複数持ちは残りを持ち続ける。 */
+    private boolean sendHeldToFoundation(int sx, int sy) {
         if (held == null || held.isEmpty()) {
             return false;
         }
@@ -376,6 +392,7 @@ public class FreeCellScreen extends Screen {
             return false;
         }
         game.placeBackOnFoundation(f, top);
+        flyToFoundation(top, sx, sy, f);
         if (held.size() == 1) {
             held = null;
         } else {
@@ -399,7 +416,7 @@ public class FreeCellScreen extends Screen {
 
     private void rightClick(int x, int y) {
         if (held != null) {
-            if (sendHeldToFoundation()) {
+            if (sendHeldToFoundation(x, y)) {
                 click(1.2F);
             } else {
                 cancelHeld();
@@ -411,12 +428,22 @@ public class FreeCellScreen extends Screen {
         Hit hit = hitTest(x, y);
         boolean moved = false;
         if (hit.target() == Target.FREECELL) {
+            Card card = game.freecellCard(hit.index());
+            int dest = card == null ? -1 : game.findFoundationFor(card);
             moved = game.moveFreecellToFoundation(hit.index());
+            if (moved && dest >= 0) {
+                flyToFoundation(card, freecellX(hit.index()), TOP_Y, dest);
+            }
         } else if (hit.target() == Target.TABLEAU) {
             int col = hit.index();
             int[] ys = columnTops(col);
             if (indexAt(col, y, ys) == game.tableauSize(col) - 1 && game.tableauSize(col) > 0) {
+                Card top = game.tableauCard(col, game.tableauSize(col) - 1);
+                int dest = game.findFoundationFor(top);
                 moved = game.moveTableauToFoundation(col);
+                if (moved && dest >= 0) {
+                    flyToFoundation(top, columnX(col), ys[ys.length - 1], dest);
+                }
             }
         }
         if (moved) {
@@ -461,6 +488,8 @@ public class FreeCellScreen extends Screen {
         Hit hover = held != null ? hitTest(mouseX, mouseY) : null;
         drawTopRow(gfx, hover);
         drawTableau(gfx, hover);
+        // 組札行きは場札の上を飛ぶ (後に描く)
+        drawFoundationFlies(gfx);
         drawHeld(gfx, mouseX, mouseY);
 
         gfx.drawString(this.font, Component.translatable("screen.bamboomod.freecell_hint").getString(),
@@ -502,16 +531,43 @@ public class FreeCellScreen extends Screen {
             drawSlot(gfx, fx, TOP_Y, hover != null && hover.target() == Target.FOUNDATION
                     && hover.index() == f && legal);
             Card top = game.foundationTop(f);
-            if (top != null) {
+            if (top != null && foundationFlyT(f, top) >= 1.0F) {
                 renderFace(gfx, fx, TOP_Y, top);
-            } else {
+            } else if (top != null) {
+                // 飛行中は1つ下の札を残す (移動完了で切り替わる)
+                Card below = foundationBelow(f);
+                if (below != null) {
+                    renderFace(gfx, fx, TOP_Y, below);
+                }
+            } else if (top == null) {
                 gfx.drawCenteredString(this.font, "A", fx + CARD_W / 2, TOP_Y + CARD_H / 2 - 4,
                         SLOT_HINT);
             }
         }
     }
 
+    /** 組札の先頭の1つ下 (飛行中の残像用。なければ null)。 */
+    private Card foundationBelow(int f) {
+        List<Card> pile = game.foundationPile(f);
+        int n = pile.size();
+        return n >= 2 ? pile.get(n - 2) : null;
+    }
+
+    /** 飛行中の組札行き (表のまま・場札の上を飛ぶ)。 */
+    private void drawFoundationFlies(GuiGraphics gfx) {
+        for (FoundationFly fly : foundationFlies) {
+            float t = TrumpAnim.progress(fly.start(), TrumpAnim.DEAL_FLY_MS);
+            if (t < 1.0F) {
+                TrumpAnim.renderTravel(gfx, this.font, fly.sx(), fly.sy(),
+                        foundationX(fly.foundation()), TOP_Y,
+                        t, 1.0F, CARD_W, CARD_H, fly.card().rank(), fly.card().suit());
+            }
+        }
+    }
+
     private void drawTableau(GuiGraphics gfx, Hit hover) {
+        // 飛び札は後描き (配札順の逆=山頂が一番上)。到着済みは通常通り。
+        List<Flying> flying = new ArrayList<>();
         for (int col = 0; col < FreeCellGame.TABLEAU_COUNT; col++) {
             int cx = columnX(col);
             int[] ys = columnTops(col);
@@ -529,7 +585,16 @@ public class FreeCellScreen extends Screen {
                 if (i >= skipFrom && skipFrom >= 0) {
                     continue;
                 }
-                renderFace(gfx, cx, ys[i], game.tableauCard(col, i));
+                Card card = game.tableauCard(col, i);
+                long order = (long) i * FreeCellGame.TABLEAU_COUNT + col;
+                float t = TrumpAnim.progress(
+                        dealStart + order * TrumpAnim.DEAL_GAP_MS,
+                        TrumpAnim.DEAL_FLY_MS);
+                if (t < 1.0F) {
+                    flying.add(new Flying(order, t, cx, ys[i], card));
+                } else {
+                    renderFace(gfx, cx, ys[i], card);
+                }
             }
             // 合法な置き場の列先頭を強調
             if (held != null && hover != null && hover.target() == Target.TABLEAU
@@ -541,6 +606,36 @@ public class FreeCellScreen extends Screen {
                 }
             }
         }
+        // 飛び札は配札順の逆に重ねる (山頂=最初に配った札が一番上)
+        flying.sort((a, b) -> Long.compare(b.order(), a.order()));
+        int deckX = this.width / 2 - CARD_W / 2;
+        for (Flying f : flying) {
+            TrumpAnim.renderTravel(gfx, this.font, deckX, TOP_Y, f.x(), f.y(),
+                    f.t(), TrumpAnim.dealFlip(f.t()), CARD_W, CARD_H,
+                    f.card().rank(), f.card().suit());
+        }
+    }
+
+    /** 配札中の飛び札。 */
+    private record Flying(long order, float t, int x, int y, Card card) {
+    }
+
+    /** 組札への飛び札。 */
+    private record FoundationFly(Card card, int sx, int sy, int foundation, long start) {
+    }
+
+    private void flyToFoundation(Card card, int sx, int sy, int foundation) {
+        foundationFlies.add(new FoundationFly(card, sx, sy, foundation, TrumpAnim.now()));
+    }
+
+    /** 組札先頭の飛行進行度。飛行中でなければ1 (確定表示)。 */
+    private float foundationFlyT(int foundation, Card top) {
+        for (FoundationFly f : foundationFlies) {
+            if (f.foundation() == foundation && f.card().equals(top)) {
+                return TrumpAnim.progress(f.start(), TrumpAnim.DEAL_FLY_MS);
+            }
+        }
+        return 1.0F;
     }
 
     private void renderFace(GuiGraphics gfx, int x, int y, Card card) {

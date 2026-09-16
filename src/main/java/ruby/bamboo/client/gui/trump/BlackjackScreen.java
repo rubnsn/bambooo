@@ -109,35 +109,43 @@ public class BlackjackScreen extends Screen {
     private Button quitButton;
     private Button closeButton;
 
-    /** 演出付きの場札。flip 0=裏→1=表、slide 0=山札位置→1=定位置。 */
+    /**
+     * 演出付きの場札。進行度は描画時の経過時間で求める (時刻基準・滑らか)。
+     * flip 0=裏→1=表、slide 0=山札位置→1=定位置。速さは旧tick基準と同等。
+     */
     private static final class VisualCard {
+        /** 滑り時間 (ms)。旧6tick。 */
+        private static final long SLIDE_MS = 300;
+        /** 配札 stagger の1枚分 (ms)。旧4tick。 */
+        static final long DEAL_GAP_MS = 200;
+        /** 追い引き stagger の1枚分 (ms)。旧6tick。 */
+        static final long DRAW_GAP_MS = 300;
+
         final Card card;
         boolean hole;
-        float flip;
-        float slide;
-        int delay;
+        /** 演出開始時刻 (開示時はめくり直すため更新する)。 */
+        long bornMillis;
 
-        VisualCard(Card card, boolean hole, int delay) {
+        VisualCard(Card card, boolean hole, long delayMillis) {
             this.card = card;
             this.hole = hole;
-            this.delay = delay;
+            this.bornMillis = TrumpAnim.now() + delayMillis;
         }
 
-        void tick() {
-            if (delay > 0) {
-                delay--;
-                return;
-            }
-            if (!hole && flip < 1.0F) {
-                flip = Math.min(1.0F, flip + 1.0F / 8);
-            }
-            if (slide < 1.0F) {
-                slide = Math.min(1.0F, slide + 1.0F / 6);
+        /** 伏せを開く。めくり演出を最初から滑らかに再生する。 */
+        void reveal() {
+            if (hole) {
+                hole = false;
+                bornMillis = TrumpAnim.now();
             }
         }
 
-        boolean faceDown() {
-            return flip < 0.5F;
+        float flip() {
+            return hole ? 0.0F : TrumpAnim.progress(bornMillis, TrumpAnim.FLIP_MS);
+        }
+
+        float slide() {
+            return TrumpAnim.progress(bornMillis, SLIDE_MS);
         }
     }
 
@@ -328,12 +336,6 @@ public class BlackjackScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
-        for (VisualCard v : dealerVisuals) {
-            v.tick();
-        }
-        for (VisualCard v : playerVisuals) {
-            v.tick();
-        }
         if (noticeTicks > 0) {
             noticeTicks--;
         }
@@ -431,11 +433,13 @@ public class BlackjackScreen extends Screen {
         playerVisuals.clear();
         List<Card> dealer = game.dealerHand();
         for (int i = 0; i < dealer.size(); i++) {
-            dealerVisuals.add(new VisualCard(dealer.get(i), i == 1, i * 4));
+            dealerVisuals.add(new VisualCard(dealer.get(i), i == 1,
+                    i * VisualCard.DEAL_GAP_MS));
         }
         List<Card> player = game.playerHand();
         for (int i = 0; i < player.size(); i++) {
-            playerVisuals.add(new VisualCard(player.get(i), false, 4 + i * 4));
+            playerVisuals.add(new VisualCard(player.get(i), false,
+                    (1 + i) * VisualCard.DEAL_GAP_MS));
         }
         click(0.9F);
         if (game.phase() == Phase.DONE) {
@@ -488,7 +492,7 @@ public class BlackjackScreen extends Screen {
         }
         game.playerHit();
         List<Card> hand = game.playerHand();
-        playerVisuals.add(new VisualCard(hand.get(hand.size() - 1), false, 0));
+        playerVisuals.add(new VisualCard(hand.get(hand.size() - 1), false, 0L));
         click(1.0F);
         if (game.phase() == Phase.DONE) {
             resolve();
@@ -516,7 +520,7 @@ public class BlackjackScreen extends Screen {
         revealHole();
         game.playerDouble();
         List<Card> hand = game.playerHand();
-        playerVisuals.add(new VisualCard(hand.get(hand.size() - 1), false, 0));
+        playerVisuals.add(new VisualCard(hand.get(hand.size() - 1), false, 0L));
         syncDealerVisuals();
         click(1.2F);
         if (game.phase() == Phase.DONE) {
@@ -526,7 +530,7 @@ public class BlackjackScreen extends Screen {
 
     private void revealHole() {
         for (VisualCard v : dealerVisuals) {
-            v.hole = false;
+            v.reveal();
         }
     }
 
@@ -534,7 +538,8 @@ public class BlackjackScreen extends Screen {
     private void syncDealerVisuals() {
         List<Card> hand = game.dealerHand();
         for (int i = dealerVisuals.size(); i < hand.size(); i++) {
-            VisualCard v = new VisualCard(hand.get(i), false, (i - 2) * 6);
+            VisualCard v = new VisualCard(hand.get(i), false,
+                    (i - 2) * VisualCard.DRAW_GAP_MS);
             dealerVisuals.add(v);
         }
     }
@@ -709,25 +714,11 @@ public class BlackjackScreen extends Screen {
     }
 
     /**
-     * 簡易3D風の1枚描画。横に潰して裏表を切り替え、影と山札からの滑り込みを付ける。
+     * 1枚描画。山札からの滑り込み+めくりは TrumpAnim に集約。
      */
     private void renderVisual(GuiGraphics gfx, int x, int y, VisualCard v) {
-        int px = x + (int) ((1.0F - v.slide) * (deckX - x));
-        float sx = Math.abs((float) Math.cos(v.flip * Math.PI));
-        if (sx < 0.98F) {
-            gfx.fill(px + 3, y + 4, px + cardW + 3, y + cardH + 4, 0x80000000);
-        }
-        gfx.pose().pushPose();
-        gfx.pose().translate(px + cardW / 2.0F, 0.0F, 0.0F);
-        gfx.pose().scale(Math.max(0.02F, sx), 1.0F, 1.0F);
-        if (v.faceDown()) {
-            TrumpCardRenderer.renderCard(gfx, this.font, -cardW / 2, y, cardW,
-                    TrumpRank.ACE, TrumpSuit.SPADE, true);
-        } else {
-            TrumpCardRenderer.renderCard(gfx, this.font, -cardW / 2, y, cardW,
-                    v.card.rank(), v.card.suit(), false);
-        }
-        gfx.pose().popPose();
+        TrumpAnim.renderTravel(gfx, this.font, deckX, y, x, y,
+                v.slide(), v.flip(), cardW, cardH, v.card.rank(), v.card.suit());
     }
 
     private void drawSelect(GuiGraphics gfx) {

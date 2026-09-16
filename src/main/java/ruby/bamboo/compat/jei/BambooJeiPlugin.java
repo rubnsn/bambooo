@@ -13,13 +13,14 @@ import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
 import ruby.bamboo.BambooMod;
+import ruby.bamboo.block.entity.CutBlockEntity;
 import ruby.bamboo.core.init.BambooBlocks;
 import ruby.bamboo.core.init.BambooItems;
 import ruby.bamboo.core.init.BambooMenus;
@@ -123,11 +124,29 @@ public class BambooJeiPlugin implements IModPlugin {
 
     @Override
     public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
-        // 空のカットブロック(透明)は入手不可ダミーなので JEI の材料リストから隠す
+        // 空のカットブロック(透明・素材NBTなし)は入手不可ダミーなので JEI から隠す。
+        // NBTサブタイプ登録のため素のItemStackでは一致しない。存在する分だけ消す
+        // (存在しない物を消そうとすると JEI がエラーを吐く)。
         try {
             var ingredientManager = runtime.getIngredientManager();
-            var empty = new ItemStack(BambooBlocks.CUT_BLOCK.get());
-            ingredientManager.removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, List.of(empty));
+            List<ItemStack> toHide = new ArrayList<>();
+            for (ItemStack s : ingredientManager.getAllIngredients(VanillaTypes.ITEM_STACK)) {
+                if (!s.is(BambooBlocks.CUT_BLOCK.get().asItem())) {
+                    continue;
+                }
+                var tag = s.getTag();
+                var bet = tag != null
+                        && tag.contains("BlockEntityTag", Tag.TAG_COMPOUND)
+                                ? tag.getCompound("BlockEntityTag")
+                                : tag;
+                if (bet == null
+                        || !bet.contains(CutBlockEntity.TAG_CUT_STATE, Tag.TAG_COMPOUND)) {
+                    toHide.add(s);
+                }
+            }
+            if (!toHide.isEmpty()) {
+                ingredientManager.removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, toHide);
+            }
         } catch (Exception e) {
             BambooMod.LOGGER.warn("Failed to hide empty cut_block from JEI", e);
         }
@@ -153,19 +172,26 @@ public class BambooJeiPlugin implements IModPlugin {
         } catch (Exception e) {
             BambooMod.LOGGER.warn("Failed to hide skill books / wish_wand from JEI", e);
         }
-        // 温泉水(source/flowing)はバケツ無し・BlockItem無しのため JEI の流体リストから隠す
+        // 温泉水(source/flowing)はバケツ無し・BlockItem無しのため JEI の流体リストから隠す。
+        // 未登録の流体を消そうとすると JEI がエラーを吐くため、存在する分だけ消す。
         try {
             var ingredientManager = runtime.getIngredientManager();
+            var listed = ingredientManager.getAllIngredients(
+                    mezz.jei.api.forge.ForgeTypes.FLUID_STACK);
             List<FluidStack> fluids = new ArrayList<>();
             try {
-                fluids.add(new FluidStack(BambooMod.SPRING_WATER_SOURCE.get(),
-                        FluidType.BUCKET_VOLUME));
+                var src = listed.stream()
+                        .filter(f -> f.getFluid() == BambooMod.SPRING_WATER_SOURCE.get())
+                        .findFirst();
+                src.ifPresent(fluids::add);
             } catch (Exception e) {
                 BambooMod.LOGGER.warn("Failed to resolve spring_water source for JEI hide", e);
             }
             try {
-                fluids.add(new FluidStack(BambooMod.SPRING_WATER_FLOWING.get(),
-                        FluidType.BUCKET_VOLUME));
+                var flow = listed.stream()
+                        .filter(f -> f.getFluid() == BambooMod.SPRING_WATER_FLOWING.get())
+                        .findFirst();
+                flow.ifPresent(fluids::add);
             } catch (Exception e) {
                 BambooMod.LOGGER.warn("Failed to resolve spring_water flowing for JEI hide", e);
             }

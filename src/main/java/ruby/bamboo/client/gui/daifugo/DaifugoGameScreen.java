@@ -13,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import ruby.bamboo.client.gui.ChatOverlay;
+import ruby.bamboo.client.gui.trump.TrumpAnim;
 import ruby.bamboo.client.gui.trump.TrumpCardRenderer;
 import ruby.bamboo.client.handler.ClientDaifugoHandler;
 import ruby.bamboo.client.gui.trump.TrumpRank;
@@ -37,20 +38,22 @@ public class DaifugoGameScreen extends Screen {
     private static final int HAND_PITCH = 22;
     private static final int TABLE_PITCH = 40;
     private static final int SELECT_UP = 8;
-    /** カードが飛んでくる演出の長さ (tick)。 */
-    private static final int FLY_LEN = 12;
-    /** 特殊流し演出の長さ (tick)。 */
-    private static final int FX_LEN = 60;
+    /** カードが飛んでくる演出の長さ (ms)。旧12tick。 */
+    private static final long FLY_MS = 600;
+    /** 特殊流し演出の長さ (ms)。旧60tick。 */
+    private static final long FX_MS = 3000;
 
     private DaifugoSnapshot snapshot;
     private final Set<Integer> selected = new LinkedHashSet<>();
     private final List<int[]> hitRects = new ArrayList<>();
-    private int flyTicks = 0;
+    /** 飛来開始時刻 (0=非演出中)。時刻基準で滑らかに動く。 */
+    private long flyStart = 0;
     private int flySeat = -1;
     /** 飛来中に下に残す旧場札 (重なってから消える)。 */
     private List<Integer> prevTableCards = List.of();
     private String lastFxKey = "";
-    private int fxTicks = 0;
+    /** 特殊流しの開始時刻 (0=非表示)。 */
+    private long fxStart = 0;
 
     private Button playButton;
     private Button passButton;
@@ -73,12 +76,12 @@ public class DaifugoGameScreen extends Screen {
         if (!snapshot.fxKey.isEmpty() && !snapshot.fxKey.equals(lastFxKey)) {
             // 特殊流し (8切り/スペ3/シックス/最強階段/流れ): 札と見出しを残す
             lastFxKey = snapshot.fxKey;
-            fxTicks = FX_LEN;
+            fxStart = TrumpAnim.now();
             playFxSound(snapshot.fxKey);
         } else if (tableChanged && !snapshot.table.isEmpty()) {
             // 通常の出し: 旧場札を残したまま、出した席から場へ飛んでくる
             prevTableCards = new ArrayList<>(old.table);
-            flyTicks = FLY_LEN;
+            flyStart = TrumpAnim.now();
             flySeat = snapshot.tableSeat;
             playSound(SoundEvents.BOOK_PAGE_TURN, 1.0F, 0.8F);
         } else if (tableChanged) {
@@ -257,15 +260,13 @@ public class DaifugoGameScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
-        if (flyTicks > 0) {
-            flyTicks--;
-            if (flyTicks == 0) {
-                // 飛来完了で旧場札を消す (重なってから消える)
-                prevTableCards = List.of();
-            }
+        if (flyStart != 0 && TrumpAnim.done(flyStart, FLY_MS)) {
+            // 飛来完了で旧場札を消す (重なってから消える)
+            flyStart = 0;
+            prevTableCards = List.of();
         }
-        if (fxTicks > 0) {
-            fxTicks--;
+        if (fxStart != 0 && TrumpAnim.done(fxStart, FX_MS)) {
+            fxStart = 0;
         }
         // チャット入力中は下段ボタンを隠す (入力欄と被るため)
         playButton.visible = isPlaying() && !chat.isOpen();
@@ -458,25 +459,26 @@ public class DaifugoGameScreen extends Screen {
         }
         int x0 = this.width / 2 - ((n - 1) * TABLE_PITCH + CARD_W) / 2;
         // 飛来中は旧場札を下に残す (新札が重なってから消える)
-        if (flyTicks > 0 && !prevTableCards.isEmpty()) {
+        boolean flying = flyStart != 0 && !TrumpAnim.done(flyStart, FLY_MS);
+        if (flying && !prevTableCards.isEmpty()) {
             int pn = prevTableCards.size();
             int px0 = this.width / 2 - ((pn - 1) * TABLE_PITCH + CARD_W) / 2;
             for (int i = 0; i < pn; i++) {
                 renderCard(gfx, px0 + i * TABLE_PITCH, cy, prevTableCards.get(i));
             }
         }
+        float flyT = flying ? TrumpAnim.progress(flyStart, FLY_MS) : 1.0F;
+        int[] src = flying ? seatPos(flySeat) : null;
         for (int i = 0; i < n; i++) {
-            int tx = x0 + i * TABLE_PITCH;
-            int ty = cy;
-            if (flyTicks > 0) {
-                // 出した席から場へ飛んでくる (ease-out)
-                float t = 1.0F - flyTicks / (float) FLY_LEN;
-                float e = 1.0F - (1.0F - t) * (1.0F - t);
-                int[] src = seatPos(flySeat);
-                tx = (int) (src[0] - CARD_W / 2 + (tx - (src[0] - CARD_W / 2)) * e);
-                ty = (int) (src[1] + (cy - src[1]) * e);
+            int id = snapshot.table.get(i);
+            if (flying) {
+                // 出した席から表のまま場へ飛ぶ (現実同様、伏せて出すのは配札だけ)
+                TrumpAnim.renderTravel(gfx, this.font,
+                        src[0] - CARD_W / 2, src[1], x0 + i * TABLE_PITCH, cy,
+                        flyT, 1.0F, CARD_W, CARD_H, rankOf(id), suitOf(id));
+            } else {
+                renderCard(gfx, x0 + i * TABLE_PITCH, cy, id);
             }
-            renderCard(gfx, tx, ty, snapshot.table.get(i));
         }
         if (!snapshot.lockSuits.isEmpty()) {
             StringBuilder badge = new StringBuilder();
@@ -493,8 +495,8 @@ public class DaifugoGameScreen extends Screen {
 
     /** 特殊流しの残像 (流した札+見出しをしばらく残す)。場が空のときのみ。 */
     private void drawFx(GuiGraphics gfx) {
-        if (fxTicks <= 0 || lastFxKey.isEmpty() || snapshot.fxCards.isEmpty()
-                || !snapshot.table.isEmpty()) {
+        if (fxStart == 0 || TrumpAnim.done(fxStart, FX_MS) || lastFxKey.isEmpty()
+                || snapshot.fxCards.isEmpty() || !snapshot.table.isEmpty()) {
             return;
         }
         int n = snapshot.fxCards.size();
@@ -626,13 +628,18 @@ public class DaifugoGameScreen extends Screen {
     }
 
     private void renderCard(GuiGraphics gfx, int x, int y, int id) {
-        if (id >= DaifugoCard.JOKER_A_ID) {
-            TrumpCardRenderer.renderCard(gfx, this.font, x, y, CARD_W,
-                    TrumpRank.JOKER, TrumpSuit.SPADE, false);
-            return;
-        }
         TrumpCardRenderer.renderCard(gfx, this.font, x, y, CARD_W,
-                TrumpRank.values()[id % 13], TrumpSuit.values()[id / 13], false);
+                rankOf(id), suitOf(id), false);
+    }
+
+    private static TrumpRank rankOf(int id) {
+        return id >= DaifugoCard.JOKER_A_ID ? TrumpRank.JOKER
+                : TrumpRank.values()[id % 13];
+    }
+
+    private static TrumpSuit suitOf(int id) {
+        return id >= DaifugoCard.JOKER_A_ID ? TrumpSuit.SPADE
+                : TrumpSuit.values()[id / 13];
     }
 
     private String trim(String s, int max) {

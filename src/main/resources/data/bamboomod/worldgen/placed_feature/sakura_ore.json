@@ -2,7 +2,7 @@
   "feature": "bamboomod:ore_sakura_small",
   "placement": [
     {
-      "type": "minecraft:count",
+      "type": "minecraft:rarity_filter",
       "chance": 4
     },
     {

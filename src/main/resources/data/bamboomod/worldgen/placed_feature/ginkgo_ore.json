@@ -2,7 +2,7 @@
   "feature": "bamboomod:ore_ginkgo_small",
   "placement": [
     {
-      "type": "minecraft:count",
+      "type": "minecraft:rarity_filter",
       "chance": 4
     },
     {

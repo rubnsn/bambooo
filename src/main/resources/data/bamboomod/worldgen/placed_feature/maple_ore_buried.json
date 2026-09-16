@@ -2,7 +2,7 @@
   "feature": "bamboomod:ore_maple_buried",
   "placement": [
     {
-      "type": "minecraft:count",
+      "type": "minecraft:rarity_filter",
       "chance": 2
     },
     {

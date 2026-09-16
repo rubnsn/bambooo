@@ -2,7 +2,7 @@
   "feature": "bamboomod:ore_sakura_buried",
   "placement": [
     {
-      "type": "minecraft:count",
+      "type": "minecraft:rarity_filter",
       "chance": 2
     },
     {
