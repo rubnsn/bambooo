@@ -1,0 +1,99 @@
+{
+  "loader": "forge:composite",
+  "textures": {
+    "particle": "minecraft:block/deepslate"
+  },
+  "children": {
+    "base": {
+      "parent": "minecraft:block/cube_all",
+      "textures": {
+        "all": "minecraft:block/deepslate",
+        "particle": "minecraft:block/deepslate"
+      },
+      "render_type": "minecraft:solid"
+    },
+    "overlay": {
+      "textures": {
+        "all": "bamboomod:block/maple_ore_overlay",
+        "particle": "minecraft:block/deepslate"
+      },
+      "render_type": "minecraft:cutout",
+      "elements": [
+        {
+          "from": [
+            -0.01,
+            -0.01,
+            -0.01
+          ],
+          "to": [
+            16.01,
+            16.01,
+            16.01
+          ],
+          "faces": {
+            "down": {
+              "uv": [
+                0,
+                0,
+                16,
+                16
+              ],
+              "texture": "#all",
+              "cullface": "down"
+            },
+            "up": {
+              "uv": [
+                0,
+                0,
+                16,
+                16
+              ],
+              "texture": "#all",
+              "cullface": "up"
+            },
+            "north": {
+              "uv": [
+                0,
+                0,
+                16,
+                16
+              ],
+              "texture": "#all",
+              "cullface": "north"
+            },
+            "south": {
+              "uv": [
+                0,
+                0,
+                16,
+                16
+              ],
+              "texture": "#all",
+              "cullface": "south"
+            },
+            "west": {
+              "uv": [
+                0,
+                0,
+                16,
+                16
+              ],
+              "texture": "#all",
+              "cullface": "west"
+            },
+            "east": {
+              "uv": [
+                0,
+                0,
+                16,
+                16
+              ],
+              "texture": "#all",
+              "cullface": "east"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

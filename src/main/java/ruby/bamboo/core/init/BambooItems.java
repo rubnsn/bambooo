@@ -113,6 +113,20 @@ public final class BambooItems {
     public static final RegistryObject<Item> SEAWEED = register("seaweed",
             () -> new Item(new Item.Properties()));
 
+    // ===== 宝石 3種 (旧 sakura_gem/ginkgo_gem + maple_ingot→maple_jem改名) =====
+    // 旧 1.16.5 (sakura) では maple のみ ingot (製錬式) だったが、1.20.1 では
+    // 3種とも jem 直ドロップ (幸運対応、製錬不要) に統一。用途は今後の刀・腕輪等の材料用。
+
+    /** 紅葉宝石 (旧 maple_ingot から改名) */
+    public static final RegistryObject<Item> MAPLE_JEM = register("maple_jem",
+            () -> new Item(new Item.Properties()));
+    /** 銀杏宝石 (旧 ginkgo_gem から改名) */
+    public static final RegistryObject<Item> GINKGO_JEM = register("ginkgo_jem",
+            () -> new Item(new Item.Properties()));
+    /** 桜宝石 (旧 sakura_gem から改名) */
+    public static final RegistryObject<Item> SAKURA_JEM = register("sakura_jem",
+            () -> new Item(new Item.Properties()));
+
     /** 扇子 (旧 FoldingFan。耐久100、風で葉破壊) */
     public static final RegistryObject<FoldingFan> FOLDING_FAN = register("foldingfan",
             () -> new FoldingFan(new Item.Properties().durability(100)));

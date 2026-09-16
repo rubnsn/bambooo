@@ -29,6 +29,7 @@ import ruby.bamboo.block.CampfireBlock;
 import ruby.bamboo.block.GinkgoLeaveBlock;
 import ruby.bamboo.block.GinkgoLogBlock;
 import ruby.bamboo.block.GinkgoSaplingBlock;
+import ruby.bamboo.block.HiganOreBlock;
 import ruby.bamboo.block.HinokiLeaveBlock;
 import ruby.bamboo.block.HinokiLogBlock;
 import ruby.bamboo.block.HinokiSaplingBlock;
@@ -495,6 +496,40 @@ public final class BambooBlocks {
             () -> new LeafCarpetBlock(MapColor.COLOR_RED));
     public static final RegistryObject<LeafCarpetBlock> GINKGO_CARPET = register("ginkgo_carpet",
             () -> new LeafCarpetBlock(MapColor.COLOR_YELLOW));
+
+    // ===== 彼岸鉱石 6種 (旧 HiganOre: maple/ginkgo/sakura + 深層岩変種) =====
+    // 3種ともダイヤ相当に統一: 要鉄ピッケル (needs_iron_tool タグ)、XP 3-7 (HiganOreBlock)。
+    // 生成は worldgen configured/placed (ore_<name>_{small,buried,large}) + biome_modifier/add_gem_ores。
+    /** 紅葉鉱石 (旧 maple_ore) */
+    public static final RegistryObject<HiganOreBlock> MAPLE_ORE = register("maple_ore",
+            () -> new HiganOreBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE)
+                    .strength(3.0F, 3.0F).requiresCorrectToolForDrops()));
+    /** 銀杏鉱石 (旧 ginkgo_ore) */
+    public static final RegistryObject<HiganOreBlock> GINKGO_ORE = register("ginkgo_ore",
+            () -> new HiganOreBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE)
+                    .strength(3.0F, 3.0F).requiresCorrectToolForDrops()));
+    /** 桜鉱石 (旧 sakura_ore) */
+    public static final RegistryObject<HiganOreBlock> SAKURA_ORE = register("sakura_ore",
+            () -> new HiganOreBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.STONE)
+                    .strength(3.0F, 3.0F).requiresCorrectToolForDrops()));
+    /** 深層紅葉鉱石 */
+    public static final RegistryObject<HiganOreBlock> DEEPSLATE_MAPLE_ORE = register("deepslate_maple_ore",
+            () -> new HiganOreBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DEEPSLATE).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.DEEPSLATE)
+                    .strength(4.5F, 3.0F).requiresCorrectToolForDrops()));
+    /** 深層銀杏鉱石 */
+    public static final RegistryObject<HiganOreBlock> DEEPSLATE_GINKGO_ORE = register("deepslate_ginkgo_ore",
+            () -> new HiganOreBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DEEPSLATE).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.DEEPSLATE)
+                    .strength(4.5F, 3.0F).requiresCorrectToolForDrops()));
+    /** 深層桜鉱石 */
+    public static final RegistryObject<HiganOreBlock> DEEPSLATE_SAKURA_ORE = register("deepslate_sakura_ore",
+            () -> new HiganOreBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DEEPSLATE).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.DEEPSLATE)
+                    .strength(4.5F, 3.0F).requiresCorrectToolForDrops()));
 
     private static List<RegistryObject<Block>> registerIndLights() {
         List<RegistryObject<Block>> result = new ArrayList<>();

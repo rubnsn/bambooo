@@ -1,0 +1,16 @@
+{
+  "type": "forge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": [
+    "bamboomod:maple_ore",
+    "bamboomod:maple_ore_buried",
+    "bamboomod:maple_ore_large",
+    "bamboomod:ginkgo_ore",
+    "bamboomod:ginkgo_ore_buried",
+    "bamboomod:ginkgo_ore_large",
+    "bamboomod:sakura_ore",
+    "bamboomod:sakura_ore_buried",
+    "bamboomod:sakura_ore_large"
+  ],
+  "step": "underground_ores"
+}

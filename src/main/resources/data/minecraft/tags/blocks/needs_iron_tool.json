@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "bamboomod:maple_ore",
+    "bamboomod:ginkgo_ore",
+    "bamboomod:sakura_ore",
+    "bamboomod:deepslate_maple_ore",
+    "bamboomod:deepslate_ginkgo_ore",
+    "bamboomod:deepslate_sakura_ore"
+  ]
+}
