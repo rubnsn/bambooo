@@ -457,6 +457,12 @@ public class BlackjackScreen extends Screen {
     }
 
     private void nextRound() {
+        if (!betMode) {
+            // フリーモードは掛け金なしで即次勝負 (初回開始と同一)
+            state = UiState.PLAY;
+            deal();
+            return;
+        }
         enterStake();
     }
 

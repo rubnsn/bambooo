@@ -19,6 +19,8 @@ import ruby.bamboo.network.DaifugoRoomPacket;
 public final class DaifugoManager {
     private static final Map<UUID, DaifugoRoom> ROOMS = new HashMap<>();
     private static final Map<UUID, UUID> PLAYER_ROOM = new HashMap<>();
+    /** 部屋ごとのハードAI記憶 (ハードモードの村人用。解散時に捨てる)。 */
+    private static final Map<UUID, HardMemory> MEMORIES = new HashMap<>();
     private static final Random RANDOM = new Random();
 
     private DaifugoManager() {
@@ -27,6 +29,7 @@ public final class DaifugoManager {
     public static void clear() {
         ROOMS.clear();
         PLAYER_ROOM.clear();
+        MEMORIES.clear();
     }
 
     public static DaifugoRoom roomOf(UUID playerId) {
@@ -89,6 +92,7 @@ public final class DaifugoManager {
         }
         if (disband) {
             ROOMS.remove(room.roomId);
+            MEMORIES.remove(room.roomId);
         } else {
             broadcast(server, room);
         }
@@ -105,18 +109,24 @@ public final class DaifugoManager {
         if (room.state != DaifugoRoom.State.LOBBY) {
             return;
         }
+        // ハードモードでは記憶を付けてから開始する (初手前に遡及通知はない)
+        if (room.aiHard) {
+            HardMemory memory = new HardMemory();
+            room.observer = memory;
+            MEMORIES.put(room.roomId, memory);
+        }
         room.startGame(RANDOM);
         broadcast(server, room);
     }
 
-    /** ローカルルール設定 (開始前ロビーの部屋主のみ。成功時だけ配信)。 */
+    /** ローカルルール設定 + CPU難易度 (開始前ロビーの部屋主のみ。成功時だけ配信)。 */
     public static void rules(MinecraftServer server, ServerPlayer player, boolean eightCut,
-            boolean jback, boolean suitLock, boolean spe3, boolean miyako) {
+            boolean jback, boolean suitLock, boolean spe3, boolean miyako, boolean hard) {
         DaifugoRoom room = roomOf(player.getUUID());
         if (room == null) {
             return;
         }
-        if (room.setRules(player.getUUID(), eightCut, jback, suitLock, spe3, miyako)) {
+        if (room.setRules(player.getUUID(), eightCut, jback, suitLock, spe3, miyako, hard)) {
             broadcast(server, room);
         }
     }
@@ -182,11 +192,15 @@ public final class DaifugoManager {
         }
         for (DaifugoRoom room : List.copyOf(ROOMS.values())) {
             if (room.tick(RANDOM, (seat, view, hand) -> {
-                CpuBrain.Play play = CpuBrain.choosePlay(view, hand,
-                        room.seats[seat].cpu >= 0
-                                ? CpuBrain.Personality.values()[room.seats[seat].cpu]
-                                : CpuBrain.Personality.CREEPER,
-                        RANDOM);
+                CpuBrain.Personality personality = room.seats[seat].cpu >= 0
+                        ? CpuBrain.Personality.values()[room.seats[seat].cpu]
+                        : CpuBrain.Personality.CREEPER;
+                // ハードモードでは全人格が村人思考を基準にし、ラダーで乖離する
+                if (room.aiHard) {
+                    return HardVillagerBrain.choosePlayWithLadder(view, hand, seat,
+                            MEMORIES.get(room.roomId), personality, RANDOM);
+                }
+                CpuBrain.Play play = CpuBrain.choosePlay(view, hand, personality, RANDOM);
                 return play;
             })) {
                 broadcast(server, room);

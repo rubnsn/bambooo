@@ -11,6 +11,8 @@ public record DaifugoCard(TrumpSuit suit, TrumpRank rank, boolean joker, int id)
     public static final int JOKER_A_ID = 52;
     public static final int JOKER_B_ID = 53;
     public static final int DECK_SIZE = 54;
+    /** スペ3のID (suit SPADE=0 * 13 + rank THREE=2)。 */
+    public static final int SPADE_THREE_ID = 2;
 
     public DaifugoCard(TrumpSuit suit, TrumpRank rank, boolean joker) {
         this(suit, rank, joker,

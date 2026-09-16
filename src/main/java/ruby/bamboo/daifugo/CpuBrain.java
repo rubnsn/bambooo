@@ -7,13 +7,28 @@ import java.util.Random;
 import ruby.bamboo.client.gui.trump.TrumpRank;
 
 /**
- * CPU の思考 (純粋ロジック)。
+ * CPU の思考 (純粋ロジック、ノーマル用)。
  * 他人の手札は見ない。公開情報 (場・枚数・順位・革命) と自手札のみで選ぶ。
  */
 public final class CpuBrain {
     /** ゾンビ &lt; スケルトン &lt; クリーパー &lt; エンダーマン &lt; 村人。 */
     public enum Personality {
         ZOMBIE, SKELETON, CREEPER, ENDERMAN, VILLAGER
+    }
+
+    /**
+     * 人格ごとのランダム率。弱い人格ほど重みを無視してランダムに切る
+     * (村人0%→エンダーマン10%→クリーパー20%→スケルトン30%→ゾンビ40%)。
+     * ハードモードの村人思考ベースにも共用する。
+     */
+    public static float randomRate(Personality personality) {
+        return switch (personality) {
+            case VILLAGER -> 0.0f;
+            case ENDERMAN -> 0.1f;
+            case CREEPER -> 0.2f;
+            case SKELETON -> 0.3f;
+            case ZOMBIE -> 0.4f;
+        };
     }
 
     /** CPU に見せてよい公開情報 (他人の手札なし)。 */
@@ -112,6 +127,11 @@ public final class CpuBrain {
         } else if (personality == Personality.ZOMBIE && random.nextFloat() < 0.3f) {
             ok = legal;
         }
+        // 弱い人格ほど重みを無視してランダムに切る (共用ラダー)
+        if (!ok.isEmpty() && random.nextFloat() < randomRate(personality)) {
+            Cand c = ok.get(random.nextInt(ok.size()));
+            return new Play(idsOf(c.cards()), c.stairs());
+        }
         // 上がり優先 (ゾンビは7割)
         List<Cand> finishers = new ArrayList<>();
         for (Cand cand : ok) {
@@ -179,9 +199,7 @@ public final class CpuBrain {
 
     private static Cand chooseLead(List<Cand> ok, List<DaifugoCard> hand,
             View view, Personality personality, Random random, boolean effNow) {
-        if (personality == Personality.ZOMBIE) {
-            return ok.get(random.nextInt(ok.size()));
-        }
+        // ゾンビの完全ランダムはラダー (40%) に統一したため削除
         Cand best = null;
         double bestScore = Double.NEGATIVE_INFINITY;
         for (Cand cand : ok) {
@@ -195,9 +213,6 @@ public final class CpuBrain {
             s += flowBonus(cand, personality, effNow);
             s -= leadJokerWaste(cand, personality, effNow);
             s -= spe3LeadWaste(cand, view, personality);
-            if (personality == Personality.SKELETON && random.nextFloat() < 0.3f) {
-                s = random.nextDouble() * 10.0;
-            }
             if (s > bestScore) {
                 bestScore = s;
                 best = cand;
@@ -232,9 +247,7 @@ public final class CpuBrain {
                 && DaifugoRules.containsJoker(cheapest.cards()) && tablePower <= 4) {
             return null;
         }
-        if (personality == Personality.ZOMBIE) {
-            return ok.get(random.nextInt(ok.size()));
-        }
+        // ゾンビの完全ランダムはラダー (40%) に統一したため削除
         Cand best = null;
         double bestScore = Double.NEGATIVE_INFINITY;
         for (Cand cand : ok) {
@@ -251,9 +264,6 @@ public final class CpuBrain {
             s += revolutionBonus(cand, hand, view, personality, effNow);
             s += jBackBonus(cand, hand, view, personality, effNow);
             s += flowBonus(cand, personality, effNow);
-            if (personality == Personality.SKELETON && random.nextFloat() < 0.2f) {
-                s = random.nextDouble() * 10.0;
-            }
             if (s > bestScore) {
                 bestScore = s;
                 best = cand;

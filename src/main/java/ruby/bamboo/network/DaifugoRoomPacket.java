@@ -61,6 +61,7 @@ public class DaifugoRoomPacket {
         buf.writeBoolean(s.ruleSuitLock);
         buf.writeBoolean(s.ruleSpe3);
         buf.writeBoolean(s.ruleMiyako);
+        buf.writeBoolean(s.aiHard);
         buf.writeVarIntArray(s.lockSuits.stream().mapToInt(Integer::intValue).toArray());
         buf.writeVarIntArray(s.tributeOwed.stream().mapToInt(Integer::intValue).toArray());
         buf.writeInt(s.log.size());
@@ -125,6 +126,7 @@ public class DaifugoRoomPacket {
         s.ruleSuitLock = buf.readBoolean();
         s.ruleSpe3 = buf.readBoolean();
         s.ruleMiyako = buf.readBoolean();
+        s.aiHard = buf.readBoolean();
         List<Integer> lockSuits = new ArrayList<>();
         for (int suit : buf.readVarIntArray()) {
             lockSuits.add(suit);

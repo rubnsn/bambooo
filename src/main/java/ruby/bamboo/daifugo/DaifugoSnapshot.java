@@ -47,6 +47,8 @@ public class DaifugoSnapshot {
     public boolean ruleSuitLock = true;
     public boolean ruleSpe3 = true;
     public boolean ruleMiyako = true;
+    /** CPU難易度 (false=ノーマル・true=ハード)。 */
+    public boolean aiHard = false;
     /** スートロック (素札スートの多重集合整列列。空=なし)。 */
     public List<Integer> lockSuits = List.of();
     public List<LogEntry> log = List.of();

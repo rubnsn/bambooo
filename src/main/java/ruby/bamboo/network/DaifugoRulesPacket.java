@@ -8,7 +8,7 @@ import net.minecraftforge.network.NetworkEvent;
 import ruby.bamboo.daifugo.DaifugoManager;
 
 /**
- * C→S 大富豪のローカルルール設定 (部屋主が開始前に送信)。
+ * C→S 大富豪のローカルルール設定 + CPU難易度 (部屋主が開始前に送信)。
  */
 public class DaifugoRulesPacket {
     public boolean eightCut = true;
@@ -16,17 +16,20 @@ public class DaifugoRulesPacket {
     public boolean suitLock = true;
     public boolean spe3 = true;
     public boolean miyako = true;
+    /** CPU難易度 (false=ノーマル・true=ハード)。 */
+    public boolean hard = false;
 
     public DaifugoRulesPacket() {
     }
 
     public DaifugoRulesPacket(boolean eightCut, boolean jback, boolean suitLock,
-            boolean spe3, boolean miyako) {
+            boolean spe3, boolean miyako, boolean hard) {
         this.eightCut = eightCut;
         this.jback = jback;
         this.suitLock = suitLock;
         this.spe3 = spe3;
         this.miyako = miyako;
+        this.hard = hard;
     }
 
     public static void encode(DaifugoRulesPacket msg, FriendlyByteBuf buf) {
@@ -35,6 +38,7 @@ public class DaifugoRulesPacket {
         buf.writeBoolean(msg.suitLock);
         buf.writeBoolean(msg.spe3);
         buf.writeBoolean(msg.miyako);
+        buf.writeBoolean(msg.hard);
     }
 
     public static DaifugoRulesPacket decode(FriendlyByteBuf buf) {
@@ -44,6 +48,7 @@ public class DaifugoRulesPacket {
         msg.suitLock = buf.readBoolean();
         msg.spe3 = buf.readBoolean();
         msg.miyako = buf.readBoolean();
+        msg.hard = buf.readBoolean();
         return msg;
     }
 
@@ -52,7 +57,7 @@ public class DaifugoRulesPacket {
             ServerPlayer player = ctx.get().getSender();
             if (player != null && player.getServer() != null) {
                 DaifugoManager.rules(player.getServer(), player, msg.eightCut, msg.jback,
-                        msg.suitLock, msg.spe3, msg.miyako);
+                        msg.suitLock, msg.spe3, msg.miyako, msg.hard);
             }
         });
         ctx.get().setPacketHandled(true);

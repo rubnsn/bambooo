@@ -118,6 +118,13 @@ public class DaifugoRoom {
     public boolean ruleSuitLock = true;
     public boolean ruleSpe3 = true;
     public boolean ruleMiyako = true;
+    /** CPU難易度 (部屋主が開始前に変更可。false=ノーマル・true=ハード。既定ノーマル)。 */
+    public boolean aiHard = false;
+    /**
+     * 公開イベントの通知先 (ハードAIの記憶用。null可)。
+     * Room 自体は履歴を保持しない。献上などの非公開受け渡しは通知しない。
+     */
+    public CpuObserver observer;
     public int lastPlaySeat = -1;
     public int prevDaifugo = -1;
     public final List<DaifugoSnapshot.LogEntry> log = new ArrayList<>();
@@ -291,8 +298,10 @@ public class DaifugoRoom {
         for (int i = 0; i < SEATS; i++) {
             if (seats[i] == null) {
                 Seat s = new Seat();
-                s.cpu = pool.get(p++ % pool.size()).ordinal();
-                s.name = cpuName(CpuBrain.Personality.values()[s.cpu]);
+                CpuBrain.Personality personality = pool.get(p++ % pool.size());
+                s.cpu = personality.ordinal();
+                // ハードモードのNPCは全員キング接頭辞で区別する
+                s.name = aiHard ? "king_" + cpuName(personality) : cpuName(personality);
                 seats[i] = s;
             }
         }
@@ -339,6 +348,9 @@ public class DaifugoRoom {
         revolution = false;
         jbackActive = false;
         lockSuits = null;
+        if (observer != null) {
+            observer.onRoundStart();
+        }
         fxCards = List.of();
         fxKey = "";
         passedOut = new boolean[SEATS];
@@ -474,11 +486,17 @@ public class DaifugoRoom {
         return true;
     }
 
-    /** お返しの自動選択 (最弱札)。 */
+    /** お返しの自動選択。ハードCPUは勝ち形の部品を渡さない選び方をする。 */
     private void autoGiveback(int seat) {
         List<Integer> hand = hands.get(seat);
-        hand.sort((x, y) -> Integer.compare(cardPower(x), cardPower(y)));
-        completeGiveback(seat, new ArrayList<>(hand.subList(0, tributeOwed[seat])));
+        List<Integer> give;
+        if (aiHard && seats[seat] != null && seats[seat].cpu >= 0) {
+            give = HardVillagerBrain.chooseGiveback(hand, tributeOwed[seat], ruleEightCut);
+        } else {
+            hand.sort((x, y) -> Integer.compare(cardPower(x), cardPower(y)));
+            give = new ArrayList<>(hand.subList(0, tributeOwed[seat]));
+        }
+        completeGiveback(seat, give);
     }
 
     private int seatByPrevRank(int rank) {
@@ -529,7 +547,7 @@ public class DaifugoRoom {
      * ルール設定の変更。開始前ロビーで部屋主のみ可。成功時 true。
      */
     public boolean setRules(UUID senderId, boolean eightCut, boolean jback,
-            boolean suitLock, boolean spe3, boolean miyako) {
+            boolean suitLock, boolean spe3, boolean miyako, boolean hard) {
         if (state != State.LOBBY || senderId == null) {
             return false;
         }
@@ -541,6 +559,7 @@ public class DaifugoRoom {
         ruleSuitLock = suitLock;
         ruleSpe3 = spe3;
         ruleMiyako = miyako;
+        aiHard = hard;
         return true;
     }
 
@@ -617,6 +636,10 @@ public class DaifugoRoom {
         boolean wasEmpty = table.isEmpty();
         List<Integer> fieldSuits = DaifugoRules.plainSuits(tableCards);
         hand.removeAll(ids);
+        // 場への出しは公開情報として通知する (反則上がりでも出した事実は残る)
+        if (observer != null) {
+            observer.onPlay(seat, ids);
+        }
         boolean spe3 = ruleSpe3 && table.size() == 1 && table.get(0) >= DaifugoCard.JOKER_A_ID
                 && play.size() == 1 && play.get(0).spadeThree();
         if (spe3) {
@@ -761,6 +784,20 @@ public class DaifugoRoom {
 
     private void doPass(int seat) {
         // スルーパス禁止: パスした者は場が流れるまで出場停止 (連盟 §16)。
+        // パス時点の場条件を確定情報として記録する (定石「相手のパスは確定情報」)。
+        if (!table.isEmpty()) {
+            List<DaifugoCard> tableCards = new ArrayList<>(table.size());
+            for (int id : table) {
+                tableCards.add(DaifugoCard.fromId(id));
+            }
+            boolean eff = DaifugoRules.effectiveRevolution(jbackActive, revolution);
+            int power = tableStairs ? DaifugoRules.stairPower(tableCards, eff)
+                    : DaifugoRules.playPower(tableCards, eff);
+            if (observer != null) {
+                observer.onPass(new PassEvent(seat, table.size(), power, tableStairs,
+                        revolution, jbackActive));
+            }
+        }
         passedOut[seat] = true;
         addLog("log.bamboomod.daifugo_pass", seats[seat].displayName());
         if (checkOutFlow()) {
@@ -804,6 +841,10 @@ public class DaifugoRoom {
         lockSuits = null;
         jbackActive = false;
         passedOut = new boolean[SEATS];
+        // 場条件が消えるためパス記録も無効化する
+        if (observer != null) {
+            observer.onFlow();
+        }
         turnSeat = starter;
         turnTimer = 0;
     }
@@ -819,7 +860,8 @@ public class DaifugoRoom {
                 && seat != prevDaifugo && !finished[prevDaifugo]) {
             forceMiyako(prevDaifugo);
         }
-        if (finishOrder.size() == SEATS - 1) {
+        // 都落ちと同tickに重なると4件になるため >= で閉幕する
+        if (finishOrder.size() >= SEATS - 1) {
             for (int i = 0; i < SEATS; i++) {
                 if (!finished[i]) {
                     finished[i] = true;
@@ -1046,6 +1088,7 @@ public class DaifugoRoom {
         snap.ruleSuitLock = ruleSuitLock;
         snap.ruleSpe3 = ruleSpe3;
         snap.ruleMiyako = ruleMiyako;
+        snap.aiHard = aiHard;
         snap.log = List.copyOf(log);
         List<Integer> owed = new ArrayList<>(SEATS);
         for (int owedCount : tributeOwed) {

@@ -16,7 +16,7 @@ import ruby.bamboo.network.DaifugoStartPacket;
 
 /**
  * 大富豪のロビー。参加受付メンバーの一覧・開始 (オーナー)・退出。
- * ローカルルール5種はオーナーが開始前に切替可 (既定全ON)。
+ * ローカルルール5種 + CPU難易度はオーナーが開始前に切替可 (既定ルール全ON・ノーマル)。
  */
 public class DaifugoLobbyScreen extends Screen {
     private static final String[] RULE_KEYS = {
@@ -32,6 +32,7 @@ public class DaifugoLobbyScreen extends Screen {
     private Button startButton;
     private Button leaveButton;
     private final Button[] ruleButtons = new Button[RULE_KEYS.length];
+    private Button difficultyButton;
     /** 共通チャットオーバーレイ (Tで開く。画面は切り替えない)。 */
     private final ChatOverlay chat = new ChatOverlay();
 
@@ -101,6 +102,11 @@ public class DaifugoLobbyScreen extends Screen {
             ruleButtons[i] = rule;
             this.addRenderableWidget(rule);
         }
+        // 難易度ボタンは3行目の右列 (左は都落ちボタン)
+        difficultyButton = Button.builder(difficultyLabel(true), b -> toggleDifficulty())
+                .bounds(cx - 155 + 160, 120 + (4 / 2) * 22, 150, 20)
+                .build();
+        this.addRenderableWidget(difficultyButton);
         EditBox chatBox = chat.attach(this.font, this.width, this.height);
         this.addRenderableWidget(chatBox);
         if (chat.isOpen()) {
@@ -123,7 +129,7 @@ public class DaifugoLobbyScreen extends Screen {
         return Component.translatable(RULE_KEYS[idx]).append(value ? ": ON" : ": OFF");
     }
 
-    /** オーナーが1つ反転させた全5値を送る (非オーナーはボタン無効のため届かない)。 */
+    /** オーナーが1つ反転させた全5値 + 現難易度を送る (非オーナーはボタン無効のため届かない)。 */
     private void toggleRule(int idx) {
         boolean[] v = {
                 snapshot.ruleEightCut, snapshot.ruleJBack, snapshot.ruleSuitLock,
@@ -131,7 +137,22 @@ public class DaifugoLobbyScreen extends Screen {
         };
         v[idx] = !v[idx];
         BambooNetwork.CHANNEL.sendToServer(
-                new DaifugoRulesPacket(v[0], v[1], v[2], v[3], v[4]));
+                new DaifugoRulesPacket(v[0], v[1], v[2], v[3], v[4], snapshot.aiHard));
+    }
+
+    private Component difficultyLabel(boolean hard) {
+        return Component.translatable("screen.bamboomod.daifugo_difficulty")
+                .append(": ")
+                .append(Component.translatable(hard
+                        ? "screen.bamboomod.daifugo_hard"
+                        : "screen.bamboomod.daifugo_normal"));
+    }
+
+    /** 難易度を反転させ、現ルール5値と一緒に送る。 */
+    private void toggleDifficulty() {
+        BambooNetwork.CHANNEL.sendToServer(new DaifugoRulesPacket(
+                snapshot.ruleEightCut, snapshot.ruleJBack, snapshot.ruleSuitLock,
+                snapshot.ruleSpe3, snapshot.ruleMiyako, !snapshot.aiHard));
     }
 
     @Override
@@ -145,6 +166,8 @@ public class DaifugoLobbyScreen extends Screen {
             ruleButtons[i].active = owner && !chat.isOpen();
             ruleButtons[i].setMessage(ruleLabel(i, ruleValue(i)));
         }
+        difficultyButton.active = owner && !chat.isOpen();
+        difficultyButton.setMessage(difficultyLabel(snapshot.aiHard));
     }
 
     @Override
