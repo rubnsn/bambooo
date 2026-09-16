@@ -1,0 +1,22 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "zabuton",
+  "pattern": [
+    "###",
+    "# #",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:red_wool"
+    }
+  },
+  "result": {
+    "id": "bamboomod:zabuton_red",
+    "count": 1
+  },
+  "experience": 0.1,
+  "cookingtime": 100,
+  "fuelCost": 100
+}
