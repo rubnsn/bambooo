@@ -1,0 +1,10 @@
+{
+  "id": "bamboomod:treasure_gold",
+  "item": "minecraft:gold_ingot",
+  "category": "TREASURE",
+  "weight": 1,
+  "reqBitePower": 2,
+  "stamina": 10,
+  "power": 1,
+  "move": "SMOOTH"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "bamboomod:treasure_iron",
+  "item": "minecraft:iron_ingot",
+  "category": "TREASURE",
+  "weight": 2,
+  "reqBitePower": 1,
+  "stamina": 10,
+  "power": 1,
+  "move": "SMOOTH"
+}
