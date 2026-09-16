@@ -1,0 +1,1 @@
+{"id": "wish/transform_vindicator", "pattern": "ヴィンディケーターになりたい|transformation vindicator", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.vindicator", "effect": {"type": "transform", "entity": "minecraft:vindicator"}}

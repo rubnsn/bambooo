@@ -1,0 +1,1 @@
+{"id": "wish/transform_ravager", "pattern": "ラヴェジャーになりたい|transformation ravager", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.ravager", "effect": {"type": "transform", "entity": "minecraft:ravager"}}

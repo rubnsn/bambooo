@@ -1,0 +1,1 @@
+{"id": "wish/transform_wither_skeleton", "pattern": "ウィザースケルトンになりたい|transformation wither skeleton", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.wither_skeleton", "effect": {"type": "transform", "entity": "minecraft:wither_skeleton"}}

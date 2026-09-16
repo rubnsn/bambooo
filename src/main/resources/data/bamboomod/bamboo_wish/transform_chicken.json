@@ -1,0 +1,1 @@
+{"id": "wish/transform_chicken", "pattern": "ニワトリになりたい|transformation chicken", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.chicken", "effect": {"type": "transform", "entity": "minecraft:chicken"}}

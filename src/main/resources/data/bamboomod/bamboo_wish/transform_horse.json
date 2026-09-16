@@ -1,0 +1,1 @@
+{"id": "wish/transform_horse", "pattern": "ウマになりたい|transformation horse", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.horse", "effect": {"type": "transform", "entity": "minecraft:horse"}}

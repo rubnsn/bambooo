@@ -1,0 +1,1 @@
+{"id": "wish/transform_stray", "pattern": "ストレイになりたい|transformation stray", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.stray", "effect": {"type": "transform", "entity": "minecraft:stray"}}

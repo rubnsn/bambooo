@@ -1,0 +1,1 @@
+{"id": "wish/transform_fox", "pattern": "キツネになりたい|transformation fox", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.fox", "effect": {"type": "transform", "entity": "minecraft:fox"}}

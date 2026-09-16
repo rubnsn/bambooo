@@ -1,0 +1,1 @@
+{"id": "wish/transform_zombie_villager", "pattern": "村人ゾンビになりたい|transformation zombie villager", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.zombie_villager", "effect": {"type": "transform", "entity": "minecraft:zombie_villager"}}

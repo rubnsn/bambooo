@@ -1,0 +1,1 @@
+{"id": "wish/transform_blaze", "pattern": "ブレイズになりたい|transformation blaze", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.blaze", "effect": {"type": "transform", "entity": "minecraft:blaze"}}

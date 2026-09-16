@@ -1,0 +1,1 @@
+{"id": "wish/transform_elder_guardian", "pattern": "エルダーガーディアンになりたい|transformation elder guardian", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.elder_guardian", "effect": {"type": "transform", "entity": "minecraft:elder_guardian"}}

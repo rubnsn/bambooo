@@ -1,0 +1,926 @@
+package ruby.bamboo.transform;
+
+import java.util.List;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityMountEvent;
+import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
+import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
+import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.entity.player.TradeWithVillagerEvent;
+import net.neoforged.neoforge.event.level.ExplosionEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import ruby.bamboo.BambooMod;
+
+/**
+ * 変身中の Tick 処理と能力イベント (サーバー側)。
+ * 敵対スキャンは 40tick 毎・UUID 分散で負荷を抑える。
+ *
+ * <p>1.21.1 NeoForge 移植メモ:
+ * <ul>
+ * <li>Tick は {@code PlayerTickEvent.Post} + ServerPlayer 判定 (旧 TickEvent 撤廃)。</li>
+ * <li>旧 LivingHurtEvent 撤廃 → {@code LivingDamageEvent.Pre} に統合
+ * (Pre は cancellable ではないため、火・落下無効は setNewDamage(0) で代替)。</li>
+ * <li>MobEffect は Holder 化 (MobEffects.* は Holder のまま比較・受渡し可)。</li>
+ * <li>FoodProperties は record 化: {@code nutrition()}/{@code saturation()}、
+ * 肉判定は {@code ItemTags.MEAT} へ移行。</li>
+ * <li>SmallFireball は (Level, LivingEntity, Vec3) へ移行。</li>
+ * <li>Explosion#getExploder 撤廃 → getDirectSourceEntity へ移行。</li>
+ * <li>動的速度の UUID 修正子は ResourceLocation ID 方式へ移行。</li>
+ * </ul>
+ */
+@EventBusSubscriber(modid = BambooMod.MODID, bus = EventBusSubscriber.Bus.GAME)
+public final class TransformTickHandler {
+
+    private static final ResourceLocation DYN_TURTLE =
+            ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "transform_dyn_turtle");
+    private static final ResourceLocation DYN_GUARD =
+            ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "transform_dyn_guard");
+    private static final ResourceLocation DYN_DOLPHIN =
+            ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "transform_dyn_dolphin");
+
+    private TransformTickHandler() {
+    }
+
+    @SubscribeEvent
+    public static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        String id = TransformHelper.resolvedId(player);
+        if (id.isEmpty()) {
+            return;
+        }
+        TransformHelper.applyAttributes(player);
+        ServerLevel level = player.serverLevel();
+        long time = level.getGameTime();
+        tickPlayer(player, level, id, TransformHelper.get(player), time);
+        if (time % 20 == 0) {
+            tickSlow(player, level, id, time);
+        }
+        if ((time + (player.getUUID().hashCode() & 31)) % 40 == 0) {
+            hostilityScan(player, level, id);
+        }
+    }
+
+    private static void tickPlayer(ServerPlayer player, ServerLevel level, String id, TransformStorage s, long time) {
+        Vec3 delta = player.getDeltaMovement();
+        // 疑似滑空 (エリトラなし。地上でOFF・空中スペースでトグルした glideOn が true のときのみ)
+        if (player.onGround() || player.isInWater() || player.isInLava() || player.isFallFlying()) {
+            s.setGlideOn(false);
+        } else if (s.isGlideOn() && TransformRegistry.GLIDE.contains(id) && delta.y < -0.2D) {
+            player.setDeltaMovement(delta.x * 0.98D, delta.y * 0.6D, delta.z * 0.98D);
+            player.fallDistance *= 0.7F;
+        }
+        // クモの登攀 (バニラクモ準拠: 壁接触で上昇。サーバー側 zza は常に0のため使わない。
+        // スニークで抑制し、静止・下降を可能にする)
+        if ((id.equals("minecraft:spider") || id.equals("minecraft:cave_spider"))
+                && player.horizontalCollision && !player.isCrouching() && !player.isInWater()
+                && !player.isInLava() && !player.isFallFlying() && !player.isPassenger()
+                && !player.isCreative() && !player.isSpectator()) {
+            player.setDeltaMovement(delta.x, Math.max(delta.y, 0.25D), delta.z);
+            player.fallDistance = 0F;
+        }
+        // クモの巣の減速無効 (move 内で消費される stuck 乗数を tick 終了時に上書きする)
+        if ((id.equals("minecraft:spider") || id.equals("minecraft:cave_spider"))
+                && isInCobweb(player)) {
+            player.makeStuckInBlock(net.minecraft.world.level.block.Blocks.COBWEB.defaultBlockState(),
+                    new Vec3(1.0D, 1.0D, 1.0D));
+        }
+        // アレイの引き寄せ (周囲3ブロックのアイテム・経験値)
+        if (id.equals("minecraft:allay")) {
+            magnetPull(player, 3.0D);
+        }
+        // ホグリンは沈む
+        if (id.equals("minecraft:hoglin") && player.isInWater()) {
+            player.setDeltaMovement(delta.x, delta.y - 0.05D, delta.z);
+        }
+        // ストライダーの溶岩浮力 (近似)
+        if (id.equals("minecraft:strider") && player.isInLava()) {
+            if (delta.y < 0.12D) {
+                player.setDeltaMovement(delta.x, 0.12D, delta.z);
+            }
+            player.fallDistance = 0F;
+        }
+        // クリーパー自爆 fuse
+        if (id.equals("minecraft:creeper") && s.getCreeperFuse() >= 0) {
+            int fuse = s.getCreeperFuse() - 1;
+            s.setCreeperFuse(fuse);
+            if (fuse <= 0) {
+                s.setCreeperFuse(-1);
+                s.setCreeperCd(time + 100L);
+                Vec3 p = player.position();
+                level.explode(null, p.x, p.y, p.z, 3.0F, false, Level.ExplosionInteraction.NONE);
+                player.hurt(player.damageSources().magic(), 2.0F);
+            }
+        }
+        // ニワトリの産卵
+        if (id.equals("minecraft:chicken")) {
+            int t = s.getEggTimer() + 1;
+            if (t >= 6000) {
+                t = 0;
+                player.spawnAtLocation(new ItemStack(net.minecraft.world.item.Items.EGG));
+            }
+            s.setEggTimer(t);
+        }
+        // 腐肉デバフの取消 (腐肉OK種)
+        if (TransformRegistry.SUN_BURN.contains(id) || id.equals("minecraft:skeleton")
+                || id.equals("minecraft:stray") || id.equals("minecraft:wither_skeleton")) {
+            if (player.hasEffect(MobEffects.HUNGER) && "minecraft:rotten_flesh".equals(s.getLastFood())
+                    && time - s.getLastFoodTick() < 20L) {
+                player.removeEffect(MobEffects.HUNGER);
+            }
+        }
+        // 水棲の水中バフ
+        if (TransformRegistry.AQUATIC.contains(id) && player.isInWater()) {
+            player.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, 60, 0, false, false, true));
+            player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 260, 0, false, false, true));
+        }
+        // カメの水中呼吸
+        if (id.equals("minecraft:turtle") && player.isInWater()) {
+            player.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, 60, 0, false, false, true));
+        }
+        // エンダーマンの水没デバフ (頭まで潜ると近くのランダムな地上へショートワープ)
+        if (id.equals("minecraft:enderman") && player.isEyeInFluid(FluidTags.WATER)) {
+            long now = level.getGameTime();
+            if (now >= s.getEnderCd()) {
+                s.setEnderCd(now + 40L);
+                var random = player.getRandom();
+                for (int i = 0; i < 8; i++) {
+                    double nx = player.getX() + (random.nextDouble() - 0.5D) * 16D;
+                    double ny = player.getY() + random.nextInt(9) - 4;
+                    double nz = player.getZ() + (random.nextDouble() - 0.5D) * 16D;
+                    if (player.randomTeleport(nx, ny, nz, true)) {
+                        break;
+                    }
+                }
+            }
+        }
+        // ウォーデンの盲目
+        if (id.equals("minecraft:warden") && time % 200 == 0) {
+            player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 260, 0, false, false, true));
+        }
+        // ゾンビ系の夜間回復
+        if (TransformRegistry.SUN_BURN.contains(id) && !level.isDay()
+                && player.getFoodData().getFoodLevel() > 6 && player.getHealth() < player.getMaxHealth()
+                && time % 60 == 0) {
+            player.heal(1.0F);
+        }
+        // ゴーレム系の空腹軽減 (近似: 定期的に1回復)
+        if ((id.equals("minecraft:iron_golem") || id.equals("minecraft:snow_golem"))
+                && time % 100 == 0 && player.getFoodData().getFoodLevel() < 20
+                && player.getFoodData().getFoodLevel() > 0) {
+            player.getFoodData().setFoodLevel(player.getFoodData().getFoodLevel() + 1);
+        }
+        // 動的速度 (地上/水中で切替)
+        dynamicSpeed(player, id);
+    }
+
+    private static boolean isInCobweb(ServerPlayer player) {
+        var level = player.serverLevel();
+        BlockPos feet = player.blockPosition();
+        BlockPos eye = BlockPos.containing(player.getEyePosition());
+        return level.getBlockState(feet).is(net.minecraft.world.level.block.Blocks.COBWEB)
+                || level.getBlockState(eye).is(net.minecraft.world.level.block.Blocks.COBWEB);
+    }
+
+    private static void magnetPull(ServerPlayer player, double radius) {
+        ServerLevel level = player.serverLevel();
+        Vec3 center = player.position().add(0D, 1.0D, 0D);
+        for (var item : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                player.getBoundingBox().inflate(radius))) {
+            if (item.isRemoved() || item.hasPickUpDelay()) {
+                continue;
+            }
+            Vec3 to = center.subtract(item.position()).normalize().scale(0.35D);
+            item.setDeltaMovement(item.getDeltaMovement().add(to));
+        }
+        for (var orb : level.getEntitiesOfClass(net.minecraft.world.entity.ExperienceOrb.class,
+                player.getBoundingBox().inflate(radius))) {
+            if (orb.isRemoved()) {
+                continue;
+            }
+            Vec3 to = center.subtract(orb.position()).normalize().scale(0.35D);
+            orb.setDeltaMovement(orb.getDeltaMovement().add(to));
+        }
+    }
+
+    private static void dynamicSpeed(ServerPlayer player, String id) {
+        boolean inWater = player.isInWater();
+        if (id.equals("minecraft:turtle")) {
+            setDyn(player, DYN_TURTLE, inWater ? 0D : -0.5D);
+        } else {
+            setDyn(player, DYN_TURTLE, 0D);
+        }
+        if (id.equals("minecraft:guardian") || id.equals("minecraft:elder_guardian")
+                || id.equals("minecraft:squid") || id.equals("minecraft:glow_squid")) {
+            setDyn(player, DYN_GUARD, inWater ? 0D : -0.2D);
+        } else {
+            setDyn(player, DYN_GUARD, 0D);
+        }
+        if (id.equals("minecraft:dolphin")) {
+            setDyn(player, DYN_DOLPHIN, inWater ? 0.2D : 0D);
+        } else {
+            setDyn(player, DYN_DOLPHIN, 0D);
+        }
+    }
+
+    private static void setDyn(ServerPlayer player, ResourceLocation mid, double amount) {
+        AttributeInstance inst = player.getAttribute(Attributes.MOVEMENT_SPEED);
+        if (inst == null) {
+            return;
+        }
+        boolean has = inst.getModifier(mid) != null;
+        if (amount == 0D) {
+            if (has) {
+                inst.removeModifier(mid);
+            }
+            return;
+        }
+        if (!has) {
+            inst.addTransientModifier(
+                    new AttributeModifier(mid, amount, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+        }
+    }
+
+    private static void tickSlow(ServerPlayer player, ServerLevel level, String id, long time) {
+        // 日光炎上 (ヘルメットで防げる)
+        if (TransformRegistry.SUN_BURN.contains(id) && level.isDay()
+                && level.canSeeSky(player.blockPosition()) && !player.isInWater()) {
+            var helm = player.getItemBySlot(EquipmentSlot.HEAD);
+            if (!helm.isEmpty()) {
+                helm.hurtAndBreak(1, player, EquipmentSlot.HEAD);
+            } else {
+                player.igniteForSeconds(8F);
+            }
+        }
+        // 冠水ダメージ
+        if (TransformRegistry.WATER_HURT.contains(id)
+                && player.isEyeInFluid(FluidTags.WATER)) {
+            player.hurt(player.damageSources().magic(), 1.0F);
+        }
+        // 粉雪 (ストライダー)
+        if (id.equals("minecraft:strider") && player.isInPowderSnow) {
+            player.hurt(player.damageSources().magic(), 1.0F);
+        }
+        // 空腹倍率 (近似: 定期 exhaust)
+        double hunger = TransformRegistry.HUNGER.getOrDefault(id, 1.0D);
+        if (hunger > 1.0D) {
+            player.getFoodData().addExhaustion((float) ((hunger - 1.0D) * 1.0D));
+        }
+        // ヤギの跳躍力
+        if (id.equals("minecraft:goat")) {
+            player.addEffect(new MobEffectInstance(MobEffects.JUMP, 60, 0, false, false, true));
+        }
+        // ラヴェジャーの無敵時間は半減 (近似: 上限を詰める)
+        if (id.equals("minecraft:ravager") && player.invulnerableTime > 10) {
+            player.invulnerableTime = 10;
+        }
+        // ピグリン系の採掘バフは BreakSpeed 側、攻撃バフは Damage 側
+    }
+
+    /** 低負荷の敵対スキャン (40tick毎・分散)。 */
+    private static void hostilityScan(ServerPlayer player, ServerLevel level, String id) {
+        if (player.isCreative() || player.isSpectator()) {
+            return;
+        }
+        AABB box = player.getBoundingBox().inflate(16D);
+        List<Mob> mobs = level.getEntitiesOfClass(Mob.class, box);
+        boolean livestock = id.equals("minecraft:pig") || id.equals("minecraft:cow")
+                || id.equals("minecraft:sheep") || id.equals("minecraft:rabbit")
+                || id.equals("minecraft:chicken");
+        boolean tiny = id.equals("minecraft:endermite") || id.equals("minecraft:silverfish")
+                || id.equals("minecraft:chicken") || id.equals("minecraft:rabbit");
+        boolean golemFoe = id.equals("minecraft:evoker") || id.equals("minecraft:vindicator")
+                || id.equals("minecraft:pillager") || id.equals("minecraft:silverfish")
+                || id.equals("minecraft:ravager");
+        boolean endermite = id.equals("minecraft:endermite");
+        for (Mob mob : mobs) {
+            if (mob instanceof Wolf wolf && (livestock || tiny) && wolf.getTarget() == null) {
+                wolf.setTarget(player);
+            } else if (mob instanceof net.minecraft.world.entity.animal.Fox fox && tiny
+                    && fox.getTarget() == null) {
+                fox.setTarget(player);
+            } else if (mob instanceof IronGolem golem && golemFoe && golem.getTarget() == null) {
+                golem.setTarget(player);
+            } else if (mob instanceof EnderMan ender && endermite && ender.getTarget() == null) {
+                ender.setTarget(player);
+            }
+        }
+        // エヴォーカーの自動噛みつき (5秒毎)
+        if (id.equals("minecraft:evoker")) {
+            TransformStorage s = TransformHelper.get(player);
+            if (timeOf(level) < s.getBiteCd()) {
+                return;
+            }
+            Mob victim = null;
+            double best = Double.MAX_VALUE;
+            for (Mob mob : level.getEntitiesOfClass(Mob.class, player.getBoundingBox().inflate(6D))) {
+                if (mob.getTarget() == player || mob instanceof net.minecraft.world.entity.monster.Monster) {
+                    double d = mob.distanceToSqr(player);
+                    if (d < best) {
+                        best = d;
+                        victim = mob;
+                    }
+                }
+            }
+            if (victim != null) {
+                s.setBiteCd(timeOf(level) + 100L);
+                victim.hurt(player.damageSources().mobAttack(player), 4.0F);
+            }
+        }
+    }
+
+    private static long timeOf(ServerLevel level) {
+        return level.getGameTime();
+    }
+
+    // ===== ダメージ系 (旧 LivingHurtEvent + LivingDamageEvent を Pre へ統合) =====
+
+    @SubscribeEvent
+    public static void onDamagePre(LivingDamageEvent.Pre event) {
+        // 攻撃側のバフ (ピグリン金比例)
+        if (event.getSource().getEntity() instanceof ServerPlayer attacker) {
+            String atkId = TransformHelper.resolvedId(attacker);
+            if (!atkId.isEmpty() && TransformRegistry.GOLD_SCALE.contains(atkId)) {
+                int gold = countGoldArmor(attacker);
+                if (gold > 0) {
+                    double rate = atkId.equals("minecraft:piglin_brute") ? 0.07D : 0.05D;
+                    event.setNewDamage((float) (event.getNewDamage() * (1.0D + rate * gold)));
+                }
+            }
+        }
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        String id = TransformHelper.resolvedId(player);
+        if (id.isEmpty()) {
+            return;
+        }
+        float amount = event.getNewDamage();
+        // 被ダメ倍率・軽減
+        double taken = TransformRegistry.DAMAGE_TAKEN.getOrDefault(id, 1.0D);
+        if (taken != 1.0D) {
+            amount = (float) (amount * taken);
+        }
+        double cut = TransformRegistry.DAMAGE_CUT.getOrDefault(id, 0.0D);
+        if (cut != 0.0D) {
+            amount = (float) (amount * (1.0D - cut));
+        }
+        // 火・溶岩の無効 (Pre は cancellable ではないため 0 化で代替)
+        if (TransformRegistry.FIRE_IMMUNE.contains(id)
+                && event.getSource().is(DamageTypeTags.IS_FIRE)) {
+            event.setNewDamage(0F);
+            return;
+        }
+        // 飛行系の落下無効
+        if (TransformRegistry.FALL_IMMUNE.contains(id)
+                && event.getSource().is(DamageTypeTags.IS_FALL)) {
+            event.setNewDamage(0F);
+            player.fallDistance = 0F;
+            return;
+        }
+        // シュルカーの飛び道具軽減 (一律1軽減)
+        if (id.equals("minecraft:shulker")
+                && event.getSource().is(DamageTypeTags.IS_PROJECTILE)) {
+            amount = Math.max(0F, amount - 1.0F);
+        }
+        // クモ系は炎上ダメージ2倍
+        if ((id.equals("minecraft:spider") || id.equals("minecraft:cave_spider"))
+                && event.getSource().is(DamageTypeTags.IS_FIRE)) {
+            amount = amount * 2.0F;
+        }
+        // ガストの跳ね返り自傷は大ダメージ
+        if (id.equals("minecraft:ghast") && event.getSource().getEntity() == player) {
+            amount = amount * 3.0F;
+        }
+        event.setNewDamage(amount);
+
+        // エンダーマンの被弾テレポート
+        if (id.equals("minecraft:enderman")) {
+            TransformStorage s = TransformHelper.get(player);
+            long now = player.serverLevel().getGameTime();
+            if (now >= s.getEnderCd()) {
+                s.setEnderCd(now + 60L);
+                player.randomTeleport(player.getX() + (player.getRandom().nextDouble() - 0.5D) * 16D,
+                        player.getY() + player.getRandom().nextInt(8) - 4, player.getZ()
+                                + (player.getRandom().nextDouble() - 0.5D) * 16D,
+                        true);
+            }
+        }
+        // シュルカーの被弾テレポート (エンダーマンと同条件。Cdは共有で足りる)
+        if (id.equals("minecraft:shulker")) {
+            TransformStorage s = TransformHelper.get(player);
+            long now = player.serverLevel().getGameTime();
+            if (now >= s.getEnderCd()) {
+                s.setEnderCd(now + 60L);
+                player.randomTeleport(player.getX() + (player.getRandom().nextDouble() - 0.5D) * 16D,
+                        player.getY() + player.getRandom().nextInt(8) - 4, player.getZ()
+                                + (player.getRandom().nextDouble() - 0.5D) * 16D,
+                        true);
+            }
+        }
+        // クリーパーの自爆点火
+        if (id.equals("minecraft:creeper")
+                && event.getSource().getEntity() instanceof LivingEntity attacker && attacker != player) {
+            TransformStorage s = TransformHelper.get(player);
+            long now = player.serverLevel().getGameTime();
+            if (s.getCreeperFuse() < 0 && now >= s.getCreeperCd()) {
+                s.setCreeperFuse(30);
+            }
+        }
+        // スライムの分裂
+        if ((id.equals("minecraft:slime") || id.equals("minecraft:magma_cube"))
+                && event.getSource().getEntity() instanceof LivingEntity attacker) {
+            TransformStorage s = TransformHelper.get(player);
+            long now = player.serverLevel().getGameTime();
+            if (now >= s.getSplitCd() && player.getFoodData().getFoodLevel() > 6) {
+                s.setSplitCd(now + 200L);
+                int food = player.getFoodData().getFoodLevel();
+                player.getFoodData().setFoodLevel(Math.max(0, food / 2));
+                ServerLevel level = player.serverLevel();
+                Entity e = (id.equals("minecraft:slime") ? net.minecraft.world.entity.EntityType.SLIME
+                        : net.minecraft.world.entity.EntityType.MAGMA_CUBE).create(level);
+                if (e instanceof Slime slime) {
+                    slime.setSize(1, true);
+                    slime.moveTo(player.getX(), player.getY(), player.getZ(), 0F, 0F);
+                    slime.setTarget(attacker instanceof Mob mob ? mob : null);
+                    level.addFreshEntity(slime);
+                }
+            }
+        }
+    }
+
+    private static int countGoldArmor(Player player) {
+        int n = 0;
+        for (EquipmentSlot slot : new EquipmentSlot[] { EquipmentSlot.HEAD, EquipmentSlot.CHEST,
+                EquipmentSlot.LEGS, EquipmentSlot.FEET }) {
+            var stack = player.getItemBySlot(slot);
+            if (!stack.isEmpty() && stack.getItem() instanceof net.minecraft.world.item.ArmorItem armor
+                    && armor.getMaterial() == net.minecraft.world.item.ArmorMaterials.GOLD) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    @SubscribeEvent
+    public static void onHeal(LivingHealEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        String id = TransformHelper.resolvedId(player);
+        // ゴーレム系は自然・ポーション回復なし (金属・雪食いのみ)
+        if (id.equals("minecraft:iron_golem") || id.equals("minecraft:snow_golem")) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onChangeTarget(LivingChangeTargetEvent event) {
+        if (!(event.getNewAboutToBeSetTarget() instanceof ServerPlayer player)) {
+            return;
+        }
+        String id = TransformHelper.resolvedId(player);
+        if (id.isEmpty()) {
+            return;
+        }
+        // 同種は中立 (近似: 常に取消)
+        try {
+            var key = BuiltInRegistries.ENTITY_TYPE.getKey(event.getEntity().getType());
+            if (key != null && key.toString().equals(id)) {
+                event.setCanceled(true);
+            }
+            // ゾンビ系はゾンビに、ファントムはネコ系に襲われない
+            if (event.getEntity() instanceof Zombie
+                    && (id.equals("minecraft:zombie") || id.equals("minecraft:husk")
+                            || id.equals("minecraft:drowned") || id.equals("minecraft:zombie_villager")
+                            || id.equals("minecraft:zombified_piglin"))) {
+                event.setCanceled(true);
+            }
+            if (event.getEntity().getType() == net.minecraft.world.entity.EntityType.PHANTOM
+                    && (id.equals("minecraft:cat") || id.equals("minecraft:ocelot"))) {
+                event.setCanceled(true);
+            }
+            // ゾンビは同族以外のアンデッド変身者も襲う (取消しない = 仕様通り)
+        } catch (Exception ignored) {
+        }
+    }
+
+    // ===== 飲食制限 =====
+
+    @SubscribeEvent
+    public static void onUseStart(LivingEntityUseItemEvent.Start event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        String id = TransformHelper.resolvedId(player);
+        if (id.isEmpty()) {
+            return;
+        }
+        var stack = event.getItem();
+        if (stack.isEmpty()) {
+            return;
+        }
+        // 非食料の摂取は長押し化 (食料相当32tick)。食制限より先に適用。
+        TransformEatHelper.Pending pending = TransformEatHelper.serverPeek(player);
+        if (pending != null && stack.is(pending.item())) {
+            event.setDuration(TransformEatHelper.EAT_DURATION);
+            return;
+        }
+        var food = stack.getFoodProperties(player);
+        if (food == null) {
+            return;
+        }
+        // ハチは花のみ
+        if (TransformRegistry.FLOWER_ONLY.contains(id)) {
+            if (!stack.is(net.minecraft.tags.ItemTags.FLOWERS)) {
+                event.setCanceled(true);
+                player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 1));
+            }
+            return;
+        }
+        if (TransformRegistry.CARNIVORE.contains(id) && !stack.is(ItemTags.MEAT)) {
+            event.setCanceled(true);
+            player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 1));
+        } else if (TransformRegistry.HERBIVORE.contains(id) && stack.is(ItemTags.MEAT)) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onUseFinish(LivingEntityUseItemEvent.Finish event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        String id = TransformHelper.resolvedId(player);
+        if (id.isEmpty()) {
+            return;
+        }
+        var stack = event.getItem();
+        // 非食料の摂取完了 (長押し食べの効果適用・1個消費。中断時はStop側で破棄のため来ない)
+        TransformEatHelper.Pending pending = TransformEatHelper.serverTake(player);
+        if (pending != null && stack.is(pending.item())) {
+            TransformEatHelper.EatDef def = pending.def();
+            if (!player.getAbilities().instabuild) {
+                var result = stack.copy();
+                result.shrink(1);
+                event.setResultStack(result);
+            }
+            if (def.nutrition() > 0) {
+                player.getFoodData().eat(def.nutrition(), def.saturation());
+            }
+            if (def.heal() > 0) {
+                player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + def.heal()));
+            }
+            if (def.honeyRoll() && player.getRandom().nextInt(10) == 0) {
+                for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                    var inv = player.getInventory().getItem(i);
+                    if (inv.is(net.minecraft.world.item.Items.GLASS_BOTTLE)) {
+                        inv.shrink(1);
+                        var honey = new net.minecraft.world.item.ItemStack(
+                                net.minecraft.world.item.Items.HONEY_BOTTLE);
+                        if (!player.getInventory().add(honey)) {
+                            player.drop(honey, false);
+                        }
+                        break;
+                    }
+                }
+            }
+            return;
+        }
+        // 腐肉の記録
+        if (stack.is(net.minecraft.world.item.Items.ROTTEN_FLESH)) {
+            long now = player.serverLevel().getGameTime();
+            TransformHelper.get(player).setLastFood("minecraft:rotten_flesh", now);
+        }
+        // オウムのクッキー即死
+        if (id.equals("minecraft:parrot") && stack.is(net.minecraft.world.item.Items.COOKIE)) {
+            player.hurt(player.damageSources().genericKill(), Float.MAX_VALUE);
+        }
+        // ネコ系: 魚は2倍回復
+        if ((id.equals("minecraft:cat") || id.equals("minecraft:ocelot"))
+                && stack.is(net.minecraft.tags.ItemTags.FISHES)) {
+            var food = stack.getFoodProperties(player);
+            if (food != null) {
+                player.getFoodData().eat(food.nutrition(), food.saturation());
+            }
+        }
+        // ヒツジの毛刈り回復
+        if (id.equals("minecraft:sheep") && stack.getFoodProperties(player) != null) {
+            TransformStorage s = TransformHelper.get(player);
+            if (s.isSheared() && player.getRandom().nextInt(3) == 0) {
+                s.setSheared(false);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onUseStop(LivingEntityUseItemEvent.Stop event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        // 長押し食べの中断は不消費で破棄
+        TransformEatHelper.serverClear(player);
+    }
+
+    @SubscribeEvent
+    public static void onUseTick(LivingEntityUseItemEvent.Tick event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        TransformEatHelper.Pending pending = TransformEatHelper.serverPeek(player);
+        if (pending == null || !event.getItem().is(pending.item())) {
+            return;
+        }
+        // 非食料はバニラの shouldTrigger (残量<=本来duration-7) が発火しないため自前で出す。
+        // 食料相当32tickのリズム (残り25以降・4tick毎) に合わせる。
+        // 完了時のまとめバーストは client の trigger が出すのでサーバは出さない。
+        int remaining = event.getDuration();
+        if (remaining > TransformEatHelper.EAT_DURATION - 7 || remaining % 4 != 0) {
+            return;
+        }
+        ServerLevel level = player.serverLevel();
+        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                net.minecraft.sounds.SoundEvents.GENERIC_EAT,
+                net.minecraft.sounds.SoundSource.PLAYERS, 0.5F,
+                0.9F + player.getRandom().nextFloat() * 0.2F);
+        Vec3 look = player.getLookAngle();
+        level.sendParticles(
+                new net.minecraft.core.particles.ItemParticleOption(
+                        net.minecraft.core.particles.ParticleTypes.ITEM, event.getItem()),
+                player.getX() + look.x * 0.6D, player.getEyeY() - 0.15D,
+                player.getZ() + look.z * 0.6D,
+                5, 0.15D, 0.15D, 0.15D, 0.03D);
+    }
+
+    @SubscribeEvent
+    public static void onEffectApplicable(MobEffectEvent.Applicable event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        String id = TransformHelper.resolvedId(player);
+        if (id.isEmpty()) {
+            return;
+        }
+        var inst = event.getEffectInstance();
+        if (inst == null) {
+            return;
+        }
+        if (TransformRegistry.POISON_IMMUNE.contains(id)
+                && inst.getEffect() == MobEffects.POISON) {
+            event.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
+        }
+    }
+
+    private static final java.util.Set<java.util.UUID> WITCH_GUARD = java.util.Collections
+            .newSetFromMap(new java.util.concurrent.ConcurrentHashMap<>());
+
+    @SubscribeEvent
+    public static void onEffectAdded(MobEffectEvent.Added event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        if (!TransformHelper.resolvedId(player).equals("minecraft:witch")) {
+            return;
+        }
+        java.util.UUID uuid = player.getUUID();
+        if (!WITCH_GUARD.add(uuid)) {
+            return;
+        }
+        try {
+            var inst = event.getEffectInstance();
+            if (inst == null || inst.isInfiniteDuration()) {
+                return;
+            }
+            int longer = (int) Math.min(Integer.MAX_VALUE, (long) inst.getDuration() * 3 / 2);
+            player.removeEffect(inst.getEffect());
+            player.addEffect(new MobEffectInstance(inst.getEffect(), longer, inst.getAmplifier(),
+                    inst.isAmbient(), inst.isVisible(), inst.showIcon()));
+        } finally {
+            WITCH_GUARD.remove(uuid);
+        }
+    }
+
+    // ===== 矢の消費なし・火の玉化 =====
+
+    @SubscribeEvent
+    public static void onJoinLevel(EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide()) {
+            return;
+        }
+        Entity e = event.getEntity();
+        if (!(e instanceof net.minecraft.world.entity.projectile.AbstractArrow arrow)) {
+            return;
+        }
+        if (!(arrow.getOwner() instanceof ServerPlayer player)) {
+            return;
+        }
+        String id = TransformHelper.resolvedId(player);
+        if (id.isEmpty()) {
+            return;
+        }
+        // ガスト: 矢を火の玉に置換 (ブロック破壊なしは Detonate 側で剥奪)
+        if (id.equals("minecraft:ghast")) {
+            event.setCanceled(true);
+            ServerLevel level = player.serverLevel();
+            Vec3 look = player.getLookAngle();
+            var fireball = new net.minecraft.world.entity.projectile.SmallFireball(level, player,
+                    new Vec3(look.x * 1.5D, look.y * 1.5D, look.z * 1.5D));
+            fireball.moveTo(player.getX() + look.x, player.getEyeY(), player.getZ() + look.z, 0F, 0F);
+            fireball.getPersistentData().putBoolean("bamboo_ghast", true);
+            level.addFreshEntity(fireball);
+            return;
+        }
+        // スケルトン系・ピリジャー: 矢を返却 (近似: 通常矢1本)
+        if (TransformRegistry.BOW_FREE.contains(id) || TransformRegistry.XBOW_FREE.contains(id)) {
+            if (!player.getInventory().add(new net.minecraft.world.item.ItemStack(
+                    net.minecraft.world.item.Items.ARROW))) {
+                player.drop(new net.minecraft.world.item.ItemStack(
+                        net.minecraft.world.item.Items.ARROW), false);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onExplosionDetonate(ExplosionEvent.Detonate event) {
+        Explosion explosion = event.getExplosion();
+        if (explosion == null) {
+            return;
+        }
+        Entity exploder = explosion.getDirectSourceEntity();
+        // ガスト変身者の火の玉はブロックを壊さない
+        if (exploder != null && exploder.getPersistentData().getBoolean("bamboo_ghast")) {
+            event.getAffectedBlocks().clear();
+            return;
+        }
+        // クリーパー変身者の自爆は NONE 指定済みのため何もしない
+    }
+
+    // ===== 取引・採掘・右クリック =====
+
+    @SubscribeEvent
+    public static void onTrade(TradeWithVillagerEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        String id = TransformHelper.resolvedId(player);
+        if (id.isEmpty()) {
+            return;
+        }
+        var offer = event.getMerchantOffer();
+        if (offer == null || player.level().isClientSide()) {
+            return;
+        }
+        int emeralds = 0;
+        if (offer.getCostA().is(net.minecraft.world.item.Items.EMERALD)) {
+            emeralds = offer.getCostA().getCount();
+        }
+        if (emeralds <= 0) {
+            return;
+        }
+        // 村人: 1割還元 / イリジャー系: 倍額徴収 (近似)
+        if (id.equals("minecraft:villager")) {
+            int back = Math.max(1, emeralds / 10);
+            player.getInventory().add(
+                    new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD, back));
+        } else if (id.equals("minecraft:evoker") || id.equals("minecraft:vindicator")
+                || id.equals("minecraft:pillager")) {
+            int extra = emeralds;
+            int has = player.getInventory().countItem(net.minecraft.world.item.Items.EMERALD);
+            int take = Math.min(extra, has);
+            if (take > 0) {
+                player.getInventory().clearOrCountMatchingItems(
+                        stack -> stack.is(net.minecraft.world.item.Items.EMERALD), take,
+                        player.inventoryMenu.getCraftSlots());
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onMount(EntityMountEvent event) {
+        if (!event.isMounting() || event.getLevel().isClientSide()) {
+            return;
+        }
+        // ウマ変身者は他の動物に騎乗できない
+        if (event.getEntityMounting() instanceof ServerPlayer player
+                && TransformHelper.resolvedId(player).equals("minecraft:horse")
+                && event.getEntityBeingMounted() instanceof net.minecraft.world.entity.animal.Animal) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        String id = TransformHelper.resolvedId(player);
+        if (id.isEmpty()) {
+            return;
+        }
+        if (TransformRegistry.GOLD_SCALE.contains(id)) {
+            int gold = countGoldArmor(player);
+            if (gold > 0) {
+                double rate = id.equals("minecraft:piglin_brute") ? 0.07D : 0.05D;
+                event.setNewSpeed((float) (event.getNewSpeed() * (1.0D + rate * gold)));
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        if (player.level().isClientSide()) {
+            return;
+        }
+        String id = TransformHelper.resolvedId(player);
+        if (id.isEmpty()) {
+            return;
+        }
+        var stack = event.getItemStack();
+        if (stack.isEmpty()) {
+            return;
+        }
+        boolean creative = player.getAbilities().instabuild;
+        // ウシ・ヤギ: 素振りバケツでミルク
+        if ((id.equals("minecraft:cow") || id.equals("minecraft:goat"))
+                && stack.is(net.minecraft.world.item.Items.BUCKET)) {
+            if (!creative) {
+                stack.shrink(1);
+            }
+            var milk = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.MILK_BUCKET);
+            if (!player.getInventory().add(milk)) {
+                player.drop(milk, false);
+            }
+            event.setCanceled(true);
+            return;
+        }
+        // ヒツジ: ハサミで自毛刈り
+        if (id.equals("minecraft:sheep")
+                && stack.is(net.minecraft.world.item.Items.SHEARS)) {
+            TransformStorage s = TransformHelper.get(player);
+            if (!s.isSheared()) {
+                s.setSheared(true);
+                stack.hurtAndBreak(1, player, event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
+                        ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
+                var wool = new net.minecraft.world.item.ItemStack(
+                        net.minecraft.world.item.Items.WHITE_WOOL);
+                if (!player.getInventory().add(wool)) {
+                    player.drop(wool, false);
+                }
+            }
+            event.setCanceled(true);
+            return;
+        }
+        // 非食料の摂取は長押し食べ (種/草花/竹/金属/雪/花)。道具系(バケツ・ハサミ)は即時のまま。
+        // 開始→Startで32tick化→Finishで効果。途中離しは不消費。
+        TransformEatHelper.EatDef eat = TransformEatHelper.match(id, stack, player);
+        if (eat != null) {
+            if (player.isUsingItem()) {
+                return;
+            }
+            TransformEatHelper.serverPut(player, event.getHand(), stack, eat);
+            player.startUsingItem(event.getHand());
+            event.setCanceled(true);
+            return;
+        }
+    }
+
+}

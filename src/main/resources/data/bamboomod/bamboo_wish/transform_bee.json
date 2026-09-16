@@ -1,0 +1,1 @@
+{"id": "wish/transform_bee", "pattern": "ミツバチになりたい|transformation bee", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.bee", "effect": {"type": "transform", "entity": "minecraft:bee"}}

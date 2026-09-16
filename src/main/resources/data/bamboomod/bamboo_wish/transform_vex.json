@@ -1,0 +1,1 @@
+{"id": "wish/transform_vex", "pattern": "ヴェックスになりたい|transformation vex", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.vex", "effect": {"type": "transform", "entity": "minecraft:vex"}}

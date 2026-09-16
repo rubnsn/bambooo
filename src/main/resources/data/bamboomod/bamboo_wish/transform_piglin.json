@@ -1,0 +1,1 @@
+{"id": "wish/transform_piglin", "pattern": "(?<!ゾンビ)ピグリンになりたい|transformation piglin(?![a-z_ ])", "match": "regex", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.piglin", "effect": {"type": "transform", "entity": "minecraft:piglin"}}

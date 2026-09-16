@@ -1,0 +1,1 @@
+{"id": "wish/transform_ocelot", "pattern": "オセロットになりたい|transformation ocelot", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.ocelot", "effect": {"type": "transform", "entity": "minecraft:ocelot"}}

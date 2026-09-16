@@ -1,0 +1,1 @@
+{"id": "wish/transform_rabbit", "pattern": "ウサギになりたい|transformation rabbit", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.rabbit", "effect": {"type": "transform", "entity": "minecraft:rabbit"}}

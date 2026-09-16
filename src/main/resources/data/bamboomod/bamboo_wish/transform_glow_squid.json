@@ -1,0 +1,1 @@
+{"id": "wish/transform_glow_squid", "pattern": "ヒカリイカになりたい|transformation glow squid", "match": "contains", "priority": true, "weight": 1, "message": "bamboomod.wish.result.transform.glow_squid", "effect": {"type": "transform", "entity": "minecraft:glow_squid"}}
