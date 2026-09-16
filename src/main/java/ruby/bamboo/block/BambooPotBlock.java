@@ -273,7 +273,7 @@ public class BambooPotBlock extends BaseEntityBlock {
 
     /** プランター植栽可の自前ブロックタグ。HaC不在でも欠番は無視される。 */
     public static final TagKey<Block> POT_PLANTABLE = TagKey.create(Registries.BLOCK,
-            new ResourceLocation("bamboomod", "plantable_in_pot"));
+            ResourceLocation.fromNamespaceAndPath("bamboomod", "plantable_in_pot"));
 
     /**
      * 鉢に挿せる植物か判定。鉢自体は除外（鉢は上記で別扱い）。

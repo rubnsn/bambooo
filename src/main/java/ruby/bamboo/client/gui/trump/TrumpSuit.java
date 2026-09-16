@@ -26,7 +26,7 @@ public enum TrumpSuit {
     TrumpSuit(String glyph, int color, String mini, float pipDx, float pipDy) {
         this.glyph = glyph;
         this.color = color;
-        this.mini = new ResourceLocation(BambooMod.MODID, "textures/gui/minigame/trump/" + mini);
+        this.mini = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/gui/minigame/trump/" + mini);
         this.pipDx = pipDx;
         this.pipDy = pipDy;
     }

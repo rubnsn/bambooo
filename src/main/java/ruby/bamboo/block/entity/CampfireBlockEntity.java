@@ -270,7 +270,7 @@ public class CampfireBlockEntity extends BlockEntity implements WorldlyContainer
                         NonNullList<Ingredient> ing = NonNullList.create();
                         ing.add(Ingredient.of(single));
                         return new BambooCampfireRecipe(
-                                new ResourceLocation("bamboomod", "smelting_" + recipe.getId().getPath()),
+                                ResourceLocation.fromNamespaceAndPath("bamboomod", "smelting_" + recipe.getId().getPath()),
                                 "", BambooCampfireRecipe.Category.MISC, ing, res.copy(), recipe.getExperience(), recipe.getCookingTime(), 200);
                     }
                 }

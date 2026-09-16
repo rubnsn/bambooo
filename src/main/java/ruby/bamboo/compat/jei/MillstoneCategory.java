@@ -29,7 +29,7 @@ import ruby.bamboo.crafting.grind.BambooGrindRecipe;
 public class MillstoneCategory implements IRecipeCategory<BambooGrindRecipe> {
 
     public static final RecipeType<BambooGrindRecipe> TYPE =
-            new RecipeType<>(new ResourceLocation(BambooMod.MODID, "millstone"), BambooGrindRecipe.class);
+            new RecipeType<>(ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "millstone"), BambooGrindRecipe.class);
 
     public static final int WIDTH = 110;
     public static final int HEIGHT = 40;

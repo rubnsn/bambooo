@@ -50,7 +50,7 @@ public final class CutBlockJeiRecipes {
             String matName = names[i];
             // 1) FULL -> HALF x2 (8x16x16)
             list.add(makeShapeless(
-                    new ResourceLocation(BambooMod.MODID, "jei_cut_" + matName + "_to_half"),
+                    ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "jei_cut_" + matName + "_to_half"),
                     baseState, (byte)1, (byte)0, (byte)0, 2,
                     mat));
             // 2) HALF -> EIGHT x4 (8x8x8) : HALFは canonical 8x16x16
@@ -60,11 +60,11 @@ public final class CutBlockJeiRecipes {
             // 入力HALFの見た目を出す: 別レシピとして HALF ブロックを素材とする
             // ここでは2段階目の入力を HALF cut_block とする
             list.add(makeHalfToEight(
-                    new ResourceLocation(BambooMod.MODID, "jei_cut_" + matName + "_half_to_eight"),
+                    ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "jei_cut_" + matName + "_half_to_eight"),
                     baseState));
             // 3) EIGHT -> QUARTER x4 (4x4x4)
             list.add(makeEightToQuarter(
-                    new ResourceLocation(BambooMod.MODID, "jei_cut_" + matName + "_eight_to_quarter"),
+                    ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "jei_cut_" + matName + "_eight_to_quarter"),
                     baseState));
         }
         return list;

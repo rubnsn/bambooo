@@ -72,7 +72,7 @@ public class FishingFishJsonLoader extends SimpleJsonResourceReloadListener {
         ResourceLocation id = rl;
         if (obj.has("id")) {
             try {
-                id = new ResourceLocation(obj.get("id").getAsString());
+                id = ResourceLocation.parse(obj.get("id").getAsString());
             } catch (Exception ex) {
                 LOGGER.warn("Invalid id in {}: {}", rl, obj.get("id").getAsString());
                 return null;
@@ -84,7 +84,7 @@ public class FishingFishJsonLoader extends SimpleJsonResourceReloadListener {
         }
         ResourceLocation itemId;
         try {
-            itemId = new ResourceLocation(obj.get("item").getAsString());
+            itemId = ResourceLocation.parse(obj.get("item").getAsString());
         } catch (Exception ex) {
             LOGGER.warn("Invalid item in {}: {}", rl, obj.get("item").getAsString());
             return null;

@@ -26,8 +26,8 @@ import ruby.bamboo.entity.companion.DolphinCompanionEntity;
  */
 public class DolphinCompanionRenderer extends DolphinRenderer {
 
-    private static final ResourceLocation GRAY_TEXTURE = new ResourceLocation("bamboomod", "textures/entity/dolphin_grayscale.png");
-    private static final ResourceLocation VANILLA_TEXTURE = new ResourceLocation("minecraft", "textures/entity/dolphin.png");
+    private static final ResourceLocation GRAY_TEXTURE = ResourceLocation.fromNamespaceAndPath("bamboomod", "textures/entity/dolphin_grayscale.png");
+    private static final ResourceLocation VANILLA_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/entity/dolphin.png");
 
     public DolphinCompanionRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);

@@ -51,7 +51,7 @@ public final class KatanaDropManager {
     public static void addDrop(EntityType<?> type, String... tablePaths) {
         List<ResourceLocation> list = DROP_TABLES.computeIfAbsent(type, k -> new ArrayList<>());
         for (String path : tablePaths) {
-            ResourceLocation id = new ResourceLocation("bamboomod", "entities/katana/" + path);
+            ResourceLocation id = ResourceLocation.fromNamespaceAndPath("bamboomod", "entities/katana/" + path);
             if (!list.contains(id)) {
                 list.add(id);
             }

@@ -86,7 +86,7 @@ public final class TransformRenderHandler {
         }
         EntityType<?> type = null;
         try {
-            type = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(id));
+            type = ForgeRegistries.ENTITY_TYPES.getValue(ResourceLocation.parse(id));
         } catch (Exception ignored) {
         }
         if (type == null) {

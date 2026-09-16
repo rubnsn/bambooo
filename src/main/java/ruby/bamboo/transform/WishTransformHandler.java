@@ -20,7 +20,7 @@ public final class WishTransformHandler {
 
     public static Component displayName(String entityId) {
         try {
-            var type = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(entityId));
+            var type = ForgeRegistries.ENTITY_TYPES.getValue(ResourceLocation.parse(entityId));
             if (type != null) {
                 return type.getDescription();
             }
@@ -51,7 +51,7 @@ public final class WishTransformHandler {
     public static MutableComponent messageFor(String entityId) {
         if (TransformRegistry.isAdopted(entityId)) {
             try {
-                var type = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(entityId));
+                var type = ForgeRegistries.ENTITY_TYPES.getValue(ResourceLocation.parse(entityId));
                 ResourceLocation key = type != null ? ForgeRegistries.ENTITY_TYPES.getKey(type) : null;
                 if (key != null) {
                     return Component.translatable("bamboomod.wish.result.transform." + key.getPath(),

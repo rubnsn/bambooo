@@ -441,7 +441,7 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
             this.grindTime = tag.getInt("grindTime");
         }
         if (tag.contains("grindItemName")) {
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(tag.getString("grindItemName")));
+            Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(tag.getString("grindItemName")));
             this.grindingItem = item == null ? Items.AIR : item;
         }
     }
@@ -481,7 +481,7 @@ public class MillStoneBlockEntity extends BlockEntity implements WorldlyContaine
 
     private void readSyncData(CompoundTag tag) {
         if (tag.contains("grindItemName")) {
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(tag.getString("grindItemName")));
+            Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(tag.getString("grindItemName")));
             this.grindingItem = item == null ? Items.AIR : item;
         }
     }

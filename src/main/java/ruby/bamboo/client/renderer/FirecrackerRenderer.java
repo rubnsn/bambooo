@@ -22,7 +22,7 @@ import ruby.bamboo.entity.FirecrackerEntity;
  */
 public class FirecrackerRenderer extends EntityRenderer<FirecrackerEntity> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID, "textures/item/firecracker_m.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/item/firecracker_m.png");
     private final ItemRenderer itemRenderer;
 
     public FirecrackerRenderer(EntityRendererProvider.Context ctx) {

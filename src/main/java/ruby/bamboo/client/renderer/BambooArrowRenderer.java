@@ -14,7 +14,7 @@ import ruby.bamboo.BambooMod;
  */
 public class BambooArrowRenderer extends ArrowRenderer<AbstractArrow> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID, "textures/entity/bamboospear.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/entity/bamboospear.png");
 
     public BambooArrowRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);

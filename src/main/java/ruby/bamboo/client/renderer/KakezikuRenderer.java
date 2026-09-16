@@ -24,9 +24,8 @@ import ruby.bamboo.entity.KakezikuMotive;
  */
 public class KakezikuRenderer extends EntityRenderer<KakezikuEntity> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID,
-            "textures/entity/kakeziku.png");
-    private static final ResourceLocation WHITE = new ResourceLocation("minecraft", "textures/misc/white.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/entity/kakeziku.png");
+    private static final ResourceLocation WHITE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/misc/white.png");
 
     /** 掛け軸の厚み 1px の半分 (ブロック単位) */
     private static final float HALF_THICK = 0.03125F;

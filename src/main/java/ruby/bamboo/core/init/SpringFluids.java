@@ -63,12 +63,12 @@ public final class SpringFluids {
                 consumer.accept(new IClientFluidTypeExtensions() {
                     @Override
                     public ResourceLocation getStillTexture() {
-                        return new ResourceLocation("block/water_still");
+                        return ResourceLocation.parse("block/water_still");
                     }
 
                     @Override
                     public ResourceLocation getFlowingTexture() {
-                        return new ResourceLocation("block/water_flow");
+                        return ResourceLocation.parse("block/water_flow");
                     }
 
                     @Override

@@ -29,8 +29,8 @@ import ruby.bamboo.entity.KaginawaHookEntity;
  */
 public class KaginawaHookRenderer extends EntityRenderer<KaginawaHookEntity> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID, "textures/entity/kaginawa_hook.png");
-    private static final ResourceLocation BEAM_TEXTURE = new ResourceLocation("minecraft", "textures/misc/white.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/entity/kaginawa_hook.png");
+    private static final ResourceLocation BEAM_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/misc/white.png");
     // 灰色 0xC8B898
     private static final int ROPE_R = 0xCC;
     private static final int ROPE_G = 0xCC;

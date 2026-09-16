@@ -85,7 +85,7 @@ public final class TrumpCardRenderer {
     }
 
     private static ResourceLocation tex(String name) {
-        return new ResourceLocation(BambooMod.MODID, "textures/gui/minigame/trump/" + name);
+        return ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/gui/minigame/trump/" + name);
     }
 
     public static int heightFor(int w) {

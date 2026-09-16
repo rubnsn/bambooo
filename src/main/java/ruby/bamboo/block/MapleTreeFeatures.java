@@ -19,6 +19,6 @@ public final class MapleTreeFeatures {
 
     private static ResourceKey<ConfiguredFeature<?, ?>> create(String name) {
         return ResourceKey.create(Registries.CONFIGURED_FEATURE,
-                new ResourceLocation(BambooMod.MODID, name));
+                ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, name));
     }
 }

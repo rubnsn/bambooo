@@ -239,7 +239,7 @@ public final class TransformRegistry {
         }
         boolean ok = false;
         try {
-            EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(new ResourceLocation(id));
+            EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(ResourceLocation.parse(id));
             if (isValidType(type)) {
                 ok = type.create(level) instanceof LivingEntity;
             }

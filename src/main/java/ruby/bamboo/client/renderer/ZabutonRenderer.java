@@ -29,8 +29,7 @@ import ruby.bamboo.entity.ZabutonEntity;
  */
 public class ZabutonRenderer extends EntityRenderer<ZabutonEntity> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID,
-            "textures/entity/zabuton.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/entity/zabuton.png");
 
     private final ModelPart box;
     private final ModelPart plate;

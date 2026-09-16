@@ -253,8 +253,8 @@ public final class BambooClientSetup {
      * バニラ弓と同じ閾値 (pull 0.65 / 0.9) でモデル override が発火する。
      */
     private static void registerBambooBowModelProperties() {
-        ResourceLocation pulling = new ResourceLocation("minecraft", "pulling");
-        ResourceLocation pull = new ResourceLocation("minecraft", "pull");
+        ResourceLocation pulling = ResourceLocation.fromNamespaceAndPath("minecraft", "pulling");
+        ResourceLocation pull = ResourceLocation.fromNamespaceAndPath("minecraft", "pull");
         ItemProperties.register(BambooItems.BAMBOO_BOW.get(),
                 pulling, (stack, level, entity, seed) -> {
                     return entity != null && entity.isUsingItem() ? 1.0F : 0.0F;

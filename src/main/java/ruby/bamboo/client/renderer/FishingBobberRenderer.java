@@ -28,7 +28,7 @@ import ruby.bamboo.entity.FishingBobberEntity;
  */
 public class FishingBobberRenderer extends EntityRenderer<FishingBobberEntity> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation("textures/entity/fishing_hook.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.parse("textures/entity/fishing_hook.png");
     private static final RenderType RENDER_TYPE = RenderType.entityCutout(TEXTURE);
 
     public FishingBobberRenderer(EntityRendererProvider.Context ctx) {

@@ -23,9 +23,9 @@ public class StatusBookScreen extends Screen {
 
     private static final int OVERVIEW_PER_PAGE = 7;
     private static final Style SGA_STYLE = Style.EMPTY
-            .withFont(new ResourceLocation("minecraft", "alt"));
+            .withFont(ResourceLocation.fromNamespaceAndPath("minecraft", "alt"));
     /** 背景テクスチャ (276×200、中身は透過の空。描画は差し替え予定)。 */
-    private static final ResourceLocation BG = new ResourceLocation("bamboomod", "textures/gui/status_book_bg.png");
+    private static final ResourceLocation BG = ResourceLocation.fromNamespaceAndPath("bamboomod", "textures/gui/status_book_bg.png");
     private static final int BG_W = 276;
     private static final int BG_H = 200;
 

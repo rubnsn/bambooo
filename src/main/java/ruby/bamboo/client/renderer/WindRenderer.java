@@ -14,7 +14,7 @@ import ruby.bamboo.entity.WindEntity;
  */
 public class WindRenderer extends EntityRenderer<WindEntity> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation("minecraft", "textures/misc/white.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/misc/white.png");
 
     public WindRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);

@@ -15,7 +15,7 @@ import ruby.bamboo.BambooMod;
  */
 public class SackScreen extends AbstractContainerScreen<SackMenu> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(BambooMod.MODID, "textures/gui/sack.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/gui/sack.png");
 
     public SackScreen(SackMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);

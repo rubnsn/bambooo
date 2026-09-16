@@ -106,13 +106,13 @@ public class BambooMod {
             .register("campfire", () -> new BambooCampfireRecipe.Serializer());
     /** 囲炉裏レシピの Type */
     public static final RegistryObject<RecipeType<BambooCampfireRecipe>> CAMPFIRE_RECIPE_TYPE = RECIPE_TYPES
-            .register("campfire", () -> RecipeType.simple(new ResourceLocation(MODID, "campfire")));
+            .register("campfire", () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(MODID, "campfire")));
     /** 石臼レシピの Serializer */
     public static final RegistryObject<RecipeSerializer<BambooGrindRecipe>> MILLSTONE_SERIALIZER = RECIPE_SERIALIZERS
             .register("millstone", () -> new BambooGrindRecipe.Serializer());
     /** 石臼レシピの Type */
     public static final RegistryObject<RecipeType<BambooGrindRecipe>> MILLSTONE_RECIPE_TYPE = RECIPE_TYPES
-            .register("millstone", () -> RecipeType.simple(new ResourceLocation(MODID, "millstone")));
+            .register("millstone", () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(MODID, "millstone")));
 
     /** カットブロックレシピの Serializer (プランA: B+K 動的レシピ) */
     public static final RegistryObject<RecipeSerializer<CutBlockRecipe>> CUT_BLOCK_SERIALIZER = RECIPE_SERIALIZERS

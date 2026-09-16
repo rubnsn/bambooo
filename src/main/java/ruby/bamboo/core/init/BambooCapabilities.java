@@ -30,25 +30,25 @@ public final class BambooCapabilities {
             CapabilityManager.get(new CapabilityToken<>() {});
 
     public static final ResourceLocation COLORED_LIGHT_ID =
-            new ResourceLocation(BambooMod.MODID, "colored_light");
+            ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "colored_light");
 
     public static final Capability<SkillStorage> SKILL =
             CapabilityManager.get(new CapabilityToken<>() {});
 
     public static final ResourceLocation SKILL_ID =
-            new ResourceLocation(BambooMod.MODID, "skill");
+            ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "skill");
 
     public static final Capability<TransformStorage> TRANSFORM =
             CapabilityManager.get(new CapabilityToken<>() {});
 
     public static final ResourceLocation TRANSFORM_ID =
-            new ResourceLocation(BambooMod.MODID, "transform");
+            ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "transform");
 
     public static final Capability<WishStorage> WISH =
             CapabilityManager.get(new CapabilityToken<>() {});
 
     public static final ResourceLocation WISH_ID =
-            new ResourceLocation(BambooMod.MODID, "wish");
+            ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "wish");
 
     private BambooCapabilities() {
     }

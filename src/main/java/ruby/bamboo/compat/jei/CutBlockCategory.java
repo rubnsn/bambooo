@@ -26,7 +26,7 @@ import ruby.bamboo.core.init.BambooItems;
 public class CutBlockCategory implements IRecipeCategory<CraftingRecipe> {
 
     public static final RecipeType<CraftingRecipe> TYPE =
-            new RecipeType<>(new ResourceLocation(BambooMod.MODID, "cut_block"), CraftingRecipe.class);
+            new RecipeType<>(ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "cut_block"), CraftingRecipe.class);
 
     public static final int WIDTH = 120;
     public static final int HEIGHT = 54;

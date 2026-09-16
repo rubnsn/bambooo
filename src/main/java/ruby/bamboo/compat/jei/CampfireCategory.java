@@ -30,7 +30,7 @@ public class CampfireCategory implements IRecipeCategory<BambooCampfireRecipe> {
 
     @SuppressWarnings("removal")
     public static final RecipeType<BambooCampfireRecipe> TYPE =
-            new RecipeType<>(new ResourceLocation(BambooMod.MODID, "campfire"), BambooCampfireRecipe.class);
+            new RecipeType<>(ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "campfire"), BambooCampfireRecipe.class);
 
     public static final int WIDTH = 116;
     public static final int HEIGHT = 62;

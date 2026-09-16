@@ -13,7 +13,7 @@ public final class BambooNetwork {
 
     private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
-            .named(new ResourceLocation(BambooMod.MODID, "main"))
+            .named(ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "main"))
             .networkProtocolVersion(() -> PROTOCOL_VERSION)
             .clientAcceptedVersions(s -> true)
             .serverAcceptedVersions(s -> true)

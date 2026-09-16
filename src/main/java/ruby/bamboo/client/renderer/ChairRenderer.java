@@ -16,7 +16,7 @@ import ruby.bamboo.entity.ChairEntity;
  */
 public class ChairRenderer extends EntityRenderer<ChairEntity> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation("minecraft", "textures/misc/white.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/misc/white.png");
 
     public ChairRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);

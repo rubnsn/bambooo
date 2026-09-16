@@ -51,30 +51,30 @@ public final class FishingManager {
         // バニラ魚 4 種。ランクは bronze/silver/gold で抽選 (cm廃止)。
         // stamina / power は竹竿 25/s に対してバランス調整 (stamina 8-14 が適正)
         list.add(FishingEntry.fish(
-                new ResourceLocation("bamboomod:cod"),
-                new ResourceLocation("minecraft:cod"),
+                ResourceLocation.parse("bamboomod:cod"),
+                ResourceLocation.parse("minecraft:cod"),
                 10, 0,
                 false,
                 12, 1, FishingEntry.MovePattern.SMOOTH,
                 "is_ocean", 1.8f));
         list.add(FishingEntry.fish(
-                new ResourceLocation("bamboomod:salmon"),
-                new ResourceLocation("minecraft:salmon"),
+                ResourceLocation.parse("bamboomod:salmon"),
+                ResourceLocation.parse("minecraft:salmon"),
                 10, 0,
                 false,
                 14, 1, FishingEntry.MovePattern.SMOOTH,
                 "is_river", 1.8f));
         // tropical は暖かい海で重み増
         list.add(FishingEntry.fish(
-                new ResourceLocation("bamboomod:tropical_fish"),
-                new ResourceLocation("minecraft:tropical_fish"),
+                ResourceLocation.parse("bamboomod:tropical_fish"),
+                ResourceLocation.parse("minecraft:tropical_fish"),
                 6, 2,
                 false,
                 10, 1, FishingEntry.MovePattern.DART,
                 null, 1f));
         list.add(FishingEntry.fish(
-                new ResourceLocation("bamboomod:pufferfish"),
-                new ResourceLocation("minecraft:pufferfish"),
+                ResourceLocation.parse("bamboomod:pufferfish"),
+                ResourceLocation.parse("minecraft:pufferfish"),
                 4, 1,
                 false,
                 10, 2, FishingEntry.MovePattern.SINKER,
@@ -82,27 +82,27 @@ public final class FishingManager {
         // 夜限定: 例として pufferfish の夜亜種的扱いはせず、別枠でダミーを入れてもよいが MVP では無し
         // ゴミ (JUNK) - mcmod の junk 相当を簡略化
         list.add(FishingEntry.junk(
-                new ResourceLocation("bamboomod:junk_stick"),
-                new ResourceLocation("minecraft:stick"), 3, 0));
+                ResourceLocation.parse("bamboomod:junk_stick"),
+                ResourceLocation.parse("minecraft:stick"), 3, 0));
         list.add(FishingEntry.junk(
-                new ResourceLocation("bamboomod:junk_string"),
-                new ResourceLocation("minecraft:string"), 3, 0));
+                ResourceLocation.parse("bamboomod:junk_string"),
+                ResourceLocation.parse("minecraft:string"), 3, 0));
         list.add(FishingEntry.junk(
-                new ResourceLocation("bamboomod:junk_bone"),
-                new ResourceLocation("minecraft:bone"), 2, 0));
+                ResourceLocation.parse("bamboomod:junk_bone"),
+                ResourceLocation.parse("minecraft:bone"), 2, 0));
         list.add(FishingEntry.junk(
-                new ResourceLocation("bamboomod:junk_seaweed"),
-                new ResourceLocation("bamboomod:seaweed"), 3, 0));
+                ResourceLocation.parse("bamboomod:junk_seaweed"),
+                ResourceLocation.parse("bamboomod:seaweed"), 3, 0));
         // 宝箱 (TREASURE) - 木/鉄/金/ダイヤの金属価値で段階化。MVP では直接インゴット等を与える
         list.add(FishingEntry.treasure(
-                new ResourceLocation("bamboomod:treasure_iron"),
-                new ResourceLocation("minecraft:iron_ingot"), 2, 1));
+                ResourceLocation.parse("bamboomod:treasure_iron"),
+                ResourceLocation.parse("minecraft:iron_ingot"), 2, 1));
         list.add(FishingEntry.treasure(
-                new ResourceLocation("bamboomod:treasure_gold"),
-                new ResourceLocation("minecraft:gold_ingot"), 1, 2));
+                ResourceLocation.parse("bamboomod:treasure_gold"),
+                ResourceLocation.parse("minecraft:gold_ingot"), 1, 2));
         list.add(FishingEntry.treasure(
-                new ResourceLocation("bamboomod:treasure_diamond"),
-                new ResourceLocation("minecraft:diamond"), 1, 3));
+                ResourceLocation.parse("bamboomod:treasure_diamond"),
+                ResourceLocation.parse("minecraft:diamond"), 1, 3));
         // warm 特化の魚がバイオームタグで強化されないものは、FishingManager.roll 内で追加補正を入れる
         return list;
     }

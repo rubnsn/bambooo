@@ -39,12 +39,9 @@ import ruby.bamboo.block.MillBlock;
  */
 public class MillBlockRenderer implements BlockEntityRenderer<MillBlockEntity> {
 
-    public static final ResourceLocation WINDMILL_TEXTURE = new ResourceLocation(BambooMod.MODID,
-            "textures/entity/windmill.png");
-    public static final ResourceLocation WINDMILL_CLOTH_TEXTURE = new ResourceLocation(BambooMod.MODID,
-            "textures/entity/windmill_cloth.png");
-    public static final ResourceLocation WATERWHEEL_TEXTURE = new ResourceLocation(BambooMod.MODID,
-            "textures/entity/waterwheel.png");
+    public static final ResourceLocation WINDMILL_TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/entity/windmill.png");
+    public static final ResourceLocation WINDMILL_CLOTH_TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/entity/windmill_cloth.png");
+    public static final ResourceLocation WATERWHEEL_TEXTURE = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "textures/entity/waterwheel.png");
 
     /** 風車ハブ。旧 box: texOffs(0,0), addBox(-3,-3,-2,6,6,4) */
     private static final ModelPart HUB = bake(

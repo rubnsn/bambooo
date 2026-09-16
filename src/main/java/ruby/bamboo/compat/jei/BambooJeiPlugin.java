@@ -32,7 +32,7 @@ import ruby.bamboo.gui.MillStoneScreen;
 @SuppressWarnings("removal")
 public class BambooJeiPlugin implements IModPlugin {
 
-    private static final ResourceLocation UID = new ResourceLocation(BambooMod.MODID, "jei_plugin");
+    private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "jei_plugin");
 
     @Override
     public ResourceLocation getPluginUid() {
