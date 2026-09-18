@@ -9,6 +9,9 @@
     { "id": "minecraft:gravel", "count": [8, 16], "weight": 6 },
     { "id": "minecraft:coal_ore", "count": [2, 4], "weight": 4 },
     { "id": "minecraft:iron_ore", "count": [2, 4], "weight": 3 },
-    { "id": "minecraft:glass", "count": [4, 8], "weight": 4 }
+    { "id": "minecraft:glass", "count": [4, 8], "weight": 4 },
+    { "id": "minecraft:potato", "count": [4, 8], "weight": 6 },
+    { "id": "minecraft:beetroot", "count": [4, 8], "weight": 6 },
+    { "id": "minecraft:carrot", "count": [4, 8], "weight": 6 }
   ]
 }

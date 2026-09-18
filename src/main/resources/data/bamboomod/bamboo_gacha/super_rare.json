@@ -1,11 +1,14 @@
 {
   "entries": [
-    { "id": "minecraft:diamond", "count": [1, 3], "weight": 8 },
-    { "id": "minecraft:emerald", "count": [1, 3], "weight": 6 },
-    { "id": "minecraft:gold_ingot", "count": [2, 6], "weight": 8 },
-    { "id": "minecraft:lapis_lazuli", "count": [4, 8], "weight": 6 },
+    { "id": "minecraft:diamond", "count": [1, 6], "weight": 15 },
+    { "id": "minecraft:emerald", "count": [1, 6], "weight": 10 },
     { "id": "minecraft:netherite_scrap", "count": 1, "weight": 2 },
     { "id": "minecraft:ancient_debris", "count": 1, "weight": 1 },
-    { "id": "minecraft:totem_of_undying", "count": 1, "weight": 1 }
+    { "id": "minecraft:totem_of_undying", "count": 1, "weight": 1 },
+    { "id": "bamboomod:maple_jem", "count": 1, "weight": 3 },
+    { "id": "bamboomod:ginkgo_jem", "count": 1, "weight": 3 },
+    { "id": "bamboomod:sakura_jem", "count": 1, "weight": 3 },
+    { "id": "minecraft:shulker_shell", "count": [1, 2], "weight": 2 },
+    { "id": "bamboomod:wish_wand", "count": 1, "weight": 1 }
   ]
 }

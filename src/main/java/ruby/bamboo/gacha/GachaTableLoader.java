@@ -139,6 +139,9 @@ public class GachaTableLoader extends SimpleJsonResourceReloadListener {
                 add(l, "minecraft:coal_ore", 2, 4, 4);
                 add(l, "minecraft:iron_ore", 2, 4, 3);
                 add(l, "minecraft:glass", 4, 8, 4);
+                add(l, "minecraft:potato", 4, 8, 6);
+                add(l, "minecraft:beetroot", 4, 8, 6);
+                add(l, "minecraft:carrot", 4, 8, 6);
             }
             case RARE -> {
                 // レア: モンスター素材
@@ -150,16 +153,23 @@ public class GachaTableLoader extends SimpleJsonResourceReloadListener {
                 add(l, "minecraft:ender_pearl", 1, 2, 4);
                 add(l, "minecraft:blaze_rod", 1, 2, 3);
                 add(l, "minecraft:slime_ball", 2, 4, 6);
+                add(l, "minecraft:gold_ingot", 2, 4, 6);
+                add(l, "minecraft:lapis_lazuli", 4, 8, 5);
+                add(l, "minecraft:golden_apple", 1, 1, 2);
+                add(l, "minecraft:golden_carrot", 2, 4, 5);
             }
             case SUPER_RARE -> {
                 // SR: 希少寄り
                 add(l, "minecraft:diamond", 1, 3, 8);
                 add(l, "minecraft:emerald", 1, 3, 6);
-                add(l, "minecraft:gold_ingot", 2, 6, 8);
-                add(l, "minecraft:lapis_lazuli", 4, 8, 6);
                 add(l, "minecraft:netherite_scrap", 1, 1, 2);
                 add(l, "minecraft:ancient_debris", 1, 1, 1);
                 add(l, "minecraft:totem_of_undying", 1, 1, 1);
+                add(l, "bamboomod:maple_jem", 1, 1, 3);
+                add(l, "bamboomod:ginkgo_jem", 1, 1, 3);
+                add(l, "bamboomod:sakura_jem", 1, 1, 3);
+                add(l, "minecraft:shulker_shell", 1, 2, 2);
+                add(l, "bamboomod:wish_wand", 1, 1, 1);
             }
         }
         return l;
