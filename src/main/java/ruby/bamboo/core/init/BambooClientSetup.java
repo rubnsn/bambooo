@@ -251,6 +251,8 @@ public final class BambooClientSetup {
             // 竹弓の引き絞りモデル (pull/pulling override)。バニラは Items.BOW にしか
             // 登録されないため、独自 BowItem 継承クラスには自前で登録が必要。
             registerBambooBowModelProperties();
+            // ガチャカプセルの開閉モデル (opened override)。空カプセルはパカッと開いた見た目
+            registerGachaCapsuleModelProperties();
         });
     }
 
@@ -280,6 +282,18 @@ public final class BambooClientSetup {
 
     private static void cutout(Block block) {
         ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutout());
+    }
+
+    /**
+     * ガチャカプセルの開閉アイテムモデルプロパティ (docs/port-spec-gacha.md)。
+     * NBT {@code Opened} に連動し、空カプセルは開いたモデルに切替わる。
+     */
+    private static void registerGachaCapsuleModelProperties() {
+        ItemProperties.register(BambooItems.GACHA_CAPSULE.get(),
+                ResourceLocation.fromNamespaceAndPath(BambooMod.MODID, "opened"),
+                (stack, level, entity, seed) -> {
+                    return ruby.bamboo.item.GachaCapsuleItem.isOpened(stack) ? 1.0F : 0.0F;
+                });
     }
 
     /**
@@ -401,5 +415,39 @@ public final class BambooClientSetup {
             int color = 0xFF000000 | zabuton.get().getColor().rgb;
             event.register((stack, tintIndex) -> color, new Item[] { zabuton.get().asItem() });
         }
+        // ガチャカプセル — NBT色を上半分 (tintIndex=0) に乗算。虹色は時刻で循環
+        event.register((stack, tintIndex) -> {
+            if (tintIndex != 0) {
+                return 0xFFFFFF;
+            }
+            if (!(stack.getItem() instanceof ruby.bamboo.item.GachaCapsuleItem)) {
+                return 0xFFFFFF;
+            }
+            var capsule = ruby.bamboo.item.GachaCapsuleItem.getCapsule(stack);
+            if (capsule == ruby.bamboo.gacha.GachaCapsule.RAINBOW) {
+                float h = (System.currentTimeMillis() % 3000L) / 3000.0F;
+                return hsvToRgb(h, 0.85F, 1.0F);
+            }
+            return capsule.tint;
+        }, new Item[] { BambooItems.GACHA_CAPSULE.get().asItem() });
+    }
+
+    /** HSV→RGB (虹カプセル用。小数h∈[0,1))。 */
+    private static int hsvToRgb(float h, float s, float v) {
+        float c = v * s;
+        float x = c * (1.0F - Math.abs((h * 6.0F) % 2.0F - 1.0F));
+        float m = v - c;
+        float r, g, b;
+        int i = (int) (h * 6.0F) % 6;
+        switch (i) {
+            case 0 -> { r = c; g = x; b = 0; }
+            case 1 -> { r = x; g = c; b = 0; }
+            case 2 -> { r = 0; g = c; b = x; }
+            case 3 -> { r = 0; g = x; b = c; }
+            case 4 -> { r = x; g = 0; b = c; }
+            default -> { r = c; g = 0; b = x; }
+        }
+        return 0xFF000000 | ((int) ((r + m) * 255) << 16)
+                | ((int) ((g + m) * 255) << 8) | (int) ((b + m) * 255);
     }
 }

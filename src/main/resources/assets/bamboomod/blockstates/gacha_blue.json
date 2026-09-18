@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,half=lower": { "model": "bamboomod:block/gacha_blue" },
+    "facing=south,half=lower": { "model": "bamboomod:block/gacha_blue", "y": 180 },
+    "facing=west,half=lower": { "model": "bamboomod:block/gacha_blue", "y": 270 },
+    "facing=east,half=lower": { "model": "bamboomod:block/gacha_blue", "y": 90 },
+    "facing=north,half=upper": { "model": "bamboomod:block/gacha_blue" },
+    "facing=south,half=upper": { "model": "bamboomod:block/gacha_blue", "y": 180 },
+    "facing=west,half=upper": { "model": "bamboomod:block/gacha_blue", "y": 270 },
+    "facing=east,half=upper": { "model": "bamboomod:block/gacha_blue", "y": 90 }
+  }
+}

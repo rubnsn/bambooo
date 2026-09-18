@@ -87,9 +87,10 @@ public final class BambooBlockEntities {
                     BambooBlocks.WINDMILL.get(), BambooBlocks.WINDMILL_CLOTH.get(), BambooBlocks.WATERWHEEL.get())
                     .build(null));
 
-    /** ガチャポン (テスト用。回転・レバーはクライアント演出のみ) */
+    /** ガチャポン (テスト用。回転・レバーはクライアント演出のみ。赤/青で共用) */
     public static final RegistryObject<BlockEntityType<GachaBlockEntity>> GACHA_BE = BambooMod.BLOCK_ENTITIES
-            .register("gacha", () -> BlockEntityType.Builder.of(GachaBlockEntity::new, BambooBlocks.GACHA.get())
+            .register("gacha", () -> BlockEntityType.Builder.of(GachaBlockEntity::new,
+                    BambooBlocks.GACHA.get(), BambooBlocks.GACHA_BLUE.get())
                     .build(null));
 
     /**

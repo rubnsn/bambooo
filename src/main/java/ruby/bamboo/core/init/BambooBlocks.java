@@ -391,8 +391,12 @@ public final class BambooBlocks {
 
     // ===== テスト用ブロックガチャポン (docs/port-spec-gacha.md。旧版由来なし) =====
 
-    /** ガチャポン本体 (フルBER)。右クリックでGUI */
+    /** ガチャポン本体 (フルBER)。コイン投入→ハンドル操作の分離式・GUIなし */
     public static final RegistryObject<GachaBlock> GACHA = register("gacha", GachaBlock::new);
+
+    /** ガチャポン本体・青 (赤と同機能。BE・テーブル共用、BERテクスチャのみ青) */
+    public static final RegistryObject<GachaBlock> GACHA_BLUE =
+            register("gacha_blue", GachaBlock::new);
 
     // ===== sakura無機能deco移植: 単独Block登録 21件 =====
     // sakura_slab (sakura 32): PlayerFacingSlab相当だが今回は SlabBlock で SakuraPlank 流用

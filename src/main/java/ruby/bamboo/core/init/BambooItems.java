@@ -20,6 +20,8 @@ import ruby.bamboo.item.FirecrackerItem;
 import ruby.bamboo.item.FishingBaitItem;
 import ruby.bamboo.item.FoldingFan;
 import ruby.bamboo.item.FreeCellItem;
+import ruby.bamboo.item.GachaCoinItem;
+import ruby.bamboo.item.GachaCapsuleItem;
 import ruby.bamboo.item.GardenSpadeItem;
 import ruby.bamboo.item.ItemMagnetItem;
 import ruby.bamboo.item.KakezikuItem;
@@ -301,6 +303,23 @@ public final class BambooItems {
     }
 
     // ===== ミニゲーム (テスト用) =====
+
+    /** ガチャコイン (ガチャポン専用トークン。1枚で単発1回、レシピなし) */
+    public static final RegistryObject<GachaCoinItem> GACHA_COIN = register("gacha_coin",
+            () -> new GachaCoinItem(new Item.Properties()));
+
+    /**
+     * ガチャカプセル (単一アイテムをNBT色4種で色分け。名前は「カプセル」で統一)。
+     * クリエタブには赤→青→黄→虹の順で4種登録 (右に行くほどレア)。
+     */
+    public static final RegistryObject<GachaCapsuleItem> GACHA_CAPSULE = BambooMod.ITEMS.register(
+            "gacha_capsule", () -> new GachaCapsuleItem(new Item.Properties().stacksTo(16)));
+
+    static {
+        for (ruby.bamboo.gacha.GachaCapsule capsule : ruby.bamboo.gacha.GachaCapsule.values()) {
+            addCreativeStack(() -> GachaCapsuleItem.create(capsule, false));
+        }
+    }
 
     /** ソリティア起動札 (右クリックでクロンダイクを開く。テクスチャ仮置き) */
     public static final RegistryObject<SolitaireItem> SOLITAIRE = register("solitaire",

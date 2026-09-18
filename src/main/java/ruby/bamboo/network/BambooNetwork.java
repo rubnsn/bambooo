@@ -144,17 +144,5 @@ public final class BambooNetwork {
                 BlackjackInsurancePacket::encode,
                 BlackjackInsurancePacket::decode,
                 BlackjackInsurancePacket::handle);
-        CHANNEL.registerMessage(nextId(), GachaDrawRequestPacket.class,
-                GachaDrawRequestPacket::encode,
-                GachaDrawRequestPacket::decode,
-                GachaDrawRequestPacket::handle);
-        CHANNEL.registerMessage(nextId(), GachaDrawResultPacket.class,
-                GachaDrawResultPacket::encode,
-                GachaDrawResultPacket::decode,
-                GachaDrawResultPacket::handle);
-        CHANNEL.registerMessage(nextId(), GachaClaimPacket.class,
-                GachaClaimPacket::encode,
-                GachaClaimPacket::decode,
-                GachaClaimPacket::handle);
     }
 }

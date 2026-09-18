@@ -1,9 +1,10 @@
 package ruby.bamboo.gacha;
 
 /**
- * ガチャのレアリティ。テスト用3段階。
+ * ガチャの中身レアリティ3段階。
  * <p>
- * 排出カプセルの色と開封演出の強さを切替える。確率は {@link GachaManager} の定数。
+ * カプセル色ごとの期待値 ({@link GachaCapsule}) で抽選され、
+ * 開封SEの強さを切替える。
  */
 public enum GachaRarity {
     /** コモン: 白カプセル、演出なし */

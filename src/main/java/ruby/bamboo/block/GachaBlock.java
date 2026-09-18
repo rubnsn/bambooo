@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.Containers;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -41,8 +42,12 @@ import ruby.bamboo.core.init.BambooBlockEntities;
  * <p>
  * ドア・ベッドと同じ2ブロック背丈 (LOWER/UPPER)。描画は LOWER 側の BE が
  * フルBER ({@code GachaBlockRenderer}) で2マス分まとめて行う。
- * 右クリック (上下どちらでも) で Top GUI を開く (Menu-less Screen方式)。
+ * GUIなし分離式: ガチャコイン手持ちで右クリック→投入、
+ * コイン投入済みでコイン以外を持って右クリック→ハンドルを回してカプセル排出。
+ * カプセル (赤60/青30/黄9/虹1) は手に持って右クリックで開封し、中身は
+ * カプセル色ごとの期待値で抽選される。開封後の空カプセルは手元に残る。
  * ドロップは LOWER のみ (loot_table の half=lower 条件)。
+ * 投入済みコインは破壊時に返却する。
  */
 public class GachaBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -178,9 +183,98 @@ public class GachaBlock extends BaseEntityBlock {
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
             InteractionHand hand, BlockHitResult hit) {
-        if (level.isClientSide) {
-            ruby.bamboo.client.handler.ClientGachaHandler.openTop();
+        BlockPos lowerPos = state.getValue(HALF) == DoubleBlockHalf.UPPER ? pos.below() : pos;
+        if (level.getBlockEntity(lowerPos) instanceof GachaBlockEntity be) {
+            ItemStack held = player.getItemInHand(hand);
+            boolean isCoin = held.is(ruby.bamboo.core.init.BambooItems.GACHA_COIN.get());
+            if (level.isClientSide) {
+                return InteractionResult.SUCCESS;
+            }
+            if (!be.hasCoin() && isCoin) {
+                // 第一段: コイン投入
+                if (!player.isCreative()) {
+                    held.shrink(1);
+                }
+                be.setHasCoin(true);
+                level.sendBlockUpdated(lowerPos, state, level.getBlockState(lowerPos), 3);
+                level.playSound(null, lowerPos, net.minecraft.sounds.SoundEvents.EXPERIENCE_ORB_PICKUP,
+                        net.minecraft.sounds.SoundSource.BLOCKS, 0.5F, 1.4F);
+                player.displayClientMessage(
+                        net.minecraft.network.chat.Component.translatable(
+                                "message.bamboomod.gacha_insert"),
+                        true);
+                return InteractionResult.SUCCESS;
+            }
+            if (be.hasCoin() && !isCoin) {
+                // 第二段: ハンドル操作→カプセル排出 (中身は開封時に抽選)
+                be.setHasCoin(false);
+                level.sendBlockUpdated(lowerPos, state, level.getBlockState(lowerPos), 3);
+                level.blockEvent(lowerPos, this, 1, 0);
+                ruby.bamboo.gacha.GachaCapsule capsule =
+                        ruby.bamboo.gacha.GachaCapsule.rollCapsule(level.getRandom());
+                net.minecraft.world.item.ItemStack out =
+                        ruby.bamboo.item.GachaCapsuleItem.create(capsule, false);
+                if (!player.getInventory().add(out.copy())) {
+                    // 排出口 (前面中央) にドロップ
+                    net.minecraft.core.Direction f = state.getValue(FACING);
+                    double dx = lowerPos.getX() + 0.5 + f.getStepX() * 0.7;
+                    double dy = lowerPos.getY() + 0.35;
+                    double dz = lowerPos.getZ() + 0.5 + f.getStepZ() * 0.7;
+                    net.minecraft.world.entity.item.ItemEntity e =
+                            new net.minecraft.world.entity.item.ItemEntity(level, dx, dy, dz,
+                                    out.copy());
+                    e.setDefaultPickUpDelay();
+                    level.addFreshEntity(e);
+                }
+                net.minecraft.sounds.SoundEvent se = switch (capsule) {
+                    case RAINBOW -> net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP;
+                    case YELLOW -> net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP;
+                    case BLUE -> net.minecraft.sounds.SoundEvents.EXPERIENCE_ORB_PICKUP;
+                    default -> net.minecraft.sounds.SoundEvents.BUNDLE_INSERT;
+                };
+                level.playSound(null, lowerPos, se, net.minecraft.sounds.SoundSource.BLOCKS,
+                        0.6F, capsule == ruby.bamboo.gacha.GachaCapsule.RAINBOW ? 1.0F : 1.2F);
+                // ハンドルを回すガチャ感: フェンスゲート閉音を少し低めに重ねる
+                level.playSound(null, lowerPos,
+                        net.minecraft.sounds.SoundEvents.FENCE_GATE_CLOSE,
+                        net.minecraft.sounds.SoundSource.BLOCKS, 0.7F, 0.8F);
+                player.displayClientMessage(
+                        net.minecraft.network.chat.Component.translatable(
+                                "message.bamboomod.gacha_capsule_eject",
+                                net.minecraft.network.chat.Component.translatable(
+                                        capsule.langKey()).getString()),
+                        true);
+                return InteractionResult.SUCCESS;
+            }
+            if (!be.hasCoin()) {
+                player.displayClientMessage(
+                        net.minecraft.network.chat.Component.translatable(
+                                "message.bamboomod.gacha_need_coin"),
+                        true);
+            } else {
+                player.displayClientMessage(
+                        net.minecraft.network.chat.Component.translatable(
+                                "message.bamboomod.gacha_already"),
+                        true);
+            }
+            return InteractionResult.SUCCESS;
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState,
+            boolean moved) {
+        // 投入済みコインは返却 (LOWER破壊時のみ・BE消去前)
+        if (!state.is(newState.getBlock())
+                && state.getValue(HALF) == DoubleBlockHalf.LOWER
+                && level.getBlockEntity(pos) instanceof GachaBlockEntity be
+                && be.hasCoin()) {
+            be.setHasCoin(false);
+            Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5,
+                    pos.getZ() + 0.5,
+                    new ItemStack(ruby.bamboo.core.init.BambooItems.GACHA_COIN.get()));
+        }
+        super.onRemove(state, level, pos, newState, moved);
     }
 }

@@ -29,6 +29,9 @@ import ruby.bamboo.BambooMod;
 public class GachaBlockRenderer implements BlockEntityRenderer<GachaBlockEntity> {
     public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
             BambooMod.MODID, "textures/entity/gacha.png");
+    /** 青バリエーション用テクスチャ (赤ボディ・蓋・扉のみ青化) */
+    public static final ResourceLocation TEXTURE_BLUE = ResourceLocation.fromNamespaceAndPath(
+            BambooMod.MODID, "textures/entity/gacha_blue.png");
 
     /** 境界面の食い込ませ量 (同一平面回避用) */
     private static final float EPS = 0.02F;
@@ -45,24 +48,26 @@ public class GachaBlockRenderer implements BlockEntityRenderer<GachaBlockEntity>
             CubeListBuilder.create().texOffs(0, 46).addBox(-6.5F, 15.0F - EPS, -6.5F, 13.0F, 2.0F, 13.0F));
 
     // ===== 前面 (+z・ボディ表面 z=6。裏面の同一平面回避で +EPS 浮かせる) =====
-    /** コイン投入口の銀プレート: 3.5x3.5 (y9.5-13) */
+    // 右上=コイン投入口、左=ツマミ、下=大型排出口の3分割レイアウト。
+    // ボディ前面は x -6..6 / y 3..15。
+    /** コイン投入口の銀プレート: 3.5x3.5 (右上・x1.5-5.0/y10.5-14.0) */
     private static final ModelPart COIN_PLATE = bake(
-            CubeListBuilder.create().texOffs(0, 62).addBox(-1.75F, 9.5F, 6.0F + EPS, 3.5F, 3.5F, 0.5F));
+            CubeListBuilder.create().texOffs(0, 62).addBox(1.5F, 10.5F, 6.0F + EPS, 3.5F, 3.5F, 0.5F));
     /** コインスロット (暗スリット・プレートに半埋め) */
     private static final ModelPart COIN_SLOT = bake(
-            CubeListBuilder.create().texOffs(0, 26).addBox(-0.6F, 10.5F, 6.42F, 1.2F, 1.8F, 0.2F));
-    /** ツマミの軸: 2.2x2.2 */
+            CubeListBuilder.create().texOffs(0, 26).addBox(2.65F, 11.5F, 6.42F, 1.2F, 1.8F, 0.2F));
+    /** ツマミの軸: 2.2x2.2 (プレート左隣・中心x-2.6/y11.7) */
     private static final ModelPart KNOB_AXLE = bake(
-            CubeListBuilder.create().texOffs(0, 66).addBox(-1.1F, 6.0F, 6.0F + EPS, 2.2F, 2.2F, 1.0F));
+            CubeListBuilder.create().texOffs(0, 66).addBox(-3.7F, 10.6F, 6.0F + EPS, 2.2F, 2.2F, 1.0F));
     /** ツマミのハンドル: 5.6x1.2 (Z軸回転でひねる) */
     private static final ModelPart KNOB_HANDLE = bake(
-            CubeListBuilder.create().texOffs(0, 70).addBox(-2.8F, 6.5F, 7.04F, 5.6F, 1.2F, 0.8F));
-    /** 取出口の暗枠 (y3.4-5.8) */
+            CubeListBuilder.create().texOffs(0, 70).addBox(-5.4F, 11.1F, 7.04F, 5.6F, 1.2F, 0.8F));
+    /** 取出口の暗枠 (大型・x-4.3-4.3/y3.4-6.8) */
     private static final ModelPart DISPENSER = bake(
-            CubeListBuilder.create().texOffs(0, 26).addBox(-3.2F, 3.4F, 6.0F + EPS, 6.4F, 2.4F, 0.2F));
-    /** 取出口のフラップ扉 (閉状態) */
+            CubeListBuilder.create().texOffs(0, 26).addBox(-4.3F, 3.4F, 6.0F + EPS, 8.6F, 3.4F, 0.2F));
+    /** 取出口のフラップ扉 (閉状態・大型) */
     private static final ModelPart FLAP = bake(
-            CubeListBuilder.create().texOffs(0, 74).addBox(-2.7F, 3.6F, 6.24F, 5.4F, 2.0F, 0.25F));
+            CubeListBuilder.create().texOffs(0, 74).addBox(-3.8F, 3.7F, 6.24F, 7.6F, 2.8F, 0.25F));
 
     // ===== ガチャ球 (透明・天面/底面なしの4枚パネル。上下はカラー/蓋に埋める) =====
     // 箱だと底面の半透明quadがカラー天面と重なって衝突して見えるため、側面4枚のみ。
@@ -96,8 +101,9 @@ public class GachaBlockRenderer implements BlockEntityRenderer<GachaBlockEntity>
     private static final ModelPart CAPSULE_HI = bake(
             CubeListBuilder.create().texOffs(0, 46).addBox(-2.0F, -2.0F, -2.0F, 4.0F, 2.0F, 4.0F));
 
-    /** ツマミ回転中心 */
-    private static final float KNOB_Y = 7.1F;
+    /** ツマミ回転中心 (プレート左隣・中心x-2.6/y11.7) */
+    private static final float KNOB_X = -2.6F;
+    private static final float KNOB_Y = 11.7F;
     private static final float KNOB_Z = 7.4F;
 
     /** ガチャ球内のリングカプセル4色 (パステル) */
@@ -128,8 +134,13 @@ public class GachaBlockRenderer implements BlockEntityRenderer<GachaBlockEntity>
         // ブロック中央・底面基準 (LOWER 側から2マス分描画)
         pose.translate(0.5, 0.0, 0.5);
         float facing = be.getBlockState().getValue(ruby.bamboo.block.GachaBlock.FACING).toYRot();
-        pose.mulPose(Axis.YP.rotationDegrees(-facing + 180.0F));
-        renderMachine(pose, buffers, packedLight, packedOverlay,
+        // モデル前面は +z (南) 造形。FACING へそのまま向ける (-facing。+180の余分で裏返っていた)
+        pose.mulPose(Axis.YP.rotationDegrees(-facing));
+        // 青バリエーションはテクスチャのみ差し替え (BE・テーブルは赤と共用)
+        ResourceLocation tex = be.getBlockState()
+                .is(ruby.bamboo.core.init.BambooBlocks.GACHA_BLUE.get()) ? TEXTURE_BLUE
+                        : TEXTURE;
+        renderMachine(tex, pose, buffers, packedLight, packedOverlay,
                 net.minecraft.util.Mth.lerp(partialTicks, be.prevRotor, be.rotor),
                 net.minecraft.util.Mth.lerp(partialTicks, be.prevLever, be.lever),
                 0xF2F2F2, false, 1.0F);
@@ -145,11 +156,12 @@ public class GachaBlockRenderer implements BlockEntityRenderer<GachaBlockEntity>
      * @param capsuleOpen 中央カプセル開封済みか (上半分を跳ね上げ)
      * @param scale 全体スケール
      */
-    public static void renderMachine(PoseStack pose, MultiBufferSource buffers, int packedLight,
+    public static void renderMachine(ResourceLocation texture, PoseStack pose,
+            MultiBufferSource buffers, int packedLight,
             int packedOverlay, float rotorDeg, float leverDeg, int capsuleColor,
             boolean capsuleOpen, float scale) {
         renderAssembled(pose, buffers,
-                buffers.getBuffer(RenderType.entityCutout(TEXTURE)),
+                buffers.getBuffer(RenderType.entityCutout(texture)),
                 packedLight, packedOverlay, rotorDeg, leverDeg, capsuleColor, capsuleOpen, scale);
     }
 
@@ -186,9 +198,9 @@ public class GachaBlockRenderer implements BlockEntityRenderer<GachaBlockEntity>
 
         // ツマミのハンドル (前面・Z軸でひねる。本物と同じ回し心地)
         pose.pushPose();
-        pose.translate(0.0, KNOB_Y / 16.0, KNOB_Z / 16.0);
+        pose.translate(KNOB_X / 16.0, KNOB_Y / 16.0, KNOB_Z / 16.0);
         pose.mulPose(Axis.ZP.rotationDegrees(leverDeg * 1.5F));
-        pose.translate(0.0, -KNOB_Y / 16.0, -KNOB_Z / 16.0);
+        pose.translate(-KNOB_X / 16.0, -KNOB_Y / 16.0, -KNOB_Z / 16.0);
         KNOB_HANDLE.render(pose, body, packedLight, packedOverlay, 1, 1, 1, 1);
         pose.popPose();
 
@@ -204,7 +216,8 @@ public class GachaBlockRenderer implements BlockEntityRenderer<GachaBlockEntity>
         }
         pose.pushPose();
         pose.translate(0.0, 20.2 / 16.0, 0.0);
-        pose.mulPose(Axis.YP.rotationDegrees(-rotorDeg * 0.5F));
+        // リングと逆回転 (-360≡0 のため周回で跳ばない。*0.5等の半端な倍率は跳ぶので使わない)
+        pose.mulPose(Axis.YP.rotationDegrees(-rotorDeg));
         float r = (capsuleColor >> 16 & 0xFF) / 255.0F;
         float g = (capsuleColor >> 8 & 0xFF) / 255.0F;
         float b = (capsuleColor & 0xFF) / 255.0F;
