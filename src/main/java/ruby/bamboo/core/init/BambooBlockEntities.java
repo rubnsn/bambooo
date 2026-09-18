@@ -6,6 +6,7 @@ import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.entity.BambooPotBlockEntity;
 import ruby.bamboo.block.entity.CampfireBlockEntity;
 import ruby.bamboo.block.entity.CutBlockEntity;
+import ruby.bamboo.block.entity.GachaBlockEntity;
 import ruby.bamboo.block.entity.FlowerBedBlockEntity;
 import ruby.bamboo.block.entity.JPChestBlockEntity;
 import ruby.bamboo.block.entity.MillBlockEntity;
@@ -84,6 +85,11 @@ public final class BambooBlockEntities {
     public static final RegistryObject<BlockEntityType<MillBlockEntity>> MILL_BE = BambooMod.BLOCK_ENTITIES
             .register("mill", () -> BlockEntityType.Builder.of(MillBlockEntity::new,
                     BambooBlocks.WINDMILL.get(), BambooBlocks.WINDMILL_CLOTH.get(), BambooBlocks.WATERWHEEL.get())
+                    .build(null));
+
+    /** ガチャポン (テスト用。回転・レバーはクライアント演出のみ) */
+    public static final RegistryObject<BlockEntityType<GachaBlockEntity>> GACHA_BE = BambooMod.BLOCK_ENTITIES
+            .register("gacha", () -> BlockEntityType.Builder.of(GachaBlockEntity::new, BambooBlocks.GACHA.get())
                     .build(null));
 
     /**

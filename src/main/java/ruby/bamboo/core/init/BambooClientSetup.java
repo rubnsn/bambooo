@@ -34,6 +34,7 @@ import ruby.bamboo.block.SpringWaterBlock;
 import ruby.bamboo.block.entity.BambooPotBlockRenderer;
 import ruby.bamboo.block.entity.CampfireBlockRenderer;
 import ruby.bamboo.block.entity.FlowerBedBlockRenderer;
+import ruby.bamboo.block.entity.GachaBlockRenderer;
 import ruby.bamboo.block.entity.MillBlockRenderer;
 import ruby.bamboo.block.entity.MillStoneBlockRenderer;
 import ruby.bamboo.block.entity.SlideDoorBlockRenderer;
@@ -183,6 +184,11 @@ public final class BambooClientSetup {
             BlockEntityRenderers.register(
                     BambooBlockEntities.MILL_BE.get(),
                     MillBlockRenderer::new);
+
+            // ガチャポンの BER 登録 (テスト用フルBER。GUI内モデルと共用)
+            BlockEntityRenderers.register(
+                    BambooBlockEntities.GACHA_BE.get(),
+                    GachaBlockRenderer::new);
 
             // 温泉水 — 半透明 (Phase B) — ブロックと流体両方をtranslucentに (バニラ水と同様)
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.SPRING_WATER.get(), RenderType.translucent());

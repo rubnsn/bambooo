@@ -27,6 +27,7 @@ import ruby.bamboo.block.IndLightBlock;
 import ruby.bamboo.block.KitunebiBlock;
 import ruby.bamboo.block.CampfireBlock;
 import ruby.bamboo.block.GinkgoLeaveBlock;
+import ruby.bamboo.block.GachaBlock;
 import ruby.bamboo.block.GinkgoLogBlock;
 import ruby.bamboo.block.GinkgoSaplingBlock;
 import ruby.bamboo.block.HiganOreBlock;
@@ -387,6 +388,11 @@ public final class BambooBlocks {
     /** 水車。水に浸かると回転。textures/entity/waterwheel.png */
     public static final RegistryObject<MillBlock> WATERWHEEL = register("waterwheel",
             () -> new MillBlock(MillBlock.Type.WATERWHEEL));
+
+    // ===== テスト用ブロックガチャポン (docs/port-spec-gacha.md。旧版由来なし) =====
+
+    /** ガチャポン本体 (フルBER)。右クリックでGUI */
+    public static final RegistryObject<GachaBlock> GACHA = register("gacha", GachaBlock::new);
 
     // ===== sakura無機能deco移植: 単独Block登録 21件 =====
     // sakura_slab (sakura 32): PlayerFacingSlab相当だが今回は SlabBlock で SakuraPlank 流用
