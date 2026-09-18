@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "XXX"
+  ],
+  "key": {
+    "X": {
+      "item": "bamboomod:ginkgo_planks"
+    }
+  },
+  "result": {
+    "item": "bamboomod:ginkgo_slab",
+    "count": 6
+  }
+}

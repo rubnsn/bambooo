@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "bamboomod:maple_log"
+    }
+  ],
+  "result": {
+    "item": "bamboomod:maple_planks",
+    "count": 4
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "bamboomod:block/hinoki_slab"
+    },
+    "type=top": {
+      "model": "bamboomod:block/hinoki_slab_top"
+    },
+    "type=double": {
+      "model": "bamboomod:block/hinoki_planks"
+    }
+  }
+}

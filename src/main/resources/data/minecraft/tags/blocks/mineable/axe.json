@@ -1,6 +1,15 @@
 {
   "replace": false,
   "values": [
-    "bamboomod:bamboo"
+    "bamboomod:bamboo",
+    "bamboomod:maple_planks",
+    "bamboomod:ginkgo_planks",
+    "bamboomod:hinoki_planks",
+    "bamboomod:maple_slab",
+    "bamboomod:ginkgo_slab",
+    "bamboomod:hinoki_slab",
+    "bamboomod:maple_stairs",
+    "bamboomod:ginkgo_stairs",
+    "bamboomod:hinoki_stairs"
   ]
 }

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "bamboomod:block/ginkgo_slab"
+    },
+    "type=top": {
+      "model": "bamboomod:block/ginkgo_slab_top"
+    },
+    "type=double": {
+      "model": "bamboomod:block/ginkgo_planks"
+    }
+  }
+}

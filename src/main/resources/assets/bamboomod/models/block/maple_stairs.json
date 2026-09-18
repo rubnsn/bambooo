@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "bamboomod:block/maple_planks",
+    "top": "bamboomod:block/maple_planks",
+    "side": "bamboomod:block/maple_planks"
+  }
+}

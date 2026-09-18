@@ -88,6 +88,30 @@ public final class BambooBlocks {
     public static final RegistryObject<SakuraPlankBlock> SAKURA_PLANKS = register("sakura_planks",
             () -> new SakuraPlankBlock(props(MapColor.COLOR_PINK, SoundType.WOOD).strength(0.2f, 1.0f)));
 
+    /** もみじの木材 (maple_planks)。淡黄白色・均質緻密 */
+    public static final RegistryObject<Block> MAPLE_PLANKS = register("maple_planks",
+            () -> new Block(props(MapColor.SAND, SoundType.WOOD).strength(0.2f, 1.0f)));
+    public static final RegistryObject<SlabBlock> MAPLE_SLAB = register("maple_slab",
+            () -> new SlabBlock(props(MapColor.SAND, SoundType.WOOD).strength(0.2f, 1.0f)));
+    public static final RegistryObject<StairBlock> MAPLE_STAIRS = register("maple_stairs",
+            () -> new StairBlock(MAPLE_PLANKS.get().defaultBlockState(), props(MapColor.SAND, SoundType.WOOD).strength(0.2f, 1.0f)));
+
+    /** いちょうの木材 (ginkgo_planks)。淡黄・年輪不明瞭・均質 */
+    public static final RegistryObject<Block> GINKGO_PLANKS = register("ginkgo_planks",
+            () -> new Block(props(MapColor.COLOR_YELLOW, SoundType.WOOD).strength(0.2f, 1.0f)));
+    public static final RegistryObject<SlabBlock> GINKGO_SLAB = register("ginkgo_slab",
+            () -> new SlabBlock(props(MapColor.COLOR_YELLOW, SoundType.WOOD).strength(0.2f, 1.0f)));
+    public static final RegistryObject<StairBlock> GINKGO_STAIRS = register("ginkgo_stairs",
+            () -> new StairBlock(GINKGO_PLANKS.get().defaultBlockState(), props(MapColor.COLOR_YELLOW, SoundType.WOOD).strength(0.2f, 1.0f)));
+
+    /** ヒノキの木材 (hinoki_planks)。黄白＋淡紅・直線木目・光沢 */
+    public static final RegistryObject<Block> HINOKI_PLANKS = register("hinoki_planks",
+            () -> new Block(props(MapColor.TERRACOTTA_WHITE, SoundType.WOOD).strength(0.2f, 1.0f)));
+    public static final RegistryObject<SlabBlock> HINOKI_SLAB = register("hinoki_slab",
+            () -> new SlabBlock(props(MapColor.TERRACOTTA_WHITE, SoundType.WOOD).strength(0.2f, 1.0f)));
+    public static final RegistryObject<StairBlock> HINOKI_STAIRS = register("hinoki_stairs",
+            () -> new StairBlock(HINOKI_PLANKS.get().defaultBlockState(), props(MapColor.TERRACOTTA_WHITE, SoundType.WOOD).strength(0.2f, 1.0f)));
+
     // ===== 竹柵/欄間系 (旧 bamboopane meta=0..3 を独立ブロック化) =====
 
     public static final RegistryObject<BambooPaneBlock> BAMBOO_PANE = registerPane(BambooPaneBlock.Variant.NORMAL);
