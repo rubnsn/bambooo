@@ -91,9 +91,14 @@ public class ShurikenEntity extends AbstractArrow {
         BlockPos blockPos = result.getBlockPos();
         BlockState state = this.level().getBlockState(blockPos);
         Vec3 vec3d = result.getLocation().subtract(this.getX(), this.getY(), this.getZ());
-        this.setDeltaMovement(vec3d);
-        Vec3 vec3d1 = vec3d.normalize().scale(0.05D);
-        this.setPos(this.getX() - vec3d1.x, this.getY() - vec3d1.y, this.getZ() - vec3d1.z);
+        if (vec3d.lengthSqr() < 1.0E-12) {
+            // 命中点と現在点が一致 (形状境界での接触等): 正規化NaNを避けその場で停止
+            this.setDeltaMovement(Vec3.ZERO);
+        } else {
+            this.setDeltaMovement(vec3d);
+            Vec3 vec3d1 = vec3d.normalize().scale(0.05D);
+            this.setPos(this.getX() - vec3d1.x, this.getY() - vec3d1.y, this.getZ() - vec3d1.z);
+        }
         this.playSound(state.getSoundType(level(), blockPos, this).getHitSound(), 1.0F, 1.2F / (this.random.nextFloat() * 0.2F + 0.9F));
         this.inGround = true;
         this.shakeTime = 7;

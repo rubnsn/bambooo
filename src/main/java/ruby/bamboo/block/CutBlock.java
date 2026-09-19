@@ -177,7 +177,9 @@ public class CutBlock extends BaseEntityBlock {
             // 3軸絶対: FACINGに依存しない
             return be.getShapeCacheAbsolute();
         }
-        return Shapes.block();
+        // BE不在時は描画 (BER) も無いため empty に合わせる。
+        // フルキューブを返すと不可視の壁になり、飛翔物が空中で刺さって見える
+        return Shapes.empty();
     }
 
     @Override
