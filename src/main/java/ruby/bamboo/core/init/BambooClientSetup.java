@@ -252,6 +252,10 @@ public final class BambooClientSetup {
             EntityRenderers.register(BambooEntities.CAPSULE_BALL.get(),
                     net.minecraft.client.renderer.entity.ThrownItemRenderer::new);
 
+            // フィギュア設置体 — 中身Mobのモデル単体描画
+            EntityRenderers.register(BambooEntities.FIGURE.get(),
+                    ruby.bamboo.client.renderer.FigureRenderer::new);
+
             // 竹弓の引き絞りモデル (pull/pulling override)。バニラは Items.BOW にしか
             // 登録されないため、独自 BowItem 継承クラスには自前で登録が必要。
             registerBambooBowModelProperties();

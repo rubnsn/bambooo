@@ -9,7 +9,10 @@
   "client": [
     "vanilla.ModelBlockRendererMixin",
     "vanilla.ItemStackEatMixin",
-    "sodium.SodiumBlockRendererMixin"
+    "sodium.SodiumBlockRendererMixin",
+    "client.FigurePoseMixin",
+    "client.SheepFurModelMixin",
+    "client.LlamaModelMixin"
   ],
   "minVersion": "0.8",
   "injectors": {

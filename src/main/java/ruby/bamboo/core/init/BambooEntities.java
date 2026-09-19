@@ -10,6 +10,7 @@ import net.minecraftforge.registries.RegistryObject;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.entity.ChairEntity;
 import ruby.bamboo.entity.CapsuleBallEntity;
+import ruby.bamboo.entity.FigureEntity;
 import ruby.bamboo.entity.FirecrackerEntity;
 import ruby.bamboo.entity.FishingBobberEntity;
 import ruby.bamboo.entity.KaginawaHookEntity;
@@ -168,6 +169,18 @@ public final class BambooEntities {
                     .clientTrackingRange(64)
                     .updateInterval(1)
                     .build("capsule_ball"));
+
+    /**
+     * モンスターフィギュア設置体 (docs §10)。
+     * 当たり判定は個体×スケールで動的 (getDimensions オーバーライド)。
+     */
+    public static final RegistryObject<EntityType<FigureEntity>> FIGURE = BambooMod.ENTITY_TYPES.register(
+            "figure",
+            () -> EntityType.Builder.<FigureEntity>of(FigureEntity::new, MobCategory.MISC)
+                    .sized(1.0F, 1.0F)
+                    .clientTrackingRange(64)
+                    .updateInterval(1)
+                    .build("figure"));
 
     private static <T extends AbstractArrow> RegistryObject<EntityType<T>> registerArrow(
             String name, EntityType.EntityFactory<T> factory) {

@@ -35,12 +35,6 @@ import ruby.bamboo.item.CapsuleBallItem;
  */
 public class CapsuleBallEntity extends ThrowableItemProjectile {
 
-    public static final int MODE_CAPTURE = 0;
-    public static final int MODE_SUMMON = 1;
-
-    private static final EntityDataAccessor<Integer> DATA_MODE = SynchedEntityData.defineId(
-            CapsuleBallEntity.class, EntityDataSerializers.INT);
-    /** 完了した揺れ回数 (0-3。クライアントの演出同期用) */
     private static final EntityDataAccessor<Integer> DATA_SHAKE = SynchedEntityData.defineId(
             CapsuleBallEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_TIER = SynchedEntityData.defineId(
@@ -49,9 +43,8 @@ public class CapsuleBallEntity extends ThrowableItemProjectile {
     /** 揺れ1回あたりのtick */
     private static final int SHAKE_TICKS = 20;
     private static final int SHAKE_COUNT = 3;
-    /** 飛行 failsafe (虚空等): 捕獲200tick / 召喚120tick */
-    private static final int FLY_TIMEOUT_CAPTURE = 200;
-    private static final int FLY_TIMEOUT_SUMMON = 120;
+    /** 飛行 failsafe (当たりが無いまま飛び続けた場合。返却なしで消滅) */
+    private static final int FLY_TIMEOUT = 200;
 
     private int shakeTimer;
     /** 吸収中の個体タグ (id付き)。null=飛行中 */
@@ -68,22 +61,13 @@ public class CapsuleBallEntity extends ThrowableItemProjectile {
         super(type, level);
     }
 
-    public CapsuleBallEntity(Level level, LivingEntity owner, ItemStack stack, int mode) {
+    public CapsuleBallEntity(Level level, LivingEntity owner, ItemStack stack) {
         this(BambooEntities.CAPSULE_BALL.get(), level);
         this.setOwner(owner);
         this.setPos(owner.getX(), owner.getEyeY() - 0.1D, owner.getZ());
         this.setItem(stack.copyWithCount(1));
-        this.entityData.set(DATA_MODE, mode);
         this.entityData.set(DATA_TIER, CapsuleBallItem.tierOf(stack).ordinal());
         if (owner.getUUID() != null) this.ownerId = owner.getUUID();
-    }
-
-    public int getMode() {
-        try {
-            return this.entityData.get(DATA_MODE);
-        } catch (Exception e) {
-            return MODE_CAPTURE;
-        }
     }
 
     public CapsuleTier getTier() {
@@ -104,7 +88,6 @@ public class CapsuleBallEntity extends ThrowableItemProjectile {
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
-        this.entityData.define(DATA_MODE, MODE_CAPTURE);
         this.entityData.define(DATA_SHAKE, 0);
         this.entityData.define(DATA_TIER, CapsuleTier.N.ordinal());
     }
@@ -121,7 +104,6 @@ public class CapsuleBallEntity extends ThrowableItemProjectile {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        tag.putInt("CapsuleMode", getMode());
         tag.putInt("CapsuleShake", this.entityData.get(DATA_SHAKE));
         tag.putInt("CapsuleTier", getTier().ordinal());
         tag.putInt("CapsuleShakeTimer", shakeTimer);
@@ -135,7 +117,6 @@ public class CapsuleBallEntity extends ThrowableItemProjectile {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        this.entityData.set(DATA_MODE, tag.getInt("CapsuleMode"));
         this.entityData.set(DATA_TIER, tag.getInt("CapsuleTier"));
         this.entityData.set(DATA_SHAKE, tag.getInt("CapsuleShake"));
         this.shakeTimer = tag.getInt("CapsuleShakeTimer");
@@ -160,7 +141,6 @@ public class CapsuleBallEntity extends ThrowableItemProjectile {
     @Override
     protected void onHitEntity(EntityHitResult hit) {
         if (level().isClientSide) return;
-        if (getMode() == MODE_SUMMON) return; // 召喚中はすり抜け
         if (isShaking()) return;
         if (!(hit.getEntity() instanceof LivingEntity target)) return;
         if (target == getOwner()) return;
@@ -168,12 +148,15 @@ public class CapsuleBallEntity extends ThrowableItemProjectile {
         CapsuleTier tier = getTier();
         CapsuleRules.Category category = CapsuleRules.classify(target, ownerId);
         if (category == CapsuleRules.Category.UNCAPTURABLE) {
-            // 消費せず落とす
-            dropThrown();
+            // 消費する (返却なし)
             ServerPlayer owner = serverOwner();
             if (owner != null) {
                 owner.displayClientMessage(
                         Component.translatable("message.bamboomod.capsule_ball_uncapturable"), true);
+            }
+            if (level() instanceof ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.POOF,
+                        getX(), getY() + 0.3D, getZ(), 6, 0.2D, 0.2D, 0.2D, 0.02D);
             }
             this.discard();
             return;
@@ -201,97 +184,12 @@ public class CapsuleBallEntity extends ThrowableItemProjectile {
     protected void onHitBlock(BlockHitResult hit) {
         if (level().isClientSide) return;
         if (isShaking()) return;
-        if (getMode() == MODE_SUMMON) {
-            doSummon(hit.getLocation().add(0.0D, 0.5D, 0.0D));
-            this.discard();
-            return;
+        // 外した捕獲ボールは消費する (返却なし)
+        if (level() instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(ParticleTypes.POOF,
+                    getX(), getY() + 0.3D, getZ(), 6, 0.2D, 0.2D, 0.2D, 0.02D);
         }
-        // 外した捕獲ボールは消費せず落とす
-        dropThrown();
         this.discard();
-    }
-
-    private void dropThrown() {
-        ItemStack stack = this.getItem().copy();
-        if (stack.isEmpty()) return;
-        ItemEntity drop = new ItemEntity(level(), getX(), getY(), getZ(), stack);
-        drop.setDefaultPickUpDelay();
-        level().addFreshEntity(drop);
-    }
-
-    /**
-     * 召喚モードの実体化。ボールは投擲時に消費していないため、
-     * 投げ主の対応ボール (BoundId一致の捕獲済み) をその場で紐付け空へ変える。
-     * クリエイティブ (非消費) でもサバイバルでも同じ経路で成立する。
-     */
-    private void doSummon(Vec3 at) {
-        if (!(level() instanceof ServerLevel serverLevel)) return;
-        ItemStack stack = this.getItem().copy();
-        UUID bound = CapsuleRules.getBoundId(stack);
-        ServerPlayer owner = serverOwner();
-        if (bound != null) {
-            // 二重召喚防止: 既に出ている個体がいたら何もしない
-            for (ServerLevel lvl : serverLevel.getServer().getAllLevels()) {
-                Entity existing = lvl.getEntity(bound);
-                if (existing != null && !existing.isRemoved()) {
-                    if (owner != null) {
-                        owner.displayClientMessage(Component
-                                .translatable("message.bamboomod.capsule_ball_already_out"), true);
-                    }
-                    return;
-                }
-            }
-        }
-        Entity entity = CapsuleRules.spawnReleased(serverLevel, stack, at, getYRot());
-        if (entity == null) {
-            serverLevel.playSound(null, at.x, at.y, at.z,
-                    SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 0.4F, 1.5F);
-            return;
-        }
-        boolean converted = false;
-        if (owner != null && bound != null) {
-            // 手持ち (両手+インベントリ) の対応ボールを紐付け空へ
-            for (ItemStack inv : owner.getInventory().items) {
-                if (isMatchingCaptured(inv, bound)) {
-                    inv.getOrCreateTag().putBoolean(CapsuleRules.TAG_CAPTURED, false);
-                    converted = true;
-                    break;
-                }
-            }
-            if (!converted && isMatchingCaptured(owner.getOffhandItem(), bound)) {
-                owner.getOffhandItem().getOrCreateTag().putBoolean(CapsuleRules.TAG_CAPTURED, false);
-                converted = true;
-            }
-            if (!converted && !owner.getAbilities().instabuild) {
-                // 対応ボールが見当たらない (投げてから移動した等): 紐付け空を渡す
-                ItemStack back = stack.copy();
-                back.setCount(1);
-                back.getOrCreateTag().putBoolean(CapsuleRules.TAG_CAPTURED, false);
-                if (!owner.getInventory().add(back)) {
-                    ItemEntity drop = new ItemEntity(serverLevel, owner.getX(),
-                            owner.getY() + 0.5D, owner.getZ(), back);
-                    drop.setDefaultPickUpDelay();
-                    serverLevel.addFreshEntity(drop);
-                }
-            }
-            // NBTのみの書き換え・追加は明示的に同期する
-            owner.inventoryMenu.broadcastChanges();
-        }
-        serverLevel.playSound(null, at.x, at.y, at.z,
-                SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.5F, 1.4F);
-        serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER,
-                at.x, at.y + 0.5D, at.z, 12, 0.4D, 0.5D, 0.4D, 0.05D);
-        if (owner != null) {
-            owner.displayClientMessage(Component.translatable("message.bamboomod.capsule_ball_summon",
-                    entity.getType().getDescription().getString()), true);
-        }
-    }
-
-    /** 対応する捕獲済みボールか (その場変換用)。 */
-    private static boolean isMatchingCaptured(ItemStack stack, UUID bound) {
-        if (stack.isEmpty() || !(stack.getItem() instanceof CapsuleBallItem)) return false;
-        if (!CapsuleRules.isCaptured(stack)) return false;
-        return bound.equals(CapsuleRules.getBoundId(stack));
     }
 
     @Override
@@ -302,14 +200,8 @@ public class CapsuleBallEntity extends ThrowableItemProjectile {
             tickShaking();
             return;
         }
-        // 飛行 failsafe
-        int timeout = getMode() == MODE_SUMMON ? FLY_TIMEOUT_SUMMON : FLY_TIMEOUT_CAPTURE;
-        if (this.tickCount > timeout) {
-            if (getMode() == MODE_SUMMON) {
-                doSummon(position().add(0.0D, 0.5D, 0.0D));
-            } else {
-                dropThrown();
-            }
+        // 飛行 failsafe (返却なしで消滅)
+        if (this.tickCount > FLY_TIMEOUT) {
             this.discard();
         }
     }
@@ -381,58 +273,37 @@ public class CapsuleBallEntity extends ThrowableItemProjectile {
         }
     }
 
-    /** 3回全成功: 捕獲済みボールを投擲者へ付与。 */
+    /** 3回全成功: ボールは消費され、中身入りのフィギュアが渡される (返却なし)。 */
     private void completeCapture(ServerLevel serverLevel) {
         CompoundTag tag = pendingTag;
         pendingTag = null;
-        if (tag == null) {
+        if (tag == null || tag.getString("id").isEmpty()) {
             this.discard();
             return;
         }
-        CapsuleTier tier = getTier();
-        if (ownerId == null) {
-            // 投げ主不明のフォールバック: 個体を復元して終了
-            pendingTag = tag;
-            restoreTarget();
-            this.discard();
-            return;
-        }
-        ItemStack filled;
-        try {
-            filled = new ItemStack(
-                    net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(CapsuleRules.itemIdOf(tier)));
-        } catch (Exception e) {
-            filled = ItemStack.EMPTY;
-        }
-        if (filled.isEmpty()) {
-            // フォールバック: 投擲スタック自体へ書き込む
-            filled = this.getItem().copy();
-            filled.setCount(1);
-        }
-        float maxHp = pendingMaxHp > 0.0F ? pendingMaxHp : tag.getFloat("Health");
-        CapsuleRules.fillBallFromTag(filled,
-                new CapsuleRules.CompoundTagWrapper(tag.getUUID("UUID"), tag.getString("id"),
-                        tag.copy(), maxHp),
-                tier, ownerId);
+        ItemStack figure = ruby.bamboo.item.MonsterFigureItem.createFromCapture(tag);
         serverLevel.playSound(null, getX(), getY(), getZ(),
                 SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.7F, 1.0F);
         serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER,
                 getX(), getY() + 0.5D, getZ(), 14, 0.3D, 0.4D, 0.3D, 0.05D);
         ServerPlayer player = serverOwner();
-        if (player != null) {
-            if (!player.getInventory().add(filled.copy())) {
-                ItemEntity drop = new ItemEntity(serverLevel, player.getX(),
-                        player.getY() + 0.5D, player.getZ(), filled.copy());
+        if (!figure.isEmpty()) {
+            if (player != null) {
+                if (!player.getInventory().add(figure.copy())) {
+                    ItemEntity drop = new ItemEntity(serverLevel, player.getX(),
+                            player.getY() + 0.5D, player.getZ(), figure.copy());
+                    drop.setDefaultPickUpDelay();
+                    serverLevel.addFreshEntity(drop);
+                }
+                player.inventoryMenu.broadcastChanges();
+                player.displayClientMessage(Component.translatable("message.bamboomod.figure_got",
+                        CapsuleRules.describeEntityId(tag.getString("id"))), false);
+            } else {
+                ItemEntity drop = new ItemEntity(serverLevel, getX(), getY() + 0.5D, getZ(),
+                        figure.copy());
                 drop.setDefaultPickUpDelay();
                 serverLevel.addFreshEntity(drop);
             }
-            player.inventoryMenu.broadcastChanges();
-            player.displayClientMessage(Component.translatable("message.bamboomod.capsule_ball_success",
-                    CapsuleRules.describeEntityId(tag.getString("id"))), false);
-        } else {
-            ItemEntity drop = new ItemEntity(serverLevel, getX(), getY() + 0.5D, getZ(), filled.copy());
-            drop.setDefaultPickUpDelay();
-            serverLevel.addFreshEntity(drop);
         }
         this.discard();
     }

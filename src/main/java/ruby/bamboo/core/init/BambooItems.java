@@ -38,6 +38,7 @@ import ruby.bamboo.item.Straw;
 import ruby.bamboo.item.ZabutonItem;
 import ruby.bamboo.item.BlackjackItem;
 import ruby.bamboo.item.CapsuleBallItem;
+import ruby.bamboo.item.MonsterFigureItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -327,19 +328,25 @@ public final class BambooItems {
 
     /** カプセルボール (N、捕獲加算+0%) */
     public static final RegistryObject<CapsuleBallItem> CAPSULE_BALL = register("capsule_ball",
-            () -> new CapsuleBallItem(CapsuleTier.N, new Item.Properties()));
+            () -> new CapsuleBallItem(CapsuleTier.N, new Item.Properties().stacksTo(16)));
 
     /** カプセルボール (R、捕獲加算+5%) */
     public static final RegistryObject<CapsuleBallItem> CAPSULE_BALL_R = register("capsule_ball_r",
-            () -> new CapsuleBallItem(CapsuleTier.R, new Item.Properties()));
+            () -> new CapsuleBallItem(CapsuleTier.R, new Item.Properties().stacksTo(16)));
 
     /** カプセルボール (SR、捕獲加算+10%) */
     public static final RegistryObject<CapsuleBallItem> CAPSULE_BALL_SR = register("capsule_ball_sr",
-            () -> new CapsuleBallItem(CapsuleTier.SR, new Item.Properties()));
+            () -> new CapsuleBallItem(CapsuleTier.SR, new Item.Properties().stacksTo(16)));
 
     /** カプセルボール (UR、捕獲確定) */
     public static final RegistryObject<CapsuleBallItem> CAPSULE_BALL_UR = register("capsule_ball_ur",
-            () -> new CapsuleBallItem(CapsuleTier.UR, new Item.Properties()));
+            () -> new CapsuleBallItem(CapsuleTier.UR, new Item.Properties().stacksTo(16)));
+
+    // ===== モンスターフィギュア (捕獲成功品。単一アイテムをNBTで種別管理) =====
+
+    /** モンスターフィギュア (中身入り・1スタック) */
+    public static final RegistryObject<MonsterFigureItem> MONSTER_FIGURE = register("monster_figure",
+            () -> new MonsterFigureItem(new Item.Properties().stacksTo(1)));
 
     /** ソリティア起動札 (右クリックでクロンダイクを開く。テクスチャ仮置き) */
     public static final RegistryObject<SolitaireItem> SOLITAIRE = register("solitaire",
