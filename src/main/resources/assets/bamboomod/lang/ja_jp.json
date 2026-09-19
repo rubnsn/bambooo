@@ -482,6 +482,7 @@
   "message.bamboomod.gacha_insert": "コインを入れた。ハンドルを回そう",
   "message.bamboomod.gacha_capsule_eject": "%sが出てきた！",
   "message.bamboomod.gacha_capsule_open": "中には%sが入っていた！",
+  "message.bamboomod.gacha_capsule_bonus": "……当たりだ！もう一つ入っていた！",
   "message.bamboomod.gacha_capsule_empty": "空っぽだ",
   "message.bamboomod.gacha_need_coin": "ガチャコインを持って右クリックで投入",
   "message.bamboomod.gacha_already": "コインは投入済み。ハンドルを回そう",

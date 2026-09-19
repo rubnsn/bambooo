@@ -46,6 +46,16 @@ public enum GachaCapsule {
         return "tooltip.bamboomod.gacha_capsule." + this.id;
     }
 
+    /** ワンランク上のカプセル (当たり用。虹は虹のまま)。 */
+    public GachaCapsule higher() {
+        return switch (this) {
+            case RED -> BLUE;
+            case BLUE -> YELLOW;
+            case YELLOW -> RAINBOW;
+            default -> RAINBOW;
+        };
+    }
+
     public static GachaCapsule byId(String id) {
         if (id != null) {
             for (GachaCapsule c : values()) {

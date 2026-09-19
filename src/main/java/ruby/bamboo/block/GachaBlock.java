@@ -243,7 +243,7 @@ public class GachaBlock extends BaseEntityBlock {
                                 "message.bamboomod.gacha_capsule_eject",
                                 net.minecraft.network.chat.Component.translatable(
                                         capsule.langKey()).getString()),
-                        true);
+                        false);
                 return InteractionResult.SUCCESS;
             }
             if (!be.hasCoin()) {

@@ -482,6 +482,7 @@
   "message.bamboomod.gacha_insert": "已投入硬幣，轉動手把吧",
   "message.bamboomod.gacha_capsule_eject": "出現了%s！",
   "message.bamboomod.gacha_capsule_open": "裡面是%s！",
+  "message.bamboomod.gacha_capsule_bonus": "……中大獎了！裡面還有一個！",
   "message.bamboomod.gacha_capsule_empty": "空的",
   "message.bamboomod.gacha_need_coin": "手持扭蛋幣右鍵投入",
   "message.bamboomod.gacha_already": "硬幣已投入，轉動手把吧",

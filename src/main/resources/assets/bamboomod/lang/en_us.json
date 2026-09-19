@@ -482,6 +482,7 @@
   "message.bamboomod.gacha_insert": "Coin inserted. Turn the handle!",
   "message.bamboomod.gacha_capsule_eject": "%s appeared!",
   "message.bamboomod.gacha_capsule_open": "Inside was %s!",
+  "message.bamboomod.gacha_capsule_bonus": "...Jackpot! There was another one inside!",
   "message.bamboomod.gacha_capsule_empty": "It's empty",
   "message.bamboomod.gacha_need_coin": "Right-click with a Gacha Coin to insert",
   "message.bamboomod.gacha_already": "Coin already inserted. Turn the handle!",
