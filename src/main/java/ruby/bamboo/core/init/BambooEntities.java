@@ -9,6 +9,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.RegistryObject;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.entity.ChairEntity;
+import ruby.bamboo.entity.CapsuleBallEntity;
 import ruby.bamboo.entity.FirecrackerEntity;
 import ruby.bamboo.entity.FishingBobberEntity;
 import ruby.bamboo.entity.KaginawaHookEntity;
@@ -155,6 +156,18 @@ public final class BambooEntities {
                     .clientTrackingRange(10)
                     .updateInterval(1)
                     .build("kakeziku"));
+
+    /**
+     * カプセルボール投擲体 (docs/port-spec-capsule-ball.md)。
+     * 0.25x0.25、揺れ進行は EntityData で同期。
+     */
+    public static final RegistryObject<EntityType<CapsuleBallEntity>> CAPSULE_BALL = BambooMod.ENTITY_TYPES.register(
+            "capsule_ball",
+            () -> EntityType.Builder.<CapsuleBallEntity>of(CapsuleBallEntity::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F)
+                    .clientTrackingRange(64)
+                    .updateInterval(1)
+                    .build("capsule_ball"));
 
     private static <T extends AbstractArrow> RegistryObject<EntityType<T>> registerArrow(
             String name, EntityType.EntityFactory<T> factory) {

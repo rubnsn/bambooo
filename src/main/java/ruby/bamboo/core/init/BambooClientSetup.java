@@ -248,6 +248,10 @@ public final class BambooClientSetup {
             EntityRenderers.register(BambooEntities.KAKEZIKU.get(),
                     KakezikuRenderer::new);
 
+            // カプセルボール — 所持アイテムモデルをそのまま描画 (ThrownItemRenderer)
+            EntityRenderers.register(BambooEntities.CAPSULE_BALL.get(),
+                    net.minecraft.client.renderer.entity.ThrownItemRenderer::new);
+
             // 竹弓の引き絞りモデル (pull/pulling override)。バニラは Items.BOW にしか
             // 登録されないため、独自 BowItem 継承クラスには自前で登録が必要。
             registerBambooBowModelProperties();
@@ -430,6 +434,24 @@ public final class BambooClientSetup {
             }
             return capsule.tint;
         }, new Item[] { BambooItems.GACHA_CAPSULE.get().asItem() });
+        // カプセルボール — Tier色を上半分 (tintIndex=0) に乗算。URは虹循環
+        event.register((stack, tintIndex) -> {
+            if (tintIndex != 0) {
+                return 0xFFFFFF;
+            }
+            if (!(stack.getItem() instanceof ruby.bamboo.item.CapsuleBallItem ball)) {
+                return 0xFFFFFF;
+            }
+            if (ball.getTier() == ruby.bamboo.capsule.CapsuleTier.UR) {
+                float h = (System.currentTimeMillis() % 3000L) / 3000.0F;
+                return hsvToRgb(h, 0.85F, 1.0F);
+            }
+            return ball.getTier().tint;
+        }, new Item[] {
+                BambooItems.CAPSULE_BALL.get().asItem(),
+                BambooItems.CAPSULE_BALL_R.get().asItem(),
+                BambooItems.CAPSULE_BALL_SR.get().asItem(),
+                BambooItems.CAPSULE_BALL_UR.get().asItem() });
     }
 
     /** HSV→RGB (虹カプセル用。小数h∈[0,1))。 */

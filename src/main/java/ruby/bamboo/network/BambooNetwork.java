@@ -144,5 +144,9 @@ public final class BambooNetwork {
                 BlackjackInsurancePacket::encode,
                 BlackjackInsurancePacket::decode,
                 BlackjackInsurancePacket::handle);
+        CHANNEL.registerMessage(nextId(), CapsuleStatePacket.class,
+                CapsuleStatePacket::encode,
+                CapsuleStatePacket::decode,
+                CapsuleStatePacket::handle);
     }
 }

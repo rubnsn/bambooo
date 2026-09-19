@@ -47,6 +47,7 @@ import ruby.bamboo.core.init.BambooParticles;
 import ruby.bamboo.core.init.SpringFluids;
 import ruby.bamboo.crafting.BambooRecipes;
 import ruby.bamboo.crafting.CutBlockRecipe;
+import ruby.bamboo.crafting.CapsuleUpgradeRecipe;
 import ruby.bamboo.crafting.cooking.BambooCampfireRecipe;
 import ruby.bamboo.crafting.grind.BambooGrindRecipe;
 import ruby.bamboo.network.BambooNetwork;
@@ -114,6 +115,9 @@ public class BambooMod {
     public static final RegistryObject<RecipeType<BambooGrindRecipe>> MILLSTONE_RECIPE_TYPE = RECIPE_TYPES
             .register("millstone", () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(MODID, "millstone")));
 
+    /** カプセルボール上位レシピの Serializer (下位+スライム、中身継承) */
+    public static final RegistryObject<RecipeSerializer<CapsuleUpgradeRecipe>> CAPSULE_UPGRADE_SERIALIZER = RECIPE_SERIALIZERS
+            .register("capsule_upgrade", CapsuleUpgradeRecipe.Serializer::new);
     /** カットブロックレシピの Serializer (プランA: B+K 動的レシピ) */
     public static final RegistryObject<RecipeSerializer<CutBlockRecipe>> CUT_BLOCK_SERIALIZER = RECIPE_SERIALIZERS
             .register("cut_block", () -> new CutBlockRecipe.Serializer());

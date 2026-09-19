@@ -37,10 +37,12 @@ import ruby.bamboo.item.StatusBookItem;
 import ruby.bamboo.item.Straw;
 import ruby.bamboo.item.ZabutonItem;
 import ruby.bamboo.item.BlackjackItem;
+import ruby.bamboo.item.CapsuleBallItem;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import ruby.bamboo.capsule.CapsuleTier;
 import ruby.bamboo.item.WaterWalkerItem;
 import ruby.bamboo.item.WishWandItem;
 import ruby.bamboo.item.arrow.BambooArrowItem;
@@ -320,6 +322,24 @@ public final class BambooItems {
             addCreativeStack(() -> GachaCapsuleItem.create(capsule, false));
         }
     }
+
+    // ===== カプセルボール 4 Tier (docs/port-spec-capsule-ball.md。登録順=N→R→SR→UR) =====
+
+    /** カプセルボール (N、捕獲加算+0%) */
+    public static final RegistryObject<CapsuleBallItem> CAPSULE_BALL = register("capsule_ball",
+            () -> new CapsuleBallItem(CapsuleTier.N, new Item.Properties()));
+
+    /** カプセルボール (R、捕獲加算+5%) */
+    public static final RegistryObject<CapsuleBallItem> CAPSULE_BALL_R = register("capsule_ball_r",
+            () -> new CapsuleBallItem(CapsuleTier.R, new Item.Properties()));
+
+    /** カプセルボール (SR、捕獲加算+10%) */
+    public static final RegistryObject<CapsuleBallItem> CAPSULE_BALL_SR = register("capsule_ball_sr",
+            () -> new CapsuleBallItem(CapsuleTier.SR, new Item.Properties()));
+
+    /** カプセルボール (UR、捕獲確定) */
+    public static final RegistryObject<CapsuleBallItem> CAPSULE_BALL_UR = register("capsule_ball_ur",
+            () -> new CapsuleBallItem(CapsuleTier.UR, new Item.Properties()));
 
     /** ソリティア起動札 (右クリックでクロンダイクを開く。テクスチャ仮置き) */
     public static final RegistryObject<SolitaireItem> SOLITAIRE = register("solitaire",

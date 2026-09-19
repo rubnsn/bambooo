@@ -1,0 +1,7 @@
+{
+  "type": "bamboomod:capsule_upgrade",
+  "lower": "bamboomod:capsule_ball_r",
+  "result": {
+    "item": "bamboomod:capsule_ball_sr"
+  }
+}
