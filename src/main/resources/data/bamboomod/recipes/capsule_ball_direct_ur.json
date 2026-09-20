@@ -5,13 +5,13 @@
     {
       "type": "forge:nbt",
       "item": "bamboomod:gacha_capsule",
-      "nbt": "{Opened:1b,Capsule:\"red\"}"
+      "nbt": "{Opened:1b,Capsule:\"rainbow\"}"
     },
     {
       "item": "minecraft:slime_ball"
     }
   ],
   "result": {
-    "item": "bamboomod:capsule_ball"
+    "item": "bamboomod:capsule_ball_ur"
   }
 }

@@ -12,7 +12,12 @@
     "sodium.SodiumBlockRendererMixin",
     "client.FigurePoseMixin",
     "client.SheepFurModelMixin",
-    "client.LlamaModelMixin"
+    "client.LlamaModelMixin",
+    "client.HorseModelMixin",
+    "client.SlimeModelMixin",
+    "client.LavaSlimeModelMixin",
+    "client.CreeperModelMixin",
+    "client.SaddleLayerMixin"
   ],
   "minVersion": "0.8",
   "injectors": {

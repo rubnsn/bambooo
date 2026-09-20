@@ -14,7 +14,9 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import ruby.bamboo.client.FigurePose;
 import ruby.bamboo.entity.FigureEntity;
@@ -117,6 +119,14 @@ public class FigureRenderer extends EntityRenderer<FigureEntity> {
             try {
                 living.hurtTime = 0;
                 living.deathTime = 0;
+            } catch (Exception e) {
+            }
+            // 展示用に装備・名前を外す (手持ち品の枠はみ出し・名札表示を防ぐ)
+            try {
+                for (EquipmentSlot slot : EquipmentSlot.values()) {
+                    living.setItemSlot(slot, ItemStack.EMPTY);
+                }
+                living.setCustomName(null);
             } catch (Exception e) {
             }
             neutralizeDisplayState(living);

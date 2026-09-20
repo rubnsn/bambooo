@@ -50,9 +50,17 @@ public class FigureItemRenderer extends BlockEntityWithoutLevelRenderer {
     public void renderByItem(ItemStack stack, ItemDisplayContext context, PoseStack pose,
             MultiBufferSource buffer, int packedLight, int packedOverlay) {
         MonsterFigureItem.FigureData figure = MonsterFigureItem.read(stack);
-        if (figure == null) return;
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null) return;
+        if (figure == null || mc.level == null) {
+            // 中身なし (通常は流通しない) は卵表示にフォールバック
+            try {
+                mc.getItemRenderer().renderStatic(
+                        new ItemStack(net.minecraft.world.item.Items.EGG), context,
+                        packedLight, packedOverlay, pose, buffer, mc.level, 0);
+            } catch (Exception ignored) {
+            }
+            return;
+        }
         LivingEntity dummy;
         try {
             dummy = FigureRenderer.getItemDummy(mc.level, figure.entityId(), figure.data());
@@ -64,27 +72,16 @@ public class FigureItemRenderer extends BlockEntityWithoutLevelRenderer {
         float heightBlocks = Math.max(0.05F, realH * figure.scale());
         pose.pushPose();
         if (context == ItemDisplayContext.GUI) {
-            // 16px枠に収める (1ブロック=fit px)。ゆっくり回転させて立体感を出す
-            float fit = Math.min(64.0F, 13.0F / heightBlocks);
-            pose.translate(8.0F, 14.0F, 8.0F);
+            // アイテム空間: GuiGraphicsでslot中心+16倍、vanilla render()で-0.5済み。
+            // よって受取時点の原点はスロット左下すみ (-0.5,-0.5)。足を底辺中央 (0,-0.4) へ移す
+            float fit = 0.8F / heightBlocks;
+            pose.pushPose();
+            pose.translate(0.5F, 0.1F, 0.0F);
             pose.scale(fit, fit, fit);
-            float spin = (System.currentTimeMillis() / 100L) % 360L;
+            float spin = 45F;
             FigureRenderer.renderDummy(pose, buffer, dummy, figure.scale(), spin, figure.pose(),
                     LightTexture.FULL_BRIGHT);
-            // 右下に小さなカプセルを重ねる
-            try {
-                ItemStack capsule = new ItemStack(
-                        ruby.bamboo.core.init.BambooItems.CAPSULE_BALL.get());
-                pose.pushPose();
-                pose.translate(12.0F, 12.0F, 10.0F);
-                pose.scale(0.45F, 0.45F, 0.45F);
-                mc.getItemRenderer().renderStatic(capsule, ItemDisplayContext.GUI,
-                        LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, pose, buffer,
-                        mc.level, 0);
-                pose.popPose();
-            } catch (Exception e) {
-                // カプセル描画失敗時は本体のみ
-            }
+            pose.popPose();
         } else {
             // 手持ち・地面等: 実寸のまま (足元原点)
             pose.translate(0.5F, 0.0F, 0.5F);

@@ -214,16 +214,16 @@ public final class FigurePose {
         return tag;
     }
 
-    /** タグを角度マップへ戻す。 */
+    /** ポーズタグを角度マップへ戻す。 */
     public static Map<String, float[]> fromTag(CompoundTag pose) {
-        Map<String, float[]> map = new LinkedHashMap<>();
-        if (pose == null) return map;
+        Map<String, float[]> out = new LinkedHashMap<>();
+        if (pose == null) return out;
         for (String key : pose.getAllKeys()) {
             if (!pose.contains(key, CompoundTag.TAG_LIST)) continue;
             ListTag list = pose.getList(key, CompoundTag.TAG_FLOAT);
             if (list.size() < 3) continue;
-            map.put(key, new float[] { list.getFloat(0), list.getFloat(1), list.getFloat(2) });
+            out.put(key, new float[] { list.getFloat(0), list.getFloat(1), list.getFloat(2) });
         }
-        return map;
+        return out;
     }
 }

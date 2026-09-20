@@ -104,6 +104,11 @@ public class MonsterFigureItem extends Item {
                 tag.getFloat(TAG_YAW), pose);
     }
 
+    /** 0.25 単位グリッドスナップ (Shift+設置用)。 */
+    private static double snapQuarter(double v) {
+        return Math.round(v * 4.0D) / 4.0D;
+    }
+
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
@@ -117,7 +122,18 @@ public class MonsterFigureItem extends Item {
         if (!(level instanceof net.minecraft.server.level.ServerLevel serverLevel)) {
             return InteractionResult.FAIL;
         }
-        Vec3 at = new Vec3(clicked.getX() + 0.5D, clicked.getY(), clicked.getZ() + 0.5D);
+        Vec3 hit = context.getClickLocation();
+        // 基本はクリック位置そのまま (上面なら hit.y が接地、その他は空気枡の床)。
+        // Shift+設置は 0.25 単位グリッドスナップ (XZのみ。Yは接地優先)
+        Vec3 at;
+        if (context.getClickedFace() == net.minecraft.core.Direction.UP) {
+            at = new Vec3(hit.x, hit.y, hit.z);
+        } else {
+            at = new Vec3(hit.x, clicked.getY(), hit.z);
+        }
+        if (context.getPlayer() != null && context.getPlayer().isShiftKeyDown()) {
+            at = new Vec3(snapQuarter(at.x), at.y, snapQuarter(at.z));
+        }
         // 飾る向き: 設置者と正対するよう180°反転 (Mob yawと同義)
         float yaw = context.getPlayer() != null ? context.getPlayer().getYRot() + 180.0F : 180.0F;
         FigureEntity entity = FigureEntity.spawnFromFigure(serverLevel, at, yaw, held);
