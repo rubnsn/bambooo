@@ -57,6 +57,7 @@ import ruby.bamboo.block.SlideDoorBlock;
 import ruby.bamboo.block.SpringBlock;
 import ruby.bamboo.block.SpringWaterBlock;
 import ruby.bamboo.block.TatamiBlock;
+import ruby.bamboo.block.TatamiSlabBlock;
 import ruby.bamboo.block.WallShelfBlock;
 import ruby.bamboo.block.entity.MiniatureBlockEntity;
 import ruby.bamboo.item.CampfireItem;
@@ -428,12 +429,12 @@ public final class BambooBlocks {
             () -> new SlabBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_PINK).sound(SoundType.WOOD).strength(2.0F)));
 
-    // tatami_slab / tatami_tan_slab (sakura 81-83): TatamiBlock 流用 props + SlabBlock
-    public static final RegistryObject<SlabBlock> TATAMI_SLAB = register("tatami_slab",
-            () -> new SlabBlock(BlockBehaviour.Properties.of()
+    // tatami_slab / tatami_tan_slab (sakura 81-83): TatamiBlock 流用 props + 向き付きSlab
+    public static final RegistryObject<TatamiSlabBlock> TATAMI_SLAB = register("tatami_slab",
+            () -> new TatamiSlabBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.SAND).sound(SoundType.GRASS).strength(0.5F)));
-    public static final RegistryObject<SlabBlock> TATAMI_TAN_SLAB = register("tatami_tan_slab",
-            () -> new SlabBlock(BlockBehaviour.Properties.of()
+    public static final RegistryObject<TatamiSlabBlock> TATAMI_TAN_SLAB = register("tatami_tan_slab",
+            () -> new TatamiSlabBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.GRASS).strength(0.5F)));
 
     // straw 3件 (sakura 93): straw_block / slab / stairs - Decorate系流用 (新規straw)

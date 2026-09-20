@@ -155,7 +155,10 @@ public final class BambooEntities {
             () -> EntityType.Builder.<KakezikuEntity>of(KakezikuEntity::new, MobCategory.MISC)
                     .sized(1.0F, 1.0F)
                     .clientTrackingRange(10)
-                    .updateInterval(1)
+                    // バニラ絵画と同値。静止Hangingは追跡不要。
+                    // updateInterval小だとteleportDelay>400で定期テレポートが飛び、
+                    // クライアントlerpTo→setPos→containing切り捨てで32px柄が+1ズレる
+                    .updateInterval(Integer.MAX_VALUE)
                     .build("kakeziku"));
 
     /**

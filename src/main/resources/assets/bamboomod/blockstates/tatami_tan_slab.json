@@ -1,7 +1,16 @@
 ﻿{
   "variants": {
-    "type=bottom": { "model": "bamboomod:block/tatami_tan_slab" },
-    "type=top": { "model": "bamboomod:block/tatami_tan_slab_top" },
-    "type=double": { "model": "bamboomod:block/tatami_tan" }
+    "facing=north,type=bottom": { "model": "bamboomod:block/tatami_tan_slab", "y": 180 },
+    "facing=east,type=bottom": { "model": "bamboomod:block/tatami_tan_slab", "y": 90 },
+    "facing=south,type=bottom": { "model": "bamboomod:block/tatami_tan_slab" },
+    "facing=west,type=bottom": { "model": "bamboomod:block/tatami_tan_slab", "y": 270 },
+    "facing=north,type=top": { "model": "bamboomod:block/tatami_tan_slab_top", "y": 180 },
+    "facing=east,type=top": { "model": "bamboomod:block/tatami_tan_slab_top", "y": 90 },
+    "facing=south,type=top": { "model": "bamboomod:block/tatami_tan_slab_top" },
+    "facing=west,type=top": { "model": "bamboomod:block/tatami_tan_slab_top", "y": 270 },
+    "facing=north,type=double": { "model": "bamboomod:block/tatami_tan", "y": 180 },
+    "facing=east,type=double": { "model": "bamboomod:block/tatami_tan", "y": 90 },
+    "facing=south,type=double": { "model": "bamboomod:block/tatami_tan" },
+    "facing=west,type=double": { "model": "bamboomod:block/tatami_tan", "y": 270 }
   }
 }

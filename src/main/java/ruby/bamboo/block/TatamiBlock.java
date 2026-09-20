@@ -24,7 +24,7 @@ public class TatamiBlock extends Block {
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 6, 16);
+    private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 16, 16);
 
     /** 旧meta相当のバリアント */
     public enum Variant {
@@ -63,11 +63,19 @@ public class TatamiBlock extends Block {
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection());
+        // 織り目が設置方向と直交して見える90度ズレ対策: 時計回りに90度振る。
+        // tatami_xはu方向に織り目・v両端に縁があり、東西/南北の2状態のみで±90は等価
+        return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getClockWise());
     }
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
+        return SHAPE;
+    }
+
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
+        // 見た目通りの6/16高さ。床材に埋め込まず上に敷くこと (10/16の落差=つまずき防止)
         return SHAPE;
     }
 }

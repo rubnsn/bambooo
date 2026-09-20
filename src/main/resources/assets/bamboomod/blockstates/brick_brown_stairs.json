@@ -6,7 +6,8 @@
     },
     "facing=east,half=bottom,shape=outer_left": {
       "model": "bamboomod:block/brick_brown_outer_stairs",
-      "uvlock": true
+      "uvlock": true,
+      "y": 270
     },
     "facing=east,half=bottom,shape=outer_right": {
       "model": "bamboomod:block/brick_brown_outer_stairs",
@@ -14,7 +15,8 @@
     },
     "facing=east,half=bottom,shape=inner_left": {
       "model": "bamboomod:block/brick_brown_inner_stairs",
-      "uvlock": true
+      "uvlock": true,
+      "y": 270
     },
     "facing=east,half=bottom,shape=inner_right": {
       "model": "bamboomod:block/brick_brown_inner_stairs",
@@ -33,7 +35,8 @@
     "facing=east,half=top,shape=outer_right": {
       "model": "bamboomod:block/brick_brown_outer_stairs",
       "x": 180,
-      "uvlock": true
+      "uvlock": true,
+      "y": 90
     },
     "facing=east,half=top,shape=inner_left": {
       "model": "bamboomod:block/brick_brown_inner_stairs",
@@ -43,7 +46,8 @@
     "facing=east,half=top,shape=inner_right": {
       "model": "bamboomod:block/brick_brown_inner_stairs",
       "x": 180,
-      "uvlock": true
+      "uvlock": true,
+      "y": 90
     },
     "facing=west,half=bottom,shape=straight": {
       "model": "bamboomod:block/brick_brown_stairs",
@@ -52,7 +56,7 @@
     },
     "facing=west,half=bottom,shape=outer_left": {
       "model": "bamboomod:block/brick_brown_outer_stairs",
-      "y": 180,
+      "y": 90,
       "uvlock": true
     },
     "facing=west,half=bottom,shape=outer_right": {
@@ -62,7 +66,7 @@
     },
     "facing=west,half=bottom,shape=inner_left": {
       "model": "bamboomod:block/brick_brown_inner_stairs",
-      "y": 180,
+      "y": 90,
       "uvlock": true
     },
     "facing=west,half=bottom,shape=inner_right": {
@@ -84,7 +88,7 @@
     },
     "facing=west,half=top,shape=outer_right": {
       "model": "bamboomod:block/brick_brown_outer_stairs",
-      "y": 180,
+      "y": 270,
       "x": 180,
       "uvlock": true
     },
@@ -96,7 +100,7 @@
     },
     "facing=west,half=top,shape=inner_right": {
       "model": "bamboomod:block/brick_brown_inner_stairs",
-      "y": 180,
+      "y": 270,
       "x": 180,
       "uvlock": true
     },
@@ -107,7 +111,6 @@
     },
     "facing=south,half=bottom,shape=outer_left": {
       "model": "bamboomod:block/brick_brown_outer_stairs",
-      "y": 90,
       "uvlock": true
     },
     "facing=south,half=bottom,shape=outer_right": {
@@ -117,7 +120,6 @@
     },
     "facing=south,half=bottom,shape=inner_left": {
       "model": "bamboomod:block/brick_brown_inner_stairs",
-      "y": 90,
       "uvlock": true
     },
     "facing=south,half=bottom,shape=inner_right": {
@@ -139,7 +141,7 @@
     },
     "facing=south,half=top,shape=outer_right": {
       "model": "bamboomod:block/brick_brown_outer_stairs",
-      "y": 90,
+      "y": 180,
       "x": 180,
       "uvlock": true
     },
@@ -151,7 +153,7 @@
     },
     "facing=south,half=top,shape=inner_right": {
       "model": "bamboomod:block/brick_brown_inner_stairs",
-      "y": 90,
+      "y": 180,
       "x": 180,
       "uvlock": true
     },
@@ -162,7 +164,7 @@
     },
     "facing=north,half=bottom,shape=outer_left": {
       "model": "bamboomod:block/brick_brown_outer_stairs",
-      "y": 270,
+      "y": 180,
       "uvlock": true
     },
     "facing=north,half=bottom,shape=outer_right": {
@@ -172,7 +174,7 @@
     },
     "facing=north,half=bottom,shape=inner_left": {
       "model": "bamboomod:block/brick_brown_inner_stairs",
-      "y": 270,
+      "y": 180,
       "uvlock": true
     },
     "facing=north,half=bottom,shape=inner_right": {
@@ -194,7 +196,6 @@
     },
     "facing=north,half=top,shape=outer_right": {
       "model": "bamboomod:block/brick_brown_outer_stairs",
-      "y": 270,
       "x": 180,
       "uvlock": true
     },
@@ -206,7 +207,6 @@
     },
     "facing=north,half=top,shape=inner_right": {
       "model": "bamboomod:block/brick_brown_inner_stairs",
-      "y": 270,
       "x": 180,
       "uvlock": true
     }
