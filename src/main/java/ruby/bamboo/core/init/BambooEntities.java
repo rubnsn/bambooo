@@ -2,16 +2,20 @@ package ruby.bamboo.core.init;
 
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.RegistryObject;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.entity.ChairEntity;
 import ruby.bamboo.entity.CapsuleBallEntity;
 import ruby.bamboo.entity.FigureEntity;
 import ruby.bamboo.entity.FirecrackerEntity;
+import ruby.bamboo.entity.FireflyEntity;
 import ruby.bamboo.entity.FishingBobberEntity;
 import ruby.bamboo.entity.KaginawaHookEntity;
 import ruby.bamboo.entity.KakezikuEntity;
@@ -195,12 +199,31 @@ public final class BambooEntities {
                         .build(name));
     }
 
+    /**
+     * ホタル (旧構想の新規実装)。森の水辺に夜間のみ湧く環境生物。
+     * 0.4x0.4、明滅はクライアント算出のため同期は粗め。
+     */
+    public static final RegistryObject<EntityType<FireflyEntity>> FIREFLY = BambooMod.ENTITY_TYPES.register(
+            "firefly",
+            () -> EntityType.Builder.<FireflyEntity>of(FireflyEntity::new, MobCategory.AMBIENT)
+                    .sized(0.4F, 0.4F)
+                    .clientTrackingRange(10)
+                    .updateInterval(2)
+                    .build("firefly"));
+
     public static void init() {
+    }
+
+    @SubscribeEvent
+    public static void onCommonSetup(FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> SpawnPlacements.register(FIREFLY.get(), SpawnPlacements.Type.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, FireflyEntity::checkFireflySpawnRules));
     }
 
     @SubscribeEvent
     public static void onAttributeCreate(EntityAttributeCreationEvent event) {
         event.put(DOLPHIN_COMPANION.get(), DolphinCompanionEntity.createAttributes().build());
         event.put(LLAMA_COMPANION.get(), LlamaCompanionEntity.createAttributes().build());
+        event.put(FIREFLY.get(), FireflyEntity.createAttributes().build());
     }
 }

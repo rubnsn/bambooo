@@ -1,0 +1,46 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "bottle": "bamboomod:block/bottle_glass",
+    "cork": "minecraft:block/oak_planks",
+    "particle": "bamboomod:block/bottle_glass"
+  },
+  "elements": [
+    {
+      "from": [2, 0, 2],
+      "to": [14, 12, 14],
+      "faces": {
+        "down": {"uv": [14, 16, 2, 4], "texture": "#bottle" },
+        "up": {"uv": [14, 16, 2, 4], "texture": "#bottle" },
+        "north": {"uv": [2, 4, 14, 16], "texture": "#bottle" },
+        "south": {"uv": [2, 4, 14, 16], "texture": "#bottle" },
+        "west": {"uv": [2, 4, 14, 16], "texture": "#bottle" },
+        "east": {"uv": [2, 4, 14, 16], "texture": "#bottle" }
+      }
+    },
+    {
+      "from": [5, 12, 5],
+      "to": [11, 15, 11],
+      "faces": {
+        "down": {"uv": [11, 5, 5, 1], "texture": "#bottle" },
+        "up": {"uv": [11, 5, 5, 1], "texture": "#bottle" },
+        "north": {"uv": [5, 1, 11, 4], "texture": "#bottle" },
+        "south": {"uv": [5, 1, 11, 4], "texture": "#bottle" },
+        "west": {"uv": [5, 1, 11, 4], "texture": "#bottle" },
+        "east": {"uv": [5, 1, 11, 4], "texture": "#bottle" }
+      }
+    },
+    {
+      "from": [6, 13, 6],
+      "to": [10, 16, 10],
+      "faces": {
+        "down": { "texture": "#cork" },
+        "up": { "texture": "#cork" },
+        "north": { "texture": "#cork" },
+        "south": { "texture": "#cork" },
+        "west": { "texture": "#cork" },
+        "east": { "texture": "#cork" }
+      }
+    }
+  ]
+}

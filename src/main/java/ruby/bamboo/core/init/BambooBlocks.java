@@ -23,6 +23,7 @@ import ruby.bamboo.block.BambooPaneBlock;
 import ruby.bamboo.block.BambooPotBlock;
 import ruby.bamboo.block.BambooShootBlock;
 import ruby.bamboo.block.BroomBlock;
+import ruby.bamboo.block.FireflyBottleBlock;
 import ruby.bamboo.block.FlowerBedBlock;
 import ruby.bamboo.block.KagaribiBlock;
 import ruby.bamboo.block.ShokudaiBlock;
@@ -64,6 +65,7 @@ import ruby.bamboo.block.TatamiSlabBlock;
 import ruby.bamboo.block.WallShelfBlock;
 import ruby.bamboo.block.entity.MiniatureBlockEntity;
 import ruby.bamboo.item.CampfireItem;
+import ruby.bamboo.item.FireflyBottleItem;
 import ruby.bamboo.item.CutBlockItem;
 import ruby.bamboo.item.MiniatureItem;
 
@@ -462,6 +464,9 @@ public final class BambooBlocks {
                     .lightLevel(state -> 14).noOcclusion().noCollission()
                     .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
 
+    // ===== ホタル瓶 (捕獲ホタル入り。12x14x12瓶+コルク、光9=桜の葉相当) =====
+    public static final RegistryObject<FireflyBottleBlock> FIREFLY_BOTTLE = registerFireflyBottle();
+
     // straw 3件 (sakura 93): straw_block / slab / stairs - Decorate系流用 (新規straw)
     public static final RegistryObject<Block> STRAW_BLOCK = register("straw_block",
             () -> new Block(BlockBehaviour.Properties.of()
@@ -647,6 +652,19 @@ public final class BambooBlocks {
             Supplier<? extends B> factory) {
         RegistryObject<B> block = BambooMod.BLOCKS.register(name, factory);
         BambooMod.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
+        return block;
+    }
+
+    /** ホタル瓶の登録 (専用BlockItemを使用) */
+    private static RegistryObject<FireflyBottleBlock> registerFireflyBottle() {
+        RegistryObject<FireflyBottleBlock> block = BambooMod.BLOCKS.register("firefly_bottle",
+                () -> new FireflyBottleBlock(BlockBehaviour.Properties.of()
+                        .mapColor(MapColor.NONE).sound(SoundType.GLASS).strength(0.3F)
+                        .lightLevel(state -> 9).noOcclusion()
+                        .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+        BambooMod.ITEMS.register("firefly_bottle",
+                () -> new FireflyBottleItem(block.get(), new Item.Properties()));
+        BambooItems.addCreative(block);
         return block;
     }
 

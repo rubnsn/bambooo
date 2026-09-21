@@ -33,6 +33,7 @@ import ruby.bamboo.block.SpringColor;
 import ruby.bamboo.block.SpringWaterBlock;
 import ruby.bamboo.block.entity.BambooPotBlockRenderer;
 import ruby.bamboo.block.entity.CampfireBlockRenderer;
+import ruby.bamboo.block.entity.FireflyBottleRenderer;
 import ruby.bamboo.block.entity.FlowerBedBlockRenderer;
 import ruby.bamboo.block.entity.GachaBlockRenderer;
 import ruby.bamboo.block.entity.MillBlockRenderer;
@@ -45,6 +46,7 @@ import ruby.bamboo.client.renderer.ChairRenderer;
 import ruby.bamboo.client.renderer.CutBlockRenderer;
 import ruby.bamboo.client.renderer.DolphinCompanionRenderer;
 import ruby.bamboo.client.renderer.FirecrackerRenderer;
+import ruby.bamboo.client.renderer.FireflyRenderer;
 import ruby.bamboo.client.renderer.FishingBobberRenderer;
 import ruby.bamboo.client.renderer.KaginawaHookRenderer;
 import ruby.bamboo.client.renderer.KakezikuRenderer;
@@ -194,6 +196,12 @@ public final class BambooClientSetup {
                     BambooBlockEntities.GACHA_BE.get(),
                     GachaBlockRenderer::new);
 
+            // ホタル瓶の BER 登録 (瓶内のホタル漂遊演出) + 本体は cutout (ガラス)
+            BlockEntityRenderers.register(
+                    BambooBlockEntities.FIREFLY_BOTTLE_BE.get(),
+                    FireflyBottleRenderer::new);
+            cutout(BambooBlocks.FIREFLY_BOTTLE.get());
+
             // 温泉水 — 半透明 (Phase B) — ブロックと流体両方をtranslucentに (バニラ水と同様)
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.SPRING_WATER.get(), RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(BambooMod.SPRING_WATER_SOURCE.get(), RenderType.translucent());
@@ -255,6 +263,10 @@ public final class BambooClientSetup {
             // カプセルボール — 所持アイテムモデルをそのまま描画 (ThrownItemRenderer)
             EntityRenderers.register(BambooEntities.CAPSULE_BALL.get(),
                     net.minecraft.client.renderer.entity.ThrownItemRenderer::new);
+
+            // ホタル — 発光ビルボード+明滅
+            EntityRenderers.register(BambooEntities.FIREFLY.get(),
+                    FireflyRenderer::new);
 
             // フィギュア設置体 — 中身Mobのモデル単体描画
             EntityRenderers.register(BambooEntities.FIGURE.get(),

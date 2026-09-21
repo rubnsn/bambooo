@@ -6,6 +6,7 @@ import ruby.bamboo.BambooMod;
 import ruby.bamboo.block.entity.BambooPotBlockEntity;
 import ruby.bamboo.block.entity.CampfireBlockEntity;
 import ruby.bamboo.block.entity.CutBlockEntity;
+import ruby.bamboo.block.entity.FireflyBottleBlockEntity;
 import ruby.bamboo.block.entity.GachaBlockEntity;
 import ruby.bamboo.block.entity.FlowerBedBlockEntity;
 import ruby.bamboo.block.entity.JPChestBlockEntity;
@@ -91,6 +92,12 @@ public final class BambooBlockEntities {
     public static final RegistryObject<BlockEntityType<GachaBlockEntity>> GACHA_BE = BambooMod.BLOCK_ENTITIES
             .register("gacha", () -> BlockEntityType.Builder.of(GachaBlockEntity::new,
                     BambooBlocks.GACHA.get(), BambooBlocks.GACHA_BLUE.get())
+                    .build(null));
+
+    /** ホタル瓶 (中のホタルはBER演出のみ) */
+    public static final RegistryObject<BlockEntityType<FireflyBottleBlockEntity>> FIREFLY_BOTTLE_BE = BambooMod.BLOCK_ENTITIES
+            .register("firefly_bottle", () -> BlockEntityType.Builder.of(FireflyBottleBlockEntity::new,
+                    BambooBlocks.FIREFLY_BOTTLE.get())
                     .build(null));
 
     /**
