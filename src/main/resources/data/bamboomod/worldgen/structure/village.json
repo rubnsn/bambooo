@@ -1,0 +1,7 @@
+{
+  "type": "bamboomod:village",
+  "biomes": "#bamboomod:has_structure/village",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "terrain_adaptation": "beard_thin"
+}

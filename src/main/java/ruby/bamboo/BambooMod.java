@@ -44,6 +44,7 @@ import ruby.bamboo.core.init.BambooItems;
 import ruby.bamboo.core.init.BambooLootModifiers;
 import ruby.bamboo.core.init.BambooMenus;
 import ruby.bamboo.core.init.BambooParticles;
+import ruby.bamboo.core.init.BambooStructures;
 import ruby.bamboo.core.init.SpringFluids;
 import ruby.bamboo.crafting.BambooRecipes;
 import ruby.bamboo.crafting.CutBlockRecipe;
@@ -188,6 +189,8 @@ public class BambooMod {
         FLUID_TYPES.register(modEventBus);
         FLUIDS.register(modEventBus);
         LOOT_MODIFIER_SERIALIZERS.register(modEventBus);
+        BambooStructures.STRUCTURE_TYPES.register(modEventBus);
+        BambooStructures.STRUCTURE_PIECES.register(modEventBus);
 
         // コンテンツ登録 (DeferredRegisterへの登録は静的初期化時に実行される)
         BambooBlocks.init();
@@ -198,6 +201,7 @@ public class BambooMod {
         BambooEntities.init();
         BambooEnchantments.init();
         BambooLootModifiers.init();
+        BambooStructures.init();
 
         // レシピ登録 (FMLCommonSetupEvent で実行)
         BambooRecipes.register(modEventBus);

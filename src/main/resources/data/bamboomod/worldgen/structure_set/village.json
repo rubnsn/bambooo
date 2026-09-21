@@ -1,0 +1,15 @@
+{
+  "placement": {
+    "salt": 135792468,
+    "separation": 8,
+    "spacing": 28,
+    "spread_type": "triangular",
+    "type": "minecraft:random_spread"
+  },
+  "structures": [
+    {
+      "structure": "bamboomod:village",
+      "weight": 1
+    }
+  ]
+}
