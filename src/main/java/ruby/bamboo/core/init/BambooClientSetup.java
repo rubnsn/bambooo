@@ -100,6 +100,10 @@ public final class BambooClientSetup {
             cutout(BambooBlocks.NOREN_PURPLE.get());
             // 狐火 -> cutout (cross モデル、透過テクスチャ。旧 BlockRenderLayer.CUTOUT 相当)
             cutout(BambooBlocks.KITSUNEBI.get());
+            // 篝火 -> cutout (cross モデル)
+            cutout(BambooBlocks.KAGARIBI.get());
+            // 燭台 -> cutout (cross モデル)
+            cutout(BambooBlocks.SHOKUDAI.get());
             // 葉 -> cutout_mipped
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.SAKURA_LEAVES.get(), RenderType.cutoutMipped());
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.MAPLE_LEAVES.get(), RenderType.cutoutMipped());

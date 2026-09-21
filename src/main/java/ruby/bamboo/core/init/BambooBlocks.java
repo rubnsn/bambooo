@@ -24,6 +24,8 @@ import ruby.bamboo.block.BambooPotBlock;
 import ruby.bamboo.block.BambooShootBlock;
 import ruby.bamboo.block.BroomBlock;
 import ruby.bamboo.block.FlowerBedBlock;
+import ruby.bamboo.block.KagaribiBlock;
+import ruby.bamboo.block.ShokudaiBlock;
 import ruby.bamboo.block.IndLightBlock;
 import ruby.bamboo.block.KitunebiBlock;
 import ruby.bamboo.block.CampfireBlock;
@@ -445,6 +447,20 @@ public final class BambooBlocks {
     public static final RegistryObject<BroomBlock> BROOM_CURVE = register("broom_curve",
             () -> new BroomBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.SAND).sound(SoundType.SAND).strength(0.5F)));
+
+    // ===== 篝火 (旧 crossLamp.0 の復刻。無機能・光15・すり抜け・crossモデル) =====
+    public static final RegistryObject<KagaribiBlock> KAGARIBI = register("kagaribi",
+            () -> new KagaribiBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.FIRE).sound(SoundType.WOOD).strength(0.5F)
+                    .lightLevel(state -> 15).noOcclusion().noCollission()
+                    .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+
+    // ===== 燭台 (旧 crossLamp.1 の復刻。松明準拠・光14・先端パーティクル) =====
+    public static final RegistryObject<ShokudaiBlock> SHOKUDAI = register("shokudai",
+            () -> new ShokudaiBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD).sound(SoundType.WOOD).instabreak()
+                    .lightLevel(state -> 14).noOcclusion().noCollission()
+                    .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
 
     // straw 3件 (sakura 93): straw_block / slab / stairs - Decorate系流用 (新規straw)
     public static final RegistryObject<Block> STRAW_BLOCK = register("straw_block",
