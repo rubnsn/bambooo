@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "bamboomod:block/broom_curve", "y": 180 },
+    "facing=east": { "model": "bamboomod:block/broom_curve", "y": 270 },
+    "facing=south": { "model": "bamboomod:block/broom_curve" },
+    "facing=west": { "model": "bamboomod:block/broom_curve", "y": 90 }
+  }
+}

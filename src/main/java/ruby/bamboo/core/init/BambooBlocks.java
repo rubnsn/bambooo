@@ -22,6 +22,7 @@ import ruby.bamboo.block.BambooBlock;
 import ruby.bamboo.block.BambooPaneBlock;
 import ruby.bamboo.block.BambooPotBlock;
 import ruby.bamboo.block.BambooShootBlock;
+import ruby.bamboo.block.BroomBlock;
 import ruby.bamboo.block.FlowerBedBlock;
 import ruby.bamboo.block.IndLightBlock;
 import ruby.bamboo.block.KitunebiBlock;
@@ -436,6 +437,14 @@ public final class BambooBlocks {
     public static final RegistryObject<TatamiSlabBlock> TATAMI_TAN_SLAB = register("tatami_tan_slab",
             () -> new TatamiSlabBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_BROWN).sound(SoundType.GRASS).strength(0.5F)));
+
+    // ===== 箒目 (旧 blobkbroom 直線/曲線の復刻。枯山水用。落下なし通常ブロック・砂音) =====
+    public static final RegistryObject<BroomBlock> BROOM_STRAIGHT = register("broom_straight",
+            () -> new BroomBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.SAND).sound(SoundType.SAND).strength(0.5F)));
+    public static final RegistryObject<BroomBlock> BROOM_CURVE = register("broom_curve",
+            () -> new BroomBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.SAND).sound(SoundType.SAND).strength(0.5F)));
 
     // straw 3件 (sakura 93): straw_block / slab / stairs - Decorate系流用 (新規straw)
     public static final RegistryObject<Block> STRAW_BLOCK = register("straw_block",

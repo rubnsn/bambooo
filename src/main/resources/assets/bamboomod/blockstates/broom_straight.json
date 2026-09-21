@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "bamboomod:block/broom_straight", "y": 180 },
+    "facing=east": { "model": "bamboomod:block/broom_straight", "y": 90 },
+    "facing=south": { "model": "bamboomod:block/broom_straight" },
+    "facing=west": { "model": "bamboomod:block/broom_straight", "y": 270 }
+  }
+}

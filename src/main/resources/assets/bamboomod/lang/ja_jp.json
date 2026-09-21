@@ -264,6 +264,8 @@
   "block.bamboomod.sakura_slab": "ハーフ桜の木材",
   "block.bamboomod.tatami_slab": "ハーフ畳",
   "block.bamboomod.tatami_tan_slab": "ハーフ畳 (日焼け)",
+  "block.bamboomod.broom_straight": "箒目(直線)",
+  "block.bamboomod.broom_curve": "箒目(曲線)",
   "block.bamboomod.straw_block": "藁ブロック",
   "block.bamboomod.straw_slab": "ハーフ藁ブロック",
   "block.bamboomod.straw_stairs": "藁階段",
