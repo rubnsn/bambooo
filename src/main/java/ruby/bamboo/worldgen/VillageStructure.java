@@ -37,13 +37,14 @@ public class VillageStructure extends Structure {
     private static final ResourceLocation ROAD_CROSS = loc("village_road_cross");
     private static final List<WeightedHouse> HOUSES = List.of(
             new WeightedHouse(loc("village_house_small"), 10, true),
+            new WeightedHouse(loc("village_house_small2"), 10, false),
             new WeightedHouse(loc("village_house"), 1, true),
             new WeightedHouse(loc("village_kura"), 1, false),
             new WeightedHouse(loc("village_shrine"), 1, false),
-            new WeightedHouse(loc("village_plant_field"), 1, false),
-            new WeightedHouse(loc("village_rice_field"), 1, false),
-            new WeightedHouse(loc("village_will"), 1, false),
-            new WeightedHouse(loc("village_broom_sakura"), 1, false));
+            new WeightedHouse(loc("village_plant_field"), 5, false),
+            new WeightedHouse(loc("village_rice_field"), 5, false),
+            new WeightedHouse(loc("village_will"), 5, false),
+            new WeightedHouse(loc("village_broom_sakura"), 5, false));
 
     public VillageStructure(StructureSettings settings) {
         super(settings);

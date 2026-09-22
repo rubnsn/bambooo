@@ -62,7 +62,7 @@ public class WallLanternBlock extends Block implements SimpleWaterloggedBlock {
     private static final VoxelShape BODY_HANGING = Shapes.or(
             Block.box(5.0D, 1.0D, 5.0D, 11.0D, 8.0D, 11.0D),
             Block.box(6.0D, 8.0D, 6.0D, 10.0D, 10.0D, 10.0D));
-    /** 支柱 (鎖): バニラ吊りランタンと同一意匠の交差プレート (y11-y16)。床置き時のみ表示 */
+    /** 支柱 (鎖): 調整中のため現在未参照。blockstate・判定とも外してある */
     private static final VoxelShape CHAIN = Block.box(7.0D, 8.0D, 7.0D, 9.0D, 16.0D, 9.0D);
     /** 支柱アーム (細身2px・頂部y14-16)。中央の鎖と繋がり隣ブロック面まで伸ばす */
     private static final VoxelShape ARM_NORTH = Block.box(7.0D, 14.0D, 0.0D, 9.0D, 16.0D, 8.0D);
@@ -164,8 +164,8 @@ public class WallLanternBlock extends Block implements SimpleWaterloggedBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        // 天井吊りはバニラ鎖プレートのみ (判定は本体のみ、バニラ準拠)。床置き・壁付けは自前鎖付き
-        VoxelShape shape = state.getValue(HANGING) ? BODY_HANGING : Shapes.or(BODY, CHAIN);
+        // 吊り時はバニラ鎖つきモデル (判定は本体のみ、バニラ準拠)。据え置き時は鎖なし
+        VoxelShape shape = state.getValue(HANGING) ? BODY_HANGING : BODY;
         if (state.getValue(NORTH)) {
             shape = Shapes.or(shape, ARM_NORTH);
         }

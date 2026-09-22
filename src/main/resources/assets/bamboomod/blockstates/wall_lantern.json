@@ -2,7 +2,6 @@
   "multipart": [
     { "apply": { "model": "minecraft:block/lantern" }, "when": { "hanging": "false" } },
     { "apply": { "model": "minecraft:block/lantern_hanging" }, "when": { "hanging": "true" } },
-    { "apply": { "model": "bamboomod:block/wall_lantern_chain" }, "when": { "hanging": "false" } },
     { "apply": { "model": "bamboomod:block/wall_lantern_arm_north" }, "when": { "north": "true" } },
     { "apply": { "model": "bamboomod:block/wall_lantern_arm_east" }, "when": { "east": "true" } },
     { "apply": { "model": "bamboomod:block/wall_lantern_arm_south" }, "when": { "south": "true" } },
