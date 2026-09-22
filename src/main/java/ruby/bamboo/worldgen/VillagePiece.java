@@ -1,10 +1,7 @@
 package ruby.bamboo.worldgen;
 
-import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
@@ -34,13 +31,9 @@ import net.minecraft.world.level.material.Fluids;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
-
-import com.mojang.datafixers.util.Pair;
 
 /**
- * 自作村の部品。配置後に土台 (丸石)・道路段差の階段・初期村人を面倒見る。
- * 口位置はワールド座標で保持する (配置後に動かないため)。
+ * 自作村の部品。配置後に建物の土台 (土)・初期村人、道継ぎ目の階段パッチ (ゴースト) を面倒見る。
  */
 public class VillagePiece extends TemplateStructurePiece {
     private boolean building;
@@ -76,7 +69,7 @@ public class VillagePiece extends TemplateStructurePiece {
         }
     }
 
-    /** ゴースト用パッチ追加 (kind: 0 丸石 / 1 石レンガ階段。階段の向きは dir) */
+    /** ゴースト用パッチ追加 (kind: 0 石レンガ / 1 石レンガ階段。階段の向きは dir) */
     public void addPatch(BlockPos pos, byte kind, Direction dir) {
         this.patchPos.add(pos);
         this.patchKind.add(kind);
@@ -193,6 +186,7 @@ public class VillagePiece extends TemplateStructurePiece {
             villager.finalizeSpawn(level, difficulty, MobSpawnType.STRUCTURE, null, null);
             level.addFreshEntityWithPassengers(villager);
         }
+        // 同一部品が複数チャンクで postProcess されるため二重湧き防止
         this.villagers = 0;
     }
 

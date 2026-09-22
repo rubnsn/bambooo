@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "support": "minecraft:block/gray_concrete_powder",
+    "particle": "minecraft:block/gray_concrete_powder"
+  },
+  "elements": [
+    { "from": [ 7, 14, 7 ],
+      "to": [ 16, 16, 9 ],
+      "faces": {
+        "down":  {"texture": "#support" },
+        "up":    {"texture": "#support" },
+        "north": {"texture": "#support" },
+        "south": {"texture": "#support" },
+        "west":  {"texture": "#support" },
+        "east":  {"texture": "#support" }
+      }
+    }
+  ]
+}

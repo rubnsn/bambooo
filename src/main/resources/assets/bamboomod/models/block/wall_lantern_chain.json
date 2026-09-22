@@ -1,0 +1,27 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "chain": "minecraft:block/lantern",
+    "particle": "minecraft:block/lantern"
+  },
+  "elements": [
+    { "from": [ 6.5, 11, 8 ],
+      "to": [ 9.5, 15, 8 ],
+      "rotation": { "origin": [ 8, 8, 8 ], "axis": "y", "angle": 45 },
+      "shade": false,
+      "faces": {
+        "north": { "uv": [ 14, 1, 11, 5 ], "texture": "#chain" },
+        "south": { "uv": [ 11, 1, 14, 5 ], "texture": "#chain" }
+      }
+    },
+    { "from": [ 8, 11, 6.5 ],
+      "to": [ 8, 16, 9.5 ],
+      "rotation": { "origin": [ 8, 8, 8 ], "axis": "y", "angle": 45 },
+      "shade": false,
+      "faces": {
+        "west": { "uv": [ 14, 6, 11, 12 ], "texture": "#chain" },
+        "east": { "uv": [ 11, 6, 14, 12 ], "texture": "#chain" }
+      }
+    }
+  ]
+}

@@ -62,6 +62,7 @@ import ruby.bamboo.block.SpringBlock;
 import ruby.bamboo.block.SpringWaterBlock;
 import ruby.bamboo.block.TatamiBlock;
 import ruby.bamboo.block.TatamiSlabBlock;
+import ruby.bamboo.block.WallLanternBlock;
 import ruby.bamboo.block.WallShelfBlock;
 import ruby.bamboo.block.entity.MiniatureBlockEntity;
 import ruby.bamboo.item.CampfireItem;
@@ -463,6 +464,10 @@ public final class BambooBlocks {
                     .mapColor(MapColor.WOOD).sound(SoundType.WOOD).instabreak()
                     .lightLevel(state -> 14).noOcclusion().noCollission()
                     .isSuffocating((s, l, p) -> false).isViewBlocking((s, l, p) -> false)));
+
+    // ===== 壁ランタン (新規。バニラランタンベース+壁設置可、フェンス式支柱は黒コン粉) =====
+    public static final RegistryObject<WallLanternBlock> WALL_LANTERN = register("wall_lantern",
+            WallLanternBlock::new);
 
     // ===== ホタル瓶 (捕獲ホタル入り。12x14x12瓶+コルク、光9=桜の葉相当) =====
     public static final RegistryObject<FireflyBottleBlock> FIREFLY_BOTTLE = registerFireflyBottle();

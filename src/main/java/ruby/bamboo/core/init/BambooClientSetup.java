@@ -106,6 +106,8 @@ public final class BambooClientSetup {
             cutout(BambooBlocks.KAGARIBI.get());
             // 燭台 -> cutout (cross モデル)
             cutout(BambooBlocks.SHOKUDAI.get());
+            // 壁ランタン -> cutout (バニラランタンモデル+鎖プレート参照のためバニラ準拠)
+            cutout(BambooBlocks.WALL_LANTERN.get());
             // 葉 -> cutout_mipped
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.SAKURA_LEAVES.get(), RenderType.cutoutMipped());
             ItemBlockRenderTypes.setRenderLayer(BambooBlocks.MAPLE_LEAVES.get(), RenderType.cutoutMipped());

@@ -1,6 +1,5 @@
 package ruby.bamboo.worldgen;
 
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 /**
  * 自作和風集落 (バニラ jigsaw 配置を使わない自前レイアウト)。
@@ -108,8 +108,7 @@ public class VillageStructure extends Structure {
     private record Connection(BlockPos mouthPos, Direction dir, int fromY, int nextY) {
     }
 
-    private record PlacedRoad(BlockPos origin, Rotation rotation, ResourceLocation id, List<Mouth> streetMouths,
-            List<Mouth> buildingMouths) {
+    private record PlacedRoad(BlockPos origin, List<Mouth> streetMouths, List<Mouth> buildingMouths) {
     }
 
     private static List<Mouth> readMouths(StructureTemplate template, Rotation rot, boolean street) {
@@ -159,7 +158,7 @@ public class VillageStructure extends Structure {
         for (Mouth m : streets) worldStreets.add(new Mouth(origin.offset(m.pos()), m.front(), m.top()));
         List<Mouth> worldBuildings = new ArrayList<>();
         for (Mouth m : buildings) worldBuildings.add(new Mouth(origin.offset(m.pos()), m.front(), m.top()));
-        PlacedRoad road = new PlacedRoad(origin, rot, id, worldStreets, worldBuildings);
+        PlacedRoad road = new PlacedRoad(origin, worldStreets, worldBuildings);
         roads.add(road);
         return road;
     }
@@ -188,7 +187,7 @@ public class VillageStructure extends Structure {
         if (south == null) return null;
         BlockPos anchor = south.pos().relative(Direction.SOUTH);
         List<Rotation> rots = new ArrayList<>(List.of(Rotation.values()));
-        Collections.shuffle(rots, new java.util.Random(rand.nextLong()));
+        Collections.shuffle(rots, new Random(rand.nextLong()));
         for (Rotation rot : rots) {
             StructureTemplate template = manager.getOrCreate(id);
             Mouth north = findMouth(readMouths(template, rot, true), Direction.NORTH);
@@ -242,8 +241,8 @@ public class VillageStructure extends Structure {
                 PlacedRoad placed2 = placeRoad(manager, ctx, builder, placed, roads, ROAD_STRAIGHT, o, rot);
                 if (placed2 != null) {
                     links.add(new Connection(mouth.pos(), dir, cross.origin().getY(), placed2.origin().getY()));
+                    break;
                 }
-                break;
             }
         }
     }
@@ -310,7 +309,7 @@ public class VillageStructure extends Structure {
         int villagersLeft = 3;
         List<Mouth> mouths = new ArrayList<>();
         for (PlacedRoad road : roads) mouths.addAll(road.buildingMouths());
-        Collections.shuffle(mouths, new java.util.Random(rand.nextLong()));
+        Collections.shuffle(mouths, new Random(rand.nextLong()));
         for (Mouth mouth : mouths) {
             if (houses >= 6) break;
             int placedVillagers = tryAttachHouse(manager, builder, placed, mouth, rand, villagersLeft > 0);
@@ -328,11 +327,11 @@ public class VillageStructure extends Structure {
         for (WeightedHouse h : HOUSES) {
             for (int i = 0; i < h.weight(); i++) candidates.add(h);
         }
-        Collections.shuffle(candidates, new java.util.Random(rand.nextLong()));
+        Collections.shuffle(candidates, new Random(rand.nextLong()));
         for (WeightedHouse house : candidates) {
             StructureTemplate template = manager.getOrCreate(house.id());
             List<Rotation> rots = new ArrayList<>(List.of(Rotation.values()));
-            Collections.shuffle(rots, new java.util.Random(rand.nextLong()));
+            Collections.shuffle(rots, new Random(rand.nextLong()));
             for (Rotation rot : rots) {
                 StructurePlaceSettings settings = new StructurePlaceSettings().setRotation(rot);
                 for (StructureTemplate.StructureBlockInfo info : template.filterBlocks(BlockPos.ZERO, settings,

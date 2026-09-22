@@ -1,0 +1,23 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "blocks",
+  "group": "wall_lantern",
+  "pattern": [
+    "I",
+    "L"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_bars"
+    },
+    "L": {
+      "item": "minecraft:lantern"
+    }
+  },
+  "result": {
+    "item": "bamboomod:wall_lantern"
+  },
+  "experience": 0.35,
+  "cookingtime": 200,
+  "fuelCost": 200
+}
