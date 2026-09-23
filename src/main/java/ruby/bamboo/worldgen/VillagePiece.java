@@ -83,7 +83,11 @@ public class VillagePiece extends TemplateStructurePiece {
     }
 
     private static StructurePlaceSettings makeSettings(Rotation rot) {
-        return new StructurePlaceSettings().setRotation(rot).setMirror(Mirror.NONE);
+        // knownShape=true: テンプレの状態を最終形として扱い、配置後の updateShapeAtEdge /
+        // updateFromNeighbourShapes + blockUpdated を抑止する。nbt は手作り確定形のため接続補正は不要で、
+        // 逆にチャンク跨ぎで head/foot が別 postProcess になると BedBlock.updateShape (BedBlock.java:148-150)
+        // が相方不在で AIR 化してベッドだけ消える (ドア・ガチャは縦持ちのため無事)。自作土台・パッチは flag 2 のため元々更新なし。
+        return new StructurePlaceSettings().setRotation(rot).setMirror(Mirror.NONE).setKnownShape(true);
     }
 
     @Override
