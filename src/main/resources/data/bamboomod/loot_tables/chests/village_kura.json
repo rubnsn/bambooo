@@ -1,0 +1,67 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 5,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:iron_ingot",
+          "weight": 12,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 3.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:bread",
+          "weight": 8,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 2.0, "max": 3.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:book",
+          "weight": 8,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 3.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "bamboomod:straw",
+          "weight": 8,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 4.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:gold_ingot",
+          "weight": 6,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 2.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:paper",
+          "weight": 6,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 2.0, "max": 4.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "bamboomod:rawrice",
+          "weight": 6,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 3.0 } }]
+        },
+        { "type": "minecraft:item", "name": "minecraft:iron_sword", "weight": 4 },
+        { "type": "minecraft:item", "name": "minecraft:iron_pickaxe", "weight": 4 },
+        { "type": "minecraft:item", "name": "minecraft:iron_helmet", "weight": 3 },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:emerald",
+          "weight": 3,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 2.0 } }]
+        },
+        { "type": "minecraft:item", "name": "minecraft:saddle", "weight": 2 },
+        { "type": "minecraft:item", "name": "minecraft:diamond", "weight": 1 },
+        { "type": "minecraft:item", "name": "bamboomod:sakura_gem", "weight": 1 },
+        { "type": "minecraft:item", "name": "bamboomod:ginkgo_gem", "weight": 1 },
+        { "type": "minecraft:item", "name": "bamboomod:maple_gem", "weight": 1 },
+        { "type": "minecraft:item", "name": "bamboomod:gacha_coin", "weight": 3 }
+      ]
+    }
+  ]
+}

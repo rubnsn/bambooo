@@ -1,0 +1,61 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 4,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:bread",
+          "weight": 14,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 3.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:wheat",
+          "weight": 10,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 3.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:apple",
+          "weight": 8,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 2.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "bamboomod:bamboofood_mochi",
+          "weight": 8,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 2.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "bamboomod:bamboofood_umeoni",
+          "weight": 6,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 2.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "bamboomod:bamboo",
+          "weight": 8,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 3.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "bamboomod:rawrice",
+          "weight": 6,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 2.0 } }]
+        },
+        { "type": "minecraft:item", "name": "minecraft:bookshelf", "weight": 4 },
+        { "type": "minecraft:item", "name": "minecraft:book", "weight": 4 },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:iron_ingot",
+          "weight": 3,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 2.0 } }]
+        },
+        { "type": "minecraft:item", "name": "minecraft:emerald", "weight": 2 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 3,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:book",
+          "weight": 12,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 3.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:white_candle",
+          "weight": 10,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 3.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:paper",
+          "weight": 6,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 4.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "bamboomod:bamboofood_sekihan",
+          "weight": 4,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 1.0 } }]
+        },
+        { "type": "minecraft:item", "name": "minecraft:gold_ingot", "weight": 3 },
+        { "type": "minecraft:item", "name": "minecraft:golden_apple", "weight": 1 },
+        { "type": "minecraft:item", "name": "bamboomod:gacha_coin", "weight": 1 }
+      ]
+    }
+  ]
+}

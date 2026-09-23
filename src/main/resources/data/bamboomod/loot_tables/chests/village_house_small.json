@@ -1,0 +1,60 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 5,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:bread",
+          "weight": 15,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 3.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:wheat",
+          "weight": 12,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 3.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:apple",
+          "weight": 10,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 2.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "bamboomod:bamboofood_umeoni",
+          "weight": 8,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 2.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "bamboomod:bamboo",
+          "weight": 8,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 3.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "bamboomod:rawrice",
+          "weight": 6,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 2.0 } }]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:torch",
+          "weight": 6,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 4.0 } }]
+        },
+        { "type": "minecraft:item", "name": "minecraft:book", "weight": 4 },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:iron_ingot",
+          "weight": 2,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 1.0 } }]
+        },
+        { "type": "minecraft:item", "name": "minecraft:emerald", "weight": 1 }
+      ]
+    }
+  ]
+}
