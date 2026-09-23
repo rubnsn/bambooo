@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LeavesBlock;
@@ -51,6 +52,7 @@ import ruby.bamboo.client.renderer.FishingBobberRenderer;
 import ruby.bamboo.client.renderer.KaginawaHookRenderer;
 import ruby.bamboo.client.renderer.KakezikuRenderer;
 import ruby.bamboo.client.renderer.LlamaCompanionRenderer;
+import ruby.bamboo.client.renderer.MaidRenderer;
 import ruby.bamboo.client.renderer.MiniatureBlockRenderer;
 import ruby.bamboo.client.renderer.ShurikenRenderer;
 import ruby.bamboo.client.renderer.WindRenderer;
@@ -257,6 +259,9 @@ public final class BambooClientSetup {
             // 座布団 — 色tint箱モデル (旧 RenderZabuton 相当)
             EntityRenderers.register(BambooEntities.ZABUTON.get(),
                     ZabutonRenderer::new);
+
+            // 村人 — メイド服着用時はメイドモデルへ分岐 (MaidRenderer 内で判定)
+            EntityRenderers.register(EntityType.VILLAGER, MaidRenderer::new);
 
             // 掛け軸 — 壁掛け柄UV切替 (旧 RenderKakeziku 相当)
             EntityRenderers.register(BambooEntities.KAKEZIKU.get(),

@@ -26,6 +26,7 @@ import ruby.bamboo.item.GardenSpadeItem;
 import ruby.bamboo.item.ItemMagnetItem;
 import ruby.bamboo.item.KakezikuItem;
 import ruby.bamboo.item.LureItem;
+import ruby.bamboo.item.MaidClothesItem;
 import ruby.bamboo.item.NinjaBraceletItem;
 import ruby.bamboo.item.PaddyFieldHoeItem;
 import ruby.bamboo.item.Rawrice;
@@ -367,6 +368,10 @@ public final class BambooItems {
     /** ブラックジャック起動札 (右クリックで開く。テクスチャ仮置き) */
     public static final RegistryObject<BlackjackItem> BLACKJACK = register("blackjack",
             () -> new BlackjackItem(new Item.Properties().stacksTo(1)));
+
+    /** メイド服 (胴体防具・マーカー兼用。シフト+右クリックで村人の胴へ強制装備) */
+    public static final RegistryObject<MaidClothesItem> MAID_CLOTHES = register("maid_clothes",
+            MaidClothesItem::new);
 
     private static <I extends Item> RegistryObject<I> register(String name, Supplier<? extends I> factory) {
         RegistryObject<I> item = BambooMod.ITEMS.register(name, factory);
