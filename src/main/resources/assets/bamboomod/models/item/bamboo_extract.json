@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "bamboomod:item/ginkgo_jem"
+    "layer0": "bamboomod:item/bamboo_extract"
   }
 }

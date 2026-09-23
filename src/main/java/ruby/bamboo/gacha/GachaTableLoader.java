@@ -165,9 +165,9 @@ public class GachaTableLoader extends SimpleJsonResourceReloadListener {
                 add(l, "minecraft:netherite_scrap", 1, 1, 2);
                 add(l, "minecraft:ancient_debris", 1, 1, 1);
                 add(l, "minecraft:totem_of_undying", 1, 1, 1);
-                add(l, "bamboomod:maple_jem", 1, 1, 3);
-                add(l, "bamboomod:ginkgo_jem", 1, 1, 3);
-                add(l, "bamboomod:sakura_jem", 1, 1, 3);
+                add(l, "bamboomod:maple_gem", 1, 1, 3);
+                add(l, "bamboomod:ginkgo_gem", 1, 1, 3);
+                add(l, "bamboomod:sakura_gem", 1, 1, 3);
                 add(l, "minecraft:shulker_shell", 1, 2, 2);
                 add(l, "bamboomod:wish_wand", 1, 1, 1);
             }

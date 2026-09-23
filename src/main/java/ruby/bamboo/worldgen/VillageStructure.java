@@ -35,16 +35,23 @@ public class VillageStructure extends Structure {
 
     private static final ResourceLocation ROAD_STRAIGHT = loc("village_road_straight");
     private static final ResourceLocation ROAD_CROSS = loc("village_road_cross");
+    /** 確定配置用。weight 0 のためランダム抽選では選ばれない (tryAttachHouse は weight 回だけ候補追加) */
+    private static final WeightedHouse NOKO_HOUSE = new WeightedHouse(loc("village_house_noko"), 0, true);
+    /** 祠も確定配置 (鐘=MEETING があるため)。村人消費なし */
+    private static final WeightedHouse SHRINE_HOUSE = new WeightedHouse(loc("village_shrine"), 0, false);
+    /** 始点道路優先で順に1件ずつ強制接続する家屋 */
+    private static final List<WeightedHouse> FORCED_HOUSES = List.of(NOKO_HOUSE, SHRINE_HOUSE);
     private static final List<WeightedHouse> HOUSES = List.of(
             new WeightedHouse(loc("village_house_small"), 10, true),
             new WeightedHouse(loc("village_house_small2"), 10, false),
             new WeightedHouse(loc("village_house"), 1, true),
             new WeightedHouse(loc("village_kura"), 1, false),
-            new WeightedHouse(loc("village_shrine"), 1, false),
             new WeightedHouse(loc("village_plant_field"), 5, false),
             new WeightedHouse(loc("village_rice_field"), 5, false),
             new WeightedHouse(loc("village_will"), 5, false),
-            new WeightedHouse(loc("village_broom_sakura"), 5, false));
+            new WeightedHouse(loc("village_broom_sakura"), 5, false),
+            NOKO_HOUSE,
+            SHRINE_HOUSE);
 
     public VillageStructure(StructureSettings settings) {
         super(settings);
@@ -311,6 +318,25 @@ public class VillageStructure extends Structure {
         List<Mouth> mouths = new ArrayList<>();
         for (PlacedRoad road : roads) mouths.addAll(road.buildingMouths());
         Collections.shuffle(mouths, new Random(rand.nextLong()));
+        // 確定配置 (noko・祠): 始点道路の建物口優先で1件ずつ強制接続。以降のランダム抽選では weight 0 のため選ばれない
+        List<Mouth> forcedOrder = new ArrayList<>();
+        if (!roads.isEmpty()) {
+            List<Mouth> first = new ArrayList<>(roads.get(0).buildingMouths());
+            Collections.shuffle(first, new Random(rand.nextLong()));
+            forcedOrder.addAll(first);
+        }
+        forcedOrder.addAll(mouths);
+        for (WeightedHouse forced : FORCED_HOUSES) {
+            for (Mouth mouth : forcedOrder) {
+                int placedVillagers = tryAttachSpecific(manager, builder, placed, mouth, forced, rand,
+                        villagersLeft > 0);
+                if (placedVillagers >= 0) {
+                    houses++;
+                    villagersLeft -= placedVillagers;
+                    break;
+                }
+            }
+        }
         for (Mouth mouth : mouths) {
             if (houses >= 6) break;
             int placedVillagers = tryAttachHouse(manager, builder, placed, mouth, rand, villagersLeft > 0);
@@ -330,6 +356,16 @@ public class VillageStructure extends Structure {
         }
         Collections.shuffle(candidates, new Random(rand.nextLong()));
         for (WeightedHouse house : candidates) {
+            int placedVillagers = tryAttachSpecific(manager, builder, placed, mouth, house, rand, allowVillager);
+            if (placedVillagers >= 0) return placedVillagers;
+        }
+        return -1;
+    }
+
+    /** 指定家屋1種での接続試行。@return 配置した村人数。配置なしは -1 */
+    private int tryAttachSpecific(StructureTemplateManager manager, StructurePiecesBuilder builder,
+            List<BoundingBox> placed, Mouth mouth, WeightedHouse house, RandomSource rand,
+            boolean allowVillager) {
             StructureTemplate template = manager.getOrCreate(house.id());
             List<Rotation> rots = new ArrayList<>(List.of(Rotation.values()));
             Collections.shuffle(rots, new Random(rand.nextLong()));
@@ -354,7 +390,6 @@ public class VillageStructure extends Structure {
                     return villagers;
                 }
             }
-        }
         return -1;
     }
 

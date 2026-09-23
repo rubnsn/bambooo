@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 5,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "bamboomod:bamboo_shoot",
+          "weight": 6,
+          "functions": [{ "function": "minecraft:set_count", "count": { "min": 1.0, "max": 3.0 } }]
+        },
+        { "type": "minecraft:item", "name": "minecraft:diamond", "weight": 1 },
+        { "type": "minecraft:item", "name": "bamboomod:sakura_gem", "weight": 1 },
+        { "type": "minecraft:item", "name": "bamboomod:ginkgo_gem", "weight": 1 },
+        { "type": "minecraft:item", "name": "bamboomod:maple_gem", "weight": 1 },
+        { "type": "minecraft:item", "name": "bamboomod:gacha_coin", "weight": 5 }
+      ]
+    }
+  ]
+}

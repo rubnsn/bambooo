@@ -1,0 +1,21 @@
+{
+  "type": "bamboomod:campfire",
+  "category": "misc",
+  "group": "",
+   "pattern": [
+    "XXX",
+    "XXX",
+    "XXX"
+  ],
+  "key": {
+    "X": {
+      "item": "bamboomod:bamboo"
+    }
+  },
+  "result": {
+    "item": "bamboomod:bamboo_extract"
+  },
+  "experience": 0.5,
+  "cookingtime": 600,
+  "fuelCost": 600
+}

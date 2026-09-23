@@ -10,6 +10,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
@@ -184,6 +185,8 @@ public class VillagePiece extends TemplateStructurePiece {
             villager.moveTo(x + 0.5D, y, z + 0.5D, level.getRandom().nextFloat() * 360.0F, 0.0F);
             DifficultyInstance difficulty = level.getCurrentDifficultyAt(pos);
             villager.finalizeSpawn(level, difficulty, MobSpawnType.STRUCTURE, null, null);
+            // 求職者 (NONE) を明示: STRUCTURE生成は NONE 維持だが無職 (NITWIT) 化を防止するため固定する
+            villager.setVillagerData(villager.getVillagerData().setProfession(VillagerProfession.NONE));
             level.addFreshEntityWithPassengers(villager);
         }
         // 同一部品が複数チャンクで postProcess されるため二重湧き防止
