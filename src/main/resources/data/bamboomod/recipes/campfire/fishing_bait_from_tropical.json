@@ -5,6 +5,9 @@
   "ingredients": [
     {
       "item": "minecraft:tropical_fish"
+    },
+    {
+      "item": "bamboomod:flour"
     }
   ],
   "result": {

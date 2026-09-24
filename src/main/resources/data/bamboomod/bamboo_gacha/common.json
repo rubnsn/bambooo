@@ -12,6 +12,11 @@
     { "id": "minecraft:glass", "count": [4, 8], "weight": 4 },
     { "id": "minecraft:potato", "count": [4, 8], "weight": 6 },
     { "id": "minecraft:beetroot", "count": [4, 8], "weight": 6 },
-    { "id": "minecraft:carrot", "count": [4, 8], "weight": 6 }
+    { "id": "minecraft:carrot", "count": [4, 8], "weight": 6 },
+    { "id": "bamboomod:bamboo_shoot", "count": [4, 8], "weight": 6 },
+    { "id": "bamboomod:sakura_sapling", "count": [2, 4], "weight": 4 },
+    { "id": "bamboomod:maple_sapling", "count": [2, 4], "weight": 4 },
+    { "id": "bamboomod:ginkgo_sapling", "count": [2, 4], "weight": 4 },
+    { "id": "bamboomod:hinoki_sapling", "count": [2, 4], "weight": 4 }
   ]
 }

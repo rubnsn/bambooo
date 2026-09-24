@@ -16,7 +16,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import ruby.bamboo.client.FigurePose;
 import ruby.bamboo.entity.FigureEntity;
@@ -24,7 +23,8 @@ import ruby.bamboo.entity.FigureEntity;
 /**
  * 設置フィギュアの描画 + ダミー再構成・描画ヘルパー (GUI/BEWLR共用)。
  * バニラの LivingEntityRenderer からモデル・テクスチャだけ借り、
- * setupAnim (静止) → ポーズ適用 → モデル単体描画する。防具等のレイヤーは付けない。
+ * setupAnim (静止) → ポーズ適用 → モデル単体描画する。
+ * 捕獲時の装備はそのまま表示する (防具レイヤー含む)。
  */
 public class FigureRenderer extends EntityRenderer<FigureEntity> {
 
@@ -121,11 +121,8 @@ public class FigureRenderer extends EntityRenderer<FigureEntity> {
                 living.deathTime = 0;
             } catch (Exception e) {
             }
-            // 展示用に装備・名前を外す (手持ち品の枠はみ出し・名札表示を防ぐ)
+            // 展示用に名前のみ外す (名札表示を防ぐ)。装備は捕獲時のまま表示する
             try {
-                for (EquipmentSlot slot : EquipmentSlot.values()) {
-                    living.setItemSlot(slot, ItemStack.EMPTY);
-                }
                 living.setCustomName(null);
             } catch (Exception e) {
             }

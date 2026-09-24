@@ -5,6 +5,9 @@
   "ingredients": [
     {
       "item": "minecraft:cod"
+    },
+    {
+      "item": "bamboomod:flour"
     }
   ],
   "result": {
