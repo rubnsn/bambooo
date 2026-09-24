@@ -25,6 +25,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.Event;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.client.model.MaidModel;
+import ruby.bamboo.client.model.VillagerHatModel;
 import ruby.bamboo.core.init.BambooItems;
 
 /**
@@ -35,19 +36,52 @@ import ruby.bamboo.core.init.BambooItems;
 @OnlyIn(Dist.CLIENT)
 public class MaidRenderer extends VillagerRenderer {
 
-    private static final ResourceLocation MAID_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            BambooMod.MODID, "textures/entity/maid/maid_green.png");
+    /** 素体色サフィックス (現在 green/white。acc は同一値で追従し、必ず一致する) */
+    private static String bodySuffix(Villager villager) {
+        return isHatted(villager) ? "white" : "green";
+    }
+
+    /** maid_<suffix>.png。素体 (帽子あり職業は white、素頭は green) */
+    private static ResourceLocation bodyTexture(Villager villager) {
+        return ResourceLocation.fromNamespaceAndPath(BambooMod.MODID,
+                "textures/entity/maid/maid_" + bodySuffix(villager) + ".png");
+    }
 
     private final MaidModel<Villager> maidModel;
     private final MaidHandLayer maidHand;
+    private final VillagerHatModel hatModel;
 
-    /** 色サフィックス (バリアント追加時の拡張口。今は 00 固定) */
-    private static final String ACC_SUFFIX = "green";
+    /** maid_acc_<suffix>.png があれば返し、無ければ null (付属品パス自体を飛ばす) */
+    private static ResourceLocation accTexture(Villager villager) {
+        ResourceLocation loc = ResourceLocation.fromNamespaceAndPath(BambooMod.MODID,
+                "textures/entity/maid/maid_acc_" + bodySuffix(villager) + ".png");
+        if (Minecraft.getInstance().getResourceManager().getResource(loc).isPresent()) return loc;
+        return null;
+    }
 
-    /** maid_acc_XX.png があれば返し、無ければ null (付属品パス自体を飛ばす) */
-    private static ResourceLocation accTexture() {
-        ResourceLocation loc = new ResourceLocation("bamboomod",
-                "textures/entity/maid/maid_acc_" + ACC_SUFFIX + ".png");
+    /**
+     * 帽子あり職業 (実テクスチャの帽子シェル部で判定。2026-09-24)。
+     * 素頭: leatherworker、mason、nitwit、toolsmith、weaponsmith、none、asobinin(自作・素頭確認)
+     */
+    private static final java.util.Set<String> HATTED = java.util.Set.of(
+            "armorer", "butcher", "cartographer", "cleric", "farmer",
+            "fisherman", "fletcher", "librarian", "shepherd");
+
+    /** 帽子あり職業か (maid_acc_<職業>.png / white 素体の選択に使う) */
+    public static boolean isHatted(Villager villager) {
+        String path = net.minecraft.core.registries.BuiltInRegistries.VILLAGER_PROFESSION
+                .getKey(villager.getVillagerData().getProfession()).getPath();
+        return HATTED.contains(path);
+    }
+
+    /**
+     * 帽子あり職業のバニラ帽子テクスチャ。職業ファイルが無ければ null (帽子パスを飛ばす)
+     */
+    private static ResourceLocation professionHatTexture(Villager villager) {
+        String prof = net.minecraft.core.registries.BuiltInRegistries.VILLAGER_PROFESSION
+                .getKey(villager.getVillagerData().getProfession()).getPath();
+        ResourceLocation loc = new ResourceLocation(
+                "textures/entity/villager/profession/" + prof + ".png");
         if (Minecraft.getInstance().getResourceManager().getResource(loc).isPresent()) return loc;
         return null;
     }
@@ -60,6 +94,7 @@ public class MaidRenderer extends VillagerRenderer {
     public MaidRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
         this.maidModel = new MaidModel<>(MaidModel.createBodyLayer().bakeRoot());
+        this.hatModel = new VillagerHatModel(VillagerHatModel.createBodyLayer().bakeRoot());
         this.maidHand = new MaidHandLayer(this, this.maidModel, ctx.getItemInHandRenderer());
         this.addLayer(this.maidHand);
         this.shadowRadius = 0.4F;
@@ -67,7 +102,20 @@ public class MaidRenderer extends VillagerRenderer {
 
     @Override
     public ResourceLocation getTextureLocation(Villager entity) {
-        return isMaid(entity) ? MAID_TEXTURE : super.getTextureLocation(entity);
+        if (!isMaid(entity)) return super.getTextureLocation(entity);
+        return bodyTexture(entity);
+    }
+
+    @Override
+    protected void scale(Villager entity, PoseStack pose, float partialTicks) {
+        if (!isMaid(entity)) {
+            super.scale(entity, pose, partialTicks);
+            return;
+        }
+        // young 分岐が子供対応するため半減しない (バニラ Humanoid 系と同様)。二重縮小の防止
+        float f = 0.9375F;
+        this.shadowRadius = entity.isBaby() ? 0.25F : 0.4F;
+        pose.scale(f, f, f);
     }
 
     @Override
@@ -119,6 +167,10 @@ public class MaidRenderer extends VillagerRenderer {
             if (entity.isBaby()) limbSwing *= 3F;
             if (limbSwingAmt > 1F) limbSwingAmt = 1F;
         }
+        // LivingEntityRenderer.java:58 と同様。未代入だと初期値 true のまま成人も
+        // baby 分岐 (AgeableListModel.java:45-64、頭+16・胴×0.5) で描画される。
+        // 12px浮き・小柄・ピッチ分離の全てはこれが正体。帽子は分岐を迂回するため別途追従
+        this.maidModel.young = entity.isBaby();
         this.maidModel.prepareMobModel(entity, limbSwing, limbSwingAmt, partialTicks);
         this.maidModel.setupAnim(entity, limbSwing, limbSwingAmt, bob, yawDiff, pitch);
         Minecraft minecraft = Minecraft.getInstance();
@@ -133,7 +185,8 @@ public class MaidRenderer extends VillagerRenderer {
             this.maidModel.renderToBuffer(pose, consumer, packedLight, overlay, 1F, 1F, 1F, alpha);
         }
         // 付属品2パス (head 直下の子を本体と同一経路で描く。手動の head 変換なし)
-        ResourceLocation accTex = accTexture();
+        boolean hatted = isHatted(entity);
+        ResourceLocation accTex = accTexture(entity);
         if (accTex != null) {
             this.maidModel.prepareAccessoryPass(false);
             this.maidModel.renderToBuffer(pose, buffer.getBuffer(RenderType.entityCutout(accTex)),
@@ -142,6 +195,28 @@ public class MaidRenderer extends VillagerRenderer {
             this.maidModel.renderToBuffer(pose, buffer.getBuffer(RenderType.entityTranslucent(accTex)),
                     packedLight, overlay, 1F, 1F, 1F, alpha);
             this.maidModel.restoreBodyVisible();
+        }
+        // 村人帽子 (バニラ職業テクスチャをそのまま被せる。maid 頭の回転・位置を複写。
+        // 子供時は AgeableListModel.java:45-56 の head 分岐と同一変換を被せて追従させる)
+        if (hatted) {
+            ResourceLocation profTex = professionHatTexture(entity);
+            if (profTex != null) {
+                net.minecraft.client.model.geom.ModelPart maidHead = this.maidModel.getHead();
+                net.minecraft.client.model.geom.ModelPart hatHead = this.hatModel.head;
+                hatHead.setPos(maidHead.x, maidHead.y, maidHead.z);
+                hatHead.xRot = maidHead.xRot;
+                hatHead.yRot = maidHead.yRot;
+                hatHead.zRot = maidHead.zRot;
+                pose.pushPose();
+                if (this.maidModel.young) {
+                    float f = 1.5F / 2.0F;
+                    pose.scale(f, f, f);
+                    pose.translate(0F, 16F / 16F, 0F);
+                }
+                hatHead.render(pose, buffer.getBuffer(RenderType.entityCutout(profTex)),
+                        packedLight, overlay, 1F, 1F, 1F, alpha);
+                pose.popPose();
+            }
         }
         if (!entity.isSpectator()) {
             // 親レイヤー (職業服・腕組み持物) は VillagerModel 用で部位が合わないため呼ばない
