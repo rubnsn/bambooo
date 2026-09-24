@@ -5,7 +5,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.Level;
+import net.minecraft.network.chat.Component;
 
 /**
  * メイド服 (胴体防具・マーカー兼用)。
@@ -61,5 +65,11 @@ public class MaidClothesItem extends ArmorItem {
 
     public MaidClothesItem() {
         super(MATERIAL, ArmorItem.Type.CHESTPLATE, new Item.Properties());
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @javax.annotation.Nullable Level level,
+            java.util.List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("tooltip.bamboomod.maid_clothes.use"));
     }
 }

@@ -481,6 +481,7 @@
   "block.bamboomod.gacha_blue": "ガチャポン（青）",
   "item.bamboomod.gacha_coin": "ガチャコイン",
   "item.bamboomod.maid_clothes": "メイド服",
+  "tooltip.bamboomod.maid_clothes.use": "スニーク+右クリックで村人に使用可",
   "item.bamboomod.gacha_capsule": "カプセル",
   "tooltip.bamboomod.gacha_capsule.red": "赤のカプセル",
   "tooltip.bamboomod.gacha_capsule.blue": "青のカプセル",

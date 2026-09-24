@@ -1,11 +1,11 @@
 {
   "entries": [
     { "id": "minecraft:diamond", "count": [1, 6], "weight": 15 },
-    { "id": "minecraft:emerald", "count": [1, 6], "weight": 10 },
+    { "id": "minecraft:emerald", "count": [1, 6], "weight": 15 },
     { "id": "minecraft:netherite_scrap", "count": [1, 6] , "weight": 10 },
     { "id": "minecraft:ancient_debris", "count": [1, 6], "weight": 10 },
     { "id": "minecraft:totem_of_undying", "count": 1, "weight": 10 },
-    { "id": "minecraft:shulker_shell", "count": [1, 2], "weight": 2 },
+    { "id": "minecraft:shulker_shell", "count": [1, 2], "weight": 10},
     { "id": "bamboomod:wish_wand", "count": 1, "weight": 1 },
     { "id": "bamboomod:item_magnet", "count": 1, "weight": 1 },
     { "id": "bamboomod:climbing_claw", "count": 1, "weight": 1 },
