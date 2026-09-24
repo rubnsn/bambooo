@@ -24,6 +24,7 @@ import ruby.bamboo.block.BambooPotBlock;
 import ruby.bamboo.block.BambooShootBlock;
 import ruby.bamboo.block.BroomBlock;
 import ruby.bamboo.block.FireflyBottleBlock;
+import ruby.bamboo.block.FishTrapBlock;
 import ruby.bamboo.block.FlowerBedBlock;
 import ruby.bamboo.block.KagaribiBlock;
 import ruby.bamboo.block.ShokudaiBlock;
@@ -600,6 +601,10 @@ public final class BambooBlocks {
             () -> new HiganOreBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.DEEPSLATE).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.DEEPSLATE)
                     .strength(4.5F, 3.0F).requiresCorrectToolForDrops()));
+
+    /** 魚捕り籠 (水没必須の罠。BE + GUI 付き。テクスチャ仮置き) */
+    public static final RegistryObject<FishTrapBlock> FISH_TRAP = register("fish_trap",
+            FishTrapBlock::new);
 
     private static List<RegistryObject<Block>> registerIndLights() {
         List<RegistryObject<Block>> result = new ArrayList<>();

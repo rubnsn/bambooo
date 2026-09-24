@@ -7,6 +7,7 @@ import ruby.bamboo.block.entity.BambooPotBlockEntity;
 import ruby.bamboo.block.entity.CampfireBlockEntity;
 import ruby.bamboo.block.entity.CutBlockEntity;
 import ruby.bamboo.block.entity.FireflyBottleBlockEntity;
+import ruby.bamboo.block.entity.FishTrapBlockEntity;
 import ruby.bamboo.block.entity.GachaBlockEntity;
 import ruby.bamboo.block.entity.FlowerBedBlockEntity;
 import ruby.bamboo.block.entity.JPChestBlockEntity;
@@ -98,6 +99,12 @@ public final class BambooBlockEntities {
     public static final RegistryObject<BlockEntityType<FireflyBottleBlockEntity>> FIREFLY_BOTTLE_BE = BambooMod.BLOCK_ENTITIES
             .register("firefly_bottle", () -> BlockEntityType.Builder.of(FireflyBottleBlockEntity::new,
                     BambooBlocks.FIREFLY_BOTTLE.get())
+                    .build(null));
+
+    /** 魚捕り籠 (水没必須の罠。餌→魚の生産BE) */
+    public static final RegistryObject<BlockEntityType<FishTrapBlockEntity>> FISH_TRAP_BE = BambooMod.BLOCK_ENTITIES
+            .register("fish_trap", () -> BlockEntityType.Builder.of(FishTrapBlockEntity::new,
+                    BambooBlocks.FISH_TRAP.get())
                     .build(null));
 
     /**

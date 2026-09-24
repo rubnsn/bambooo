@@ -7,6 +7,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import ruby.bamboo.BambooMod;
 import ruby.bamboo.gui.CampfireMenu;
+import ruby.bamboo.gui.FishTrapMenu;
 import ruby.bamboo.gui.MillStoneMenu;
 import ruby.bamboo.gui.SackMenu;
 
@@ -31,6 +32,10 @@ public final class BambooMenus {
     /** 袋のメニュー (1スロット)。クライアント側ファクトリは (id, inv) 2引数版 */
     public static final RegistryObject<MenuType<SackMenu>> SACK = BambooMod.MENUS.register("sack",
             () -> new MenuType<>(SackMenu::new, FeatureFlags.VANILLA_SET));
+
+    /** 魚捕り籠のメニュー。クライアント側ファクトリは (id, inv) 2引数版 */
+    public static final RegistryObject<MenuType<FishTrapMenu>> FISH_TRAP = BambooMod.MENUS.register("fish_trap",
+            () -> new MenuType<>(FishTrapMenu::new, FeatureFlags.VANILLA_SET));
 
     /**
      * 静的初期化順序の保証用ダミー。BambooMod コンストラクタから呼ばれる。

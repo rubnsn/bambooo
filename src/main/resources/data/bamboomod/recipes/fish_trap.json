@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "###",
+    "#o#",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:iron_bars"
+    },
+    "o": {
+      "item": "bamboomod:fishing_bait"
+    }
+  },
+  "result": {
+    "item": "bamboomod:fish_trap",
+    "count": 1
+  }
+}

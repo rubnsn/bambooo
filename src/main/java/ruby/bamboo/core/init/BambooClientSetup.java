@@ -59,6 +59,7 @@ import ruby.bamboo.client.renderer.WindRenderer;
 import ruby.bamboo.client.renderer.ZabutonRenderer;
 import ruby.bamboo.core.config.SpringConfig;
 import ruby.bamboo.gui.CampfireScreen;
+import ruby.bamboo.gui.FishTrapScreen;
 import ruby.bamboo.gui.MillStoneScreen;
 import ruby.bamboo.gui.SackScreen;
 import ruby.bamboo.item.BambooBowItem;
@@ -155,6 +156,13 @@ public final class BambooClientSetup {
             // 袋 GUI の Screen 登録
             MenuScreens.register(BambooMenus.SACK.get(),
                     SackScreen::new);
+
+            // 魚捕り籠 GUI の Screen 登録
+            MenuScreens.register(BambooMenus.FISH_TRAP.get(),
+                    FishTrapScreen::new);
+
+            // 魚捕り籠 -> translucent (網状の仮置き透過描画)
+            ItemBlockRenderTypes.setRenderLayer(BambooBlocks.FISH_TRAP.get(), RenderType.translucent());
 
             // 壁棚の BER 登録 (sakura-master WallShelfItemRender 相当)
             BlockEntityRenderers.register(
