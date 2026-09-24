@@ -508,6 +508,7 @@
   "tooltip.bamboomod.figure.contains": "%sのフィギュア",
   "tooltip.bamboomod.figure.size": "高さ %sブロック",
   "message.bamboomod.figure_got": "%sのフィギュアを手に入れた！",
+  "message.bamboomod.village_protected": "村の建物は壊せない",
   "screen.bamboomod.figure_title": "フィギュア調整 (%s)",
   "screen.bamboomod.figure_scale": "サイズ",
   "screen.bamboomod.figure_yaw": "向き",

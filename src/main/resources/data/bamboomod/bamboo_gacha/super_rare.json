@@ -27,6 +27,8 @@
     { "id": "bamboomod:skill_book_speed", "count": 1, "weight": 1 },
     { "id": "bamboomod:skill_book_luck", "count": 1, "weight": 1 },
     { "id": "bamboomod:skill_book_anatomy", "count": 1, "weight": 1 },
-    { "id": "bamboomod:skill_book_negotiation", "count": 1, "weight": 1 }
+    { "id": "bamboomod:skill_book_negotiation", "count": 1, "weight": 1 },
+    { "id": "bamboomod:gacha", "count": 1, "weight": 1 },
+    { "id": "bamboomod:gacha_blue", "count": 1, "weight": 1 }
   ]
 }

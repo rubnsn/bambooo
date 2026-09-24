@@ -60,7 +60,8 @@ public class GachaBlock extends BaseEntityBlock {
         super(Properties.of()
                 .mapColor(MapColor.COLOR_RED)
                 .sound(SoundType.METAL)
-                .strength(1.5F, 30F));
+                // 硬度は据え置き、爆破耐性のみ黒曜石並み (構造物ガチャの爆破保護)
+                .strength(1.5F, 1200F));
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(HALF, DoubleBlockHalf.LOWER));
@@ -97,15 +98,17 @@ public class GachaBlock extends BaseEntityBlock {
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer,
             ItemStack stack) {
         level.setBlock(pos.above(), state.setValue(HALF, DoubleBlockHalf.UPPER), 3);
+        // プレイヤー設置マーカー (構造物生成では呼ばれない)。村保護判定用
+        if (!level.isClientSide && placer instanceof Player
+                && level.getBlockEntity(pos) instanceof GachaBlockEntity be) {
+            be.setPlayerPlaced(true);
+        }
     }
 
     @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
-        if (state.getValue(HALF) == DoubleBlockHalf.UPPER) {
-            BlockState below = level.getBlockState(pos.below());
-            return below.is(this) && below.getValue(HALF) == DoubleBlockHalf.LOWER;
-        }
-        return level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP);
+        // LOWER は土台不要 (下掘りでも崩落しない。構造物ガチャ保護のため)
+        return true;
     }
 
     @Override

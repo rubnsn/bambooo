@@ -28,6 +28,12 @@ public class GachaBlockEntity extends BlockEntity {
     /** コイン投入済みか (サーバー権威・永続化あり) */
     private boolean hasCoin;
 
+    /**
+     * プレイヤー設置か (GachaBlock#setPlacedBy で設定・永続化あり)。
+     * 構造物生成分は false のまま。村保護判定 (VillageProtectHandler) 用。
+     */
+    private boolean playerPlaced;
+
     public GachaBlockEntity(BlockPos pos, BlockState state) {
         super(BambooBlockEntities.GACHA_BE.get(), pos, state);
     }
@@ -39,6 +45,15 @@ public class GachaBlockEntity extends BlockEntity {
     /** サーバー側のみで呼ぶこと。変更後は setChanged + sendBlockUpdated を行う。 */
     public void setHasCoin(boolean hasCoin) {
         this.hasCoin = hasCoin;
+        this.setChanged();
+    }
+
+    public boolean isPlayerPlaced() {
+        return this.playerPlaced;
+    }
+
+    public void setPlayerPlaced(boolean playerPlaced) {
+        this.playerPlaced = playerPlaced;
         this.setChanged();
     }
 
@@ -72,12 +87,14 @@ public class GachaBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.putBoolean("HasCoin", this.hasCoin);
+        tag.putBoolean("PlayerPlaced", this.playerPlaced);
     }
 
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
         this.hasCoin = tag.getBoolean("HasCoin");
+        this.playerPlaced = tag.getBoolean("PlayerPlaced");
     }
 
     @Override

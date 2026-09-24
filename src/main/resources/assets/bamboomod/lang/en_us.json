@@ -508,6 +508,7 @@
   "tooltip.bamboomod.figure.contains": "%s Figure",
   "tooltip.bamboomod.figure.size": "Height %s blocks",
   "message.bamboomod.figure_got": "Got a %s figure!",
+  "message.bamboomod.village_protected": "Village buildings can't be broken",
   "screen.bamboomod.figure_title": "Figure Tuning (%s)",
   "screen.bamboomod.figure_scale": "Size",
   "screen.bamboomod.figure_yaw": "Facing",
