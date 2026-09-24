@@ -1,5 +1,6 @@
 package ruby.bamboo.handler;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityDimensions;
@@ -47,6 +48,12 @@ public final class MaidClothesHandler {
         villager.setItemSlot(EquipmentSlot.CHEST, toEquip);
         villager.setDropChance(EquipmentSlot.CHEST, 0.0F);
         villager.refreshDimensions();
+        // 変身演出: 煙パーティクル
+        if (player.level() instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.POOF,
+                    villager.getX(), villager.getY() + 1.0D, villager.getZ(),
+                    24, 0.5D, 0.7D, 0.5D, 0.02D);
+        }
         if (!player.isCreative()) {
             held.shrink(1);
         }

@@ -37,8 +37,24 @@ import ruby.bamboo.core.init.BambooItems;
 public class MaidRenderer extends VillagerRenderer {
 
     /** 素体色サフィックス (現在 green/white。acc は同一値で追従し、必ず一致する) */
+    /**
+     * 素体サフィックス (職業ごと全列挙。無職/ニートは default の white)。
+     * 武器鍛冶 red・道具鍛冶 yellow・石工 black・革細工 brown、
+     * 遊び人 green、帽子あり9職 white。
+     */
     private static String bodySuffix(Villager villager) {
-        return isHatted(villager) ? "white" : "green";
+        String path = net.minecraft.core.registries.BuiltInRegistries.VILLAGER_PROFESSION
+                .getKey(villager.getVillagerData().getProfession()).getPath();
+        return switch (path) {
+            case "weaponsmith" -> "red";
+            case "toolsmith" -> "yellow";
+            case "mason" -> "black";
+            case "leatherworker" -> "brown";
+            case "asobinin" -> "green";
+            case "armorer", "butcher", "cartographer", "cleric", "farmer",
+                    "fisherman", "fletcher", "librarian", "shepherd" -> "white";
+            default -> "white";
+        };
     }
 
     /** maid_<suffix>.png。素体 (帽子あり職業は white、素頭は green) */
@@ -84,6 +100,22 @@ public class MaidRenderer extends VillagerRenderer {
                 "textures/entity/villager/profession/" + prof + ".png");
         if (Minecraft.getInstance().getResourceManager().getResource(loc).isPresent()) return loc;
         return null;
+    }
+
+    /**
+     * 職業ごとの帽子高さ微調整 (ドット単位。maid 頭頂基準)。
+     * 釣り人・羊飼い・矢師-3、司書・農民-1、その他帽子あり職業は±0。
+     */
+    private static float hatYOffset(net.minecraft.world.entity.npc.Villager villager) {
+        String path = net.minecraft.core.registries.BuiltInRegistries.VILLAGER_PROFESSION
+                .getKey(villager.getVillagerData().getProfession()).getPath();
+        return switch (path) {
+            case "farmer" -> -1.1F;
+            case "fisherman","fletcher"-> -3F;
+            //case    ->-2F;
+            case "librarian", "shepherd"-> -1F;
+            default -> 0F;
+        };
     }
 
     /** メイド服着用判定。レイヤーの自衛ガードと render 分岐の共通口 */
@@ -203,7 +235,7 @@ public class MaidRenderer extends VillagerRenderer {
             if (profTex != null) {
                 net.minecraft.client.model.geom.ModelPart maidHead = this.maidModel.getHead();
                 net.minecraft.client.model.geom.ModelPart hatHead = this.hatModel.head;
-                hatHead.setPos(maidHead.x, maidHead.y, maidHead.z);
+                hatHead.setPos(maidHead.x, maidHead.y + hatYOffset(entity), maidHead.z);
                 hatHead.xRot = maidHead.xRot;
                 hatHead.yRot = maidHead.yRot;
                 hatHead.zRot = maidHead.zRot;

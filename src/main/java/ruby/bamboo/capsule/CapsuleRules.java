@@ -13,7 +13,6 @@ import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.warden.Warden;
-import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.entity.player.Player;
 
@@ -52,10 +51,6 @@ public final class CapsuleRules {
         if (target instanceof EnderDragon) return Category.UNCAPTURABLE;
         if (target instanceof WitherBoss) return Category.UNCAPTURABLE;
         if (target instanceof Warden) return Category.UNCAPTURABLE;
-        // 村人・行商人・アレイは不可 (ユーザー決定 §9-2)
-        if (target instanceof Villager) return Category.UNCAPTURABLE;
-        if (target instanceof WanderingTrader) return Category.UNCAPTURABLE;
-        if (target instanceof Allay) return Category.UNCAPTURABLE;
         if (target instanceof TamableAnimal tamable && tamable.isTame()) {
             // 他人のペットは不可。自分のペットは友好扱い
             if (throwerId == null || !throwerId.equals(tamable.getOwnerUUID())) {

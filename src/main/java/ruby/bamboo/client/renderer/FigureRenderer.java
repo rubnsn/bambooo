@@ -110,6 +110,10 @@ public class FigureRenderer extends EntityRenderer<FigureEntity> {
             tag.remove("Rotation");
             tag.remove("id");
             living.load(tag);
+            // 展示ダミーは tick しないため tickCount=0 固定になる。
+            // MaidModel の瞬き式 ((age%61)<3) では 0 が閉眼に当たるため、
+            // 初期値 4 で開眼に寄せる (他モデルへの影響も4tick分で誤差範囲)
+            living.tickCount = 4;
             // 子供・座り等の瞬間状態を静止化 + ダメージ・死亡演出の残留を消す
             living.setDeltaMovement(0.0D, 0.0D, 0.0D);
             try {
