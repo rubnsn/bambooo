@@ -11,6 +11,7 @@
               "type": "minecraft:item",
               "name": "bamboomod:sakura_leave",
               "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "white" } },
                 {
                   "condition": "minecraft:any_of",
                   "terms": [
@@ -21,6 +22,309 @@
                     }
                   ]
                 }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"white\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "orange" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"orange\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "magenta" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"magenta\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "light_blue" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"light_blue\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "yellow" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"yellow\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "lime" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"lime\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "pink" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"pink\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "gray" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"gray\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "light_gray" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"light_gray\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "cyan" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"cyan\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "purple" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"purple\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "blue" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"blue\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "brown" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"brown\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "green" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"green\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "red" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"red\"}}" }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "bamboomod:sakura_leave",
+              "conditions": [
+                { "condition": "minecraft:block_state_property", "block": "bamboomod:sakura_leave", "properties": { "color": "black" } },
+                {
+                  "condition": "minecraft:any_of",
+                  "terms": [
+                    { "condition": "minecraft:match_tool", "predicate": { "items": ["minecraft:shears"] } },
+                    {
+                      "condition": "minecraft:match_tool",
+                      "predicate": { "enchantments": [{ "enchantment": "minecraft:silk_touch", "levels": { "min": 1 } }] }
+                    }
+                  ]
+                }
+              ],
+              "functions": [
+                { "function": "minecraft:set_nbt", "tag": "{BlockStateTag:{color:\"black\"}}" }
               ]
             },
             {

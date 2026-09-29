@@ -20,6 +20,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 import net.minecraft.world.level.levelgen.feature.trunkplacers.FancyTrunkPlacer;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.StraightTrunkPlacer;
 import ruby.bamboo.core.init.BambooBlocks;
+import ruby.bamboo.worldgen.GiantTreeGen;
 
 /**
  * カエデ苗木 (maple_sapling)。
@@ -37,6 +38,29 @@ public class MapleSaplingBlock extends SaplingBlock {
 
     public MapleSaplingBlock(BlockBehaviour.Properties props) {
         super(MAPLE_TREE, props);
+    }
+
+    /**
+     * 十字5本 (中央+東西南北) で骨粉/自然成長が回った場合は特殊巨木になる。
+     * 十字未満の隣接があるだけでは育てず待機する。単木はバニラに委ねる。
+     */
+    @Override
+    public void advanceTree(ServerLevel level, BlockPos pos, BlockState state, RandomSource rand) {
+        if (state.getValue(STAGE) == 0) {
+            level.setBlock(pos, state.cycle(STAGE), 4);
+            return;
+        }
+        if (GiantTreeGen.isLargeTree(level, pos, state)) {
+            BlockState log = BambooBlocks.MAPLE_LOG.get().defaultBlockState();
+            BlockState leaves = BambooBlocks.MAPLE_LEAVES.get().defaultBlockState();
+            if (GiantTreeGen.generate(level, pos, rand, log, leaves)) {
+                return;
+            }
+            // 空間不足時はバニラ単木にフォールバック
+        } else if (GiantTreeGen.hasNextSapling(level, pos, state)) {
+            return;
+        }
+        super.advanceTree(level, pos, state, rand);
     }
 
     // コード生成用のTreeConfiguration（JSONと同形、葉はmaple_leave）

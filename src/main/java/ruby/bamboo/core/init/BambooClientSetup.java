@@ -28,6 +28,7 @@ import ruby.bamboo.block.HinokiLeaveBlock;
 import ruby.bamboo.block.IndLightBlock;
 import ruby.bamboo.block.MapleLeaveBlock;
 import ruby.bamboo.block.SakuraLeaveBlock;
+import ruby.bamboo.block.SakuraLeaveColor;
 import ruby.bamboo.block.SlideDoorBlock;
 import ruby.bamboo.block.SpringBlock;
 import ruby.bamboo.block.SpringColor;
@@ -441,8 +442,22 @@ public final class BambooClientSetup {
             int color = block.color.mapColor;
             event.register((stack, tintIndex) -> color, new Item[] { block.asItem() });
         }
-        // 新葉のインベントリアイコンにも色乗算
-        event.register((stack, tintIndex) -> SakuraLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.SAKURA_LEAVES.get().asItem() });
+        // 新葉のインベントリアイコンにも色乗算 (桜はBlockStateTag.color、無ければ染色なし既定WHITE)
+        event.register((stack, tintIndex) -> {
+            try {
+                var tag = stack.getTagElement("BlockStateTag");
+                if (tag != null) {
+                    String name = tag.getString("color");
+                    for (SakuraLeaveColor c : SakuraLeaveColor.values()) {
+                        if (c.getSerializedName().equals(name)) {
+                            return c.color;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+            }
+            return SakuraLeaveColor.WHITE.color;
+        }, new Item[] { BambooBlocks.SAKURA_LEAVES.get().asItem() });
         event.register((stack, tintIndex) -> MapleLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.MAPLE_LEAVES.get().asItem() });
         event.register((stack, tintIndex) -> GinkgoLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.GINKGO_LEAVES.get().asItem() });
         event.register((stack, tintIndex) -> HinokiLeaveBlock.PETAL_COLOR, new Item[] { BambooBlocks.HINOKI_LEAVES.get().asItem() });

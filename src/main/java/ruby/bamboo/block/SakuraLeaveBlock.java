@@ -3,6 +3,9 @@ package ruby.bamboo.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LeavesBlock;
@@ -26,8 +29,8 @@ public class SakuraLeaveBlock extends LeavesBlock implements PetalEmitter {
 
     public static final EnumProperty<SakuraLeaveColor> COLOR = EnumProperty.create("color", SakuraLeaveColor.class);
 
-    /** 既定ピンク (旧 EnumLeave.PINK 0xFFC5CC)。既存ワールド互換のため既定値 */
-    public static final int PETAL_COLOR = SakuraLeaveColor.PINK.color;
+    /** 既定白。既存ワールド互換のため既定値 */
+    public static final int PETAL_COLOR = SakuraLeaveColor.WHITE.color;
 
     public SakuraLeaveBlock(BlockBehaviour.Properties props) {
         super(props);
@@ -65,6 +68,22 @@ public class SakuraLeaveBlock extends LeavesBlock implements PetalEmitter {
         } catch (Exception e) {
             return PETAL_COLOR;
         }
+    }
+
+    /**
+     * 中クリックピック対応。色を BlockStateTag に載せて持ち帰る
+     * (配置時はバニラ BlockItem が自動復元、色表示はアイテム色登録側で解決)。
+     */
+    @Override
+    public ItemStack getCloneItemStack(BlockState state, net.minecraft.world.phys.HitResult target,
+            BlockGetter level, BlockPos pos, Player player) {
+        ItemStack stack = new ItemStack(this);
+        try {
+            stack.getOrCreateTagElement("BlockStateTag")
+                    .putString("color", state.getValue(COLOR).getSerializedName());
+        } catch (Exception e) {
+        }
+        return stack;
     }
 
     @Override

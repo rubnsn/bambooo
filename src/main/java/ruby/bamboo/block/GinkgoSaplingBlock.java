@@ -1,7 +1,9 @@
 package ruby.bamboo.block;
 
 import java.util.OptionalInt;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.level.block.SaplingBlock;
@@ -17,6 +19,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 import net.minecraft.world.level.levelgen.feature.trunkplacers.FancyTrunkPlacer;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.StraightTrunkPlacer;
 import ruby.bamboo.core.init.BambooBlocks;
+import ruby.bamboo.worldgen.GiantTreeGen;
 
 /**
  * イチョウ苗木 (ginkgo_sapling)。
@@ -33,6 +36,29 @@ public class GinkgoSaplingBlock extends SaplingBlock {
 
     public GinkgoSaplingBlock(BlockBehaviour.Properties props) {
         super(GINKGO_TREE, props);
+    }
+
+    /**
+     * 十字5本 (中央+東西南北) で骨粉/自然成長が回った場合は特殊巨木になる。
+     * 十字未満の隣接があるだけでは育てず待機する。単木はバニラに委ねる。
+     */
+    @Override
+    public void advanceTree(ServerLevel level, BlockPos pos, BlockState state, RandomSource rand) {
+        if (state.getValue(STAGE) == 0) {
+            level.setBlock(pos, state.cycle(STAGE), 4);
+            return;
+        }
+        if (GiantTreeGen.isLargeTree(level, pos, state)) {
+            BlockState log = BambooBlocks.GINKGO_LOG.get().defaultBlockState();
+            BlockState leaves = BambooBlocks.GINKGO_LEAVES.get().defaultBlockState();
+            if (GiantTreeGen.generate(level, pos, rand, log, leaves)) {
+                return;
+            }
+            // 空間不足時はバニラ単木にフォールバック
+        } else if (GiantTreeGen.hasNextSapling(level, pos, state)) {
+            return;
+        }
+        super.advanceTree(level, pos, state, rand);
     }
 
     // 通常: straight 4+2 / blob r2、大木: fancy分岐 (vanilla fancy_oak相当)
