@@ -18,7 +18,8 @@
           "condition": "minecraft:block_state_property",
           "block": "bamboomod:gacha",
           "properties": {
-            "half": "lower"
+            "half": "lower",
+            "user_placed": "true"
           }
         }
       ]

@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -26,6 +27,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
@@ -46,12 +48,17 @@ import ruby.bamboo.core.init.BambooBlockEntities;
  * コイン投入済みでコイン以外を持って右クリック→ハンドルを回してカプセル排出。
  * カプセル (赤60/青30/黄9/虹1) は手に持って右クリックで開封し、中身は
  * カプセル色ごとの期待値で抽選される。開封後の空カプセルは手元に残る。
- * ドロップは LOWER のみ (loot_table の half=lower 条件)。
+ * ドロップはユーザー設置LOWERのみ (loot_table の half=lower+user_placed 条件)。
  * 投入済みコインは破壊時に返却する。
  */
 public class GachaBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
+    /**
+     * ユーザー設置マーカー。true=ユーザー設置 (通常硬度・通常ドロップ)。
+     * false=構造物生成分 (超硬度・爆破耐性・無ドロップ)。BreakEventに頼らず硬度/耐性/戦利品で表現する。
+     */
+    public static final BooleanProperty USER_PLACED = BooleanProperty.create("user_placed");
 
     private static final VoxelShape LOWER_SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
     private static final VoxelShape UPPER_SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 16.0, 14.0);
@@ -60,11 +67,12 @@ public class GachaBlock extends BaseEntityBlock {
         super(Properties.of()
                 .mapColor(MapColor.COLOR_RED)
                 .sound(SoundType.METAL)
-                // 硬度は据え置き、爆破耐性のみ黒曜石並み (構造物ガチャの爆破保護)
+                // ユーザー設置分の基礎値 (硬度1.5・爆破耐性1200)。生成分は下のoverrideで上乗せ
                 .strength(1.5F, 1200F));
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
-                .setValue(HALF, DoubleBlockHalf.LOWER));
+                .setValue(HALF, DoubleBlockHalf.LOWER)
+                .setValue(USER_PLACED, Boolean.valueOf(false)));
     }
 
     @Override
@@ -91,18 +99,42 @@ public class GachaBlock extends BaseEntityBlock {
         }
         return this.defaultBlockState()
                 .setValue(FACING, ctx.getHorizontalDirection().getOpposite())
-                .setValue(HALF, DoubleBlockHalf.LOWER);
+                .setValue(HALF, DoubleBlockHalf.LOWER)
+                .setValue(USER_PLACED, Boolean.valueOf(false));
     }
 
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer,
             ItemStack stack) {
-        level.setBlock(pos.above(), state.setValue(HALF, DoubleBlockHalf.UPPER), 3);
-        // プレイヤー設置マーカー (構造物生成では呼ばれない)。村保護判定用
-        if (!level.isClientSide && placer instanceof Player
-                && level.getBlockEntity(pos) instanceof GachaBlockEntity be) {
-            be.setPlayerPlaced(true);
+        BlockState placed = state.setValue(USER_PLACED, Boolean.valueOf(true));
+        level.setBlock(pos, placed, 3);
+        level.setBlock(pos.above(), placed.setValue(HALF, DoubleBlockHalf.UPPER), 3);
+    }
+
+    /**
+     * 生成分は50倍硬い (手掘りは可能だが実質的に割れない)。ユーザー設置分は基礎値通り。
+     * クリエイティブ破壊は別経路のため影響なし。
+     */
+    @Override
+    public float getDestroyProgress(BlockState state, Player player,
+            net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+        float progress = super.getDestroyProgress(state, player, level, pos);
+        if (!state.getValue(USER_PLACED)) {
+            progress *= 0.02F;
         }
+        return progress;
+    }
+
+    /**
+     * 生成分は爆破で壊れない (岩盤級)。ユーザー設置分は基礎値 (1200) 通り。
+     */
+    @Override
+    public float getExplosionResistance(BlockState state,
+            net.minecraft.world.level.BlockGetter level, BlockPos pos, Explosion explosion) {
+        if (!state.getValue(USER_PLACED)) {
+            return 3600000.0F;
+        }
+        return super.getExplosionResistance();
     }
 
     @Override
@@ -180,7 +212,7 @@ public class GachaBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, HALF);
+        builder.add(FACING, HALF, USER_PLACED);
     }
 
     @Override
