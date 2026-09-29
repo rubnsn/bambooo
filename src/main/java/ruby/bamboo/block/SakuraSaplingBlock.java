@@ -28,6 +28,7 @@ import net.minecraft.world.level.levelgen.feature.trunkplacers.FancyTrunkPlacer;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.StraightTrunkPlacer;
 import net.minecraft.world.phys.BlockHitResult;
 import ruby.bamboo.core.init.BambooBlocks;
+import ruby.bamboo.worldgen.GiantTreeGen;
 
 /**
  * 桜の苗木。旧 SakuraSapling (1.10.2) の移植。
@@ -52,6 +53,29 @@ public class SakuraSaplingBlock extends SaplingBlock {
 
     public SakuraSaplingBlock(BlockBehaviour.Properties props) {
         super(SAKURA_TREE, props);
+    }
+
+    /**
+     * 十字5本 (中央+東西南北) で骨粉/自然成長が回った場合は特殊巨木になる。
+     * 十字未満の隣接があるだけでは育てず待機する。単木はバニラに委ねる。
+     */
+    @Override
+    public void advanceTree(ServerLevel level, BlockPos pos, BlockState state, RandomSource rand) {
+        if (state.getValue(STAGE) == 0) {
+            level.setBlock(pos, state.cycle(STAGE), 4);
+            return;
+        }
+        if (GiantTreeGen.isLargeTree(level, pos, state)) {
+            BlockState log = BambooBlocks.SAKURA_LOG.get().defaultBlockState();
+            BlockState leaves = BambooBlocks.SAKURA_LEAVES.get().defaultBlockState();
+            if (GiantTreeGen.generate(level, pos, rand, log, leaves)) {
+                return;
+            }
+            // 空間不足時はバニラ単木にフォールバック
+        } else if (GiantTreeGen.hasNextSapling(level, pos, state)) {
+            return;
+        }
+        super.advanceTree(level, pos, state, rand);
     }
 
     /**
