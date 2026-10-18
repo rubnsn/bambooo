@@ -162,6 +162,8 @@ public class GachaCapsuleItem extends Item {
         } else {
             tooltip.add(Component.translatable(getCapsule(stack).langKey())
                     .withStyle(ChatFormatting.YELLOW));
+            tooltip.add(Component.translatable("tooltip.bamboomod.gacha_capsule.hint")
+                    .withStyle(ChatFormatting.GRAY));
         }
     }
 }

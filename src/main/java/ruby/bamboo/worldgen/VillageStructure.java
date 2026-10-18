@@ -45,6 +45,8 @@ public class VillageStructure extends Structure {
             new WeightedHouse(loc("village_house_small"), 10, true),
             new WeightedHouse(loc("village_house_small2"), 10, false),
             new WeightedHouse(loc("village_house"), 1, true),
+            // 魚コレクターの家 (内部に魚捕り籠=職業ブロック。ベッドあり=村人1名を供給)
+            new WeightedHouse(loc("village_house_fishcollector"), 1, true),
             new WeightedHouse(loc("village_kura"), 1, false),
             new WeightedHouse(loc("village_plant_field"), 5, false),
             new WeightedHouse(loc("village_rice_field"), 5, false),

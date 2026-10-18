@@ -40,7 +40,7 @@ public class MaidRenderer extends VillagerRenderer {
     /**
      * 素体サフィックス (職業ごと全列挙。無職/ニートは default の white)。
      * 武器鍛冶 red・道具鍛冶 yellow・石工 black・革細工 brown、
-     * 遊び人 green、帽子あり9職 white。
+     * 遊び人 green・魚コレクター blue、帽子あり9職 white。
      */
     private static String bodySuffix(Villager villager) {
         String path = net.minecraft.core.registries.BuiltInRegistries.VILLAGER_PROFESSION
@@ -51,6 +51,7 @@ public class MaidRenderer extends VillagerRenderer {
             case "mason" -> "black";
             case "leatherworker" -> "brown";
             case "asobinin" -> "green";
+            case "fish_collector" -> "blue";
             case "armorer", "butcher", "cartographer", "cleric", "farmer",
                     "fisherman", "fletcher", "librarian", "shepherd" -> "white";
             default -> "white";

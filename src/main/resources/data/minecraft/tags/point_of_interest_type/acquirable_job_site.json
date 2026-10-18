@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "bamboomod:asobinin"
+    "bamboomod:asobinin",
+    "bamboomod:fish_collector"
   ]
 }
