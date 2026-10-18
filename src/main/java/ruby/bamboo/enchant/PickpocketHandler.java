@@ -47,7 +47,8 @@ public class PickpocketHandler {
         if (serverLevel.getRandom().nextFloat() >= chance) return;
 
         // 刀のドロップ表を流用: 対象EntityTypeのkatanaテーブルから1件抽選
-        ItemStack extra = KatanaDropManager.getRandomDropItem(serverLevel, target, serverLevel.getRandom(), 0);
+        ItemStack extra = KatanaDropManager.getRandomDropItem(serverLevel, target, event.getSource(),
+                serverLevel.getRandom(), 0);
         if (extra != null && !extra.isEmpty()) {
             // ドロップ追加: event.getDrops() に EntityItem を追加
             var entityItem = new ItemEntity(serverLevel, target.getX(), target.getY(), target.getZ(), extra.copy());

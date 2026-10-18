@@ -49,7 +49,7 @@ public final class KatanaAttackHandler {
             boolean killed = target.hurt(source, dmg);
 
             if (killed && target.isDeadOrDying() && player.level() instanceof ServerLevel serverLevel) {
-                ItemStack drop = KatanaDropManager.getRandomDropItem(serverLevel, target,
+                ItemStack drop = KatanaDropManager.getRandomDropItem(serverLevel, target, source,
                         player.getRandom(), CommonKatana.getDropRate());
                 if (drop != null) {
                     target.spawnAtLocation(drop);

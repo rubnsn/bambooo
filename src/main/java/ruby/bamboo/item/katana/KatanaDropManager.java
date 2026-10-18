@@ -12,8 +12,10 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -66,10 +68,14 @@ public final class KatanaDropManager {
     /**
      * 特殊ドロップ抽選 (旧 getRandomDropItem 相当)。
      * まず候補1件を選び、そのテーブルで抽選する。外れたら null。
+     *
+     * @param source 撃破に使われたダメージソース。ENTITY パラメータセットでは
+     *               {@link LootContextParams#DAMAGE_SOURCE} が必須のため、
+     *               null の場合は汎用ソースで代用する
      */
     @Nullable
     public static ItemStack getRandomDropItem(ServerLevel level, LivingEntity killed,
-            RandomSource rand, float dropRate) {
+            @Nullable DamageSource source, RandomSource rand, float dropRate) {
         // EntityType キー解決用 (旧は entity.getClass() 完全一致)
         List<ResourceLocation> candidates = DROP_TABLES.get(killed.getType());
         if (candidates == null || candidates.isEmpty()) {
@@ -77,12 +83,21 @@ public final class KatanaDropManager {
         }
         ResourceLocation tableId = candidates.get(rand.nextInt(candidates.size()));
         var table = level.getServer().getLootData().getLootTable(tableId);
+        // DAMAGE_SOURCE は ENTITY パラメータセットの必須項目。未指定のまま create すると
+        // 抽選時に IllegalArgumentException でサーバーがクラッシュする
+        DamageSource damageSource = source != null ? source : level.damageSources().generic();
         var builder = new LootParams.Builder(level)
                 .withParameter(LootContextParams.THIS_ENTITY, killed)
                 .withParameter(LootContextParams.ORIGIN,
                         killed.position())
-                .withOptionalParameter(LootContextParams.DAMAGE_SOURCE,
-                        null)
+                .withParameter(LootContextParams.DAMAGE_SOURCE,
+                        damageSource)
+                .withOptionalParameter(LootContextParams.KILLER_ENTITY,
+                        damageSource.getEntity())
+                .withOptionalParameter(LootContextParams.DIRECT_KILLER_ENTITY,
+                        damageSource.getDirectEntity())
+                .withOptionalParameter(LootContextParams.LAST_DAMAGE_PLAYER,
+                        killed.getKillCredit() instanceof Player player ? player : null)
                 .withLuck(0F);
         // 確率判定は旧仕様どおり reality+dropRate 相当を random_chance で JSON 側に任せるため、
         // ここでは単純にテーブルロールする (dropRate 加算が必要な場合は JSON 側で調整)
