@@ -43,7 +43,7 @@ public abstract class OverworldBiomeBuilderMixin {
     private List<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> bamboomod$recorded;
 
     @SuppressWarnings("unchecked")
-    @ModifyVariable(method = "addBiomes", at = @At("HEAD"), ordinal = 0, argsOnly = true, remap = false)
+    @ModifyVariable(method = "addBiomes", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     private Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> bamboomod$record(
             Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> consumer) {
         this.bamboomod$original = consumer;
@@ -54,7 +54,7 @@ public abstract class OverworldBiomeBuilderMixin {
         };
     }
 
-    @Inject(method = "addBiomes", at = @At("TAIL"), remap = false)
+    @Inject(method = "addBiomes", at = @At("TAIL"))
     private void bamboomod$appendAutumn(
             Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> consumer, CallbackInfo ci) {
         if (!bamboomod$logged) {
