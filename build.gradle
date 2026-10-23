@@ -235,6 +235,13 @@ dependencies {
         runtimeOnly fg.deobf("${dcsGroup}:${dcsArtifact}:${dcsVersion}")
     }
 
+    // === 他mod互換の検証用 (Platform + Vanilla Backport) ===
+    // `./gradlew runClient -PVBTest` VB用
+    if (project.hasProperty("VBTest")) {
+        runtimeOnly fg.deobf("maven.modrinth:platform:1.4.1")
+        runtimeOnly fg.deobf("maven.modrinth:vanillabackport:1.2.1")
+    }
+
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"

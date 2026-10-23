@@ -49,7 +49,12 @@ public abstract class OverworldBiomeBuilderMixin {
         this.bamboomod$original = consumer;
         this.bamboomod$recorded = new ArrayList<>();
         return pair -> {
-            this.bamboomod$recorded.add(pair);
+            // 他mod (Platform / Vanilla Backport 等) は addBiomes の TAIL で Consumer を呼ぶ。
+            // 本Mixinの TAIL が先に走ると recorded は null のため、記録だけスキップして素通しする。
+            List<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> recording = this.bamboomod$recorded;
+            if (recording != null) {
+                recording.add(pair);
+            }
             consumer.accept(pair);
         };
     }
