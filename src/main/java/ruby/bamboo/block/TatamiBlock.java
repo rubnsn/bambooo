@@ -2,6 +2,8 @@ package ruby.bamboo.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
@@ -13,16 +15,23 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import ruby.bamboo.core.init.BambooBlocks;
 
 /**
  * 畳。旧 Tatami (1.10.2) の移植。
  * <p>
  * 旧版は meta 0-3 (通常/縁無し/日焼け/縁無し日焼け) を1ブロックで持っていたが、
  * 1.20.1では4種を独立ブロックとして登録し、向きは facing(水平4方向)で表現する。
+ * <p>
+ * 日焼け仕様: 通常/縁無しは直射日光 (昼かつ上空開放) 下の randomTick で 25% の確率で
+ * 日焼け/縁無し日焼けへ一方通行で変化する。向き (FACING) は維持する。
  */
 public class TatamiBlock extends Block {
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+
+    /** randomTick 毎の日焼け確率 (25%) */
+    private static final float TAN_PROBABILITY = 0.25F;
 
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 16, 16);
 
@@ -50,7 +59,8 @@ public class TatamiBlock extends Block {
         super(BlockBehaviour.Properties.of()
                 .sound(SoundType.GRASS)
                 .strength(0.5f)
-                .noOcclusion());
+                .noOcclusion()
+                .randomTicks());
         this.descriptionId = "block.bamboomod." + variant.modelName.replace('_', '.');
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH));
@@ -77,5 +87,32 @@ public class TatamiBlock extends Block {
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
         // 見た目通りの6/16高さ。床材に埋め込まず上に敷くこと (10/16の落差=つまずき防止)
         return SHAPE;
+    }
+
+    /**
+     * 日焼け変化。直射日光 (昼かつ上空が空に開けている) の下でのみ 25% で変化する。
+     * 通常→日焼け、縁無し→縁無し日焼けの一方通行。向き (FACING) は維持する。
+     */
+    @Override
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource rand) {
+        Block block = state.getBlock();
+        Block target;
+        if (block == BambooBlocks.TATAMI.get()) {
+            target = BambooBlocks.TATAMI_TAN.get();
+        } else if (block == BambooBlocks.TATAMI_NON_BORDER.get()) {
+            target = BambooBlocks.TATAMI_TAN_NON_BORDER.get();
+        } else {
+            return;
+        }
+        if (!level.isDay()) {
+            return;
+        }
+        if (!level.canSeeSky(pos.above())) {
+            return;
+        }
+        if (rand.nextFloat() >= TAN_PROBABILITY) {
+            return;
+        }
+        level.setBlock(pos, target.defaultBlockState().setValue(FACING, state.getValue(FACING)), 3);
     }
 }
